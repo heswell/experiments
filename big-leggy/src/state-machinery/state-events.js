@@ -1,0 +1,11 @@
+export const CLICK = {type: 'click'};
+export const COMMIT = {type: 'commit'};
+export const ESC = {type: 'esc'};
+export const TAB = {type: 'tab'};
+export const TAB_BWD = {type: 'tab-bwd'};
+export const UP = {type: 'up'};
+export const DOWN = {type: 'down'};
+export const LEFT = {type: 'left'};
+export const RIGHT = {type: 'right'};
+export const TEXT = {type: 'text'};
+export const ENTER = {type: 'enter'};

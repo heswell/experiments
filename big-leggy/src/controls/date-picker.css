@@ -1,0 +1,15 @@
+@import './dropdown.css';
+
+.combo-box-dropdown-list .list-item {
+  line-height: 1.25rem;
+  padding: 0 6px;
+  cursor: default;
+}
+
+.combo-box-dropdown-list .list-item:hover {
+  background-color: rgba(0,0,0,.1)
+}
+
+.highlighted.list-item {
+  background-color: rgba(0,0,0,.1)
+}
