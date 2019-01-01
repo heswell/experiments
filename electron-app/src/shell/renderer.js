@@ -33,4 +33,7 @@ window.ipcRenderer.on('ready', (evt, arg) => {
 
 document.querySelector('#resize-button').addEventListener('click', () => {
   document.body.style.cssText = 'width: 400px; height: 700px; background-color: ivory; transition-property: height, width; transition-duration: .25s';
+
+  window.openModal();
+
 })

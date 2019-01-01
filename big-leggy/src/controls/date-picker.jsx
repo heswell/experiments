@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import cx from 'classnames';
 import dateFns from 'date-fns';
 import CalendarLayout from './calendar/calendar-layout';
+import Dropdown from './dropdown';
 import * as Key from '../utils/key-code';
 
 import './date-picker.css';
@@ -229,18 +229,6 @@ DatePicker.defaultProps = {
     "2018-12-23",
     "2018-12-24"
   ]
-}
-
-class Dropdown extends React.Component {
-
-  render(){
-    const {position: {top,left,width,height}, children} = this.props;
-    return ReactDOM.createPortal(
-      <div className="control-dropdown" style={{top:top+height,left, width}}>
-        {children}
-      </div>,
-      document.body)
-  }
 }
 
 class Calendar extends React.Component {

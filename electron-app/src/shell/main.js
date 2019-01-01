@@ -20,18 +20,20 @@ ipcMain.on('window-resize', (evt, size) => {
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1000,
     height: 600,
     show: false,
     webPreferences: {
+      webSecurity: false, 
+      contextIsolation: false,
       nodeIntegration: false,
       preload: `${__dirname}/preload.js`
     }
   })
 
   // and load the index.html of the app.
-  mainWindow.loadFile(`${__dirname}/index.html`)
-  // mainWindow.webContents.openDevTools()
+  // mainWindow.loadFile(`${__dirname}/index.html`)
+  mainWindow.loadURL(`http://localhost:3000/index.html`)
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.webContents.send('ready')
@@ -41,8 +43,7 @@ function createWindow () {
     mainWindow = null
   })
 
-  // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
