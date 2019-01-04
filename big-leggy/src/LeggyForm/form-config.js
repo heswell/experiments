@@ -45,6 +45,24 @@ const Field7 = {
 const Field8 = {id: 'field8', label: 'Field 8', getValue: getLegValue('field8'), type: TEXT, layout: MultiCellEdit}
 const Field9 = {id: 'field9', label: 'Field 9', getValue: getLegValue('field9'), type: TEXT, layout: MultiCellEdit}
 
+const Field10 = {
+  id: 'field10',
+  label: 'Field 10 (D + C)',
+  getValue: getLegValue('field10'),
+  type: [DATE, COMBO],
+  layout: MultiCellEdit
+}
+const Field11 = {
+  id: 'field11',
+  label: 'Field 11 (Txt)',
+  getValue: getLegValue('field11'),
+  type: TEXT,
+  layout: MultiCellEdit
+}
+
+// const Field9 = {id: 'field9', label: 'Field 9', getValue: getLegValue('field9'), type: TEXT, layout: MultiCellEdit}
+// const Field9 = {id: 'field9', label: 'Field 9', getValue: getLegValue('field9'), type: TEXT, layout: MultiCellEdit}
+
 export const Empty = {id: 'empty', label: '', type: 'empty', isEmpty: true}
 
 const leggyModel = {
@@ -54,26 +72,12 @@ const leggyModel = {
       { 
         id: 'group-1',
         label: null,
-        fields: [Field1, Field2, Field3, Field4, Field5],
-        rows: [
-          [Field1, Field1],
-          // if there is only 1 field, we expect the value to be same across all legs
-          // throw if not
-          [Field2],
-          [Field3, Field3],
-          [Field4, Empty],
-          [Field5, Field5]      
-        ]
+        fields: [Field1, Field2, Field3, Field4, Field5]
       },
       { 
         id: 'group-2',
         label: null,
-        fields: [Field7, Field8, Field9],
-        rows: [
-          [Field7, Field7],
-          [Field8, Field8],
-          [Field9, Field9]
-        ]
+        fields: [Field7, Field8, Field9, Field10, Field11]
       }
   ]},
 }

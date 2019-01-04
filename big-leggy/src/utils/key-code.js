@@ -10,8 +10,21 @@ export const ESC = 27;
 export const BACKSPACE = 8;
 export const SPACE = 20;
 
+export const PAGE_DOWN = 'PageDown';
+export const PAGE_UP = 'PageUp';
+export const HOME = 'Home';
+export const END = 'End';
+
 export function getKeyboardEvent(e){
-  const {keyCode, shiftKey} = e;
+  const {key, keyCode, shiftKey} = e;
+
+  switch (key){
+    case PAGE_UP: return StateEvt.PAGEUP;
+    case PAGE_DOWN: return StateEvt.PAGEDOWN;
+    case HOME: return StateEvt.HOME;
+    case END: return StateEvt.END;
+    default:
+  }
   switch(keyCode){
       case DOWN: return StateEvt.DOWN;
       case UP: return StateEvt.UP;

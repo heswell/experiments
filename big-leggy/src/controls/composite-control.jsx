@@ -18,13 +18,16 @@ export default class CompositeControl extends React.Component {
   }
 
   render(){
-    const {field, children, onCommit, onFocus} = this.props;
+    const {field, children, onCommit, onCancel, onFocus} = this.props;
     return (
       <div className="composite-control">
       {children.map((child,idx) => {
           const props = {
             ref: c => this.setRef(c, idx),
-            onFocus: () => onFocus(idx)
+            onFocus: () => {
+              onFocus(idx)
+            },
+            onCancel
           }
           if (child.props.onCommit){
             const _commit = child.props.onCommit;

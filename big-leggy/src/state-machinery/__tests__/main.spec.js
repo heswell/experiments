@@ -39,7 +39,9 @@ describe('state machines',() => {
       compositeFieldIdx: 0,
       nextField: () => nextField,
       nextCompositeFieldType(){
-        return COMBO
+        return this.compositeFieldIdx === 0
+          ? COMBO
+          : undefined
       },
       setNextField: (e,field) => {
         model.currentField = nextField;
@@ -76,8 +78,9 @@ describe('state machines',() => {
 
   test('tab from edit first field of composite moves to edit next composite field', () => {
     const stateMachine = new Machine(states, stateOptions, model);
-    const state = transition(stateMachine, {edit: 'editComposite'}, {type: 'tab'}, model);
+    const state = transition(stateMachine, {edit: {editComposite: 'selector'}}, {type: 'tab'}, model);
     expect(state.value).toEqual({edit: {editComposite: 'selector'}})
+    expect(model.currentField).toEqual(compositeField)
     expect(model.compositeFieldIdx).toEqual(1)
   })
 
@@ -103,6 +106,14 @@ describe('state machines',() => {
   test('from edit.selector, commit ', () => {
     const stateMachine = new Machine(states, stateOptions, model);
     const state = transition(stateMachine, {edit:'editSelector'}, {type: 'commit'}, model);
+    expect(state.value).toEqual({focus: "focusTextInput"})
+    expect(model.currentField).toEqual(nextField)
+  })
+
+  test('from last field of composite, commit ', () => {
+    const stateMachine = new Machine(states, stateOptions, model);
+    model.compositeFieldIdx = 1;
+    const state = transition(stateMachine, {edit: {editComposite: 'selector'}}, {type: 'commit'}, model);
     expect(state.value).toEqual({focus: "focusTextInput"})
     expect(model.currentField).toEqual(nextField)
   })

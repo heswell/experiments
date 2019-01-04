@@ -5,7 +5,12 @@ import * as StateEvt from '../../state-machinery/state-events';
 import CalendarModel, {getDates, getCalendarClassNames} from './calendar-model';
 import {getKeyboardEvent} from '../../utils/key-code';
 
-export default class CalendarLayout extends React.Component {
+import './calendar.css';
+
+const NAVIGATION_PATTERN = /^(home|end|page-up|page-down|down|up|right|left)$/
+const isNavigationEvent = stateEvt => NAVIGATION_PATTERN.test(stateEvt.type);
+
+export default class Calendar extends React.Component {
 
   constructor(props){
     super(props)
@@ -30,7 +35,7 @@ export default class CalendarLayout extends React.Component {
   }
 
   componentDidMount(){
-    this.setCurrentDate(this.model.currentDate)
+    this.setCurrentDate(this.model.currentDate);
   }
 
   componentDidUpdate(){
@@ -61,13 +66,11 @@ export default class CalendarLayout extends React.Component {
       if (stateEvt === StateEvt.ESC){
         this.props.onCancel()
       } else if (stateEvt === StateEvt.ENTER){
-        this.props.onSelect(model.currentDate)
-      } else if (stateEvt === StateEvt.DOWN || 
-          stateEvt === StateEvt.UP || 
-          stateEvt === StateEvt.RIGHT || 
-          stateEvt === StateEvt.LEFT){
+        this.props.onCommit(model.currentDate)
+      } else if (isNavigationEvent(stateEvt)){
         const {currentDate, currentMonth} = model;
         const nextDate = model.nextDate(stateEvt);
+        console.log(`next date = ${nextDate}`)
         if (nextDate !== currentDate){
           const monthDiff = dateFns.differenceInCalendarMonths(nextDate, currentDate);
           if (monthDiff){
@@ -85,11 +88,11 @@ export default class CalendarLayout extends React.Component {
 
   render(){
     return (
-      <>
+      <div className="calendar">
         {this.renderHeader()}
         {this.renderDaysOfWeek()}
         {this.renderDateCells()}
-      </>
+      </div>
     )
   }
 
@@ -125,7 +128,7 @@ export default class CalendarLayout extends React.Component {
   }
 
   renderDateCells(){
-    const {onSelect, children: dateRenderer} = this.props;
+    const {onCommit, children: dateRenderer} = this.props;
     const {classNames, weeks} = this.state;
     return (
       <div className={cx("calendar-body", ...classNames)} ref={this.calendarBody}>
@@ -137,7 +140,7 @@ export default class CalendarLayout extends React.Component {
                 <div key={day} tabIndex={0}
                   data-day={dateFns.format(day, "YYYY-MM-DD")}
                   className={cx("calendar-cell", {disabled,selected, otherMonth})}
-                  onClick={() => onSelect(dateFns.parse(day))}
+                  onClick={() => onCommit(dateFns.parse(day))}
                   onKeyDown={this.handleKeyDown}>
                   {dateRenderer(formattedDate)}
                 </div>

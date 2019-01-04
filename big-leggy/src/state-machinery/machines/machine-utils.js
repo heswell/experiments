@@ -3,9 +3,12 @@ import {TEXT, SELECT, COMBO, DATE} from '../fields';
 export const isComposite = field => {
     return Array.isArray(field.type)
 }
+
+const isComboType = fieldType => fieldType === COMBO || fieldType === DATE
+
 export const isTextInput = field => field.type === TEXT
 export const isSelect = field => field.type === SELECT
-export const isCombo = field => field.type === COMBO || field.type === DATE
+export const isCombo = field => isComboType(field.type)
 export const canNavigate = (model, evt) => model.nextField(evt) !== model.currentField
 
 
@@ -39,13 +42,13 @@ export const transitionNextComposite = () => [
     ...transitionNext([],c => !c.nextCompositeFieldType()),
     { target: '#edit-composite-text-input', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === TEXT },
     { target: '#edit-composite-select', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === SELECT },
-    { target: '#edit-composite-selector', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === COMBO }
+    { target: '#edit-composite-selector', actions: ['setNextCompositeField'], cond: c => isComboType(c.nextCompositeFieldType()) }
 ]
 
 export const focusComposite = () => [
     { target: '#focus-composite', actions: ['setField'], cond: (c,e) => e.field.type[e.compositeFieldIdx] === TEXT },
     { target: '#edit-composite-select', actions: ['setField'], cond: (c,e) => e.field.type[e.compositeFieldIdx] === SELECT },
-    { target: '#edit-composite-selector', actions: ['setField'], cond: (c,e) => e.field.type[e.compositeFieldIdx] === COMBO }
+    { target: '#edit-composite-selector', actions: ['setField'], cond: (c,e) => isComboType(e.field.type[e.compositeFieldIdx]) }
 ]
 
 export const clickAnyField = () => [

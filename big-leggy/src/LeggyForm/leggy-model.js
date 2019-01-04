@@ -85,21 +85,22 @@ export default class LeggyModel {
   }
 
   compositeFieldType(field=this.currentField){
-    console.log(`compositeFieldType ${JSON.stringify(field)} compositeFieldIdx=${this.compositeFieldIdx}`);
+    // console.log(`compositeFieldType ${JSON.stringify(field)} compositeFieldIdx=${this.compositeFieldIdx}`);
     return field.type[this.compositeFieldIdx];
   }
 
   nextCompositeFieldType(field=this.currentField){
     const {type} = field;
-    // console.log(`nextCompositeFieldType for field ${JSON.stringify(field)} compositeIdx=${this.compositeFieldIdx}`)
     if (Array.isArray(type)){
+      // console.log(`nextCompositeFieldType for field ${JSON.stringify(field)} compositeIdx=${this.compositeFieldIdx} ${type[this.compositeFieldIdx+1]}`)
       return type[this.compositeFieldIdx+1];
     }
+    // console.log(`nextCompositeFieldType for field ${JSON.stringify(field)} compositeIdx=${this.compositeFieldIdx} UNDEFINED`)
   }
 
   resetCompositeFieldType(){
-    console.log(`resetCompositeFieldType to 0`)
-    this.compositeFieldIdx = 0;
+    console.log(`resetCompositeFieldIdx to -1`)
+    this.compositeFieldIdx = -1;
   }
 
   setNextCompositeFieldType(){

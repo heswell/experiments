@@ -31,14 +31,24 @@ export default class CalendarModel {
   }
 
   nextDate(stateEvt){
-    if (stateEvt === StateEvt.DOWN){
-      return this.currentDate = dateFns.addDays(this.currentDate, 7);
-    } else if (stateEvt === StateEvt.UP){
-      return this.currentDate = dateFns.subDays(this.currentDate, 7);
-    } else if (stateEvt === StateEvt.LEFT){
-      return this.currentDate = dateFns.subDays(this.currentDate, 1);
-    } else if (stateEvt === StateEvt.RIGHT){
-      return this.currentDate = dateFns.addDays(this.currentDate, 1);
+    switch (stateEvt.type){
+      case StateEvt.DOWN.type:
+        return this.currentDate = dateFns.addDays(this.currentDate, 7);
+      case StateEvt.UP.type:
+        return this.currentDate = dateFns.subDays(this.currentDate, 7);
+      case StateEvt.LEFT.type:
+        return this.currentDate = dateFns.subDays(this.currentDate, 1);
+      case StateEvt.RIGHT.type:
+        return this.currentDate = dateFns.addDays(this.currentDate, 1);
+      case StateEvt.PAGEUP.type:
+        return this.currentDate = dateFns.subMonths(this.currentDate, 1);
+      case StateEvt.PAGEDOWN.type:
+        return this.currentDate = dateFns.addMonths(this.currentDate, 1);
+      case StateEvt.HOME.type:
+        return this.currentDate = dateFns.startOfMonth(this.currentDate);
+      case StateEvt.END.type:
+        return this.currentDate = dateFns.endOfMonth(this.currentDate);
+      default:
     }
   }
 } 

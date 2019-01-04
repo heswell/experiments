@@ -46,7 +46,7 @@ export class LeggyForm extends React.Component {
             console.log(`%c[action] setCurrentField`,'color: brown; font-weight: bold')
             this.setCurrentField(model.setNextField(evt, evt.field));
           },
-          setNextCompositeField: (model) => {
+          setNextCompositeField: model => {
             console.log(`setNextCompositeField`)
             model.setNextCompositeFieldType();
             this.setCompositeField();
@@ -139,6 +139,7 @@ export class LeggyForm extends React.Component {
   handleCommit(field){
     const {event} = this.currentState;
     if (event !== StateEvt.TAB){
+      console.log(`handleCommit ${JSON.stringify(field)} ${this.state.model.compositeFieldIdx}`)
       // if commit was triggered by blur, because user used TAB, transition has already happened.
       this.stateTransition({...StateEvt.COMMIT, field});  
     }
@@ -154,7 +155,7 @@ export class LeggyForm extends React.Component {
   handleClick(field){
     if (field === this.state.model.currentField && this.currentState.matches('focus')){
       // we can't rely on focus to handle click events when element clicked already
-      // had focus - what baout composites ? 
+      // had focus - what about composites ? 
       const stateEvt = {
         ...StateEvt.CLICK,
         field
@@ -164,6 +165,9 @@ export class LeggyForm extends React.Component {
   }
 
   stateTransition(stateEvt){
+    // if (stateEvt.type === 'click' && this.currentState.matches('edit')){
+    //   debugger;
+    // }
     console.log(`%c${stateEvt.type} => from ${JSON.stringify(this.currentState.value)}`, 'color: blue;font-weight: bold;')
     const s2 = this.currentState = this.stateMachine.transition(this.currentState, stateEvt)
     runActions(s2.actions, s2.context,stateEvt);
@@ -174,9 +178,12 @@ export class LeggyForm extends React.Component {
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
       const startingField = this.currentField;
+      const {compositeFieldIdx} = this.state.model;
       this.stateTransition(stateEvt);
-      const tabbed = stateEvt === StateEvt.TAB && this.currentField !== startingField;
-
+      // DOn't swallow tab if the control being edited may need it 
+      const tabbed = stateEvt === StateEvt.TAB &&
+        (this.currentField !== startingField ||
+          compositeFieldIdx !== this.state.model.compositeFieldIdx );
       // In what scenario do we need this treatment of ESC ?
       if ((this.currentState.matches('focus') && stateEvt !== StateEvt.ESC) || tabbed){
         console.log(`stop event propagation`)
@@ -191,6 +198,8 @@ export class LeggyForm extends React.Component {
     console.log(`setCompositeField ${idx}`)
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
+      console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx}`);
+      this.ignoreFocus = true;
       fieldComponent.focus(idx)
     }
 

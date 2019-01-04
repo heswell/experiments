@@ -1,12 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import cx from 'classnames';
 import dateFns from 'date-fns';
-import CalendarLayout from './calendar/calendar-layout';
+import Calendar from './calendar/calendar-layout';
 import Dropdown from './dropdown';
 import * as Key from '../utils/key-code';
 
 import './date-picker.css';
-import './calendar/calendar.css';
 
 export default class DatePicker extends React.Component {
 
@@ -30,7 +29,6 @@ export default class DatePicker extends React.Component {
     this.onSelect = this.onSelect.bind(this);
     this.onCancel = this.onCancel.bind(this);
 
-    this.documentClickListener = evt => this.handleClickAway(evt);
   }
 
   componentDidMount(){
@@ -57,13 +55,15 @@ export default class DatePicker extends React.Component {
 
   render(){
     const {onChange, onKeyDown, onBlur} = this;
-    const {values} = this.state;
+    const className = cx('control-text', {
+      'dropdown-showing': this.state.open
+    })
     return (
       <>
         <input
           ref={this.inputEl}
           type="text" 
-          className="control-text"
+          className={className}
           value={this.state.value}
           onChange={onChange}
           onKeyDown={onKeyDown}
@@ -74,39 +74,20 @@ export default class DatePicker extends React.Component {
         />
         {this.state.open && (
           <Dropdown
-            values={values}
-            hilightedValue={this.state.selectedIdx}
-            position={this.state.position}>
-              <Calendar ref={this.calendar}
-                value={this.state.value}
-                onSelect={this.onSelect}
-                onCancel={this.onCancel}/>
+            className="date-picker-dropdown"
+            position={this.state.position}
+            onCommit={this.onSelect}
+            onCancel={this.onCancel}>
+            <Calendar ref={this.calendar}
+              value={this.state.value}>
+                {formattedDate =>
+                  <span className="calendar-day">{formattedDate}</span>
+                }
+              </Calendar>
           </Dropdown>  
         )}
       </>
     )
-  }
-
-  listenforClickAway(listen){
-    if (listen){
-      document.body.addEventListener('click',this.documentClickListener,true);
-    } else {
-      document.body.removeEventListener('click',this.documentClickListener,true);
-    }
-  }
-
-  handleClickAway(evt){
-    console.log('handleClickAway')
-    const {target} = evt;
-    const el = this.inputEl.current;
-    const calendarEl = ReactDOM.findDOMNode(this.calendar.current);
-    if (target !== el && !el.contains(target) && calendarEl !== target && !calendarEl.contains(target)){
-      if (this.state.open){
-        this.setState({open: false}, () => {
-          this.listenforClickAway(false);
-        });
-      }
-    }
   }
 
   matchingValues(value){
@@ -116,9 +97,7 @@ export default class DatePicker extends React.Component {
 
   onClick(){
     if (!this.state.open){
-      this.setState({open: true}, () => {
-        this.listenforClickAway(true);
-      })
+      this.setState({open: true})
     }
   }
 
@@ -135,17 +114,12 @@ export default class DatePicker extends React.Component {
   onChange(e){
     const value = e.target.value;
     const values = this.matchingValues(value)
-    const wasOpen = this.state.open;
     const open = values.length > 0;
     this.setState({
       value,
       values,
       open,
       selectedIdx: null
-    }, () => {
-      if (open !== wasOpen){
-        this.listenforClickAway(open);
-      }
     })
   }
 
@@ -160,9 +134,7 @@ export default class DatePicker extends React.Component {
       } else if (this.state.value !== this.state.initialValue){
         this.commit();
       } else if (!open){
-        this.setState({open: true}, () => {
-          this.listenforClickAway(true);
-        })
+        this.setState({open: true})
       }
 
     } else if (keyCode === Key.ESC){
@@ -182,16 +154,12 @@ export default class DatePicker extends React.Component {
   }
   
   commit(value=this.state.value){
-    const wasOpen = this.state.open;
     this.setState({
       open: false,
       value: value,
       values: this.matchingValues(value),
       initialValue: value
     }, () => {
-      if (wasOpen){
-        this.listenforClickAway(false);
-      }
       this.props.onCommit(this.state.value);
     })
   }
@@ -230,29 +198,3 @@ DatePicker.defaultProps = {
     "2018-12-24"
   ]
 }
-
-class Calendar extends React.Component {
-
-  renderDate(formattedDate){
-    return (
-      <span className="calendar-day">{formattedDate}</span>
-    )
-
-  }
-
-  render(){
-    const {style} = this.props;
-    const dropdownClassName = "date-picker-dropdown calendar"
-      return (
-        <div className={dropdownClassName} style={style}>
-          <CalendarLayout
-            value={this.props.value}
-            onSelect={this.props.onSelect}
-            onCancel={this.props.onCancel}>
-              {this.renderDate}
-            </CalendarLayout>
-        </div>
-      )
-    }
-  
-  }

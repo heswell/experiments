@@ -6,8 +6,8 @@
   cursor: default;
 }
 
-.combo-box-dropdown-list .list-item:hover {
-  background-color: rgba(0,0,0,.1)
+.date-picker-dropdown {
+  min-width: 230px; 
 }
 
 .highlighted.list-item {

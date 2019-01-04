@@ -1,24 +1,16 @@
 const electron = require('electron')
 const {BrowserWindow} = electron.remote;
-global.ipcRenderer = electron.ipcRenderer
+const _ipcRenderer = electron.ipcRenderer
 const _require = require("esm")(module)
+
 process.once('loaded', () => {
   global.require = _require
   console.log(`assign openModal`)
+  global.ipcRenderer = _ipcRenderer
   global.openModal = openModal
 })
 
-let modalWindow;
-
-function openModal(){
+function openModal(url, position){
   console.log('open modal')
-
-  modalWindow = new BrowserWindow({
-    width: 255,
-    height: 230,
-    frame: false,
-    // show: false,
-  })
-
-  return document.body
+  _ipcRenderer.send('open.modal', {url, position})
 }

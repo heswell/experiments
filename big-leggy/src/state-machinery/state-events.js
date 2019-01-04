@@ -9,3 +9,7 @@ export const LEFT = {type: 'left'};
 export const RIGHT = {type: 'right'};
 export const TEXT = {type: 'text'};
 export const ENTER = {type: 'enter'};
+export const HOME = {type: 'home'};
+export const END = {type: 'end'};
+export const PAGEUP = {type: 'page-up'};
+export const PAGEDOWN = {type: 'page-down'};
