@@ -180,8 +180,10 @@ export class LeggyForm extends React.Component {
       const startingField = this.currentField;
       const {compositeFieldIdx} = this.state.model;
       this.stateTransition(stateEvt);
-      // DOn't swallow tab if the control being edited may need it 
-      const tabbed = stateEvt === StateEvt.TAB &&
+      // TODO how can we eliminate this logic - we need a simple indication of whether
+      // key has been handled already - a model method ? 
+      // Don't swallow tab if the control being edited may need it 
+      const tabbed = (stateEvt === StateEvt.TAB || stateEvt === StateEvt.ENTER) &&
         (this.currentField !== startingField ||
           compositeFieldIdx !== this.state.model.compositeFieldIdx );
       // In what scenario do we need this treatment of ESC ?

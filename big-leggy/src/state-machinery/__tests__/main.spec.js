@@ -76,6 +76,21 @@ describe('state machines',() => {
     expect(model.compositeFieldIdx).toEqual(1)
   })
 
+  test('ENTER from focus first field of composite where composite is combo', () => {
+    model.currentField = {type: [COMBO,TEXT]}
+    const stateMachine = new Machine(states, stateOptions, model);
+    const state = transition(stateMachine, {focus: 'focusComposite'}, {type: 'enter'}, model);
+    expect(state.value).toEqual({edit: {editComposite: 'selector'}})
+    expect(model.compositeFieldIdx).toEqual(0)
+  })
+
+  test('ENTER from focus first field of composite where composite is text', () => {
+    const stateMachine = new Machine(states, stateOptions, model);
+    const state = transition(stateMachine, {focus: 'focusComposite'}, {type: 'enter'}, model);
+    expect(state.value).toEqual({edit: {editComposite: 'selector'}})
+    expect(model.compositeFieldIdx).toEqual(1)
+  })
+
   test('tab from edit first field of composite moves to edit next composite field', () => {
     const stateMachine = new Machine(states, stateOptions, model);
     const state = transition(stateMachine, {edit: {editComposite: 'selector'}}, {type: 'tab'}, model);

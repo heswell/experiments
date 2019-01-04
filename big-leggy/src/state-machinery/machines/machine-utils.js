@@ -4,7 +4,7 @@ export const isComposite = field => {
     return Array.isArray(field.type)
 }
 
-const isComboType = fieldType => fieldType === COMBO || fieldType === DATE
+export const isComboType = fieldType => fieldType === COMBO || fieldType === DATE
 
 export const isTextInput = field => field.type === TEXT
 export const isSelect = field => field.type === SELECT

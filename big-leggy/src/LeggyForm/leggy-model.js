@@ -99,8 +99,8 @@ export default class LeggyModel {
   }
 
   resetCompositeFieldType(){
-    console.log(`resetCompositeFieldIdx to -1`)
-    this.compositeFieldIdx = -1;
+    console.log(`resetCompositeFieldIdx to 0`)
+    this.compositeFieldIdx = 0;
   }
 
   setNextCompositeFieldType(){
