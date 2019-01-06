@@ -1,9 +1,9 @@
 import React from 'react';
 import cx from 'classnames';
 import dateFns from 'date-fns';
-import Calendar from './calendar/calendar-layout';
-import Dropdown from './dropdown';
-import * as Key from '../utils/key-code';
+import Calendar from '../calendar';
+import Dropdown from '../dropdown';
+import * as Key from '../../utils/key-code';
 
 import './date-picker.css';
 
@@ -106,7 +106,6 @@ export default class DatePicker extends React.Component {
   }
 
   onCancel(){
-    // might need to re-focus
     this.setState({open: false})
     this.props.onCancel()
   }

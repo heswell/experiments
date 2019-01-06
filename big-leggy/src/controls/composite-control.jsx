@@ -18,7 +18,7 @@ export default class CompositeControl extends React.Component {
   }
 
   render(){
-    const {field, children, onCommit, onCancel, onFocus} = this.props;
+    const {field, children, onCommit, onCancel, onFocus, onPopupActive} = this.props;
     return (
       <div className="composite-control">
       {children.map((child,idx) => {
@@ -27,6 +27,7 @@ export default class CompositeControl extends React.Component {
             onFocus: () => {
               onFocus(idx)
             },
+            onPopupActive,
             onCancel
           }
           if (child.props.onCommit){

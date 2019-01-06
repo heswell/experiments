@@ -1,10 +1,14 @@
 import React from 'react';
+import cx from 'classnames';
 import Control from './leggy-control';
 
 export default class Field extends React.Component {
 
   constructor(props){
     super(props)
+    this.state = {
+      popupActive: false
+    }
     this.control = React.createRef();
   }
 
@@ -15,13 +19,13 @@ export default class Field extends React.Component {
     }
   }
 
-  activate(){
-    console.log(`activate field ${this.props.field.label}`)
-    if (this.control.current){
-      this.control.current.activate();
+  // activate(){
+  //   console.log(`activate field ${this.props.field.label}`)
+  //   if (this.control.current){
+  //     this.control.current.activate();
 
-    }
-  }
+  //   }
+  // }
 
   renderChild(){
     const {field, leg, render, onCommit, onCancel, onFocusControl} = this.props;
@@ -31,7 +35,8 @@ export default class Field extends React.Component {
     let child = render(field, leg);
     const props = {
       ref: this.control,
-      onCancel: () => onCancel(field)
+      onCancel: () => onCancel(field),
+      onPopupActive: popupActive => this.setState({popupActive})
     }
     if (child.props.onCommit){
       const _commit = child.props.onCommit;
@@ -55,9 +60,12 @@ export default class Field extends React.Component {
 
   render(){
     const {field, onKeyDown, onClick} = this.props;
+    const className = cx("field", {
+      "popup-active": this.state.popupActive
+    })
 
     return (
-      <div ref={this.el} className="field" 
+      <div ref={this.el} className={className} 
         data-idx={field.tabIdx}
         onClickCapture={e => onClick(field)}
         onKeyDownCapture={onKeyDown}>

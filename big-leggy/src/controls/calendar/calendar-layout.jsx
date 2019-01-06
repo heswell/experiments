@@ -2,13 +2,13 @@ import React from 'react';
 import cx from 'classnames';
 import dateFns from 'date-fns';
 import * as StateEvt from '../../state-machinery/state-events';
-import CalendarModel, {getDates, getCalendarClassNames} from './calendar-model';
 import {getKeyboardEvent} from '../../utils/key-code';
+import CalendarModel, {getDates, getCalendarClassNames} from './calendar-model';
 
 import './calendar.css';
 
-const NAVIGATION_PATTERN = /^(home|end|page-up|page-down|down|up|right|left)$/
-const isNavigationEvent = stateEvt => NAVIGATION_PATTERN.test(stateEvt.type);
+const DATE_NAVIGATION_PATTERN = /^(home|end|page-up|page-down|down|up|right|left)$/
+const isNavigationEvent = stateEvt => DATE_NAVIGATION_PATTERN.test(stateEvt.type);
 
 export default class Calendar extends React.Component {
 
@@ -62,7 +62,7 @@ export default class Calendar extends React.Component {
     const stateEvt = getKeyboardEvent(e);
     const {model} = this;
     if (stateEvt){
-      console.log(`CalendarLayout.getKeyboardEvent ${JSON.stringify(stateEvt)}`)
+      console.log(`CalendarLayout.handleKeyDown ${JSON.stringify(stateEvt)}`)
       if (stateEvt === StateEvt.ESC){
         this.props.onCancel()
       } else if (stateEvt === StateEvt.ENTER){

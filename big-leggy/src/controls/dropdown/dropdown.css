@@ -9,7 +9,7 @@
   font-size: .8125rem;
 }
 
-.dropdown-showing {
+.composite-item .dropdown-showing {
   box-shadow: 0 0 0 2px #8fb3e3;
   z-index: 2;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames'
-import env from '../utils/browser';
+import env from '../../utils/browser';
 
 export default class Dropdown extends React.Component {
 
@@ -29,6 +29,7 @@ export default class Dropdown extends React.Component {
       
     } else {
       this.el = React.createRef();
+      this.childComponent = React.createRef();
       this.documentClickListener = evt => this.handleClickAway(evt);
       this.listenforClickAway(true);
     }
@@ -55,6 +56,14 @@ export default class Dropdown extends React.Component {
     }
   }
 
+  focus(){
+    if (env.isElectron){
+
+    } else {
+      this.childComponent.current.focus();
+    }
+  }
+
   render(){
     const {className, position: {top,left,width,height}, children, onCommit, onCancel} = this.props;
 
@@ -66,6 +75,7 @@ export default class Dropdown extends React.Component {
           className={cx("control-dropdown", className)}
           style={{top:top+height,left, width}}>
           {React.cloneElement(children, {
+            ref: this.childComponent,
             onCommit,
             onCancel 
           })}

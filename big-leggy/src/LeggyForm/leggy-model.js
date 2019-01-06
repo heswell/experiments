@@ -126,7 +126,7 @@ export default class LeggyModel {
         return next;
       }
     }
-    // returning null will inactivate the form, only TAB can do that
+    // returning null will inactivate the form, we only want TAB to do that
     return evt.type === TAB ? null : field2;
   }
 

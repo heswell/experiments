@@ -1,9 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
+import * as StateEvt from '../state-machinery/state-events';
+import {getKeyboardEvent} from '../utils/key-code';
+
 import * as Key from '../utils/key-code';
 
 import './combo-box.css';
+
+const LIST_NAVIGATION_PATTERN = /^(home|end|page-up|page-down|down|up)$/
+const isNavigationEvent = stateEvt => LIST_NAVIGATION_PATTERN.test(stateEvt.type);
 
 export default class ComboBox extends React.Component {
 
@@ -14,16 +20,21 @@ export default class ComboBox extends React.Component {
       value: this.props.value || '',
       initialValue: this.props.value,
       position: null,
-      selectedIdx: null,
       values: props.availableValues
     }
+
+    this.ignoreBlur = false;
+
     this.inputEl = React.createRef();
     this.dataList = React.createRef();
+    this.dropdown = React.createRef();
+
     this.onChange = this.onChange.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.onFocus = this.onFocus.bind(this);
     this.onClick = this.onClick.bind(this);
+    this.onCancel = this.onCancel.bind(this);
     this.onSelect = this.onSelect.bind(this);
 
     this.documentClickListener = evt => this.handleClickAway(evt);
@@ -54,12 +65,17 @@ export default class ComboBox extends React.Component {
   render(){
     const {onChange, onKeyDown, onBlur} = this;
     const {values} = this.state;
+
+    const className = cx('control-text', {
+      'dropdown-showing': this.state.open
+    })
+
     return (
       <>
         <input
           ref={this.inputEl}
           type="text" 
-          className="control-text"
+          className={className}
           value={this.state.value}
           onChange={onChange}
           onKeyDown={onKeyDown}
@@ -69,11 +85,13 @@ export default class ComboBox extends React.Component {
           list={this._id}
         />
         {this.state.open && (
-          <Dropdown
-            values={values}
-            hilightedValue={this.state.selectedIdx}
-            position={this.state.position}
-            onSelect={this.onSelect}/>
+          <Dropdown ref={this.dropdown} position={this.state.position}>
+            <List
+              values={values}
+              hilightedValue={this.state.selectedIdx}
+              onCommit={this.onSelect}
+              onCancel={this.onCancel}/>
+          </Dropdown>
         )}
       </>
     )
@@ -108,9 +126,7 @@ export default class ComboBox extends React.Component {
     const el = this.inputEl.current;
     if (evt.target !== el && !el.contains(evt.target)){
       if (this.state.open){
-        this.setState({open: false}, () => {
-          this.listenforClickAway(false);
-        });
+        this.onCancel(); // should this cancel or simple close ?
       }
     }
   }
@@ -132,10 +148,21 @@ export default class ComboBox extends React.Component {
     this.commit(value);
   }
 
+  onCancel(){
+    this.setState({
+      value: this.state.initialValue,
+      open: false
+    }, () => {
+      this.listenforClickAway(false);
+      this.props.onPopupActive(false);
+    });
+    this.props.onCancel()
+  }
+
   onKeyDown(e){
     const {keyCode} = e;
     const open = this.state.open;
-    
+    console.log(`[ComboBox] onKeyDown open=${open}`)
     if (keyCode === Key.ENTER){
       if (this.state.open && this.state.selectedIdx !== null){
         const value = this.state.values[this.state.selectedIdx];
@@ -149,21 +176,25 @@ export default class ComboBox extends React.Component {
       }
 
     } else if (keyCode === Key.ESC){
-      this.setState({
-        value: this.state.initialValue,
-        open: false
-      });
+      this.onCancel();
     } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
-      this.navigateSuggestions(keyCode)
+      this.focusDropdown();
     }
   }
 
+  focusDropdown(){
+    this.ignoreBlur = true;
+    this.dropdown.current.focus();
+    this.props.onPopupActive(true);
+  }
+
   onBlur(e){
-    if (this.state.value !== this.state.initialValue){
+    if (!this.ignoreBlur && this.state.value !== this.state.initialValue){
+      console.log(`[ComboBox] onBlur => commit`)
       this.commit();
     }
   }
-  
+
   commit(value=this.state.value){
     const wasOpen = this.state.open;
     this.setState({
@@ -174,32 +205,13 @@ export default class ComboBox extends React.Component {
     }, () => {
       if (wasOpen){
         this.listenforClickAway(false);
+        this.props.onPopupActive(false);
       }
       this.props.onCommit(this.state.value);
     })
+    this.ignoreBlur = false;
   }
 
-  navigateSuggestions(keyCode){
-    const {availableValues: suggestions} = this.props;
-    let {selectedIdx} = this.state;
-    if (keyCode === Key.UP){
-      if (!selectedIdx){
-        selectedIdx = suggestions.length-1;
-      } else {
-        selectedIdx -= 1;
-      }
-    } else {
-      if (selectedIdx === null){
-        selectedIdx = 0;
-      } else if (selectedIdx === suggestions.length-1){
-        selectedIdx = 0;
-      } else {
-        selectedIdx += 1;
-      }
-    }
-
-    this.setState({selectedIdx})
-  }
 }
 
 ComboBox.defaultProps = {
@@ -215,24 +227,117 @@ ComboBox.defaultProps = {
   ]
 }
 
-class Dropdown extends React.Component {
+class List extends React.Component {
+
+  constructor(props){
+    super(props);
+
+    this.selectedIdx = -1;
+    this.listElement = React.createRef();
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.navigateSuggestions = this.navigateSuggestions.bind(this);
+  }
 
   render(){
-    const {values, hilightedValue, position: {top,left,width,height}, onSelect} = this.props;
-    const dropdownClassName = "combo-box-dropdown-list"
+    const {values, hilightedValue,onCommit} = this.props;
+    const dropdownClassName = "list"
 
-    return ReactDOM.createPortal(
-      <ul className={dropdownClassName} style={{top:top+height,left, width}}>
+    return (
+        <ul className={dropdownClassName} ref={this.listElement}>
         {values.map((value,idx) => (
-          <li key={idx}
+          <li key={idx} 
+            tabIndex={0}
+            data-idx={idx}
             className={cx("list-item", {
               highlighted: idx === hilightedValue
-            })} 
-            onClick={() => onSelect(value)}>
+            })}
+            onKeyDown={this.handleKeyDown}
+            onClick={() => onCommit(value)}>
             <span>{value}</span>
           </li>
         ))}
-      </ul>, 
+      </ul>
+    )
+  }
+
+  focus(){
+    this.setCurrentListItem(0);
+  }
+
+  handleKeyDown(e){
+    const stateEvt = getKeyboardEvent(e);
+    if (stateEvt){
+      console.log(`List.handleKeyDown ${JSON.stringify(stateEvt)}`)
+      if (stateEvt === StateEvt.ESC){
+        this.props.onCancel()
+      } else if (stateEvt === StateEvt.ENTER){
+        const {selectedIdx} = this;
+        const {values} = this.props;
+        this.props.onCommit(values[selectedIdx])
+      } else if (isNavigationEvent(stateEvt)){
+        e.stopPropagation();
+        this.navigateSuggestions(e.keyCode)
+      } 
+    }
+  }
+
+  navigateSuggestions(keyCode){
+    const {values} = this.props;
+    let {selectedIdx} = this;
+    if (keyCode === Key.UP){
+      if (!selectedIdx){
+        selectedIdx = values.length-1;
+      } else {
+        selectedIdx -= 1;
+      }
+    } else {
+      if (selectedIdx === null){
+        selectedIdx = 0;
+      } else if (selectedIdx === values.length-1){
+        selectedIdx = 0;
+      } else {
+        selectedIdx += 1;
+      }
+    }
+
+    this.setCurrentListItem(selectedIdx)
+  }
+
+  setCurrentListItem(selectedIdx){
+    if (this.selectedIdx !== selectedIdx){
+      const listItemElement = this.listElement.current.querySelector(`.list-item[data-idx = '${selectedIdx}']`)
+      if (listItemElement){
+        console.log(`focus listItem`)
+        listItemElement.focus();
+      }
+      this.selectedIdx = selectedIdx;
+    }
+  }
+  
+}
+
+
+class Dropdown extends React.Component {
+
+  constructor(props){
+    super(props)
+    this.childComponent = React.createRef();
+  }
+
+  focus(){
+    this.childComponent.current.focus();
+  }
+
+  render(){
+    const {position: {top,left,width,height}, children: component} = this.props;
+    const className = "dropdown"
+
+    return ReactDOM.createPortal(
+      <div className={className} style={{top:top+height,left, width}}>
+        {React.cloneElement(component, {
+          ref: this.childComponent
+        })}
+      </div>,
       document.body
     )
   }

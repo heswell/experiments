@@ -1,4 +1,4 @@
-@import './dropdown.css';
+@import '../dropdown/dropdown.css';
 
 .combo-box-dropdown-list .list-item {
   line-height: 1.25rem;

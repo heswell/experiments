@@ -38,7 +38,13 @@
 }
 
 .field:focus-within {
-  outline: -webkit-focus-ring-color auto 2px;
+  box-shadow: 0 0 0 2px rgb(125, 173, 217);
+  z-index: 2;
+}
+
+.field.popup-active {
+  box-shadow: 0 0 0 2px rgba(125, 173, 217, .6);
+  z-index: 2;
 }
 
 .empty-row .field {

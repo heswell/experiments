@@ -141,7 +141,7 @@ export class LeggyForm extends React.Component {
   handleCommit(field){
     const {event} = this.currentState;
     if (event !== StateEvt.TAB){
-      console.log(`handleCommit ${JSON.stringify(field)} ${this.state.model.compositeFieldIdx}`)
+      console.log(`[leggy-form] handleCommit ${JSON.stringify(field)} ${this.state.model.compositeFieldIdx}`)
       // if commit was triggered by blur, because user used TAB, transition has already happened.
       this.stateTransition({...StateEvt.COMMIT, field});  
     }
