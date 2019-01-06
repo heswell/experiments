@@ -1,6 +1,5 @@
 import React from 'react';
 import cx from 'classnames';
-import Model from './leggy-model';
 import { Machine} from 'xstate';
 import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
@@ -29,7 +28,9 @@ export class LeggyForm extends React.Component {
     this.ignoreFocus = false;
     this.el = React.createRef();
     this.fieldRefs = [];
-    const model = new Model(this.props.config, this.props.data.legs.length);
+
+    const {model} = props;
+
     this.state = {
       model,
       rowIdx: 0,
@@ -83,18 +84,17 @@ export class LeggyForm extends React.Component {
 
   render(){
     const {model} = this.state;
-    const fieldList = model.buildFieldList();
 
     return (
       <div className="leggy-form" ref={this.el}>
         <div className="add-leg-bar"><span>+</span></div>
-        {this.buildRows(fieldList)}
+        {this.buildRows(model)}
       </div>
     )
   }
 
-  buildRows(fieldList){
-    return fieldList.map((row,idx) => {
+  buildRows(model){
+    return model.rows.map((row,idx) => {
       const className = cx('field-row', {
         'head-row': idx === 0,
         'empty-row': row.isEmpty
@@ -105,6 +105,7 @@ export class LeggyForm extends React.Component {
            <div className="field-label">{row.label}</div>
           }
           {row.fields.map((field, idx) => 
+            // maybe handle all these at the top level rather than register handlers on every field ?
             <Field key={idx}
               ref={this.createFieldRef}
               leg={idx}
@@ -125,7 +126,8 @@ export class LeggyForm extends React.Component {
 
 
   handleFocus(field, compositeFieldIdx){
-    if (!this.ignoreFocus){
+    console.log(`[leggy-form] handleFocus ignoreFocus=${this.ignoreFocus}`)
+    if (!this.ignoreFocus || field !== this.state.model.currentField){
       const stateEvt = {
         ...StateEvt.CLICK,
         field,
@@ -200,7 +202,7 @@ export class LeggyForm extends React.Component {
     console.log(`setCompositeField ${idx}`)
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
-      console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx}`);
+      // console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx}`);
       this.ignoreFocus = true;
       fieldComponent.focus(idx)
     }

@@ -16,7 +16,7 @@ export default class TextInput extends React.Component {
   }
 
   focus(){
-    console.log(`==> focus<TextInput>`)
+    console.log(`==> [TextInput] focus`)
     if (this.inputEl.current){
       this.inputEl.current.focus();
       this.inputEl.current.select();
@@ -40,7 +40,7 @@ export default class TextInput extends React.Component {
   }
 
   onFocus(){
-    console.log(`onFocus<TextInput> ==>`)
+    console.log(`[TextInput] onFocus ==>`)
     // call onFocus props
     if (this.props.onFocus){
       this.props.onFocus()

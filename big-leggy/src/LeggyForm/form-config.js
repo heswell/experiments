@@ -37,7 +37,7 @@ const Field4 = {id: 'field4', label: 'Field 4', getValue: getLegValue('field4'),
 const Field5 = {id: 'field5', label: 'Field 5', getValue: getLegValue('field5'), type: TEXT, layout: MultiCellEdit}
 const Field7 = {
   id: 'field7',
-  label: 'Field 7 (T + C)',
+  label: 'Field 7 (T/C)',
   getValue: getLegValue('field7'),
   type: [TEXT, COMBO],
   layout: MultiCellEdit
@@ -47,7 +47,7 @@ const Field9 = {id: 'field9', label: 'Field 9', getValue: getLegValue('field9'),
 
 const Field10 = {
   id: 'field10',
-  label: 'Field 10 (D + C)',
+  label: 'Field 10 (D/C)',
   getValue: getLegValue('field10'),
   type: [DATE, COMBO],
   layout: MultiCellEdit
@@ -62,7 +62,7 @@ const Field11 = {
 
 const Field12 = {
   id: 'field12',
-  label: 'Field 10 (T + D + C)',
+  label: 'Field 10 (T/D/C)',
   getValue: getLegValue('field12'),
   type: [TEXT, DATE, COMBO],
   layout: SingleCellEdit

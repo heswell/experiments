@@ -101,3 +101,14 @@
   align-items: center;
   justify-content: center;
 }
+
+.debug-panel {
+  display: flex;
+  align-items:center;
+  font-size: 12px;
+}
+
+.debug-panel span {
+  flex: 1 1 0;
+  line-height: 24px;
+}

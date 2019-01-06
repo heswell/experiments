@@ -9,6 +9,7 @@ import {TEXT, COMBO} from '../fields';
 const stateOptions = {
   actions: {
     setField: (model, evt) => model.setCurrentField(evt.field),
+    resetField: model => model.currentField = null,
     setNextField: (m,e) => m.setNextField(e, e.field),
     setNextCompositeField: model => model.setNextCompositeFieldType(),
     resetCompositeType: model => model.compositeFieldIdx = 0
@@ -131,6 +132,20 @@ describe('state machines',() => {
     const state = transition(stateMachine, {edit: {editComposite: 'selector'}}, {type: 'commit'}, model);
     expect(state.value).toEqual({focus: "focusTextInput"})
     expect(model.currentField).toEqual(nextField)
+  })
+
+  test('from last field of layout, TAB ', () => {
+
+    const m = {
+      ...model,
+      nextField: () => null
+    }
+
+    const stateMachine = new Machine(states, stateOptions, m);
+    model.compositeFieldIdx = 1;
+    const state = transition(stateMachine, {focus: 'focusTextInput'}, {type: 'tab'}, m);
+    expect(state.value).toEqual('inactive')
+    expect(m.currentField).toBeNull()
   })
 
 })
