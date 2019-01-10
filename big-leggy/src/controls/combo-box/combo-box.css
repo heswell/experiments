@@ -1,0 +1,18 @@
+.dropdown {
+  z-index: 10;
+  position: absolute;
+  background-color: white;
+  min-width: 100px;
+}
+
+.dropdown .list {
+  width: 100%;
+}
+
+.control-dropdown {
+  min-width: 100px;
+}
+
+.combo-input {
+  background-color: aquamarine;
+}

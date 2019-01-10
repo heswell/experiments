@@ -1,35 +1,7 @@
 import {app, BrowserWindow, ipcMain} from 'electron'
+import {createModal, destroyModal} from '../window-utils/modal-window';
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-let modalWindow
-let registeredModalOwner
-
-ipcMain.on('ping', (evt, arg) => {
-  console.log(`message from renderer ${arg}`)
-  if (arg === 'hello'){
-    evt.sender.send('pong', 'Hello, Buddy')
-  }
-})
-
-
-ipcMain.on('modal.register', (evt, arg) => {
-  console.log(`register modal ${arg}`)
-  registeredModalOwner = evt.sender
-})
-
-ipcMain.on('modal.calendar', (evt, arg) => {  
-  console.log(`[main.js] message from modal.calendar ${JSON.stringify(arg)}`)
-  registeredModalOwner.send('modal.calendar', arg)
-  modalWindow.destroy()
-  modalWindow = null;
-  registeredModalOwner = null;
-})
-
-ipcMain.on('open.modal', (evt, {url, position}) => {
-  createModal(url, position)
-})
 
 ipcMain.on('window-resize', (evt, size) => {
   if (mainWindow){
@@ -37,35 +9,10 @@ ipcMain.on('window-resize', (evt, size) => {
   }
 })
 
-
-function createModal(url, position){
-
-  console.log(JSON.stringify(position))
+ipcMain.on('open.modal', (evt, {url, options}) => {
   const {x,y} = mainWindow.getBounds();
-
-  modalWindow = new BrowserWindow({
-    x: x + position.left , 
-    y: y + position.top + 24, // whats the 24 ? is it the height of the window title ?
-    width: position.width,
-    height: position.height,
-    frame: false,
-    // show: false,
-    webPreferences: {
-      preload: `${__dirname}/preload.js`
-    }
-
-  })
-  modalWindow.webContents.loadURL(url)
-  //modalWindow.webContents.openDevTools()
-
-  modalWindow.on('blur', () => {
-    modalWindow.destroy()
-    modalWindow = null;
-    registeredModalOwner.send('modal.calendar', {type: 'cancel'})
-    registeredModalOwner = null;
-  })
-
-}
+  createModal(url, options, {x,y});
+})
 
 function createWindow () {
   // Create the browser window.
@@ -90,6 +37,7 @@ function createWindow () {
   })
 
   mainWindow.on('closed', () => {
+    destroyModal();
     mainWindow = null
   })
 

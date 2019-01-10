@@ -106,7 +106,8 @@ module.exports = {
   // In production, we only want to load the app code.
   entry:{
     index: paths.appIndexJs,
-    calendar: paths.calendarJs
+    calendar: paths.calendarJs,
+    list: paths.listJs
   },
   output: {
     // The build folder.
@@ -388,6 +389,12 @@ module.exports = {
       chunks: ['calendar'],
       template: paths.appHtml,
       filename: 'calendar.html'
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['list'],
+      template: paths.appHtml,
+      filename: 'list.html'
     }),
 
     // Inlines the webpack runtime script. This script is too small to warrant

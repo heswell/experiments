@@ -1,15 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import cx from 'classnames';
-import * as StateEvt from '../state-machinery/state-events';
-import {getKeyboardEvent} from '../utils/key-code';
-
-import * as Key from '../utils/key-code';
+import Dropdown from '../dropdown';
+import List from '../list';
+import * as Key from '../../utils/key-code';
 
 import './combo-box.css';
-
-const LIST_NAVIGATION_PATTERN = /^(home|end|page-up|page-down|down|up)$/
-const isNavigationEvent = stateEvt => LIST_NAVIGATION_PATTERN.test(stateEvt.type);
 
 export default class ComboBox extends React.Component {
 
@@ -37,6 +32,7 @@ export default class ComboBox extends React.Component {
     this.onCancel = this.onCancel.bind(this);
     this.onSelect = this.onSelect.bind(this);
 
+    // TODO move into generic Selector 
     this.documentClickListener = evt => this.handleClickAway(evt);
   }
 
@@ -58,15 +54,11 @@ export default class ComboBox extends React.Component {
     this.props.onFocus();
   }
 
-  activate(){
-    console.log(`activate this Combo`)
-  }
-
   render(){
     const {onChange, onKeyDown, onBlur} = this;
     const {values} = this.state;
 
-    const className = cx('control-text', {
+    const className = cx('control-text', 'combo-input', {
       'dropdown-showing': this.state.open
     })
 
@@ -85,12 +77,15 @@ export default class ComboBox extends React.Component {
           list={this._id}
         />
         {this.state.open && (
-          <Dropdown ref={this.dropdown} position={this.state.position}>
+          <Dropdown ref={this.dropdown}
+            componentName="List"
+            position={this.state.position}
+            onCommit={this.onSelect}
+            onCancel={this.onCancel}>
             <List
               values={values}
               hilightedValue={this.state.selectedIdx}
-              onCommit={this.onSelect}
-              onCancel={this.onCancel}/>
+              />
           </Dropdown>
         )}
       </>
@@ -211,7 +206,6 @@ export default class ComboBox extends React.Component {
     })
     this.ignoreBlur = false;
   }
-
 }
 
 ComboBox.defaultProps = {
@@ -225,120 +219,4 @@ ComboBox.defaultProps = {
     "Python",
     "Ruby"
   ]
-}
-
-class List extends React.Component {
-
-  constructor(props){
-    super(props);
-
-    this.selectedIdx = -1;
-    this.listElement = React.createRef();
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.navigateSuggestions = this.navigateSuggestions.bind(this);
-  }
-
-  render(){
-    const {values, hilightedValue,onCommit} = this.props;
-    const dropdownClassName = "list"
-
-    return (
-        <ul className={dropdownClassName} ref={this.listElement}>
-        {values.map((value,idx) => (
-          <li key={idx} 
-            tabIndex={0}
-            data-idx={idx}
-            className={cx("list-item", {
-              highlighted: idx === hilightedValue
-            })}
-            onKeyDown={this.handleKeyDown}
-            onClick={() => onCommit(value)}>
-            <span>{value}</span>
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
-  focus(){
-    this.setCurrentListItem(0);
-  }
-
-  handleKeyDown(e){
-    const stateEvt = getKeyboardEvent(e);
-    if (stateEvt){
-      console.log(`List.handleKeyDown ${JSON.stringify(stateEvt)}`)
-      if (stateEvt === StateEvt.ESC){
-        this.props.onCancel()
-      } else if (stateEvt === StateEvt.ENTER){
-        const {selectedIdx} = this;
-        const {values} = this.props;
-        this.props.onCommit(values[selectedIdx])
-      } else if (isNavigationEvent(stateEvt)){
-        e.stopPropagation();
-        this.navigateSuggestions(e.keyCode)
-      } 
-    }
-  }
-
-  navigateSuggestions(keyCode){
-    const {values} = this.props;
-    let {selectedIdx} = this;
-    if (keyCode === Key.UP){
-      if (!selectedIdx){
-        selectedIdx = values.length-1;
-      } else {
-        selectedIdx -= 1;
-      }
-    } else {
-      if (selectedIdx === null){
-        selectedIdx = 0;
-      } else if (selectedIdx === values.length-1){
-        selectedIdx = 0;
-      } else {
-        selectedIdx += 1;
-      }
-    }
-
-    this.setCurrentListItem(selectedIdx)
-  }
-
-  setCurrentListItem(selectedIdx){
-    if (this.selectedIdx !== selectedIdx){
-      const listItemElement = this.listElement.current.querySelector(`.list-item[data-idx = '${selectedIdx}']`)
-      if (listItemElement){
-        console.log(`focus listItem`)
-        listItemElement.focus();
-      }
-      this.selectedIdx = selectedIdx;
-    }
-  }
-  
-}
-
-
-class Dropdown extends React.Component {
-
-  constructor(props){
-    super(props)
-    this.childComponent = React.createRef();
-  }
-
-  focus(){
-    this.childComponent.current.focus();
-  }
-
-  render(){
-    const {position: {top,left,width,height}, children: component} = this.props;
-    const className = "dropdown"
-
-    return ReactDOM.createPortal(
-      <div className={className} style={{top:top+height,left, width}}>
-        {React.cloneElement(component, {
-          ref: this.childComponent
-        })}
-      </div>,
-      document.body
-    )
-  }
 }

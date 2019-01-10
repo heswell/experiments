@@ -13,19 +13,10 @@ export default class Field extends React.Component {
   }
 
   focus(idx){
-    console.log(`focus field ${this.props.field.label}`)
     if (this.control.current && this.control.current.focus) {
       this.control.current.focus(idx)
     }
   }
-
-  // activate(){
-  //   console.log(`activate field ${this.props.field.label}`)
-  //   if (this.control.current){
-  //     this.control.current.activate();
-
-  //   }
-  // }
 
   renderChild(){
     const {field, leg, render, onCommit, onCancel, onFocusControl} = this.props;

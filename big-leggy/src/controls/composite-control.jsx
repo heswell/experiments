@@ -4,6 +4,9 @@ export default class CompositeControl extends React.Component {
   constructor(props){
     super(props);
     this.childRefs = [];
+    this.state = {
+      value: []
+    }
   }
   focus(idx=0){
     const component = this.childRefs[idx];
@@ -17,8 +20,19 @@ export default class CompositeControl extends React.Component {
     this.childRefs[idx] = c;
   }
 
+  commit(newValue, idx, controlCommitCallback){
+    const {field} = this.props;
+    console.log(`composite (${field.id}) commit ${idx}`)
+    this.props.onCommit(field);
+    const value = [...this.state.value];
+    value[idx] = newValue;
+    this.setState({value},() => {
+      controlCommitCallback(this.state.value)
+    })
+  }
+
   render(){
-    const {field, children, onCommit, onCancel, onFocus, onPopupActive} = this.props;
+    const {children, onCancel, onFocus, onPopupActive} = this.props;
     return (
       <div className="composite-control">
       {children.map((child,idx) => {
@@ -33,8 +47,7 @@ export default class CompositeControl extends React.Component {
           if (child.props.onCommit){
             const _commit = child.props.onCommit;
             props.onCommit = value => {
-              onCommit(field);
-              _commit(value);
+              this.commit(value, idx, _commit)
             }
           }
           const component = React.cloneElement(child, props)

@@ -1,19 +1,8 @@
-.dropdown {
-  z-index: 10;
-  position: absolute;
-  background-color: white;
-  min-width: 100px;
-}
-
 .list {
   list-style: none;
   margin:0;
   padding:0 1px;
   font-size: .8125rem;
-}
-
-.dropdown .list {
-  width: 100%;
 }
 
 .list .list-item {

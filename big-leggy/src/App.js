@@ -3,10 +3,12 @@ import formConfig from './LeggyForm/form-config';
 import FormModel from './LeggyForm/leggy-model';
 import { LeggyForm } from './LeggyForm/leggy-form';
 import TextInput from './controls/text-input';
+import Select from './controls/select';
 import DatePicker from './controls/date-picker';
+import Toggle from './controls/toggle';
 import CompositeControl from './controls/composite-control';
 import ComboBox from './controls/combo-box';
-import {COMBO, DATE} from './LeggyForm/form-config';
+import {COMBO, DATE, TOGGLE, SELECT} from './LeggyForm/form-config';
 
 import './App.css';
 
@@ -14,7 +16,8 @@ const model = {
 
   legs: [
     {
-      field1: 'tinsel'
+      field1: 'tinsel',
+      field11: 'a'
     },
     {
       field1: 'town'
@@ -53,25 +56,50 @@ class App extends Component {
     this.renderFormControl = this.renderFormControl.bind(this);
   }
 
-  onChange(field, leg, value){
-    console.log(`${field.label} [${leg}] => ${value}`)
+  onChange(field, legIdx, value){
+    console.log(`[App] onChange ${field.id} [${legIdx}] => ${value}`)
+    const {model} = this.state;
+    this.setState({
+      model: {
+        ...model,
+        legs: model.legs.map((leg,i) => 
+          i === legIdx
+            ? {...leg, [field.id]: value}
+            : leg
+        )
+      }
+    })
   }
 
-  renderFormControl(field, leg){
+  renderFormControl(field, leg, resolveType=true){
     const {type} = field;
-    if (Array.isArray(type)){
+
+    if (resolveType && field.getType){
+      console.log(`current type'`)
+      return this.renderFormControl({
+        ...field,
+        type: field.getType(this.state.model.legs[leg])
+      }, leg, false);
+    } else if (Array.isArray(type)){
       return (
         <CompositeControl field={field}>
           {type.map((type,idx) => this._renderControl(type, field, leg, idx))}
         </CompositeControl>
       )
+    } else if (typeof type === 'function'){
+      const currentType = type(this.state.model);
+      return this.renderFormControl({
+        ...field,
+        type: currentType
+      }, leg)
     } else {
       return this._renderControl(type, field, leg);
     }
   }
 
   _renderControl(type, field, leg, idx){
-
+    const {model} = this.state;
+    console.log(`[App] render ${field.id}[${leg}] ${field.getValue(model,leg, idx)}`)
     const props = {
       key: idx,
       value: field.getValue(model,leg, idx),
@@ -80,10 +108,11 @@ class App extends Component {
 
     switch (type) {
       case COMBO: return  <ComboBox {...props} />
+      case SELECT: return  <Select {...props} />
       case DATE:  return  <DatePicker {...props} />
+      case TOGGLE: return <Toggle {...props} values={field.values} shortcuts={field.shortcuts}/>
       default: return  <TextInput {...props} />
     }
-
   }
   
   render() {
@@ -103,6 +132,17 @@ class App extends Component {
           <span>{`rowIdx: ${this.state.debug.rowIdx}`}</span>
           <span>{`colIdx: ${this.state.debug.colIdx}`}</span>
           <span>{`compositeFieldIdx: ${this.state.debug.compositeFieldIdx}`}</span>
+        </div>
+        <div className="model-debug">
+          {
+            this.state.model.legs.map((leg,i) => (
+              <div key={i} className="model-leg">
+                {Object.entries(leg).map(([key, value]) => (
+                  <div key={key} className="model-leg-property">{`${key} : ${value}`}</div>
+                ))}
+              </div>
+            ))
+          }
         </div>
 
       </div>

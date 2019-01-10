@@ -1,5 +1,5 @@
 import * as Evt from '../../state-events';
-import {isTextInput, isSelect, isCombo} from '../machine-utils';
+import {navigationEvents, isTextInput, isSelect, isCombo} from '../machine-utils';
 import editTextInput from './textInput/edit-textInput'
 import editSelect from './select/edit-select'
 import editSelector from './selector/edit-selector'
@@ -18,7 +18,12 @@ const state = {
         editComposite,
         editTextInput,
         editSelector,
-        editSelect
+        editSelect,
+        editToggle: {
+            id: 'edit-toggle',
+            on: navigationEvents()
+            // TEXT => id SPACE, if key in keyMap
+        }
     }
 
 }

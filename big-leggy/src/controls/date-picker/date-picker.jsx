@@ -49,13 +49,9 @@ export default class DatePicker extends React.Component {
     this.props.onFocus();
   }
 
-  activate(){
-    console.log(`activate this Combo`)
-  }
-
   render(){
     const {onChange, onKeyDown, onBlur} = this;
-    const className = cx('control-text', {
+    const className = cx('control-text', "date-input", {
       'dropdown-showing': this.state.open
     })
     return (
@@ -72,12 +68,15 @@ export default class DatePicker extends React.Component {
           onClick={this.onClick}
           list={this._id}
         />
+        <i className="control-icon material-icons">date_range</i>
         {this.state.open && (
           <Dropdown
             className="date-picker-dropdown"
+            componentName="Calendar"
             position={this.state.position}
             onCommit={this.onSelect}
-            onCancel={this.onCancel}>
+            onCancel={this.onCancel}
+            focusOnOpen={true}>
             <Calendar ref={this.calendar}
               value={this.state.value}>
                 {formattedDate =>

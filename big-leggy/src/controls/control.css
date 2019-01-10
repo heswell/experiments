@@ -1,0 +1,14 @@
+.control-text {
+  font-size: 11px;
+}
+
+.control-icon {
+  position: absolute;
+  right: 1px;
+  top: 3px;
+  color: rgba(0,0,0,.3)
+}
+
+.control-icon.material-icons {
+  font-size: 16px;
+}

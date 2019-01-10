@@ -6,6 +6,7 @@ export const TEXT = 'TextInput'
 export const SELECT = 'Select'
 export const COMBO = 'Combo'
 export const DATE = 'Date';
+export const TOGGLE = 'Toggle';
 
 export const MultiCellEdit = 'multi-cell-edit'
 export const EditReadOnly = 'edit-readonly'  
@@ -34,7 +35,13 @@ const Field3 = {
   layout: MultiCellEdit
 }
 const Field4 = {id: 'field4', label: 'Field 4', getValue: getLegValue('field4'), type: TEXT, layout: EditEmpty}
-const Field5 = {id: 'field5', label: 'Field 5', getValue: getLegValue('field5'), type: TEXT, layout: MultiCellEdit}
+const Field5 = {
+  id: 'field5',
+  label: 'Field 5',
+  getValue: getLegValue('field5'),
+  type: SELECT,
+  layout: MultiCellEdit
+}
 const Field7 = {
   id: 'field7',
   label: 'Field 7 (T/C)',
@@ -70,12 +77,35 @@ const Field12 = {
 
 const Field13 = {
   id: 'field13',
-  label: 'Field 13 (Txt)',
+  label: 'Field 13 (T or S)',
   getValue: getLegValue('field13'),
   type: TEXT,
+  // TODO not sure if this gets copied when we use spread
+  getType(model){
+    return model.field11 === 'a'
+      ? (this.type = COMBO)
+      : (this.type = TEXT)
+    },
   layout: MultiCellEdit
 }
 
+const Field14 = {
+  id: 'field14',
+  label: 'Field 14 (Tog)',
+  getValue: getLegValue('field13'),
+  type: TOGGLE,
+  values: ['Buy', 'Sell'],
+  shortcuts: ['b', 's'],
+  layout: MultiCellEdit
+}
+
+const Field15 = {
+  id: 'field15',
+  label: 'Field 15 (Txt)',
+  getValue: getLegValue('field15'),
+  type: TEXT,
+  layout: MultiCellEdit
+}
 
 export const Empty = {id: 'empty', label: '', type: 'empty', isEmpty: true}
 
@@ -91,7 +121,7 @@ const leggyModel = {
       { 
         id: 'group-2',
         label: null,
-        fields: [Field7, Field8, Field9, Field10, Field11, Field12, Field13]
+        fields: [Field7, Field8, Field9, Field10, Field11, Field12, Field13, Field14, Field15]
       }
   ]},
 }

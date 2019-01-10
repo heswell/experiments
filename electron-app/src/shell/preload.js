@@ -1,16 +1,16 @@
 const electron = require('electron')
-const {BrowserWindow} = electron.remote;
 const _ipcRenderer = electron.ipcRenderer
 const _require = require("esm")(module)
 
 process.once('loaded', () => {
+  // does this give loaded page full access to require anything ?
   global.require = _require
-  console.log(`assign openModal`)
   global.ipcRenderer = _ipcRenderer
   global.openModal = openModal
+  var currentWindow = electron.remote.getCurrentWindow()
+  global.props = currentWindow.props;
 })
 
-function openModal(url, position){
-  console.log('open modal')
-  _ipcRenderer.send('open.modal', {url, position})
+function openModal(url, options){
+  _ipcRenderer.send('open.modal', {url, options})
 }

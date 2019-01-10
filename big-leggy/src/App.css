@@ -22,3 +22,12 @@
   border: solid 1px #ccc;
   width: 100px;
 }
+
+.model-debug {
+  display: flex;
+  align-items: top;
+}
+
+.model-leg {
+  padding: 12px;
+}

@@ -81,6 +81,10 @@ module.exports = {
     calendar: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.calendarJs,
+    ],
+    list: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.listJs,
     ]
   },
   output: {
@@ -291,6 +295,12 @@ module.exports = {
       chunks: ['calendar'],
       template: paths.appHtml,
       filename: 'calendar.html'
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['list'],
+      template: paths.appHtml,
+      filename: 'list.html'
     }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
