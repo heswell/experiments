@@ -16,11 +16,11 @@ const model = {
 
   legs: [
     {
-      field1: 'tinsel',
+      field01: 'tinsel',
       field11: 'a'
     },
     {
-      field1: 'town'
+      field01: 'town'
     }
   ]
 
@@ -57,7 +57,6 @@ class App extends Component {
   }
 
   onChange(field, legIdx, value){
-    console.log(`[App] onChange ${field.id} [${legIdx}] => ${value}`)
     const {model} = this.state;
     this.setState({
       model: {
@@ -75,7 +74,6 @@ class App extends Component {
     const {type} = field;
 
     if (resolveType && field.getType){
-      console.log(`current type'`)
       return this.renderFormControl({
         ...field,
         type: field.getType(this.state.model.legs[leg])
@@ -99,7 +97,6 @@ class App extends Component {
 
   _renderControl(type, field, leg, idx){
     const {model} = this.state;
-    console.log(`[App] render ${field.id}[${leg}] ${field.getValue(model,leg, idx)}`)
     const props = {
       key: idx,
       value: field.getValue(model,leg, idx),
@@ -137,8 +134,8 @@ class App extends Component {
           {
             this.state.model.legs.map((leg,i) => (
               <div key={i} className="model-leg">
-                {Object.entries(leg).map(([key, value]) => (
-                  <div key={key} className="model-leg-property">{`${key} : ${value}`}</div>
+                {Object.keys(leg).sort().map((key) => (
+                  <div key={key} className="model-leg-property">{`${key} : ${leg[key]}`}</div>
                 ))}
               </div>
             ))

@@ -30,6 +30,7 @@ export default class Toggle extends React.Component {
   } 
 
    handleKeyDown(e){
+     console.log(`[Toggle] handleKeyDown`)
     const {keyMap} = this;
     if (e.keyCode === Key.ENTER){
       e.stopPropagation()
@@ -46,7 +47,6 @@ export default class Toggle extends React.Component {
    }
 
    focus(){
-    console.log(`==> [Toggle] focus`)
     if (this.inputEl.current){
       this.inputEl.current.focus();
     }

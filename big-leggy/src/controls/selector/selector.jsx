@@ -14,8 +14,7 @@ export default class Selector extends React.Component {
       open: false,
       value: this.props.value || '',
       initialValue: this.props.value,
-      position: null,
-      values: props.availableValues
+      position: null
     }
 
     this.ignoreBlur = false;
@@ -31,13 +30,20 @@ export default class Selector extends React.Component {
     this.onCancel = this.onCancel.bind(this);
     this.onSelect = this.onSelect.bind(this);
 
-    this.documentClickListener = evt => this.handleClickAway(evt);
   }
 
   componentDidMount(){
     if (this.inputEl.current){
       const {top, left, width, height} = this.inputEl.current.getBoundingClientRect();
       this.setState({position: {top,left,width,height}})
+    }
+  }
+
+  componentWillReceiveProps(nextProps){
+    if (nextProps.value !== this.props.value){
+      this.setState({
+        value: nextProps.value
+      })
     }
   }
 
@@ -56,9 +62,13 @@ export default class Selector extends React.Component {
 
   render(){
     const {onKeyDown, onBlur, onFocus, onClick} = this;
-    const {values} = this.state;
+    const {
+      inputClassName,
+      children: childComponent,
+      onChange
+    } = this.props;
 
-    const className = cx('control-text', 'combo-input', {
+    const className = cx('control-text', inputClassName, {
       'dropdown-showing': this.state.open
     })
 
@@ -67,18 +77,23 @@ export default class Selector extends React.Component {
       onKeyDown,
       onBlur,
       onFocus,
-      onClick
+      onClick,
+      className: cx("control-text", inputClassName, 
+      childComponent ? childComponent.props.className : null,
+      {
+        'dropdown-showing': this.state.open
+      })
     }
 
-    const controlText = this.props.children 
-      ? React.cloneElement(this.props.children, props)
+    const controlText = childComponent 
+      ? React.cloneElement(childComponent, props)
       : (
       <input
         {...props}
         type="text" 
         className={className}
+        onChange={onChange}
         value={this.state.value}
-        list={this._id}
       />
     )
 
@@ -92,38 +107,25 @@ export default class Selector extends React.Component {
             position={this.state.position}
             onCommit={this.onSelect}
             onCancel={this.onCancel}>
-            <List
-              values={values}
-              hilightedValue={this.state.selectedIdx}
-              />
+            {this.renderDropdownComponent()}
           </Dropdown>
         )}
       </>
     )
   }
 
-  listenforClickAway(listen){
-    if (listen){
-      document.body.addEventListener('click',this.documentClickListener,true);
-    } else {
-      document.body.removeEventListener('click',this.documentClickListener,true);
-    }
-  }
-
-  handleClickAway(evt){
-    const el = this.inputEl.current;
-    if (evt.target !== el && !el.contains(evt.target)){
-      if (this.state.open){
-        this.onCancel(); // should this cancel or simple close ?
-      }
-    }
+  renderDropdownComponent(){
+    return (
+      <List
+      values={this.props.availableValues}
+      hilightedValue={this.state.selectedIdx}
+      />
+    )
   }
 
   onClick(){
     if (!this.state.open){
-      this.setState({open: true}, () => {
-        this.listenforClickAway(true);
-      })
+      this.setState({open: true})
     }
   }
 
@@ -136,7 +138,6 @@ export default class Selector extends React.Component {
       value: this.state.initialValue,
       open: false
     }, () => {
-      this.listenforClickAway(false);
       this.props.onPopupActive(false);
     });
     this.props.onCancel()
@@ -153,9 +154,7 @@ export default class Selector extends React.Component {
       } else if (this.state.value !== this.state.initialValue){
         this.commit();
       } else if (!open){
-        this.setState({open: true}, () => {
-          this.listenforClickAway(true);
-        })
+        this.setState({open: true})
       }
 
     } else if (keyCode === Key.ESC){
@@ -173,7 +172,7 @@ export default class Selector extends React.Component {
     this.props.onPopupActive(true);
   }
 
-  onBlur(e){
+  onBlur(){
     if (!this.ignoreBlur && this.state.value !== this.state.initialValue){
       console.log(`[Selector] onBlur => commit`)
       this.commit();
@@ -188,7 +187,6 @@ export default class Selector extends React.Component {
       initialValue: value
     }, () => {
       if (wasOpen){
-        this.listenforClickAway(false);
         this.props.onPopupActive(false);
       }
       this.props.onCommit(this.state.value);

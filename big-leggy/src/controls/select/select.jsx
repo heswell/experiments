@@ -10,8 +10,6 @@ export default class Select extends React.Component {
     this.onKeyDown = this.onKeyDown.bind(this);
   }
   render(){
-    // const {onKeyDown, onBlur} = this.props;
-    console.log(`[Select] render ${this.props.value}`)
     return (
       <Selector ref={this.selector}
         {...this.props}
@@ -19,7 +17,6 @@ export default class Select extends React.Component {
         <div tabIndex={0} className="control-text select-input">
             {this.props.value}
         </div>
-
       </Selector>
     )
   }

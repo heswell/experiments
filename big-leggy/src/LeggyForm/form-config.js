@@ -14,43 +14,43 @@ export const EditEmpty = 'edit-empty'
 export const SingleCellEdit = 'single-cell-edit'  
 
 const Field1 = {
-  id: 'field1',
+  id: 'field01',
   label: 'Field 1',
-  getValue: getLegValue('field1'),
+  getValue: getLegValue('field01'),
   type: TEXT,
   layout: MultiCellEdit
 }
 const Field2 = {
-  id: 'field2',
+  id: 'field02',
   label: 'Field 2 (Date)',
-  getValue: getLegValue('field2'),
+  getValue: getLegValue('field02'),
   type: DATE,
   layout: SingleCellEdit
 }
 const Field3 = {
-  id: 'field3',
+  id: 'field03',
   label: 'Field 3',
-  getValue: getLegValue('field3'),
+  getValue: getLegValue('field03'),
   type: COMBO,
   layout: MultiCellEdit
 }
-const Field4 = {id: 'field4', label: 'Field 4', getValue: getLegValue('field4'), type: TEXT, layout: EditEmpty}
+const Field4 = {id: 'field04', label: 'Field 4', getValue: getLegValue('field04'), type: TEXT, layout: EditEmpty}
 const Field5 = {
-  id: 'field5',
+  id: 'field05',
   label: 'Field 5',
-  getValue: getLegValue('field5'),
+  getValue: getLegValue('field05'),
   type: SELECT,
   layout: MultiCellEdit
 }
 const Field7 = {
-  id: 'field7',
+  id: 'field07',
   label: 'Field 7 (T/C)',
-  getValue: getLegValue('field7'),
+  getValue: getLegValue('field07'),
   type: [TEXT, COMBO],
   layout: MultiCellEdit
 }
-const Field8 = {id: 'field8', label: 'Field 8', getValue: getLegValue('field8'), type: TEXT, layout: MultiCellEdit}
-const Field9 = {id: 'field9', label: 'Field 9', getValue: getLegValue('field9'), type: TEXT, layout: MultiCellEdit}
+const Field8 = {id: 'field08', label: 'Field 8', getValue: getLegValue('field08'), type: TEXT, layout: MultiCellEdit}
+const Field9 = {id: 'field09', label: 'Field 9', getValue: getLegValue('field09'), type: TEXT, layout: MultiCellEdit}
 
 const Field10 = {
   id: 'field10',

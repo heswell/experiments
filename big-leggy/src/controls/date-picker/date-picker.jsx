@@ -66,7 +66,6 @@ export default class DatePicker extends React.Component {
           onBlur={onBlur}
           onFocus={this.onFocus}
           onClick={this.onClick}
-          list={this._id}
         />
         <i className="control-icon material-icons">date_range</i>
         {this.state.open && (
@@ -77,15 +76,21 @@ export default class DatePicker extends React.Component {
             onCommit={this.onSelect}
             onCancel={this.onCancel}
             focusOnOpen={true}>
-            <Calendar ref={this.calendar}
-              value={this.state.value}>
-                {formattedDate =>
-                  <span className="calendar-day">{formattedDate}</span>
-                }
-              </Calendar>
+            {this.renderDropdownComponent()}
           </Dropdown>  
         )}
       </>
+    )
+  }
+
+  renderDropdownComponent(){
+    return (
+      <Calendar ref={this.calendar}
+        value={this.state.value}>
+        {formattedDate =>
+          <span className="calendar-day">{formattedDate}</span>
+        }
+      </Calendar>
     )
   }
 
@@ -145,7 +150,7 @@ export default class DatePicker extends React.Component {
     }
   }
 
-  onBlur(e){
+  onBlur(){
     if (this.state.value !== this.state.initialValue){
       this.commit();
     }

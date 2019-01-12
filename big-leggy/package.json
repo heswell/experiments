@@ -63,6 +63,9 @@
     "serve": "serve build -p 3000"
   },
   "eslintConfig": {
+    "rules": {
+      "no-unused-vars": ["warn", {"args": "after-used"}]
+    },
     "extends": "react-app"
   },
   "browserslist": [
