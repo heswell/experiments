@@ -14,9 +14,13 @@ export default class Select extends React.Component {
       <Selector ref={this.selector}
         {...this.props}
         onKeyDown={this.onKeyDown}>
-        <div tabIndex={0} className="control-text select-input">
-            {this.props.value}
-        </div>
+        {child =>
+          child === Selector.input && (
+            <div tabIndex={0} className="control-text select-input">
+              {this.props.value}
+            </div>
+          )
+        }
       </Selector>
     )
   }

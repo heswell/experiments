@@ -1,9 +1,7 @@
 import React from 'react';
-import cx from 'classnames';
 import dateFns from 'date-fns';
 import Calendar from '../calendar';
-import Dropdown from '../dropdown';
-import * as Key from '../../utils/key-code';
+import Selector from '../selector';
 
 import './date-picker.css';
 
@@ -15,82 +13,53 @@ export default class DatePicker extends React.Component {
       open: false,
       value: this.props.value || '',
       initialValue: this.props.value,
-      position: null,
-      selectedIdx: null,
       values: props.availableValues
     }
-    this.inputEl = React.createRef();
-    this.calendar = React.createRef();
+    this.selector = React.createRef();
     this.onChange = this.onChange.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-    this.onClick = this.onClick.bind(this);
-    this.onSelect = this.onSelect.bind(this);
-    this.onCancel = this.onCancel.bind(this);
+    this.onCommit = this.onCommit.bind(this);
 
   }
 
-  componentDidMount(){
-    if (this.inputEl.current){
-      const {top, left, width, height} = this.inputEl.current.getBoundingClientRect();
-      this.setState({position: {top,left,width,height}})
+  componentWillReceiveProps(nextProps){
+    if (nextProps.value !== this.props.value){
+      this.setState({
+        value: nextProps.value
+      })
     }
   }
 
   focus(){
-    if (this.inputEl.current){
-      this.inputEl.current.focus();
-      this.inputEl.current.select();
+    if (this.selector.current){
+      this.selector.current.focus(false)
     }
   }
 
-  onFocus(){
-    this.props.onFocus();
-  }
-
   render(){
-    const {onChange, onKeyDown, onBlur} = this;
-    const className = cx('control-text', "date-input", {
-      'dropdown-showing': this.state.open
-    })
     return (
-      <>
-        <input
-          ref={this.inputEl}
-          type="text" 
-          className={className}
-          value={this.state.value}
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          onBlur={onBlur}
-          onFocus={this.onFocus}
-          onClick={this.onClick}
-        />
-        <i className="control-icon material-icons">date_range</i>
-        {this.state.open && (
-          <Dropdown
-            className="date-picker-dropdown"
-            componentName="Calendar"
-            position={this.state.position}
-            onCommit={this.onSelect}
-            onCancel={this.onCancel}
-            focusOnOpen={true}>
-            {this.renderDropdownComponent()}
-          </Dropdown>  
-        )}
-      </>
-    )
-  }
+      <Selector ref={this.selector}
+        {...this.props}
+        value={this.state.value}
+        availableValues={this.state.values}
+        onChange={this.onChange}
+        onCommit={this.onCommit}
+        inputClassName="date-input"
+        inputIcon="date_range"
+        dropdownClassName="date-picker-dropdown"
+      >
+      {
+        child =>
+          child === Selector.dropdown && (
+            <Calendar
+              value={this.state.value}>
+              {formattedDate =>
+                <span className="calendar-day">{formattedDate}</span>
+              }
+            </Calendar>
+          )
 
-  renderDropdownComponent(){
-    return (
-      <Calendar ref={this.calendar}
-        value={this.state.value}>
-        {formattedDate =>
-          <span className="calendar-day">{formattedDate}</span>
-        }
-      </Calendar>
+      }
+      </Selector>
     )
   }
 
@@ -99,19 +68,8 @@ export default class DatePicker extends React.Component {
     return this.props.availableValues.filter(value => pattern.test(value))
   }
 
-  onClick(){
-    if (!this.state.open){
-      this.setState({open: true})
-    }
-  }
-
-  onSelect(value){
-    this.commit(dateFns.format(value,'YYYY-MM-DD'));
-  }
-
-  onCancel(){
-    this.setState({open: false})
-    this.props.onCancel()
+  onCommit(value){
+    this.props.onCommit(dateFns.format(value,'YYYY-MM-DD'));
   }
 
   onChange(e){
@@ -126,68 +84,6 @@ export default class DatePicker extends React.Component {
     })
   }
 
-  onKeyDown(e){
-    const {keyCode} = e;
-    const open = this.state.open;
-    
-    if (keyCode === Key.ENTER){
-      if (this.state.open && this.state.selectedIdx !== null){
-        const value = this.state.values[this.state.selectedIdx];
-        this.commit(value);
-      } else if (this.state.value !== this.state.initialValue){
-        this.commit();
-      } else if (!open){
-        this.setState({open: true})
-      }
-
-    } else if (keyCode === Key.ESC){
-      this.setState({
-        value: this.state.initialValue,
-        open: false
-      });
-    } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
-      this.navigateSuggestions(keyCode)
-    }
-  }
-
-  onBlur(){
-    if (this.state.value !== this.state.initialValue){
-      this.commit();
-    }
-  }
-  
-  commit(value=this.state.value){
-    this.setState({
-      open: false,
-      value: value,
-      values: this.matchingValues(value),
-      initialValue: value
-    }, () => {
-      this.props.onCommit(this.state.value);
-    })
-  }
-
-  navigateSuggestions(keyCode){
-    const {availableValues: suggestions} = this.props;
-    let {selectedIdx} = this.state;
-    if (keyCode === Key.UP){
-      if (!selectedIdx){
-        selectedIdx = suggestions.length-1;
-      } else {
-        selectedIdx -= 1;
-      }
-    } else {
-      if (selectedIdx === null){
-        selectedIdx = 0;
-      } else if (selectedIdx === suggestions.length-1){
-        selectedIdx = 0;
-      } else {
-        selectedIdx += 1;
-      }
-    }
-
-    this.setState({selectedIdx})
-  }
 }
 
 DatePicker.defaultProps = {

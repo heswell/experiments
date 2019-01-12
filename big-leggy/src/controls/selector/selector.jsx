@@ -64,13 +64,19 @@ export default class Selector extends React.Component {
     const {onKeyDown, onBlur, onFocus, onClick} = this;
     const {
       inputClassName,
-      children: childComponent,
+      inputIcon = 'keyboard_arrow_down',
+      dropdownClassName,
+      children: childRenderer,
       onChange
     } = this.props;
 
     const className = cx('control-text', inputClassName, {
       'dropdown-showing': this.state.open
     })
+
+    const childComponent = typeof childRenderer === 'function'
+      ? childRenderer(Selector.input)
+      : null;
 
     const props = {
       ref: this.inputEl,
@@ -100,9 +106,10 @@ export default class Selector extends React.Component {
     return (
       <>
         {controlText}
-        <i className="control-icon material-icons">keyboard_arrow_down</i>
+        {inputIcon && <i className="control-icon material-icons">{inputIcon}</i>}
         {this.state.open && (
           <Dropdown ref={this.dropdown}
+            className={dropdownClassName}
             componentName="List"
             position={this.state.position}
             onCommit={this.onSelect}
@@ -115,10 +122,15 @@ export default class Selector extends React.Component {
   }
 
   renderDropdownComponent(){
-    return (
+    const {children: childRenderer} = this.props;
+    const dropdown = typeof childRenderer === 'function'
+      ? childRenderer(Selector.dropdown)
+      : null;
+
+    return dropdown || (
       <List
-      values={this.props.availableValues}
-      hilightedValue={this.state.selectedIdx}
+        values={this.props.availableValues}
+        hilightedValue={this.state.selectedIdx}
       />
     )
   }
@@ -194,6 +206,8 @@ export default class Selector extends React.Component {
     this.ignoreBlur = false;
   }
 }
+Selector.input = 'input'
+Selector.dropdown = 'dropdown'
 
 Selector.defaultProps = {
   availableValues : [
@@ -223,3 +237,4 @@ Selector.defaultProps = {
     "Virginia"
   ]
 }
+
