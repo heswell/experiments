@@ -1,16 +1,30 @@
 .control-text {
   font-size: 11px;
+  border: none;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  right: 0px;
+  bottom: 0;
+  left: 3px;
+  width: calc(100% - 3px); /* shouldn't need it ! */
 }
+
+.control-text:focus {
+  outline: none;
+}
+
 
 .control-icon {
   position: absolute;
-  right: 1px;
+  right: 0px;
   top: 3px;
   color: rgba(0,0,0,.3)
 }
 
 .control-icon.material-icons {
   font-size: 16px;
+  text-align: right;
   width: 20px;
   overflow: hidden;
 }

@@ -4,7 +4,7 @@ const SearchTokenStatus = {
 
 const PATTERN_MATCH_ANYTHING = /\S+/;
 export const NORMAL_SPACE = String.fromCharCode(32);
-export const NB_SPACE = String.fromCharCode(168);
+export const NB_SPACE = String.fromCharCode(160);
 export const PATTERN_SPACE_ALL = new RegExp(`${NORMAL_SPACE}+`, 'g');
 export function insertNonBreakingSpaces(text) {
   return text.replace(PATTERN_SPACE_ALL, NB_SPACE);

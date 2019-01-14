@@ -1,5 +1,7 @@
 import React from 'react';
 
+import './composite-control.css';
+
 export default class CompositeControl extends React.Component {
   constructor(props){
     super(props);

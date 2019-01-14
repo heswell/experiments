@@ -147,7 +147,7 @@ export class LeggyForm extends React.Component {
     }
   }
 
-  handleCancel(field){
+  handleCancel(){
     this.stateTransition(StateEvt.ESC);
     // We may be receiving control back from focussed model, make sure focus
     // returns to field...

@@ -1,0 +1,9 @@
+.command-window {
+  max-height: 550px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0 1px 1px 1px;
+  
+}

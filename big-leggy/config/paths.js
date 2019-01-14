@@ -48,6 +48,7 @@ module.exports = {
   appIndexJs: resolveApp('src/main.js'),
   calendarJs: resolveApp('src/standalone-calendar.js'),
   listJs: resolveApp('src/standalone-list.js'),
+  commandJs: resolveApp('src/standalone-command-input.js'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   yarnLockFile: resolveApp('yarn.lock'),

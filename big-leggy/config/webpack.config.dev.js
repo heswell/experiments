@@ -85,6 +85,10 @@ module.exports = {
     list: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.listJs,
+    ],
+    command: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.commandJs,
     ]
   },
   output: {
@@ -301,6 +305,12 @@ module.exports = {
       chunks: ['list'],
       template: paths.appHtml,
       filename: 'list.html'
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['command'],
+      template: paths.appHtml,
+      filename: 'command.html'
     }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

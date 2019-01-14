@@ -64,7 +64,7 @@
   },
   "eslintConfig": {
     "rules": {
-      "no-unused-vars": ["warn", {"args": "after-used"}]
+      "no-unused-vars": ["warn", {"args": "after-used", "varsIgnorePattern": "_"}]
     },
     "extends": "react-app"
   },

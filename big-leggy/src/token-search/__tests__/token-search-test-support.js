@@ -18,7 +18,7 @@ const getSearchResults = (_, searchld, searchTerm) => {
     return Promise.reject('unknown searchld');
   }
 };
-const searchUsers = searchTerm =>
+export const searchUsers = searchTerm =>
   new Promise(resolve => {
     const searchPatterns = searchTerm.split(/\s+/).map(buildRegexFromSearchTerm);
     const searchResult = {
@@ -40,7 +40,7 @@ const searchUsers = searchTerm =>
     resolve(searchResult);
   });
 
-const searchAssets = searchTerm =>
+export const searchAssets = searchTerm =>
   new Promise(resolve => {
     const searchPatterns = searchTerm.split(/\s+/).map(buildRegexFromSearchTerm);
     const searchResult = {
@@ -53,7 +53,7 @@ const searchAssets = searchTerm =>
         const [bbgld, ric, name] = entity;
         searchResult.searchResults.push({
           value: entity.join(),
-          speedbarText: `'${bbgld} ${ric} (${name.slice(0, 2)}${ELLIPSIS}`,
+          speedbarText: `${bbgld}`,
           suggestionText: `${bbgld} ${ric} (${name})`
         });
       }
