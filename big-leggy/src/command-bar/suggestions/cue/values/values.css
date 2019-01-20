@@ -1,0 +1,26 @@
+.token-values {
+  font-size: .8125rem;
+}
+
+.token-values-header {
+  margin: 12px 0;
+}
+
+.token-values-list {
+  color: inherit;
+}
+
+.token-value-row {
+  display: flex;
+  align-items: center;
+}
+
+.token-value {
+  flex: 0 0 50px;
+  font-weight: bold;
+}
+
+.token-value-description {
+  flex: 1 1 0px;
+  white-space: nowrap;
+}

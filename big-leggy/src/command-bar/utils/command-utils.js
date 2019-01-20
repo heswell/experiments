@@ -1,5 +1,5 @@
-import { buildRegexFromSearchTerm, NB_SPACE, NORMAL_SPACE } from '../token-search/token-search';
-import TokenList from './token-list';
+import { buildRegexFromSearchTerm, NB_SPACE, NORMAL_SPACE } from '../../token-search/token-search';
+import TokenList from '../parsing/token-list';
 
 const PATTERN_SPACE = new RegExp(`${NORMAL_SPACE}+`);
 const TOKEN_SPACE_ALL = new RegExp(`${NB_SPACE}+`, 'g');
@@ -38,19 +38,24 @@ export const parseCommand = (
   searchTokens = {}
 ) => {
   const [commandState, command] = parsePrefixAndMapToCommand(commands, inputText.trimLeft())
+
   const tokenList = new TokenList(command, commandState.commandText, searchTokens);
+  const [commandTermCount, commandTermIdx] = getTermCountAndIdx(tokenList.toString())
+
   return [
     {
       ...commandState,
-      commandText: tokenList.toString()
+      commandStatus: tokenList.commandComplete
+        ? CommandStatus.CommandComplete
+        : commandState.commandStatus,
+      commandText: tokenList.toString(),
+      commandTermCount,
+      commandTermIdx
     },
     tokenList,
     command
   ];
 }
-// filter predicate for required tokens, they default to required === true
-const requiredTokensOnly = (token) => token.required !== false;
-const optionalTokensOnly = (token) => token.required === false;
 
 function parsePrefixAndMapToCommand(
   commands,
@@ -61,7 +66,6 @@ function parsePrefixAndMapToCommand(
   let commandPrefix = '';
   let partialPrefix = '';
   let commandText = '';
-  let commandTermCount = 0;
   let message = '';
 
   if (inputText !== '') {
@@ -72,7 +76,6 @@ function parsePrefixAndMapToCommand(
     if (match) {
       commandStatus = CommandStatus.PrefixValid;
       [, commandPrefix, commandText = ''] = match;
-      commandTermCount = countTokens(commandText);
     } else if (prefixes.some(partialMatch(inputText))) {
       commandStatus = CommandStatus.Incomplete;
       partialPrefix = inputText;
@@ -80,29 +83,14 @@ function parsePrefixAndMapToCommand(
       commandStatus = CommandStatus.Invalid;
       message = 'No match found';
     }
+
     if (commandStatus === CommandStatus.PrefixValid) {
       const cmdPrefix = commandPrefix.toUpperCase();
       command = commands.find(cmd => cmd.prefix.toUpperCase() === cmdPrefix);
-      if (command && command.commandTokens) {
-        // right now, the only syntax validation we can do client-side is establish that the right number
-        // of terms have been entered. We interpret commandHints as the list of required terms in the
-        // command syntax. This is an MVP implementation, to be expanded,
-        const termsRequired = command.commandTokens.filter(requiredTokensOnly).length;
-        if (commandTermCount >= termsRequired) {
-          commandStatus = CommandStatus.CommandComplete;
-        }
-      }
-    }
-    if (command === undefined) {
+    } else {
       commandPrefix = '';
     }
   }
-  const commandTermIdx =
-    commandText.trim() === ''
-      ? 0
-      : inputText[inputText.length - 1] === ' '
-        ? commandTermCount
-        : commandTermCount - 1;
 
   return [
     {
@@ -110,12 +98,21 @@ function parsePrefixAndMapToCommand(
       commandPrefix,
       partialPrefix,
       commandText,
-      commandTermCount,
-      commandTermIdx,
       message
     },
     command
   ];
+}
+
+const getTermCountAndIdx = commandText => {
+  const commandTermCount = countTokens(commandText);
+  const commandTermIdx =
+    commandText.trim() === ''
+      ? 0
+      : commandText[commandText.length - 1] === ' '
+        ? commandTermCount
+        : commandTermCount - 1;
+  return [commandTermCount, commandTermIdx];
 }
 
 export const buildPrefixList = (commands) => {

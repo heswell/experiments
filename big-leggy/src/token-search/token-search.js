@@ -1,4 +1,4 @@
-const SearchTokenStatus = {
+export const SearchTokenStatus = {
   Resolved: 'resolved'
 }
 
@@ -39,11 +39,11 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
       const nextDescriptor = descriptors[tokenldx + 1];
       suggestion = undefined;
 
-      if (descriptor.searchld) {
+      if (descriptor.searchId) {
         try {
           [token, remainingText, suggestion] = await resolveSearchToken(
             command,
-            descriptor.searchld,
+            descriptor.searchId,
             remainingText,
             searchService,
             nextDescriptor
@@ -58,8 +58,8 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
       }
       tokens.push(token);
       if (suggestion) {
-        if (descriptor.searchld) {
-          searchTokens[descriptor.searchld] = {
+        if (descriptor.searchId) {
+          searchTokens[descriptor.searchId] = {
             status: SearchTokenStatus.Resolved,
             suggestion
           };
@@ -75,7 +75,7 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
     nextToken();
   });
 
-export const resolveSearchToken = async (command, searchld, text, searchService, nextTokenDescriptor) =>
+export const resolveSearchToken = async (command, searchId, text, searchService, nextTokenDescriptor) =>
   new Promise((resolve, reject) => {
     const searchTerms = text.trim().split(/\s+/);
     const currentSearchTerms = [];
@@ -88,7 +88,7 @@ export const resolveSearchToken = async (command, searchld, text, searchService,
     const nextResult = async () => {
       currentSearchTerms.push(searchTerms.shift());
       const searchText = currentSearchTerms.join(' ');
-      const result = await searchService.getSearchResults(command, searchld, searchText);
+      const result = await searchService.getSearchResults(command, searchId, searchText);
       let resolved = false;
       if (result.searchResults.length === 0) {
         if (lastSearchResult && lastSearchResult.count === 1) {

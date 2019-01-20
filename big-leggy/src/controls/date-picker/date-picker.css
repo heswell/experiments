@@ -9,7 +9,3 @@
 .control-dropdown.date-picker-dropdown {
   min-width: 230px; 
 }
-
-.highlighted.list-item {
-  background-color: rgba(0,0,0,.1)
-}

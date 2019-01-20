@@ -3,6 +3,7 @@ import cx from 'classnames';
 import * as StateEvt from '../../state-machinery/state-events';
 import * as Key from '../../utils/key-code';
 import {getKeyboardEvent} from '../../utils/key-code';
+import {searcher} from './searcher';
 
 import './list.css';
 
@@ -14,14 +15,35 @@ export default class List extends React.Component {
   constructor(props){
     super(props);
 
-    this.selectedIdx = -1;
+    this.hilitedIdx = -1;
+        
     this.listElement = React.createRef();
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.navigateSuggestions = this.navigateSuggestions.bind(this);
+    this.setCurrentListItem = this.setCurrentListItem.bind(this);
+
+    if (props.typeaheadListNavigation){
+      this.searchKeyHandler = searcher(props.values, this.setCurrentListItem);
+    }
+
+  }
+
+  componentDidUpdate(prevProps){
+    const {hilitedIdx} = this.props;
+    if (hilitedIdx !== prevProps.hilitedIdx  &&
+        hilitedIdx !== this.hilitedIdx){
+      this.setCurrentListItem(hilitedIdx)
+    }
+  }
+
+  componentWillUnmount(){
+    if (this.searchKeyHandler){
+      this.searchKeyHandler = null;
+    }
   }
 
   render(){
-    const {values, hilightedValue,onCommit} = this.props;
+    const {values, selectedIdx, onCommit} = this.props;
     const dropdownClassName = "list"
 
     return (
@@ -31,7 +53,7 @@ export default class List extends React.Component {
             tabIndex={0}
             data-idx={idx}
             className={cx("list-item", {
-              highlighted: idx === hilightedValue
+              selected: idx === selectedIdx
             })}
             onKeyDown={this.handleKeyDown}
             onClick={() => onCommit(value)}>
@@ -46,52 +68,60 @@ export default class List extends React.Component {
     this.setCurrentListItem(0);
   }
 
+  //TODO should accept a prop that configures whether we support
+  // typeahead navigation a la Select
   handleKeyDown(e){
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
       if (stateEvt === StateEvt.ESC){
         this.props.onCancel()
       } else if (stateEvt === StateEvt.ENTER){
-        const {selectedIdx} = this;
+        const {hilitedIdx} = this;
         const {values} = this.props;
-        this.props.onCommit(values[selectedIdx])
+        this.props.onCommit(values[hilitedIdx])
       } else if (isNavigationEvent(stateEvt)){
         e.stopPropagation();
         this.navigateSuggestions(e.keyCode)
-      } 
-    }
+      } else if (this.searchKeyHandler){
+        this.searchKeyHandler(e);
+      }
+    } 
   }
 
   navigateSuggestions(keyCode){
     const {values} = this.props;
-    let {selectedIdx} = this;
+    let {hilitedIdx} = this;
     if (keyCode === Key.UP){
-      if (!selectedIdx){
-        selectedIdx = values.length-1;
+      if (!hilitedIdx){
+        hilitedIdx = values.length-1;
       } else {
-        selectedIdx -= 1;
+        hilitedIdx -= 1;
       }
     } else {
-      if (selectedIdx === null){
-        selectedIdx = 0;
-      } else if (selectedIdx === values.length-1){
-        selectedIdx = 0;
+      if (hilitedIdx === null){
+        hilitedIdx = 0;
+      } else if (hilitedIdx === values.length-1){
+        hilitedIdx = 0;
       } else {
-        selectedIdx += 1;
+        hilitedIdx += 1;
       }
     }
 
-    this.setCurrentListItem(selectedIdx)
+    this.setCurrentListItem(hilitedIdx)
   }
 
-  setCurrentListItem(selectedIdx){
-    console.log(`[List] setCurrentListItem ${selectedIdx}`)
-    if (this.selectedIdx !== selectedIdx){
-      const listItemElement = this.listElement.current.querySelector(`.list-item[data-idx = '${selectedIdx}']`)
+  setCurrentListItem(hilitedIdx){
+    if (this.hilitedIdx !== hilitedIdx){
+      const listItemElement = this.listElement.current.querySelector(`.list-item[data-idx = '${hilitedIdx}']`)
       if (listItemElement){
         listItemElement.focus();
       }
-      this.selectedIdx = selectedIdx;
+      this.hilitedIdx = hilitedIdx;
     }
   }
+}
+
+List.defaultProperties = {
+  hilitedIdx: -1,
+  selectedIdx: -1
 }

@@ -1,12 +1,13 @@
 import React from 'react';
 import cx from 'classnames';
-import { hilightSearchTermMatchesInText } from './suggestion-utils';
+import { hilightSearchTermMatchesInText } from '../../suggestion-utils';
 import './command-tooltip.css';
 
 const DEFAULT_ICON = 'arrow_forward';
 
 const styles = {
   suggestionsTooltip: 'suggestions-tooltip',
+  suggestionsTooltipHeader: 'suggestions-tooltip-header',
   suggestionsTooltipTitle: 'suggestions-tooltip-title',
   suggestionsTooltipShortcuts: 'suggestions-tooltip-shortcuts',
   suggestionsTooltipSuggestions: 'suggestions-tooltip-suggestions',
@@ -39,9 +40,7 @@ export const SuggestionsToolTip = ({
               className={cx(styles.suggestionsTooltipSuggestion, className, {
                 [styles.suggestionsTooltipSelected]: isSelected
               })}
-              // tslintrdisable jsx-no-lambda
               onClick={() => onSelect(value)}
-            // tslintrenable jsx-no-lambda
             >
               <i className={cx('material-icons',styles.suggestionsTooltipIcon)}>{icon}</i>
               <span className={styles.suggestionsTooltipCommandName}>

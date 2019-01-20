@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames'
 import * as Key from '../../utils/key-code';
-import {CommandStatus, getCommandWithPrefix} from '../command-utils';
-import {TokenMirror} from '../token-mirror'
+import { CommandStatus, getCommandWithPrefix } from '../utils/command-utils';
+import { TokenMirror } from './token-mirror/token-mirror'
 
 import './command-input.css';
 
@@ -13,7 +13,7 @@ export const NavigationDirection = {
 
 const styles = {
   speedbar: 'speedbar',
-  speedbarCommandBar: 'speedbar-command-bar',
+  speedbarOuterContainer: 'speedbar-outer-container',
   speedbarCommand: 'speedbar-command',
   speedbarInnerContainer: 'speedbar-inner-container',
   speedbarScrollingContainer: 'speedbar-scrolling-container',
@@ -37,16 +37,35 @@ export default class CommandInput extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.containerElement = React.createRef();
+    this.scrollingElement = React.createRef();
     this.inputElement = React.createRef();
+
     this.suggestionsChannel = new BroadcastChannel(SpeedbarTopics.SuggestionSync);
     this.cursorPosition = 0;
     this.cursorTimeout = 0;
 
+    this.state = {
+      containerWidth: undefined,
+      inputWidth: '100%'
+    }
+
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handlePaste = this.handlePaste.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleContentResize = this.handleContentResize.bind(this);
+    this.handleContainerResize = this.handleContainerResize.bind(this);
+    this.handleSelectionChange = this.handleSelectionChange.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    if (this.containerElement.current) {
+      const { width } = this.containerElement.current.getBoundingClientRect();
+      this.setState({
+        containerWidth: width
+      })
+    }
     if (this.inputElement.current) {
       this.inputElement.current.focus();
     }
@@ -66,7 +85,7 @@ export default class CommandInput extends React.Component {
       commandState: { commandStatus: oldStatus }
     } = this.props;
     if (newStatus === CommandStatus.Empty && oldStatus !== CommandStatus.Empty) {
-      this.setState({ inputText: '' });
+      this.setState({ inputWidth: '100%' });
     } else if (suggestions.length === 1 && searchTerm !== this.props.searchTerm) {
       // do we want to auto-accept suggestion if there is only 1 ?
     }
@@ -80,6 +99,11 @@ export default class CommandInput extends React.Component {
       }
     }
   };
+
+  handleSelectionChange() {
+    const cursorPosition = this.getCursorPosition();
+    console.log(`selectionchange cursor pos ${cursorPosition}`)
+  }
 
   async handleChange(e) {
     const value = e.target.value;
@@ -117,6 +141,18 @@ export default class CommandInput extends React.Component {
         this.props.onShouldClose();
         break;
       default:
+
+        switch (e.key) {
+          case Key.HOME:
+            e.preventDefault();
+            this.scroll('start')
+            break;
+          case Key.END:
+            e.preventDefault();
+            this.scroll('end')
+            break;
+          default:
+        }
         if (this.shouldNavigateSuggestions(e.keyCode)) {
           // default behaviour for UP/DOWN moves cursor to end of input
           e.preventDefault();
@@ -140,7 +176,7 @@ export default class CommandInput extends React.Component {
     if (tokenList) {
       const offset = inputText[cursorPosition - 1] === ' ' ? cursorPosition - 1 : cursorPosition
       const token = tokenList.getTokenAtOffset(offset);
-      if (token && token.searchld && this.hasAcceptedSuggestion(token.searchld)) {
+      if (token && token.searchId && this.hasAcceptedSuggestion(token.searchId)) {
         return true;
       }
     }
@@ -150,6 +186,24 @@ export default class CommandInput extends React.Component {
   clearToken() {
     const cursorPosition = this.getCursorPosition();
     this.props.onClearToken(cursorPosition);
+  }
+
+  scroll(direction) {
+    console.log(`scroll ${direction}`);
+    if (this.state.inputWidth !== '100%') {
+      // this.setState({
+      //   scrollLeft: 0
+      // })
+      if (direction === 'start') {
+        const { containerWidth, inputWidth } = this.state;
+        const scrollDistance = containerWidth - inputWidth;
+        this.scrollingElement.current.style.right = scrollDistance + 'px';
+        this.setCursorPosition(0);
+      } else {
+        this.scrollingElement.current.style.right = '0px';
+        this.setCursorPosition(1000);
+      }
+    }
   }
 
   canSubmitCommand() {
@@ -299,6 +353,20 @@ export default class CommandInput extends React.Component {
       this.setCursorPosition(this.cursorPosition);
     }
   }
+  handleContainerResize(width) {
+    if (this.state.containerWidth !== width) {
+      this.setState({
+        containerWidth: width
+      })
+    }
+  }
+
+  handleContentResize(width) {
+    this.setState({
+      inputWidth: width || '100%'
+    })
+  }
+
   render() {
     const {
       inputText,
@@ -309,8 +377,8 @@ export default class CommandInput extends React.Component {
     const displayPrefix = this.getCommandPrefix();
     const displayText = showCommand ? commandText : inputText;
     return (
-      <div className={styles.speedbar}>
-        <div className={styles.speedbarCommandBar}>
+      <div ref={this.containerElement} className={styles.speedbar}>
+        <div className={styles.speedbarOuterContainer}>
           {showCommand && (
             <div
               className={cx(styles.speedbarCommand, this.getCommandPrefixClassName(displayPrefix))}
@@ -319,23 +387,31 @@ export default class CommandInput extends React.Component {
             </div>
           )}
           <div className={styles.speedbarInnerContainer}>
-            <div className={styles.speedbarScrollingContainer}>
-              <TokenMirror tokenList={tokenList} />
+            <div ref={this.scrollingElement} className={styles.speedbarScrollingContainer}>
+              {showCommand && (
+                <TokenMirror
+                  tokenList={tokenList}
+                  onContainerResize={this.handleContainerResize}
+                  onContentResize={this.handleContentResize}
+                  width={this.state.containerWidth} />
+              )}
               <input
                 type="text"
                 className={styles.speedbarInput}
+                style={{ width: this.state.inputWidth }}
                 value={displayText}
                 onFocus={this.props.onFocus}
                 onClick={this.props.onClick}
                 onChange={this.handleChange}
                 onPaste={this.handlePaste}
                 onKeyDown={this.handleKeyDown}
+                onSelect={this.handleSelectionChange}
                 ref={this.inputElement}
                 spellCheck={false}
                 autoCorrect="off"
                 autoComplete="off"
               />
-              </div>
+            </div>
           </div>
           {/* {this.getStatusIndicator()} */}
         </div>

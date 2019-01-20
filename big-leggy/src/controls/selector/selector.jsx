@@ -14,6 +14,7 @@ export default class Selector extends React.Component {
       open: false,
       value: this.props.value || '',
       initialValue: this.props.value,
+      selectedIdx: props.availableValues.indexOf(props.value),
       position: null
     }
 
@@ -40,9 +41,11 @@ export default class Selector extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
-    if (nextProps.value !== this.props.value){
+    const {value} = nextProps;
+    if (value !== this.props.value){
       this.setState({
-        value: nextProps.value
+        value,
+        selectedIdx: nextProps.availableValues.indexOf(value)
       })
     }
   }
@@ -122,15 +125,17 @@ export default class Selector extends React.Component {
   }
 
   renderDropdownComponent(){
-    const {children: childRenderer} = this.props;
+    const {children: childRenderer, availableValues, typeaheadListNavigation} = this.props;
     const dropdown = typeof childRenderer === 'function'
       ? childRenderer(Selector.dropdown)
       : null;
 
     return dropdown || (
       <List
-        values={this.props.availableValues}
-        hilightedValue={this.state.selectedIdx}
+        values={availableValues}
+        selectedIdx={this.state.selectedIdx}
+        hilitedIdx={this.props.hilitedIdx}
+        typeaheadListNavigation={typeaheadListNavigation}
       />
     )
   }
@@ -158,17 +163,16 @@ export default class Selector extends React.Component {
   onKeyDown(e){
     const {keyCode} = e;
     const open = this.state.open;
-    console.log(`[ComboBox] onKeyDown open=${open}`)
+    console.log(`[Selector] onKeyDown open=${open}`)
     if (keyCode === Key.ENTER){
-      if (this.state.open && this.state.selectedIdx !== null){
-        const value = this.state.values[this.state.selectedIdx];
+      if (this.state.open && this.props.selectedIdx !== null){
+        const value = this.props.availableValues[this.props.selectedIdx];
         this.commit(value);
       } else if (this.state.value !== this.state.initialValue){
         this.commit();
       } else if (!open){
         this.setState({open: true})
       }
-
     } else if (keyCode === Key.ESC){
       this.onCancel();
     } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
@@ -210,31 +214,7 @@ Selector.input = 'input'
 Selector.dropdown = 'dropdown'
 
 Selector.defaultProps = {
-  availableValues : [
-    "Alabama",
-    "Arizona",
-    "California",
-    "Colorado",
-    "Florida",
-    "Georgia",
-    "Idaho",
-    "Kentucky",
-    "Louisiana",
-    "Maine",
-    "Montana",
-    "Missouri",
-    "Mississippi",
-    "New England",
-    "New Jersey",
-    "New Mexico",
-    "New York",
-    "North Dakota",
-    "Ohio",
-    "Philadelphia",
-    "South Dakota",
-    "Tennessee",
-    "Texas",
-    "Virginia"
-  ]
+  selectedIdx: null,
+  availableValues: []
 }
 

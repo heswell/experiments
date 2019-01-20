@@ -4,18 +4,18 @@
 import { buildRegexFromSearchTerm } from '../token-search';
 export const ELLIPSIS = String.fromCharCode(8230);
 
-export const Searchldentifiers = {
+export const SearchIdentifiers = {
   User: 'user-search',
   Asset: 'asset-search'
 }
 
-const getSearchResults = (_, searchld, searchTerm) => {
-  if (searchld === Searchldentifiers.User) {
+const getSearchResults = (_, searchId, searchTerm) => {
+  if (searchId === SearchIdentifiers.User) {
     return searchUsers(searchTerm);
-  } else if (searchld === Searchldentifiers.Asset) {
+  } else if (searchId === SearchIdentifiers.Asset) {
     return searchAssets(searchTerm);
   } else {
-    return Promise.reject('unknown searchld');
+    return Promise.reject('unknown searchId');
   }
 };
 export const searchUsers = searchTerm =>
@@ -29,7 +29,6 @@ export const searchUsers = searchTerm =>
       // search terms are logically ANDed together, so we must match every pattern
       if (searchPatterns.every(pattern => user.some(property => pattern.test(property)))) {
         const [firstname, surname, company] = user;
-        console.log(JSON.stringify(user))
         searchResult.searchResults.push({
           value: user.join(),
           speedbarText: `${firstname} ${surname} (${company.slice(0, 2)}${ELLIPSIS})`,
@@ -64,7 +63,10 @@ const Users = [
   ['janie', 'Jones', 'credit suisse'],
   ['simon', 'Johns', 'credit suisse'],
   ['billy', 'bragg', 'credit agricole'],
-  ['jenny', 'Jones','deutsche bank']
+  ['jenny', 'Jones','deutsche bank'],
+  ['grahame', 'greene','citadel'],
+  ['patsy', 'Sledge-hammer','Royal Caribbean'],
+  ['Richard', 'Chamberlain','citadel']
 ];
 const Assets = [
   ['vod In', 'vod.l', 'vodafone'],

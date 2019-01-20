@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { buildRegexFromSearchTerm } from	'../token-search/token-search';
+import { buildRegexFromSearchTerm } from	'../../../token-search/token-search';
 
 import './search-suggestions.css';
 

@@ -1,46 +1,73 @@
 
 .speedbar {
+  --speedbar-height: 29px;
   flex: 0 0 29px;
-  flex-direction: column;
-  align-items: stretch;
   background-color: var(--aurora-desktop-launcher-speedbar-bg);
   border-radius: 0 4px 0 0;
+  font-size: .975rem;
 }
 
-.speedbar-command-bar {
-  flex: 1 1 auto;
+.speedbar-outer-container {
+  height: var(--speedbar-height);
   display: flex;
   align-items: center;
   position: relative;
 }
 
-.speedbar-command-bar .speedbar-action-command {
+.speedbar-outer-container .speedbar-action-command {
   background-color: blue;
+  color: white;
 }
 
-.speedbar-command-bar .speedbar-window-command {
+.speedbar-outer-container .speedbar-window-command {
   background-color: blue;
+  color: white;
 }
 
 .speedbar-command {
-  flex: 0 0 auto;
+  flex: 0 0 100px;
+  box-sizing: border-box;
   line-height: 23px;
   padding: 0 3px;
   border-radius: 2px;
 }
 
+/* this constrains the size of the speedbar */
 .speedbar .speedbar-inner-container {
+  height: var(--speedbar-height);
   flex: 1 1 auto;
   position: relative;
   z-index: 0;
   overflow: hidden;
 }
 
+/* this grows in response to size of token mirror */
 .speedbar .speedbar-scrolling-container {
   display: inline-block;
-  height:100%;
   min-width: 100%;
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  top:0;
+  bottom:0;
+  transition: right .5s;
 }
+
+/* this is set to 100% of scrolling container, so should equal the token mirror */
+.speedbar-input {
+  -webkit-app-region: no-drag;
+  width: 100%;
+  line-height: 29px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  padding-left: 6px;
+  white-space: pre;
+  font-family: Roboto-Regular;
+  word-spacing: 2px;
+  box-sizing: border-box;
+  }
 
 .speedbar-message-container {
   flex: 0 0 22px;
@@ -49,25 +76,12 @@
   padding: 0 12px;
   }
 
-  .speedbar-input {
-  -webkit-app-region: no-drag;
-  width: 100%;
-  line-height: 29px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  font-size: 13px;
-  padding: 0 6px;
-  white-space: pre;
-  font-family: Roboto-Regular;
-  word-spacing: 2px;
-  }
   
- .speedbar-command-bar .aurora-loading {
+ .speedbar-outer-container .aurora-loading {
     position: absolute;
     right: 12px;
   }
- .speedbar-command-bar .speedbar-command-success {
+ .speedbar-outer-container .speedbar-command-success {
     position: absolute;
     right: 6px;
     top: 7px;

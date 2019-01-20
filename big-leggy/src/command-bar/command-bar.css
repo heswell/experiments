@@ -1,9 +1,12 @@
-.command-window {
+.command-bar {
+  width: 300px;
   max-height: 550px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  padding: 0 1px 1px 1px;
+  padding: 0 6px 1px 1px;
+  border: solid 1px #ccc;
+  box-sizing: content-box;
   
 }

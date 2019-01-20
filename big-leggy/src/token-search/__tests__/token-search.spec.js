@@ -1,13 +1,13 @@
 import 'jest';
 import { resolveSearchTokens, buildRegexFromSearchTerm, NB_SPACE } from '../token-search';
-import { mockSearchService, ELLIPSIS, Searchldentifiers } from './token-search-test-support';
+import { mockSearchService, ELLIPSIS, SearchIdentifiers } from './token-search-test-support';
 
 describe('resolveSearchTokens', () => {
   const command = {
     commandTokens: [
       {
         name: 'client',
-        searchld: Searchldentifiers.User
+        searchId: SearchIdentifiers.User
       },
       {
         name: 'test-1'
@@ -17,7 +17,7 @@ describe('resolveSearchTokens', () => {
       },
       {
         name: 'asset',
-        searchld: 'asset-search'
+        searchId: 'asset-search'
       }
     ]
   };

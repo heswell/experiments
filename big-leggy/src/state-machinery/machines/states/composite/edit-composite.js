@@ -6,6 +6,7 @@ const state = {
     initial: 'unknown',
     on: {
         [Evt.TAB.type]: transitionNextComposite(),
+        [Evt.ESC.type]: { target: '#focus-composite' }
     },
     states: {
         textInput: {

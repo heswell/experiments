@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import TokenList, { TokenType, } from './token-list';
+import TokenList, { TokenType, } from '../../parsing/token-list';
 
 import './token-mirror.css';
 const styles = {
@@ -17,14 +17,14 @@ const WhitespaceToken = ({ token }) => (
   </span>
 )
 
-const TextToken = ({ idx, isComplete, isValid, token, className }) => {
+const TextToken = ({ idx, isComplete, token, className }) => {
   const wrapperClassName = `token-wrapper${isComplete ? ' complete' : ''}`;
   return (
     <div className={wrapperClassName} data-idx={idx}>
       <div
         key='token'
         className={cx('token', className, {
-          [styles.invalid]: !isValid
+          [styles.invalid]: token.invalid === true
         })}
       >
         {token.text}
@@ -38,20 +38,46 @@ export class TokenMirror extends React.Component {
   constructor(props){
     super(props);
     this.el = React.createRef();
+    this.containerWidth = props.width;
+    this.currentWidth = undefined;
   }
 
-  componentDidMount(){
+  componentDidMount() {
     if (this.el.current){
       const {width} = this.el.current.getBoundingClientRect();
-      console.log(`initial width = ${width}`)
+      // TODO also need to detect further resize
+      this.props.onContainerResize(width);
     }
+  }
 
+  componentWillReceiveProps(nextProps){
+    if (nextProps.width !== this.props.width){
+      this.containerWidth = nextProps.width;
+    }
   }
 
   componentDidUpdate(){
     if (this.el.current){
-      const {width} = this.el.current.getBoundingClientRect();
-      console.log(`width = ${width}`)
+      const count = this.props.tokenList.tokens.length;
+      let width;
+      if (count > 0){
+        const lastChild = this.el.current.querySelector(`:nth-child(${count})`)      
+        const {offsetLeft, offsetWidth} = lastChild;
+        width = offsetLeft + offsetWidth;
+  
+      } else {
+        ({width} = this.el.current.getBoundingClientRect());
+      }
+      const currentWidth = Math.ceil(width);
+      if (currentWidth > this.containerWidth){
+        if (currentWidth !== this.currentWidth){
+          this.currentWidth = currentWidth;
+          this.props.onContentResize(currentWidth);
+        }
+      } else if (this.currentWidth){
+        this.currentWidth = undefined;
+        this.props.onContentResize(undefined);
+      }
     }
   }
 
@@ -64,10 +90,10 @@ export class TokenMirror extends React.Component {
       if (token.type === TokenType.Text) {
         const tokenDescriptor = tokenList.descriptors[tokenCount];
         // an unrecognised token indicates that user has entered a complete command, but kept typing
-        const unrecognisedToken = tokenDescriptor === undefined;
-        const isComplete = idx < terms.length - 1 || unrecognisedToken;
+        const beyondRequiredTokens = tokenDescriptor === undefined;
+        const isComplete = idx < terms.length - 1 || beyondRequiredTokens;
+        console.log(`${token.text} isComplete ${isComplete} invalid ${token.invalid}`)
         const className = tokenDescriptor ? tokenDescriptor.tokenStyle : undefined;
-        const isValid = !unrecognisedToken && token.invalid !== true;
         result = (
           <TextToken
             key={`term-${idx}`}
@@ -75,7 +101,6 @@ export class TokenMirror extends React.Component {
             className={className}
             idx={idx}
             isComplete={isComplete}
-            isValid={isValid}
           />
         );
         tokenCount += 1;

@@ -11,6 +11,10 @@
   cursor: default;
 }
 
+.list .list-item.selected {
+  background-color: cornflowerblue;
+}
+
 .list .list-item:focus {
   outline: none;
 }

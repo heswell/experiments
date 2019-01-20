@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
-import { SuggestionsToolTip } from '../command-tooltip';
-import SearchSuggestions from '../search-suggestions';
-import CommandCue from '../command-cue';
+import { SuggestionsToolTip } from './tooltip/command-tooltip';
+import SearchSuggestions from './search/search-suggestions';
+import CommandCue from './cue/command-cue';
 
 import './command-suggestions.css';
 

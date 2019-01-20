@@ -1,4 +1,4 @@
-import {searchUsers, searchAssets} from '../../token-search/__tests__/token-search-test-support';
+import {searchUsers, searchAssets} from '../token-search/__tests__/token-search-test-support';
 
 export const SearchIdentifiers = {
   User: 'user',

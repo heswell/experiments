@@ -1,4 +1,4 @@
-export {default} from './command-window/command-window'
+export {default} from './command-bar'
 
 export const CommandType = {
   ActionCommand: 'action-command',

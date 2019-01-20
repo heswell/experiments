@@ -8,16 +8,15 @@ import {
   removeTokenFromText,
   replaceCommandTextWithValues,
   replaceTextAtOffset
-} from '../command-utils';
+} from './utils/command-utils';
 
-import {insertNonBreakingSpaces, resolveSearchTokens} from '../../token-search/token-search'
-import { CommandSuggestionsMessageTypes as MessageType} from '../command-messages'
-import CommandInput, { NavigationDirection, SpeedbarTopics, InputMethod} from '../command-input/command-input';
-import CommandSuggestions from '../command-suggestions';
-import { EmptyTokenList } from '../token-list';
-import { showSpeedbarSuggestionsWindow, hideSpeedbarSuggestionsWindow, focusSpeedbarSuggestionsWindow} from '../window-utils';
+import {insertNonBreakingSpaces, resolveSearchTokens} from '../token-search/token-search'
+import CommandInput, { NavigationDirection, SpeedbarTopics, InputMethod} from './input/command-input';
+import CommandSuggestions from './suggestions';
+import { EmptyTokenList } from './parsing/token-list';
+import { hideSpeedbarSuggestionsWindow} from './window-utils';
 
-import './command-window.css';
+import './command-bar.css';
 
 export const SpeedbarStatus = {
   Inactive: 'inactive',
@@ -25,7 +24,7 @@ export const SpeedbarStatus = {
 }
 
 const styles = {
-  speedbarWindow: 'command-window'
+  commandBar: 'command-bar'
 }
 
 const EMPTY_STATE = {
@@ -73,29 +72,6 @@ export default class CommandWindow extends React.Component {
     });
   };
 
-  handleMessageFromSpeedbar(msg) {
-    const speedbarMessage = msg.data;
-    switch (speedbarMessage.type) {
-      case MessageType.SpeedbarHidden:
-        this.clearState();
-        hideSpeedbarSuggestionsWindow();
-        break;
-      case MessageType.Focus:
-        if (speedbarMessage.parentWindowBounds) {
-          this.width = speedbarMessage.parentWindowBounds.width;
-          showSpeedbarSuggestionsWindow(speedbarMessage.parentWindowBounds);
-          this.sizeHeightToContent();
-        } else {
-          focusSpeedbarSuggestionsWindow();
-          this.handleFocus();
-        }
-        break;
-      case MessageType.Blur:
-        hideSpeedbarSuggestionsWindow();
-        break;
-        default:
-    }
-  };
   handleFocus() {
     this.activate();
   }
@@ -124,15 +100,13 @@ export default class CommandWindow extends React.Component {
   sizeHeightToContent() {
     if (this.rootEl.current) {
       const { clientHeight } = this.rootEl.current;
+      console.log(`set height to ${clientHeight}`)
       // const suggestionsWindow = fin.desktop.Window.getCurrent();
       // suggestionsWindow.resizeTo(this.width, clientHeight, 'top-left');
     }
   }
   close() {
     hideSpeedbarSuggestionsWindow();
-    this.suggestionsChannel.postMessage({
-      type: MessageType.SpeedbarHidden
-    });
   };
 
   selectSuggestion(selectedValue) {
@@ -151,6 +125,7 @@ export default class CommandWindow extends React.Component {
       this.input.current.focus();
     }
   };
+
   navigateSuggestions(direction) {
     let { selectedSuggestionIdx } = this.state;
     if (direction === NavigationDirection.FWD) {
@@ -167,8 +142,7 @@ export default class CommandWindow extends React.Component {
       commandState: { commandStatus },
       tokenList
     } = this.state;
-    const suggestions = this.getAvailableSuggestions();
-    const suggestion = suggestions[selectedSuggestionIdx];
+    const suggestion = this.getSuggestion(selectedSuggestionIdx);
     if (commandStatus === CommandStatus.Empty || commandStatus === CommandStatus.Incomplete) {
       this.acceptCommandprefix(suggestion.speedbarText);
     } else {
@@ -179,9 +153,11 @@ export default class CommandWindow extends React.Component {
       this.setState(
         {
           inputText: nextInputText,
+          selectedSuggestionIdx: -1,
+          suggestions: [],
           searchTokens: {
             ...this.state.searchTokens,
-            [token.searchld]: {
+            [token.searchId]: {
               status: 'resolved',
               suggestion: {
                 ...suggestion,
@@ -199,7 +175,8 @@ export default class CommandWindow extends React.Component {
   acceptCommandprefix(inputText) {
     this.setState(
       {
-        inputText
+        inputText,
+        selectedSuggestionIdx: -1
       }, () => {
         this.processInput(inputText, InputMethod.AcceptSuggestion);
       }
@@ -211,9 +188,9 @@ export default class CommandWindow extends React.Component {
     if (tokenList !== EmptyTokenList) {
       const offset = inputText[tokenOffset - 1] === ' ' ? tokenOffset - 1 : tokenOffset;
       const token = tokenList.getTokenAtOffset(offset);
-      if (token && token.searchld) {
+      if (token && token.searchId) {
         const newInputText = removeTokenFromText(inputText, token);
-        const { [token.searchld]: _, ...searchTokens } = this.state.searchTokens;
+        const { [token.searchId]: _, ...searchTokens } = this.state.searchTokens;
         this.setState(
           {
             searchTokens
@@ -232,8 +209,18 @@ export default class CommandWindow extends React.Component {
   async processInput(inputText = '', inputMethod = InputMethod.UserInput) {
     const {
       searchTokens,
-      commandState: { commandPrefix: validPrefix }
+      commandState: { commandPrefix },
+      selectedSuggestionIdx
     } = this.state;
+
+    let validPrefix = commandPrefix
+
+    if (selectedSuggestionIdx !== -1 && !validPrefix){
+      // If user has navigated to a command and just starts typing without ENTER first, assume
+      // command is selected ...
+      ({speedbarText: validPrefix} = this.getSuggestion(selectedSuggestionIdx));
+    }
+
     const fullCommandText = `${validPrefix} ${inputText}`;
     const [commandState, tokenList, command] = parseCommand(
       this.props.commands,
@@ -241,7 +228,7 @@ export default class CommandWindow extends React.Component {
       searchTokens
     );
 
-      console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
+      // console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
 
     if (
       inputMethod === InputMethod.AcceptSuggestion &&
@@ -285,11 +272,11 @@ export default class CommandWindow extends React.Component {
       } else if (command && tokenList) {
         // const cursorPosition = this.inputElement.current.selectionStart;
         const cursorPosition = this.getCursorPosition();
-        console.log(`[commandWindow] processInput cursor position ${cursorPosition}`)
+        //onsole.log(`[commandWindow] processInput cursor position ${cursorPosition}`)
         const token = tokenList.getTokenAtOffset(cursorPosition);
-        if (token && token.searchld && !token.resolved) {
+        if (token && token.searchId && !token.resolved) {
           const searchTerm = token.text.slice(0, cursorPosition - token.startOffset);
-          this.invokeSearch(command, token.searchld, searchTerm);
+          this.invokeSearch(command, token.searchId, searchTerm);
         } else if (this.state.suggestions.length) {
           this.setState({
             searchTerm: '',
@@ -301,7 +288,7 @@ export default class CommandWindow extends React.Component {
     }
   };
 
-  async invokeSearch(command, searchld, searchTerm) {
+  async invokeSearch(command, searchId, searchTerm) {
     const trimmedSearchTerm = searchTerm.trim();
     // don't resubmit a search if user has simply added a space
     if (trimmedSearchTerm !== this.state.searchTerm) {
@@ -309,7 +296,7 @@ export default class CommandWindow extends React.Component {
       try {
         const searchResult = await this.getSearchResults(
           command,
-          searchld,
+          searchId,
           searchTerm
         );
         if (searchResult.searchTerm === this.currentSearchTerm) {
@@ -326,14 +313,14 @@ export default class CommandWindow extends React.Component {
       }
     }
   }
-  getSearchResults = async (command, searchld, searchTerm) => {
+  getSearchResults = async (command, searchId, searchTerm) => {
     const {
       getSearchSuggestions = null
     } = (await command.getSpeedbarHandler());
     if (getSearchSuggestions !== null) {
       try {
         const searchResult = await getSearchSuggestions(
-          searchld,
+          searchId,
           searchTerm
         );
         return searchResult;
@@ -398,6 +385,13 @@ export default class CommandWindow extends React.Component {
     }
   };
 
+  getSuggestion(idx){
+    const suggestions = this.getAvailableSuggestions();
+    if (suggestions.length > 0 && suggestions[idx]){
+      return suggestions[idx];
+    }
+  }
+
   getAvailableSuggestions() {
     const { commandState, suggestions } = this.state;
     return commandState.commandStatus === CommandStatus.Empty
@@ -440,7 +434,7 @@ export default class CommandWindow extends React.Component {
       commandState.commandStatus !== CommandStatus.Succeeded;
     const commandTokens = command && command.commandTokens ? command.commandTokens : [];
     return (
-      <div className={styles.speedbarWindow} ref={this.rootEl}>
+      <div className={styles.commandBar} ref={this.rootEl}>
         <CommandInput
           inputText={inputText}
           commandState={commandState}
