@@ -44,7 +44,7 @@ export const QUANTITY_WITH_RATIO = {
 export const VENUE = {
     name: 'venue',
     description: 'Venue',
-    formatHelp: 'OTC, Listed',
+    formatHelp: 'otc, listed',
     pattern: /^(otc|listed)$/i,
     required: false
 };

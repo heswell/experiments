@@ -70,7 +70,7 @@ const commands = [
           },
           { 
             name: 'notional',
-            description: 'Exchange',
+            description: 'notional (qty)',
             formatHelp: `ntl`,
             pattern: /^ntl$/i,
             required: false
@@ -156,13 +156,13 @@ const commands = [
           pattern: /^(\d)+mid$/i,
           required: false
         },
-        { 
-          name: 'exchange',
-          description: 'Exchange',
-          formatHelp: `EURX, LIFE`,
-          pattern: /^[a-z]+$/i,
-          required: false
-        },
+        // { 
+        //   name: 'exchange',
+        //   description: 'Exchange',
+        //   formatHelp: `EURX, LIFE`,
+        //   pattern: /^[a-z]+$/i,
+        //   required: false
+        // },
         { 
           name: 'multiplier',
           description: 'Multiplier',
