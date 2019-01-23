@@ -46,6 +46,8 @@ export default class CommandInput extends React.Component {
     this.cursorPosition = 0;
     this.cursorTimeout = 0;
 
+    this.tokenMeasurements = null
+
     this.state = {
       containerWidth: undefined,
       inputWidth: '100%'
@@ -57,6 +59,7 @@ export default class CommandInput extends React.Component {
     this.handleContentResize = this.handleContentResize.bind(this);
     this.handleContainerResize = this.handleContainerResize.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
+    this.handleTokenMeasurement = this.handleTokenMeasurement.bind(this);
   }
 
   componentDidMount() {
@@ -99,11 +102,6 @@ export default class CommandInput extends React.Component {
       }
     }
   };
-
-  handleSelectionChange() {
-    const cursorPosition = this.getCursorPosition();
-    console.log(`selectionchange cursor pos ${cursorPosition}`)
-  }
 
   async handleChange(e) {
     const value = e.target.value;
@@ -188,12 +186,32 @@ export default class CommandInput extends React.Component {
     this.props.onClearToken(cursorPosition);
   }
 
+  handleSelectionChange() {
+    const cursorPosition = this.getCursorPosition();
+    if (this.canScroll()){
+      const token = this.props.tokenList.getTokenAtOffset(cursorPosition);
+      if (token){
+        const {idx} = token;
+        const measurement = this.tokenMeasurements[idx];
+        console.log(`token at cursorposition ${cursorPosition}  
+          ${JSON.stringify(token,null,2)}
+          
+          ${JSON.stringify(measurement,null,2)}
+          
+          `)
+
+      }
+
+    }
+  }
+
+  canScroll(){
+    return this.state.inputWidth !== '100%';
+  }
+
   scroll(direction) {
     console.log(`scroll ${direction}`);
-    if (this.state.inputWidth !== '100%') {
-      // this.setState({
-      //   scrollLeft: 0
-      // })
+    if (this.canScroll()) {
       if (direction === 'start') {
         const { containerWidth, inputWidth } = this.state;
         const scrollDistance = containerWidth - inputWidth;
@@ -367,6 +385,10 @@ export default class CommandInput extends React.Component {
     })
   }
 
+  handleTokenMeasurement(tokenMeasurements){
+    this.tokenMeasurements = tokenMeasurements;
+  }
+
   render() {
     const {
       inputText,
@@ -393,6 +415,7 @@ export default class CommandInput extends React.Component {
                   tokenList={tokenList}
                   onContainerResize={this.handleContainerResize}
                   onContentResize={this.handleContentResize}
+                  onTokensMeasured={this.handleTokenMeasurement}
                   width={this.state.containerWidth} />
               )}
               <input

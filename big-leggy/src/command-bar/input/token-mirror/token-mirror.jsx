@@ -56,14 +56,20 @@ export class TokenMirror extends React.Component {
     }
   }
 
-  componentDidUpdate(){
-    if (this.el.current){
-      const count = this.props.tokenList.tokens.length;
+  componentDidUpdate(prevProps){
+    const {tokenList} = this.props;
+    if (this.el.current && prevProps.tokenList !== tokenList){
+      const count = tokenList.tokens.length;
       let width;
       if (count > 0){
         const lastChild = this.el.current.querySelector(`:nth-child(${count})`)      
         const {offsetLeft, offsetWidth} = lastChild;
         width = offsetLeft + offsetWidth;
+
+        console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft+offsetWidth}`)
+        const measurements = this.measureTerms();
+        this.props.onTokensMeasured(measurements)  
+        console.log(`measured terms ${JSON.stringify(measurements,null,2)}`)
   
       } else {
         ({width} = this.el.current.getBoundingClientRect());
@@ -80,6 +86,36 @@ export class TokenMirror extends React.Component {
       }
     }
   }
+
+  measureTerms() {
+    // lets try reading boxshadow/clipText from the dom and see if it's quick enough
+    // also, what about :before/:after ?
+    if (this.el.current){
+      const {left: offsetLeft} = this.el.current.getBoundingClientRect();
+      const termWrappers = Array.from(this.el.current.querySelectorAll('.token-wrapper[data-idx]'));
+      return termWrappers.map(termWrapper => {
+          // const term = termWrapper.querySelector('.term');
+          const term = termWrapper;
+          const { left, top, right, bottom } = term.getBoundingClientRect();
+          // const runtimeStyle = window.getComputedStyle(term, null);
+          // const boxShadow = runtimeStyle.getPropertyValue(`box-shadow`);
+          // const clipPath = runtimeStyle.getPropertyValue(`clip-path`);
+          // const [ofTop, ofRight, ofBottom, ofLeft] = calculateOverflow(boxShadow, clipPath);
+          const [ofTop, ofRight, ofBottom, ofLeft] = [0,0,0,0];
+          const absLeft = Math.round(left) - ofLeft;
+          return {
+              offsetLeft: absLeft - Math.round(offsetLeft),
+              left: absLeft,
+              top: Math.round(top) - ofTop,
+              right: Math.round(right) + ofRight,
+              bottom: Math.round(bottom) + ofBottom,
+              idx: parseInt(termWrapper.dataset.idx, 10)
+          }
+      });
+  
+    }
+}
+
 
   render() {
     const { tokenList = EmptyTokenList } = this.props;

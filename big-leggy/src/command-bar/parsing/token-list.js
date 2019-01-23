@@ -107,7 +107,7 @@ export default class TokenList {
           // will be a no-op for already resolved search tokens
           t = t.replace(PATTERN_SPACE_ALL, NB_SPACE);
         }
-        results.push(this.createToken(startOffset, t, tokenDescriptor));
+        results.push(this.createToken(startOffset, t, tokenDescriptor, tokenIdx));
         startOffset += t.length;
         tokenIdx += 1;
       }
@@ -120,9 +120,11 @@ export default class TokenList {
   
   }
 
-  createToken(startOffset, text, tokenDescriptor) {
+  createToken(startOffset, text, tokenDescriptor, idx) {
     const { searchId = '' } = tokenDescriptor;
     return {
+      name: tokenDescriptor.name,
+      idx,
       type: TokenType.Text,
       startOffset,
       text,
