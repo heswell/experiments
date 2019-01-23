@@ -38,7 +38,7 @@
   flex: 1 1 auto;
   position: relative;
   z-index: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 /* this grows in response to size of token mirror */

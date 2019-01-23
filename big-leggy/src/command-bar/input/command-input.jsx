@@ -3,24 +3,13 @@ import cx from 'classnames'
 import * as Key from '../../utils/key-code';
 import { CommandStatus, getCommandWithPrefix } from '../utils/command-utils';
 import { TokenMirror } from './token-mirror/token-mirror'
-
+import Scrollable from './scrollable';
+import * as styles from './styles';
 import './command-input.css';
 
 export const NavigationDirection = {
   FWD: 'FWD',
   BWD: 'BWD'
-}
-
-const styles = {
-  speedbar: 'speedbar',
-  speedbarOuterContainer: 'speedbar-outer-container',
-  speedbarCommand: 'speedbar-command',
-  speedbarInnerContainer: 'speedbar-inner-container',
-  speedbarScrollingContainer: 'speedbar-scrolling-container',
-  speedbarInput: 'speedbar-input',
-  speedbarErrorIcon: 'speedbar-error-icon',
-  speedbarCommandHint: 'speedbar-command-hint',
-  speedbarSuccessIcon: 'speedbar-success-icon'
 }
 
 export const SpeedbarTopics = {
@@ -199,9 +188,7 @@ export default class CommandInput extends React.Component {
           ${JSON.stringify(measurement,null,2)}
           
           `)
-
       }
-
     }
   }
 
@@ -408,15 +395,15 @@ export default class CommandInput extends React.Component {
               {displayPrefix}
             </div>
           )}
-          <div className={styles.speedbarInnerContainer}>
-            <div ref={this.scrollingElement} className={styles.speedbarScrollingContainer}>
-              {showCommand && (
+          <Scrollable className={styles.speedbarInnerContainer}>
+            {showCommand && (
                 <TokenMirror
                   tokenList={tokenList}
-                  onContainerResize={this.handleContainerResize}
-                  onContentResize={this.handleContentResize}
+                  // onContainerResize={this.handleContainerResize}
+                  // onContentResize={this.handleContentResize}
                   onTokensMeasured={this.handleTokenMeasurement}
-                  width={this.state.containerWidth} />
+                  // width={this.state.containerWidth}
+                  />
               )}
               <input
                 type="text"
@@ -434,8 +421,7 @@ export default class CommandInput extends React.Component {
                 autoCorrect="off"
                 autoComplete="off"
               />
-            </div>
-          </div>
+          </Scrollable>
           {/* {this.getStatusIndicator()} */}
         </div>
       </div>
@@ -455,7 +441,7 @@ export default class CommandInput extends React.Component {
       return null //<Loading text='' />;
     } else if (commandStatus === CommandStatus.Succeeded) {
       return (
-        <div className={styles.speedbarCommandSuccess}>
+        <div className={styles.speedbarSuccess}>
           <i className={cx('material-icons', styles.speedbarSuccessIcon)}>check_circle</i>
           <span>Success</span>
         </div>

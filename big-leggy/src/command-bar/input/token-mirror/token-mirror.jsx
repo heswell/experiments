@@ -38,23 +38,23 @@ export class TokenMirror extends React.Component {
   constructor(props){
     super(props);
     this.el = React.createRef();
-    this.containerWidth = props.width;
-    this.currentWidth = undefined;
+    // this.containerWidth = props.width;
+    this.currentWidth = -1;
   }
 
-  componentDidMount() {
-    if (this.el.current){
-      const {width} = this.el.current.getBoundingClientRect();
-      // TODO also need to detect further resize
-      this.props.onContainerResize(width);
-    }
-  }
+  // componentDidMount() {
+  //   if (this.el.current){
+  //     const {width} = this.el.current.getBoundingClientRect();
+  //     // TODO also need to detect further resize
+  //     this.props.onContainerResize(width);
+  //   }
+  // }
 
-  componentWillReceiveProps(nextProps){
-    if (nextProps.width !== this.props.width){
-      this.containerWidth = nextProps.width;
-    }
-  }
+  // componentWillReceiveProps(nextProps){
+  //   if (nextProps.width !== this.props.width){
+  //     this.containerWidth = nextProps.width;
+  //   }
+  // }
 
   componentDidUpdate(prevProps){
     const {tokenList} = this.props;
@@ -74,15 +74,10 @@ export class TokenMirror extends React.Component {
       } else {
         ({width} = this.el.current.getBoundingClientRect());
       }
-      const currentWidth = Math.ceil(width);
-      if (currentWidth > this.containerWidth){
-        if (currentWidth !== this.currentWidth){
-          this.currentWidth = currentWidth;
-          this.props.onContentResize(currentWidth);
-        }
-      } else if (this.currentWidth){
-        this.currentWidth = undefined;
-        this.props.onContentResize(undefined);
+      const newWidth = Math.ceil(width);
+      if (newWidth !== this.currentWidth){
+          this.currentWidth = newWidth;
+          this.props.onContentResize(newWidth);
       }
     }
   }
