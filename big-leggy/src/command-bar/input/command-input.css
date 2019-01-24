@@ -38,19 +38,6 @@
   flex: 1 1 auto;
   position: relative;
   z-index: 0;
-  /* overflow: hidden; */
-}
-
-/* this grows in response to size of token mirror */
-.speedbar .speedbar-scrolling-container {
-  display: inline-block;
-  min-width: 100%;
-  display: inline-block;
-  position: absolute;
-  right: 0;
-  top:0;
-  bottom:0;
-  transition: right .5s;
 }
 
 /* this is set to 100% of scrolling container, so should equal the token mirror */

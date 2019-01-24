@@ -27,8 +27,7 @@ export default class CommandInput extends React.Component {
   constructor(props) {
     super(props);
 
-    this.containerElement = React.createRef();
-    this.scrollingElement = React.createRef();
+    this.scrollable = React.createRef();
     this.inputElement = React.createRef();
 
     this.suggestionsChannel = new BroadcastChannel(SpeedbarTopics.SuggestionSync);
@@ -45,19 +44,11 @@ export default class CommandInput extends React.Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleContentResize = this.handleContentResize.bind(this);
-    this.handleContainerResize = this.handleContainerResize.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
     this.handleTokenMeasurement = this.handleTokenMeasurement.bind(this);
   }
 
   componentDidMount() {
-    if (this.containerElement.current) {
-      const { width } = this.containerElement.current.getBoundingClientRect();
-      this.setState({
-        containerWidth: width
-      })
-    }
     if (this.inputElement.current) {
       this.inputElement.current.focus();
     }
@@ -182,32 +173,23 @@ export default class CommandInput extends React.Component {
       if (token){
         const {idx} = token;
         const measurement = this.tokenMeasurements[idx];
-        console.log(`token at cursorposition ${cursorPosition}  
-          ${JSON.stringify(token,null,2)}
-          
-          ${JSON.stringify(measurement,null,2)}
-          
-          `)
+        if (measurement){
+          const {offsetLeft: tokenLeft, left, right} = measurement;
+          const tokenWidth = Math.round(right - left);
+          this.scrollable.current.scrollIntoView({left: tokenLeft, width: tokenWidth})
+        }
       }
     }
   }
 
   canScroll(){
-    return this.state.inputWidth !== '100%';
+    return this.scrollable.current.canScroll();
   }
 
   scroll(direction) {
-    console.log(`scroll ${direction}`);
-    if (this.canScroll()) {
-      if (direction === 'start') {
-        const { containerWidth, inputWidth } = this.state;
-        const scrollDistance = containerWidth - inputWidth;
-        this.scrollingElement.current.style.right = scrollDistance + 'px';
-        this.setCursorPosition(0);
-      } else {
-        this.scrollingElement.current.style.right = '0px';
-        this.setCursorPosition(1000);
-      }
+    const scroller = this.scrollable.current;
+    if (scroller){
+      scroller.scroll(direction)
     }
   }
 
@@ -358,20 +340,8 @@ export default class CommandInput extends React.Component {
       this.setCursorPosition(this.cursorPosition);
     }
   }
-  handleContainerResize(width) {
-    if (this.state.containerWidth !== width) {
-      this.setState({
-        containerWidth: width
-      })
-    }
-  }
 
-  handleContentResize(width) {
-    this.setState({
-      inputWidth: width || '100%'
-    })
-  }
-
+  // we don't need to store these, we can ask the tokenMirror for them when we need them
   handleTokenMeasurement(tokenMeasurements){
     this.tokenMeasurements = tokenMeasurements;
   }
@@ -395,14 +365,11 @@ export default class CommandInput extends React.Component {
               {displayPrefix}
             </div>
           )}
-          <Scrollable className={styles.speedbarInnerContainer}>
+          <Scrollable ref={this.scrollable} className={styles.speedbarInnerContainer}>
             {showCommand && (
                 <TokenMirror
                   tokenList={tokenList}
-                  // onContainerResize={this.handleContainerResize}
-                  // onContentResize={this.handleContentResize}
                   onTokensMeasured={this.handleTokenMeasurement}
-                  // width={this.state.containerWidth}
                   />
               )}
               <input

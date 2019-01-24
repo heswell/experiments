@@ -1,4 +1,4 @@
-import { CommandType, TokenStyle } from '../command-bar';
+import { TokenStyle } from '../command-bar';
 import { SearchIdentifiers } from './rfq-command-service';
 
 const DATE_PATTERN = /^([0-3]?[0-9])?(jan|feb|mar|apr|may|jun|jul|sep|oct|nov|dec)\d{2}$/i;
