@@ -11,7 +11,7 @@ import {
 } from './utils/command-utils';
 
 import {insertNonBreakingSpaces, resolveSearchTokens} from '../token-search/token-search'
-import CommandInput, { NavigationDirection, SpeedbarTopics, InputMethod} from './input/command-input';
+import CommandInput, { NavigationDirection, InputMethod} from './input/command-input';
 import CommandSuggestions from './suggestions';
 import { EmptyTokenList } from './parsing/token-list';
 import { hideSpeedbarSuggestionsWindow} from './window-utils';
@@ -46,8 +46,6 @@ export default class CommandWindow extends React.Component {
   constructor(props) {
     super(props);
     this.state = EMPTY_STATE;
-    this.suggestionsChannel = new BroadcastChannel(SpeedbarTopics.SuggestionSync);
-    this.suggestionsChannel.onmessage = this.handleMessageFromSpeedbar;
     this.width = 9;
     this.defaultSuggestions = buildDefaultSuggestions(props.commands);
     this.currentSearchTerm = '';

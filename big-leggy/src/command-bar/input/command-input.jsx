@@ -12,10 +12,6 @@ export const NavigationDirection = {
   BWD: 'BWD'
 }
 
-export const SpeedbarTopics = {
-  SuggestionSync: 'suggestion-sync'
-};
-
 export const InputMethod = {
   AcceptSuggestion: 'accept-suggestion',
   PasteCommand: 'paste-command',
@@ -37,8 +33,7 @@ export default class CommandInput extends React.Component {
     this.tokenMeasurements = null
 
     this.state = {
-      containerWidth: undefined,
-      inputWidth: '100%'
+      containerWidth: undefined
     }
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -52,26 +47,7 @@ export default class CommandInput extends React.Component {
       this.inputElement.current.focus();
     }
   }
-  componentWillUnmount() {
-    this.suggestionsChannel.close();
-  }
 
-  componentWillReceiveProps(nextProps) {
-    const {
-      searchTerm,
-      suggestions,
-      commandState: { commandStatus: newStatus }
-    } = nextProps
-
-    const {
-      commandState: { commandStatus: oldStatus }
-    } = this.props;
-    if (newStatus === CommandStatus.Empty && oldStatus !== CommandStatus.Empty) {
-      this.setState({ inputWidth: '100%' });
-    } else if (suggestions.length === 1 && searchTerm !== this.props.searchTerm) {
-      // do we want to auto-accept suggestion if there is only 1 ?
-    }
-  }
   handlePaste(e) {
     if (e.clipboardData.types.indexOf('text/plain') > -1) {
       if (this.inputElement.current) {
@@ -119,27 +95,21 @@ export default class CommandInput extends React.Component {
         break;
       default:
 
-        switch (e.key) {
-          case Key.HOME:
-            e.preventDefault();
-            this.scroll('start');
-            this.setCursorPosition(0);
-            break;
-          case Key.END:
-            e.preventDefault();
-            this.scroll('end')
-            break;
-          default:
-        }
         if (this.shouldNavigateSuggestions(e.keyCode)) {
           // default behaviour for UP/DOWN moves cursor to end of input
           e.preventDefault();
           this.props.onNavigateSuggestions(
             e.keyCode === Key.DOWN ? NavigationDirection.FWD : NavigationDirection.BWD
           )
+          // Navigation handling has first dibs on Down key, but if we’re not in a navigation
+          // situation, let the input use it
+        } else if (e.keyCode === Key.DOWN || e.key === Key.END) {
+          e.preventDefault();
+          this.scrollToEnd();
         }
     }
   };
+
   canClearCommand() {
     const { commandState, selectedSuggestionIdx } = this.props;
     const prefixAcceptedCommandEmpty =
@@ -170,23 +140,24 @@ export default class CommandInput extends React.Component {
     const scroller = this.scrollable.current;
     const tokenMirror = this.tokenMirror.current;
 
-    if (scroller && tokenMirror && scroller.canScroll()){
+    if (scroller && tokenMirror && scroller.canScroll()) {
       const cursorPosition = this.getCursorPosition();
-      const tokenPosition = tokenMirror.getTokenPositionAtOffset(cursorPosition);
-      if (tokenPosition){
-        const {offsetLeft: tokenLeft, left, right} = tokenPosition;
-        scroller.scrollIntoView({left: tokenLeft, width: Math.round(right-left)})
+      const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
+      if (tokenPosition) {
+        const { offsetLeft: tokenLeft, left, right } = tokenPosition;
+        scroller.scrollIntoView({ left: tokenLeft, width: Math.round(right - left) })
       }
     }
   }
 
-  scroll(direction) {
+  scrollToEnd() {
     const scroller = this.scrollable.current;
-    if (scroller){
-      scroller.scroll(direction)
+    if (scroller) {
+      scroller.scrollToEnd();
+      const displayText = this.getDisplayText();
+      this.setCursorPosition(displayText.length);
     }
   }
-
   canSubmitCommand() {
     const { commandState, currentCommand } = this.props;
     if (commandState.commandStatus === CommandStatus.CommandComplete) {
@@ -336,8 +307,17 @@ export default class CommandInput extends React.Component {
   }
 
   // we don't need to store these, we can ask the tokenMirror for them when we need them
-  handleTokenMeasurement(tokenMeasurements){
+  handleTokenMeasurement(tokenMeasurements) {
     this.tokenMeasurements = tokenMeasurements;
+  }
+
+  getDisplayText() {
+    const {
+      inputText,
+      commandState: { commandText }
+    } = this.props;
+    const showCommand = this.shouldShowCommandPrefix();
+    return showCommand ? commandText : inputText;
   }
 
   render() {
@@ -361,24 +341,24 @@ export default class CommandInput extends React.Component {
           )}
           <Scrollable ref={this.scrollable} className={styles.speedbarInnerContainer}>
             {showCommand && (
-                <TokenMirror ref={this.tokenMirror} tokenList={tokenList} monitorContentSize/>
-              )}
-              <input
-                type="text"
-                className={styles.speedbarInput}
-                style={{ width: this.state.inputWidth }}
-                value={displayText}
-                onFocus={this.props.onFocus}
-                onClick={this.props.onClick}
-                onChange={this.handleChange}
-                onPaste={this.handlePaste}
-                onKeyDown={this.handleKeyDown}
-                onSelect={this.handleSelectionChange}
-                ref={this.inputElement}
-                spellCheck={false}
-                autoCorrect="off"
-                autoComplete="off"
-              />
+              <TokenMirror ref={this.tokenMirror} tokenList={tokenList} monitorContentSize />
+            )}
+            <input
+              type="text"
+              className={styles.speedbarInput}
+              style={{ width: this.state.inputWidth }}
+              value={displayText}
+              onFocus={this.props.onFocus}
+              onClick={this.props.onClick}
+              onChange={this.handleChange}
+              onPaste={this.handlePaste}
+              onKeyDown={this.handleKeyDown}
+              onSelect={this.handleSelectionChange}
+              ref={this.inputElement}
+              spellCheck={false}
+              autoCorrect="off"
+              autoComplete="off"
+            />
           </Scrollable>
           {/* {this.getStatusIndicator()} */}
         </div>

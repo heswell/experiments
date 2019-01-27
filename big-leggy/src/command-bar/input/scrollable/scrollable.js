@@ -1,16 +1,16 @@
 import React from 'react';
 import cx from 'classnames';
+import { auto, calculateScrollOffsetRight } from './scroll-utils';
 import * as styles from './scrollable.styles';
 
 export default class Scrollable extends React.Component {
   constructor(props) {
     super(props);
-    this.width = 0;
     this.el = React.createRef();
     this.scrollingElement = React.createRef();
     this.state = {
-      contentWidth: 'auto',
-      scrollRight: -3
+      contentWidth: auto,
+      scrollRight: 0
     }
 
     this.onContentResize = this.onContentResize.bind(this);
@@ -24,63 +24,52 @@ export default class Scrollable extends React.Component {
   }
 
   canScroll() {
-    return this.state.contentWidth !== 'auto';
+    return this.state.contentWidth !== auto;
   }
 
-  scroll(direction) {
+  scrollToEnd() {
     if (this.canScroll()) {
-      let {scrollRight} = this.state;
-      if (direction === 'start') {
-        const { contentWidth } = this.state;
-        const width = this.getWidth();
-        console.log(`%cscrollStart ${width} / ${contentWidth} = ${width - contentWidth}`)
-        scrollRight = width - contentWidth - 3;
-      } else {
-        scrollRight = 3;
-      }
-
-      if (scrollRight !== this.state.scrollRight){
+      if (this.state.scrollRight !== 0) {
         this.setState({
-          scrollRight 
-        })
+          scrollRight: 0
+        });
       }
     }
   }
 
-  scrollIntoView({ left, width }) {
-    const {contentWidth, scrollRight} = this.state;
-    const containerWidth = this.getWidth();
+  scrollIntoView({ left: tokenLeft, width: tokenWidth }) {
+    const scrollRight = calculateScrollOffsetRight(
+      this.state.scrollRight,
+      this.getWidth(),
+      this.state.contentWidth,
+      tokenLeft - 3,
+      tokenWidth + 6);
 
-    const visibleLeft = contentWidth - containerWidth + scrollRight;
-    const visibleRight = visibleLeft + contentWidth;
-    console.log(`scrollIntoView [${left}, ${left+width}] visibleRange = ${visibleLeft} -${visibleRight}`)
-    if (left < visibleLeft){
-      const right = -(Math.abs(scrollRight) + visibleLeft - left);
-      this.setState({
-        scrollRight: right
-      })
+    if (scrollRight !== this.state.scrollRight) {
+      this.setState({ scrollRight })
     }
-
-
   }
 
   onContentResize(width) {
     const containerWidth = this.getWidth();
-    console.log(`%cScrollable onContentResize ${width} (/${containerWidth})`, 'color: blue;font-size: bold;')
-    if (width > containerWidth) {
-      this.setState({
-        contentWidth: width
-      })
-    } else if (this.state.contentWidth !== 'auto') {
-      this.setState({
-        contentWidth: 'auto'
-      })
+    let { contentWidth } = this.state;
+    if (containerWidth) {
+      if (width > containerWidth) {
+        contentWidth = width;
+      } else {
+        contentWidth = auto;
+      }
+      if (contentWidth !== this.state.contentWidth) {
+        this.setState({
+          contentWidth
+        });
+      }
     }
-  }
+  };
 
   render() {
     const { children, className } = this.props;
-    const {contentWidth: width, scrollRight: right} = this.state;
+    const { contentWidth: width, scrollRight: right } = this.state;
     const components = Array.isArray(children)
       ? children : [children];
 
@@ -91,7 +80,7 @@ export default class Scrollable extends React.Component {
           className={styles.scrollingContainer}>
           {
             components.map((component, i) => {
-              if (React.isValidElement(component) && component.props.monitorContentSize){
+              if (React.isValidElement(component) && component.props.monitorContentSize) {
                 return React.cloneElement(component, {
                   key: i,
                   onContentResize: this.onContentResize
@@ -99,7 +88,7 @@ export default class Scrollable extends React.Component {
               } else {
                 return component;
               }
-              })
+            })
           }
         </div>
       </div>

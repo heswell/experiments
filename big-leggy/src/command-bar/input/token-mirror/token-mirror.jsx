@@ -35,72 +35,70 @@ const TextToken = ({ idx, isComplete, token, className }) => {
 
 export class TokenMirror extends React.Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.el = React.createRef();
     this.currentWidth = -1;
     this.tokenPositions = [];
   }
 
-  componentDidUpdate(prevProps){
-    const {tokenList} = this.props;
-    if (this.el.current && prevProps.tokenList !== tokenList){
+  componentDidUpdate(prevProps) {
+    const { tokenList } = this.props;
+    if (this.el.current && prevProps.tokenList !== tokenList) {
       const count = tokenList.tokens.length;
       let width;
-      if (count > 0){
-        const lastChild = this.el.current.querySelector(`:nth-child(${count})`)      
-        const {offsetLeft, offsetWidth} = lastChild;
+      if (count > 0) {
+        const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
+        const { offsetLeft, offsetWidth } = lastChild;
         width = offsetLeft + offsetWidth;
-        console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft+offsetWidth}`)
-        this.tokenPositions = this.measureTerms();  
+        console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft + offsetWidth}`)
+        this.tokenPositions = this.measureTerms();
       } else {
-        ({width} = this.el.current.getBoundingClientRect());
+        ({ width } = this.el.current.getBoundingClientRect());
       }
       const newWidth = Math.ceil(width);
-      if (newWidth !== this.currentWidth){
-          this.currentWidth = newWidth;
-          this.props.onContentResize(newWidth);
+      if (newWidth !== this.currentWidth) {
+        this.currentWidth = newWidth;
+        this.props.onContentResize(newWidth);
       }
     }
   }
 
-  getTokenPositionAtOffset(offset){
-    const token = this.props.tokenList.getTokenAtOffset(offset);
-    if (token){
-      const {idx} = token;
-      return this.tokenPositions[idx];
+  getPositionOfTokenAtOffset(offset) {
+    const token = this.props.tokenList.getTokenAtOffset(offset)
+    if (token && token.idx !== undefined) {
+      return this.tokenPositions[token.idx]
     }
   }
 
   measureTerms() {
     // lets try reading boxshadow/clipText from the dom and see if it's quick enough
     // also, what about :before/:after ?
-    if (this.el.current){
-      const {left: offsetLeft} = this.el.current.getBoundingClientRect();
+    if (this.el.current) {
+      const { left: offsetLeft } = this.el.current.getBoundingClientRect();
       const termWrappers = Array.from(this.el.current.querySelectorAll('.token-wrapper[data-idx]'));
       return termWrappers.map(termWrapper => {
-          // const term = termWrapper.querySelector('.term');
-          const term = termWrapper;
-          const { left, top, right, bottom } = term.getBoundingClientRect();
-          // const runtimeStyle = window.getComputedStyle(term, null);
-          // const boxShadow = runtimeStyle.getPropertyValue(`box-shadow`);
-          // const clipPath = runtimeStyle.getPropertyValue(`clip-path`);
-          // const [ofTop, ofRight, ofBottom, ofLeft] = calculateOverflow(boxShadow, clipPath);
-          const [ofTop, ofRight, ofBottom, ofLeft] = [0,0,0,0];
-          const absLeft = Math.round(left) - ofLeft;
-          return {
-              offsetLeft: absLeft - Math.round(offsetLeft),
-              left: absLeft,
-              top: Math.round(top) - ofTop,
-              right: Math.round(right) + ofRight,
-              bottom: Math.round(bottom) + ofBottom,
-              idx: parseInt(termWrapper.dataset.idx, 10)
-          }
+        // const term = termWrapper.querySelector('.term');
+        const term = termWrapper;
+        const { left, top, right, bottom } = term.getBoundingClientRect();
+        // const runtimeStyle = window.getComputedStyle(term, null);
+        // const boxShadow = runtimeStyle.getPropertyValue(`box-shadow`);
+        // const clipPath = runtimeStyle.getPropertyValue(`clip-path`);
+        // const [ofTop, ofRight, ofBottom, ofLeft] = calculateOverflow(boxShadow, clipPath);
+        const [ofTop, ofRight, ofBottom, ofLeft] = [0, 0, 0, 0];
+        const absLeft = Math.round(left) - ofLeft;
+        return {
+          offsetLeft: absLeft - Math.round(offsetLeft),
+          left: absLeft,
+          top: Math.round(top) - ofTop,
+          right: Math.round(right) + ofRight,
+          bottom: Math.round(bottom) + ofBottom,
+          idx: parseInt(termWrapper.dataset.idx, 10)
+        }
       });
-  
-    }
-}
 
+    }
+  }
 
   render() {
     const { tokenList = EmptyTokenList } = this.props;
