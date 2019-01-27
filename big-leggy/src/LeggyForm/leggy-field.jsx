@@ -58,7 +58,7 @@ export default class Field extends React.Component {
     return (
       <div ref={this.el} className={className} 
         data-idx={field.tabIdx}
-        onClickCapture={e => onClick(field)}
+        onClickCapture={() => onClick(field)}
         onKeyDownCapture={onKeyDown}>
           {this.renderChild()}
       </div>

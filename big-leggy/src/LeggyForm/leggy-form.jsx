@@ -55,9 +55,7 @@ export class LeggyForm extends React.Component {
           resetField: (model) => {
             model.currentField = null;
           },
-          resetCompositeType: (model) => {
-            model.resetCompositeFieldType();
-          },
+          resetCompositeType: model => model.resetCompositeFieldType(),
           commit: (ctx) => {
               return console.log(`COMMIT changes for  ${ctx.fields[ctx.idx].name}`);
           }
@@ -170,13 +168,14 @@ export class LeggyForm extends React.Component {
     // if (stateEvt.type === 'click' && this.currentState.matches('edit')){
     //   debugger;
     // }
-    console.log(`%c${stateEvt.type} => from ${JSON.stringify(this.currentState.value)}`, 'color: blue;font-weight: bold;')
+    console.log(`%c${stateEvt.type} => from ${JSON.stringify(this.currentState.value)}  [${this.state.model.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
     const s2 = this.currentState = this.stateMachine.transition(this.currentState, stateEvt)
     runActions(s2.actions, s2.context,stateEvt);
     console.log(`%c    => ${JSON.stringify(this.currentState.value)}`, 'color: blue;font-weight: bold;')
   }
 
   handleKeyDown(e){
+    // console.log(`keyDown ${e.keyCode} ${e.key}`)
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
       const startingField = this.currentField;
@@ -185,7 +184,7 @@ export class LeggyForm extends React.Component {
       // TODO how can we eliminate this logic - we need a simple indication of whether
       // key has been handled already - a model method ? 
       // Don't swallow tab if the control being edited may need it 
-      const tabbed = (stateEvt === StateEvt.TAB || stateEvt === StateEvt.ENTER) &&
+      const tabbed = (StateEvt.isTabNavEvt(stateEvt)) &&
         (this.currentField !== startingField ||
           compositeFieldIdx !== this.state.model.compositeFieldIdx );
       // In what scenario do we need this treatment of ESC ?
@@ -199,7 +198,6 @@ export class LeggyForm extends React.Component {
 
   setCompositeField(field=this.currentField){
     const idx = this.state.model.compositeFieldIdx;
-    console.log(`setCompositeField ${idx}`)
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
       // console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx}`);
@@ -212,7 +210,7 @@ export class LeggyForm extends React.Component {
   setCurrentField(field, idx=0){
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
-      console.log(`focus on field (${field.type}) [${idx}], set ignoreFocue === true`);
+      // console.log(`focus on field (${field.type}) [${idx}], set ignoreFocue === true`);
       this.ignoreFocus = true;
       fieldComponent.focus(idx);
     }

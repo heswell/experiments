@@ -10,7 +10,7 @@ export default class Scrollable extends React.Component {
     this.scrollingElement = React.createRef();
     this.state = {
       contentWidth: 'auto',
-      scrollRight: 0
+      scrollRight: -3
     }
 
     this.onContentResize = this.onContentResize.bind(this);
@@ -33,9 +33,10 @@ export default class Scrollable extends React.Component {
       if (direction === 'start') {
         const { contentWidth } = this.state;
         const width = this.getWidth();
-        scrollRight = width - contentWidth;
+        console.log(`%cscrollStart ${width} / ${contentWidth} = ${width - contentWidth}`)
+        scrollRight = width - contentWidth - 3;
       } else {
-        scrollRight = 0;
+        scrollRight = 3;
       }
 
       if (scrollRight !== this.state.scrollRight){
@@ -89,14 +90,16 @@ export default class Scrollable extends React.Component {
           style={{ width, right }}
           className={styles.scrollingContainer}>
           {
-            components.map((component, i) =>
-              component &&
-              React.cloneElement(component, {
-                key: i,
-                // how can we avoid doing this if it is a react built-in element ?
-                onContentResize: this.onContentResize
+            components.map((component, i) => {
+              if (React.isValidElement(component) && component.props.monitorContentSize){
+                return React.cloneElement(component, {
+                  key: i,
+                  onContentResize: this.onContentResize
+                })
+              } else {
+                return component;
+              }
               })
-            )
           }
         </div>
       </div>

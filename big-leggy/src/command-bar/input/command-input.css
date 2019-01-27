@@ -38,6 +38,7 @@
   flex: 1 1 auto;
   position: relative;
   z-index: 0;
+  margin-left: 6px;
 }
 
 /* this is set to 100% of scrolling container, so should equal the token mirror */
@@ -49,7 +50,6 @@
   border: none;
   outline: none;
   font-size: 13px;
-  padding-left: 6px;
   white-space: pre;
   font-family: Roboto-Regular;
   word-spacing: 2px;

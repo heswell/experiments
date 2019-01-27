@@ -13,3 +13,14 @@ export const HOME = {type: 'home'};
 export const END = {type: 'end'};
 export const PAGEUP = {type: 'page-up'};
 export const PAGEDOWN = {type: 'page-down'};
+
+export function isTabNavEvt(stateEvt){
+  switch (stateEvt.type){
+    case TAB.type:
+    case TAB_BWD.type:
+    case ENTER.type:
+      return true;
+    default:
+      return false;
+  }
+}

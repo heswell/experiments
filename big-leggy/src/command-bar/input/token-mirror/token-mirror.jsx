@@ -38,23 +38,9 @@ export class TokenMirror extends React.Component {
   constructor(props){
     super(props);
     this.el = React.createRef();
-    // this.containerWidth = props.width;
     this.currentWidth = -1;
+    this.tokenPositions = [];
   }
-
-  // componentDidMount() {
-  //   if (this.el.current){
-  //     const {width} = this.el.current.getBoundingClientRect();
-  //     // TODO also need to detect further resize
-  //     this.props.onContainerResize(width);
-  //   }
-  // }
-
-  // componentWillReceiveProps(nextProps){
-  //   if (nextProps.width !== this.props.width){
-  //     this.containerWidth = nextProps.width;
-  //   }
-  // }
 
   componentDidUpdate(prevProps){
     const {tokenList} = this.props;
@@ -65,12 +51,8 @@ export class TokenMirror extends React.Component {
         const lastChild = this.el.current.querySelector(`:nth-child(${count})`)      
         const {offsetLeft, offsetWidth} = lastChild;
         width = offsetLeft + offsetWidth;
-
         console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft+offsetWidth}`)
-        const measurements = this.measureTerms();
-        this.props.onTokensMeasured(measurements)  
-        console.log(`measured terms ${JSON.stringify(measurements,null,2)}`)
-  
+        this.tokenPositions = this.measureTerms();  
       } else {
         ({width} = this.el.current.getBoundingClientRect());
       }
@@ -79,6 +61,14 @@ export class TokenMirror extends React.Component {
           this.currentWidth = newWidth;
           this.props.onContentResize(newWidth);
       }
+    }
+  }
+
+  getTokenPositionAtOffset(offset){
+    const token = this.props.tokenList.getTokenAtOffset(offset);
+    if (token){
+      const {idx} = token;
+      return this.tokenPositions[idx];
     }
   }
 
@@ -123,7 +113,7 @@ export class TokenMirror extends React.Component {
         // an unrecognised token indicates that user has entered a complete command, but kept typing
         const beyondRequiredTokens = tokenDescriptor === undefined;
         const isComplete = idx < terms.length - 1 || beyondRequiredTokens;
-        console.log(`${token.text} isComplete ${isComplete} invalid ${token.invalid}`)
+        // console.log(`${token.text} isComplete ${isComplete} invalid ${token.invalid}`)
         const className = tokenDescriptor ? tokenDescriptor.tokenStyle : undefined;
         result = (
           <TextToken

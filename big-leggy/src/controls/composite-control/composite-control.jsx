@@ -25,12 +25,12 @@ export default class CompositeControl extends React.Component {
   commit(newValue, idx, controlCommitCallback){
     const {field} = this.props;
     console.log(`composite (${field.id}) commit ${idx}`)
-    this.props.onCommit(field);
     const value = [...this.state.value];
     value[idx] = newValue;
     this.setState({value},() => {
-      controlCommitCallback(this.state.value)
+      controlCommitCallback(this.state.value[idx])
     })
+    this.props.onCommit(field);
   }
 
   render(){

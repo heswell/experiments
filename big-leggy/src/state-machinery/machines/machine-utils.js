@@ -34,6 +34,7 @@ const alwaysTrue = () => true
 
 export const navigationEvents = () => ({
     [Evt.TAB.type]: transitionNext(),
+    [Evt.TAB_BWD.type]: transitionNext(),
     [Evt.UP.type]: transitionNext([], canNavigate),
     [Evt.DOWN.type]: transitionNext([], canNavigate),
     [Evt.ENTER.type]: transitionNext([], canNavigate),
@@ -51,10 +52,11 @@ export const transitionNext = (actions=[], cond= alwaysTrue) => [
 ]
 
 export const transitionNextComposite = () => [
-    ...transitionNext([],c => !c.nextCompositeFieldType()),
-    { target: '#edit-composite-text-input', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === TEXT },
-    { target: '#edit-composite-select', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === SELECT },
-    { target: '#edit-composite-selector', actions: ['setNextCompositeField'], cond: c => isComboType(c.nextCompositeFieldType()) }
+    ...transitionNext(['resetCompositeType'],c => !c.nextCompositeFieldType()),
+    { target: '#focus-composite', actions: ['setNextCompositeField'] }
+    // { target: '#edit-composite-text-input', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === TEXT },
+    // { target: '#edit-composite-select', actions: ['setNextCompositeField'], cond: c => c.nextCompositeFieldType() === SELECT },
+    // { target: '#edit-composite-selector', actions: ['setNextCompositeField'], cond: c => isComboType(c.nextCompositeFieldType()) }
 ]
 
 export const focusComposite = () => [

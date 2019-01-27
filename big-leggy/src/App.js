@@ -17,6 +17,7 @@ const model = {
   legs: [
     {
       field01: 'tinsel',
+      field07: ['stevo', 'Java'],
       field11: 'a'
     },
     {
@@ -31,13 +32,12 @@ class App extends Component {
     super(props)
 
     const formModel = new FormModel(formConfig, model.legs.length, (fieldName, value) => {
-      const {debug} = this.state;
       switch (fieldName){
         case 'rowIdx':
         case 'colIdx':
         case 'compositeFieldIdx':
-          console.log(`${fieldName} => ${value}`)
-          this.setState({ debug: { ...debug, [fieldName]: value}})
+          // console.log(`${fieldName} => ${value} existingState: ${JSON.stringify(debug)}`)
+          this.setState(state => ({ debug: { ...state.debug, [fieldName]: value}}))
           break;
         default:
       }
@@ -95,13 +95,15 @@ class App extends Component {
     }
   }
 
-  _renderControl(type, field, leg, idx){
+  _renderControl(type, field, leg, idx, onCommit = value => this.onChange(field, leg, value)){
     const {model} = this.state;
     const props = {
       key: idx,
       value: field.getValue(model,leg, idx),
-      onCommit : value => this.onChange(field, leg, value)
+      onCommit
     }
+
+    // console.log(`value for ${field.id}[${leg}][${idx}] = ${props.value}`)
 
     switch (type) {
       case COMBO: return  <ComboBox {...props} />

@@ -2,14 +2,14 @@
 import * as Evt from '../../../state-events';
 import {TEXT} from '../../../fields';
 
-import {transitionNextComposite, isComboType} from '../../machine-utils';
+import {transitionNextComposite, isComboType, isSelect} from '../../machine-utils';
 
 const state = {
     id: 'focus-composite',
-    onEntry: ['resetCompositeType'],
     on: {
         [Evt.ENTER.type]: [
             { target: '#edit-composite-selector', cond: c => isComboType(c.currentField.type[c.compositeFieldIdx]) },
+            { target: '#edit-composite-select', cond: c => isSelect(c.currentField.type[c.compositeFieldIdx]) },
             ...transitionNextComposite()
         ],
         [Evt.TAB.type]: transitionNextComposite(),

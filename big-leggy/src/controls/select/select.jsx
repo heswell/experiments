@@ -11,7 +11,6 @@ export default class Select extends React.Component {
 
     this.onItemSelectedBySearch = this.onItemSelectedBySearch.bind(this);
     this.searchKeyHandler = searcher(props.availableValues, this.onItemSelectedBySearch);
-
     this.state = {
       hilitedIdx: null
     }

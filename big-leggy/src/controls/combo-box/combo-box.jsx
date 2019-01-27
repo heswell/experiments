@@ -8,9 +8,9 @@ export default class ComboBox extends React.Component {
   constructor(props){
     super(props);
     this.state = {
+      value: props.value || '',
       values: props.availableValues
     }
-
     this.selector = React.createRef();
     this.onChange = this.onChange.bind(this);
   }

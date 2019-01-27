@@ -28,9 +28,9 @@ export default class CommandInput extends React.Component {
     super(props);
 
     this.scrollable = React.createRef();
+    this.tokenMirror = React.createRef();
     this.inputElement = React.createRef();
 
-    this.suggestionsChannel = new BroadcastChannel(SpeedbarTopics.SuggestionSync);
     this.cursorPosition = 0;
     this.cursorTimeout = 0;
 
@@ -45,7 +45,6 @@ export default class CommandInput extends React.Component {
     this.handlePaste = this.handlePaste.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
-    this.handleTokenMeasurement = this.handleTokenMeasurement.bind(this);
   }
 
   componentDidMount() {
@@ -123,7 +122,8 @@ export default class CommandInput extends React.Component {
         switch (e.key) {
           case Key.HOME:
             e.preventDefault();
-            this.scroll('start')
+            this.scroll('start');
+            this.setCursorPosition(0);
             break;
           case Key.END:
             e.preventDefault();
@@ -167,23 +167,17 @@ export default class CommandInput extends React.Component {
   }
 
   handleSelectionChange() {
-    const cursorPosition = this.getCursorPosition();
-    if (this.canScroll()){
-      const token = this.props.tokenList.getTokenAtOffset(cursorPosition);
-      if (token){
-        const {idx} = token;
-        const measurement = this.tokenMeasurements[idx];
-        if (measurement){
-          const {offsetLeft: tokenLeft, left, right} = measurement;
-          const tokenWidth = Math.round(right - left);
-          this.scrollable.current.scrollIntoView({left: tokenLeft, width: tokenWidth})
-        }
+    const scroller = this.scrollable.current;
+    const tokenMirror = this.tokenMirror.current;
+
+    if (scroller && tokenMirror && scroller.canScroll()){
+      const cursorPosition = this.getCursorPosition();
+      const tokenPosition = tokenMirror.getTokenPositionAtOffset(cursorPosition);
+      if (tokenPosition){
+        const {offsetLeft: tokenLeft, left, right} = tokenPosition;
+        scroller.scrollIntoView({left: tokenLeft, width: Math.round(right-left)})
       }
     }
-  }
-
-  canScroll(){
-    return this.scrollable.current.canScroll();
   }
 
   scroll(direction) {
@@ -367,10 +361,7 @@ export default class CommandInput extends React.Component {
           )}
           <Scrollable ref={this.scrollable} className={styles.speedbarInnerContainer}>
             {showCommand && (
-                <TokenMirror
-                  tokenList={tokenList}
-                  onTokensMeasured={this.handleTokenMeasurement}
-                  />
+                <TokenMirror ref={this.tokenMirror} tokenList={tokenList} monitorContentSize/>
               )}
               <input
                 type="text"

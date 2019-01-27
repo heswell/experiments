@@ -10,10 +10,13 @@ export default class Selector extends React.Component {
 
   constructor(props){
     super(props);
+
+    console.log(`Selector initial value = ${props.value}`)
+ 
     this.state = {
       open: false,
       value: this.props.value || '',
-      initialValue: this.props.value,
+      initialValue: this.props.value || '',
       selectedIdx: props.availableValues.indexOf(props.value),
       position: null
     }
@@ -169,8 +172,10 @@ export default class Selector extends React.Component {
         const value = this.props.availableValues[this.props.selectedIdx];
         this.commit(value);
       } else if (this.state.value !== this.state.initialValue){
+        console.log(`selector ENTER state.value = '${this.state.value}' state.initialValue = '${this.state.initialValue}'`)
         this.commit();
       } else if (!open){
+        console.log(`selector ENTR => open`)
         this.setState({open: true})
       }
     } else if (keyCode === Key.ESC){

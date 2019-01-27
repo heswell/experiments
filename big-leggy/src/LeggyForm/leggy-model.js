@@ -5,6 +5,7 @@ import {Empty, EditEmpty, SingleCellEdit, EditReadOnly} from './form-config';
 const UP = Evt.UP.type;
 const DOWN = Evt.DOWN.type;
 const TAB = Evt.TAB.type;
+const BACK = Evt.TAB_BWD.type;
 const LEFT = Evt.LEFT.type;
 const RIGHT = Evt.RIGHT.type;
 const ENTER = Evt.ENTER.type;
@@ -12,7 +13,16 @@ const COMMIT = Evt.COMMIT.type;
 
 const DEFAULT_DIRECTION = {type: DOWN};
 
-const isFormNavigationEvent = ({type}) => type === DOWN || type === UP || type === TAB || type === ENTER || type === COMMIT
+const NavEvts = {
+  [DOWN]: true,
+  [UP]: true,
+  [TAB]: true,
+  [BACK]: true,
+  [ENTER]: true,
+  [COMMIT]: true,
+};
+
+const isFormNavigationEvent = ({type}) => NavEvts[type];
 const isRowNavigationEvent = ({type}) => type === LEFT || type === RIGHT
 
 export default class LeggyModel {
@@ -25,7 +35,7 @@ export default class LeggyModel {
     this.previousField = null;
 
     this._currentField = null;
-    this._compositeFieldIdx = -1;
+    this._compositeFieldIdx = 0;
     this._rowIdx = -1;
     this._columnIdx = -1;
 
@@ -43,6 +53,7 @@ export default class LeggyModel {
   get compositeFieldIdx(){ return this._compositeFieldIdx; }
   set compositeFieldIdx(value){
     if (value !== this._compositeFieldIdx){
+      // console.log(`%c[LeggyModel] setter compositeFieldIdx ${this._compositeFieldIdx} => ${value}`,'color:brown;font-weight: bold;')
       this._compositeFieldIdx = value;
       this._debugListener('compositeFieldIdx', value);
     }
@@ -142,6 +153,9 @@ export default class LeggyModel {
       // are we in a position to tab move to head of next column ?
       if (evtType === TAB && legCount > 1 && colIdx < this.legCount - 1){
         return this.nextRow(-1, evtType, colIdx+1)
+      } else if (evtType === BACK && legCount > 1 && colIdx > 0){
+        // ... or to foot of previous column ...
+        return this.nextRow(-1, evtType, colIdx-1)
       } else {
         return [null];
       }
@@ -169,12 +183,10 @@ export default class LeggyModel {
   }
 
   resetCompositeFieldType(){
-    console.log(`resetCompositeFieldIdx to 0`)
     this.compositeFieldIdx = 0;
   }
 
   setNextCompositeFieldType(){
-    console.log(`setCompositeFieldType to ${this.compositeFieldIdx+1}`)
     this.compositeFieldIdx += 1;
   }
 
@@ -185,7 +197,7 @@ export default class LeggyModel {
   setCurrentField(field, idx=null){
     const {rows,currentField,legCount} = this;
     if (field !== currentField){
-      console.log(`[leggy-model] setCurrentField ${field.id} (${field.type}) idx=${idx}`)
+      // console.log(`[leggy-model] setCurrentField ${field.id} (${field.type}) idx=${idx}`)
       this.previousField = currentField
       this.currentField = field
       if (idx !== null){

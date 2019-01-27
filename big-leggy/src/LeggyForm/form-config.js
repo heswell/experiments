@@ -1,6 +1,16 @@
 export const TEXT_INPUT = 'TextInput'
 
 const getLegValue = id => (model, i) => model.legs[i][id] || ''
+const getCompositeLegValue = id => (model, legIdx, compositeIdx) => {
+  const leg = model.legs[legIdx];
+  if (leg){
+    const value = leg[id];
+    if (Array.isArray(value)){
+      return value[compositeIdx] === undefined ? '' : value[compositeIdx];  
+    }
+  }
+  return '';
+}
 
 export const TEXT = 'TextInput'
 export const SELECT = 'Select'
@@ -45,7 +55,7 @@ const Field5 = {
 const Field7 = {
   id: 'field07',
   label: 'Field 7 (T/C)',
-  getValue: getLegValue('field07'),
+  getValue: getCompositeLegValue('field07'),
   type: [TEXT, COMBO],
   layout: MultiCellEdit
 }
@@ -55,7 +65,7 @@ const Field9 = {id: 'field09', label: 'Field 9', getValue: getLegValue('field09'
 const Field10 = {
   id: 'field10',
   label: 'Field 10 (D/C)',
-  getValue: getLegValue('field10'),
+  getValue: getCompositeLegValue('field10'),
   type: [DATE, COMBO],
   layout: MultiCellEdit
 }
@@ -70,7 +80,7 @@ const Field11 = {
 const Field12 = {
   id: 'field12',
   label: 'Field 10 (T/D/C)',
-  getValue: getLegValue('field12'),
+  getValue: getCompositeLegValue('field12'),
   type: [TEXT, DATE, COMBO],
   layout: SingleCellEdit
 }
