@@ -51,7 +51,7 @@ export class TokenMirror extends React.Component {
         const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
         const { offsetLeft, offsetWidth } = lastChild;
         width = offsetLeft + offsetWidth;
-        console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft + offsetWidth}`)
+        // console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft + offsetWidth}`)
         this.tokenPositions = this.measureTerms();
       } else {
         ({ width } = this.el.current.getBoundingClientRect());

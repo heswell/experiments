@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.1.0",
+    "@heswell/utils": "^1.0.0",
     "@svgr/webpack": "2.4.1",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "9.0.0",
@@ -16,6 +17,7 @@
     "chalk": "2.4.1",
     "classnames": "^2.2.6",
     "css-loader": "1.0.0",
+    "d3-array": "^2.0.3",
     "date-fns": "^1.30.1",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
@@ -59,12 +61,19 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js",
+    "test": "node scripts/test.js --verbose=false",
     "serve": "serve build -p 3000"
   },
   "eslintConfig": {
     "rules": {
-      "no-unused-vars": ["warn", {"args": "after-used", "varsIgnorePattern": "_"}]
+      "no-loop-func": 0,
+      "no-unused-vars": [
+        "warn",
+        {
+          "args": "after-used",
+          "varsIgnorePattern": "_"
+        }
+      ]
     },
     "extends": "react-app"
   },
@@ -83,15 +92,15 @@
       "react-app-polyfill/jsdom"
     ],
     "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{js,jsx}",
+      "<rootDir>/src/**/__tests__/**/(*.)spec.{js,jsx}",
       "<rootDir>/src/**/?(*.)(spec|test).{js,jsx}"
     ],
     "testEnvironment": "jsdom",
     "testURL": "http://localhost",
     "transform": {
-      "^.+\\.(js|jsx)$": "<rootDir>/node_modules/babel-jest",
+      "^.+\\.(js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+      "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$",

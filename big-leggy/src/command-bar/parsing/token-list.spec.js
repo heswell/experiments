@@ -178,6 +178,7 @@ describe('TokenList', () => {
       expect(tokenList.toString()).toEqual(inputText);
       expect(tokenList.tokens.filter(t => t.invalid).length).toBe(1);
       expect(tokenList.tokens.find(t => t.invalid)).toEqual({
+        idx: 5,
         type: 'text',
         startOffset: 25,
         text: 'dec18',
@@ -191,6 +192,7 @@ describe('TokenList', () => {
       expect(tokenList.toString()).toEqual(inputText);
       expect(tokenList.tokens.filter(t => t.invalid).length).toBe(1);
       expect(tokenList.tokens.find(t => t.invalid)).toEqual({
+        idx: 6,
         type: 'text',
         startOffset: 29,
         text: 'otc',
