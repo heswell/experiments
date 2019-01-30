@@ -62,11 +62,32 @@ export default class TokenList {
     )
   }
 
+  getNextTokenIndexAtOffset(offset){
+
+    if (offset === 0 && this._tokens.length === 0){
+      return -1;
+    } else {
+      let token = this.getTokenAtOffset(offset);
+      if (token && token.type === 'text'){
+        return token.idx;
+      } else if (token && token.type === 'whitespace'){
+        const idx = this._tokens.indexOf(token);
+        if (idx === 0){
+          return 0;
+        } else {
+          const prevToken = this._tokens[idx-1];
+          return prevToken.idx + 1;
+        }
+      }
+    }
+  }
+
   getTokenAtOffset(offset) {
     return this._tokens.find(
       ({ startOffset, text }) => offset >= startOffset && offset <= startOffset + text.length
     );
   }
+
   toString() {
     return this._tokens.map(t => t.text).join('');
   }

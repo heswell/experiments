@@ -29,6 +29,7 @@ export default class CommandInput extends React.Component {
 
     this.cursorPosition = 0;
     this.cursorTimeout = 0;
+    this.indexOfNextTokenAtCursor = -1;
 
     this.tokenMeasurements = null
 
@@ -150,6 +151,18 @@ export default class CommandInput extends React.Component {
         }
       }
     }
+
+  // experiments
+    const idx = this.props.tokenList.getNextTokenIndexAtOffset(cursorPosition);
+    if (this.indexOfNextTokenAtCursor !== idx){
+      this.indexOfNextTokenAtCursor = idx;
+      const descriptor = this.props.tokenList.descriptors[idx];
+      if (descriptor){
+        console.log(`next token idx at cursor = ${idx} ${JSON.stringify(descriptor)}`)
+
+      }
+    }
+
   }
 
   scrollToEnd() {
