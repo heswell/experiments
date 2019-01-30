@@ -48,9 +48,10 @@ export class TokenMirror extends React.Component {
       const count = tokenList.tokens.length;
       let width;
       if (count > 0) {
-        const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
-        const { offsetLeft, offsetWidth } = lastChild;
-        width = offsetLeft + offsetWidth;
+        // const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
+        // const { offsetLeft, offsetWidth } = lastChild;
+        // width = offsetLeft + offsetWidth;
+         ({scrollWidth: width} = this.el.current);
         // console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft + offsetWidth}`)
         this.tokenPositions = this.measureTerms();
       } else {

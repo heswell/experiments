@@ -139,23 +139,27 @@ export default class CommandInput extends React.Component {
   handleSelectionChange() {
     const scroller = this.scrollable.current;
     const tokenMirror = this.tokenMirror.current;
+    const cursorPosition = this.getCursorPosition();
 
-    if (scroller && tokenMirror && scroller.canScroll()) {
-      const cursorPosition = this.getCursorPosition();
-      const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
-      if (tokenPosition) {
-        const { offsetLeft: tokenLeft, left, right } = tokenPosition;
-        scroller.scrollIntoView({ left: tokenLeft, width: Math.round(right - left) })
+    if (cursorPosition !== this.cursorPosition){
+      if (scroller && tokenMirror && scroller.canScroll()) {
+        const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
+        if (tokenPosition) {
+          const { offsetLeft: tokenLeft, left, right } = tokenPosition;
+          scroller.scrollIntoView({ left: tokenLeft, width: Math.round(right - left) })
+        }
       }
     }
   }
 
   scrollToEnd() {
     const scroller = this.scrollable.current;
-    if (scroller) {
+    const input = this.inputElement.current;
+    if (scroller && input) {
       scroller.scrollToEnd();
       const displayText = this.getDisplayText();
       this.setCursorPosition(displayText.length);
+      input.scrollLeft = input.scrollWidth
     }
   }
   canSubmitCommand() {
@@ -220,12 +224,12 @@ export default class CommandInput extends React.Component {
     return null;
   }
   getCursorPosition() {
-    const endOflnputText = this.props.inputText.length;
+    const endOfInputText = this.props.inputText.length;
     if (this.inputElement.current) {
       const { selectionStart } = this.inputElement.current;
-      return selectionStart === null ? endOflnputText : selectionStart;
+      return selectionStart === null ? endOfInputText : selectionStart;
     } else {
-      return endOflnputText;
+      return endOfInputText;
     }
   }
   setCursorPosition(offset) {
