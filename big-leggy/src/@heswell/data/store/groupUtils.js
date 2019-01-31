@@ -484,7 +484,7 @@ export function findGroupPositions(groups, groupby, row) {
         const group = groups[position];
         // if all groups are missing and insert position is end of list ...
         if (group === undefined) {
-            break out;
+            break;
         }
         // position is confirmed if all groupCol values in this comparison match values of row 
         // and other groupCol values  are null

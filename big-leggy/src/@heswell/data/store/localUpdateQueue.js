@@ -1,9 +1,9 @@
 /*
   See UpdateQueue
 */
-
+//TODO does this belong in view ?
 import {EventEmitter} from '@heswell/utils';
-import {DataTypes} from './types.mjs';
+import {DataTypes} from './types';
 
 export default class UpdateQueue extends EventEmitter {
 

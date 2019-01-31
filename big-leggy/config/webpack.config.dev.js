@@ -74,21 +74,25 @@ module.exports = {
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   entry:{
-    index: [
+    // index: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.appIndexJs,
+    // ],
+    // calendar: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.calendarJs,
+    // ],
+    // list: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.listJs,
+    // ],
+    // command: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.commandJs,
+    // ],
+    grid: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.appIndexJs,
-    ],
-    calendar: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.calendarJs,
-    ],
-    list: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.listJs,
-    ],
-    command: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.commandJs,
+      paths.gridJs,
     ]
   },
   output: {
@@ -198,7 +202,7 @@ module.exports = {
           // The preset includes JSX, Flow, and some ESnext features.
           {
             test: /\.(js|mjs|jsx)$/,
-            include: paths.appSrc,
+            include: [paths.appSrc,paths.appExamples],
             loader: require.resolve('babel-loader'),
             options: {
               customize: require.resolve(
@@ -311,6 +315,12 @@ module.exports = {
       chunks: ['command'],
       template: paths.appHtml,
       filename: 'command.html'
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['grid'],
+      template: paths.appHtml,
+      filename: 'grid.html'
     }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:

@@ -54,11 +54,11 @@ export default class BinView extends EventEmitter {
         return this._dataView.filterRows;
     }
 
-    getRows(dataOptions){
+    getRows(/*dataOptions*/){
         return [this._dataView.filterRows, this.size, this.getSelectedIndices()];
     }
 
-    setColumns(columns){
+    setColumns(/*columns*/){
         // this._dataOptions.columns = columns.map(toColumn);
     }
 

@@ -1,0 +1,48 @@
+.FilterPanel {
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+}
+
+.FilterPanel .set-filter-inner {
+    background-color: yellow;
+    box-shadow: 1px 2px 5px -1px rgba(0,0,0,0.52);
+}
+
+.FilterPanel .toolbar,
+.FilterPanel .footer {
+    display: flex;
+    align-items: center;
+}
+
+.FilterPanel .toolbar {
+    align-items: stretch;
+}
+
+.FilterPanel .footer {
+    align-items: flex-end;
+}
+
+.FilterPanel .filter-row {
+    display: flex;
+    align-items: center;
+    height: 32px;
+}
+
+.FilterPanel button {
+    border-radius: 0;
+}
+
+.FilterPanel .buttons {
+    position: absolute;
+    bottom:3px;
+    left:3px;
+    right:3px;
+    height: 24px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.FilterPanel .buttons button {
+    flex: 1 1 0;
+}

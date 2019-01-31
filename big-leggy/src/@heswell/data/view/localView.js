@@ -14,6 +14,8 @@ const NULL_DATARANGE = {
     size: 0
 };
 
+const emptyConfig = {}
+
 export default class LocalView extends EventEmitter {
 
 
@@ -23,7 +25,7 @@ export default class LocalView extends EventEmitter {
         return new LocalView({table, ...options, sortCriteria});
     }
 
-    constructor(config){
+    constructor(config=emptyConfig){
         super();
 
         this._dataOptions = null;
@@ -102,7 +104,9 @@ export default class LocalView extends EventEmitter {
     }
 
     get size(){ 
-        return this._dataView.size;
+        return this._dataView === null
+            ? 0
+            : this._dataView.size;
     }
 
     get columns (){
@@ -118,15 +122,15 @@ export default class LocalView extends EventEmitter {
                 : null;
     }
 
-    setData(data){
-        const {columns, sortBy: sortCriteria, groupBy} = this._dataOptions;
-        const table = new Table({data, columns});
-        const tableHelper = new TableHelper(table);
-        this._dataView = new InMemoryView(tableHelper, {columns, sortCriteria, groupBy});
-        const {rows, size} = this._dataView.setRange(this._rowData.range);
-        this._rowData.rows = rows;
-        return [rows, size];
-    }
+    // setData(data){
+    //     const {columns, sortBy: sortCriteria, groupBy} = this._dataOptions;
+    //     const table = new Table({data, columns});
+    //     const tableHelper = new TableHelper(table);
+    //     this._dataView = new InMemoryView(tableHelper, {columns, sortCriteria, groupBy});
+    //     const {rows, size} = this._dataView.setRange(this._rowData.range);
+    //     this._rowData.rows = rows;
+    //     return [rows, size];
+    // }
 
     setRange(lo, hi, useDelta=true, dataType=DataTypes.ROW_DATA){
         const targetData = this.getData(dataType);
@@ -134,7 +138,7 @@ export default class LocalView extends EventEmitter {
         if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
             targetData.range = { lo, hi };
             if (this._dataView){
-                const {rows, range, size, offset,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
+                const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
                 const rowset = rowUtils.mergeAndPurge(targetData, rows, size);
                 targetData.rows = rowset;
                 this.emit(dataType, rowset, size, selectedIndices);
@@ -144,14 +148,14 @@ export default class LocalView extends EventEmitter {
 
     sort(sortCriteria){
         const targetData = this._rowData;
-        const {rows, range, size, offset, selectedIndices} = this._dataView.sort(sortCriteria);
+        const {rows, size, selectedIndices} = this._dataView.sort(sortCriteria);
         const rowset = rowUtils.mergeAndPurge(targetData, rows, size); // NEEDED ?
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
     }
 
     filter(filter){
-        const {rows, range, size, offset} = this._dataView.filter(filter);
+        const {rows, size} = this._dataView.filter(filter);
         const targetData = this.getData(DataTypes.ROW_DATA);
         const rowset = rowUtils.mergeAndPurge(targetData, rows, size);
         targetData.rows = rowset;

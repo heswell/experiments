@@ -196,11 +196,11 @@ export default class Table extends EventEmitter {
         console.warn(`createRow ${idx} must be implemented as a plugin`);
     }
 
-    updateRow(idx, row, columnMap){
+    updateRow(/*idx, row, columnMap*/){
         return null;
     }
 
-    async installDataGenerators(config){
+    async installDataGenerators(/*config*/){
         //console.warn(`installDataGenerators must be implemented by a more specific subclass`);
     }
 

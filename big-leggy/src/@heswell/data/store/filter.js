@@ -70,13 +70,13 @@ function testLE(cols, f) {
 }
 
 function testInclude(cols, f) {
-    // tslint:disable-next-line:triple-equals 
+    // eslint-disable-next-line eqeqeq 
     return row => f.values.findIndex(val => val == row[cols[f.colName]]) !== -1;
 }
 
 // faster to convert values to a keyed map
 function testExclude(cols, f) {
-    // tslint:disable-next-line:triple-equals 
+    // eslint-disable-next-line eqeqeq 
     return row => f.values.findIndex(val => val == row[cols[f.colName]]) === -1;
 }
 

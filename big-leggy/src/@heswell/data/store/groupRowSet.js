@@ -156,7 +156,7 @@ export default class GroupRowSet extends BaseRowSet {
     setGroupState(groupState) {
         // console.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
         const changes = getGroupStateChanges(groupState, this.groupState);
-        changes.forEach(([key, groupIdx, isExpanded]) => {
+        changes.forEach(([key, isExpanded]) => {
             if (key === '*') {
                 this.expandAll();
             } else {
@@ -266,7 +266,7 @@ export default class GroupRowSet extends BaseRowSet {
         }
     }
 
-    clearFilter(cloneChanges) {
+    clearFilter(/*cloneChanges*/) {
         this.currentFilter = null;
         this.filterSet = null;
         // rebuild agregations for groups where filter count is less than count, remove filter count
@@ -291,7 +291,7 @@ export default class GroupRowSet extends BaseRowSet {
     filter(filter){
         const extendsCurrentFilter = extendsFilter(this.currentFilter, filter);
         const fn = filter && filterPredicate(this.columnMap, filter);
-        const { COUNT, PARENT_IDX, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
+        const { /*COUNT,*/ PARENT_IDX, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
         const { data: rows, groupRows: groups } = this;
         let [navSet, NAV_IDX, NAV_COUNT] = this.selectNavigationSet(extendsCurrentFilter && this.filterSet)
         const newFilterSet= [];

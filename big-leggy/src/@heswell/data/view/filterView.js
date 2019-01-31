@@ -1,5 +1,5 @@
 import {EventEmitter} from '@heswell/utils';
-import {DataTypes} from '@heswell/data';
+import {DataTypes} from '../store/types';
 
 export default class FilterView extends EventEmitter {
     _dataView;

@@ -41,7 +41,7 @@ export default function dataCollector(value){
   function numberCollector(){
   
       return {
-          add : value => {
+          add : (/*value*/) => {
   
           },
           values: () => [],

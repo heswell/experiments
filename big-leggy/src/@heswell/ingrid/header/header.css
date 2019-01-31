@@ -1,0 +1,116 @@
+.GroupbyHeaderCell {
+	overflow:hidden;
+	border-bottom: solid 1px black;
+}
+
+.GroupbyHeaderCell .inner-container {
+  overflow: hidden;
+	height: 100%;
+	width: 100%;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.ColHeader {
+  display:inline-block;
+  background-color: inherit;
+  position: relative;
+  padding-right: 26px;
+  flex: 0 1 auto;
+}
+
+.first.ColHeader {
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100% );
+	z-index:1;
+}
+
+.ColHeader i.fa {
+	width: 20px;
+	height: 100%;
+	vertical-align: top;
+	line-height: 24px;
+	padding-left: 11px;
+	margin-right: 0;
+	box-sizing: border-box;
+}
+.expanded.ColHeader i.fa {
+	padding-left: 9px;
+}
+
+.ColHeader:not(.first){
+	margin-left: -6px;
+	padding-left: 6px;
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50% );
+}
+
+.ColHeader:nth-child(odd) {
+	background-color: rgba(136, 136, 136,.5);
+}
+.ColHeader:nth-child(even) {
+	background-color: rgba(160,160,160,.3);
+}
+
+.ColHeaderLabel {
+	display: inline-block;
+	height: 100%;
+}
+
+.ColHeader .groupby-remove {
+	position: absolute;
+	width: 20px;
+	height: 18px;
+	top:1px;
+	right: 0px;
+	cursor: pointer;
+	visibility:hidden;
+}
+
+.ColHeader .groupby-remove:before {
+	content:'\f057';
+	font: normal normal normal 14px/1 FontAwesome;
+}
+
+.ColHeader:hover {
+  background-color: rgb(66, 139, 202);
+  color: white;
+}
+
+.ColHeader:hover .groupby-remove {
+	visibility: visible;
+}
+
+.ColHeader .groupby-remove:hover:before {
+	color: blue;
+}
+
+.HeaderCell.colgroup-header:hover .fa-caret {
+	position: absolute;
+	left:0px;
+	top:0px;
+	width: 20px;
+	height: 100%;
+	cursor:pointer;
+}
+
+.HeaderCell.colgroup-header:hover .fa-caret:before {
+  content: "\f0da";	
+	position: absolute;
+	left:3px;
+	top:6px;
+}
+
+.collapsed.HeaderCell.colgroup-header:hover .fa-caret:before {
+    content: "\f0d7";	
+}
+
+.ColHeader .fa-caret {
+	cursor: pointer;
+}
+
+.collapsed.ColHeader .fa-caret:before {
+    content: "\f0da";
+}
+
+.expanded.ColHeader .fa-caret:before {
+    content: "\f0d7";
+}

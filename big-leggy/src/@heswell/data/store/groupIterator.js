@@ -6,7 +6,7 @@ const DEPTH = 1;
 // IDX = NAV_IDX, COUNT = NAV_COUNT
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
-export default function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT, offset=0) {
+export default function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
 
     let _idx = 0;
     let _grpIdx = null;

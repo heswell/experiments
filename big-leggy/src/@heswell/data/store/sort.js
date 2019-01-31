@@ -69,10 +69,10 @@ function sort2(sortSet,rows,sortCriteria){
     });
 }
 
-function sort3(sortSet,rows,sortCriteria){
+function sort3(/*sortSet,rows,sortCriteria*/){
 
 }
-function sortAll(sortSet,rows,sortCriteria){
+function sortAll(/*sortSet,rows,sortCriteria*/){
 
 }
 

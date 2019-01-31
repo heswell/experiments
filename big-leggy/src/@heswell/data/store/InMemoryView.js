@@ -1,4 +1,4 @@
-import { NULL_RANGE, resetRange, getFullRange, withinRange } from './rangeUtils';
+import { NULL_RANGE, resetRange, withinRange } from './rangeUtils';
 import RowSet from './rowSet';
 import GroupRowSet from './groupRowSet';
 import {buildColumnMap, toColumn ,getFilterType} from './columnUtils';
@@ -17,7 +17,7 @@ export default class InMemoryView {
     constructor(table, {columns = [], sortCriteria = null, groupBy = null, filter=null}, updateQueue=new UpdateQueue()) {
         this._table = table;
         this._index_offset = DEFAULT_INDEX_OFFSET;
-        this._filter = null;
+        this._filter = filter;
         this._groupState = null;
         this._sortCriteria = sortCriteria;
         // DO we need this line ?
@@ -90,7 +90,7 @@ export default class InMemoryView {
     rowInsertedDeprecated = (event, idx, row) => {
         const { rowSet, _update_queue } = this;
         const {range: _range} = rowSet;
-        const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
+        // const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
         // to a window-only range. 
         const newRow = this._tableHelper.projectColumns(this._columns, row, idx);
         const { insertedRow, updates, replace, append } = rowSet.insert(newRow);
