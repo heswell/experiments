@@ -20,8 +20,8 @@ export default class LocalView extends EventEmitter {
 
 
     static from(data, dataOptions={}){
-        const table = new Table({data});
-        const {sortBy: sortCriteria, ...options} = dataOptions;
+        const {columns, sortBy: sortCriteria,...options} = dataOptions;
+        const table = new Table({data, columns});
         return new LocalView({table, ...options, sortCriteria});
     }
 

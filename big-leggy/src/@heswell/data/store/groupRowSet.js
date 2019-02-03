@@ -156,7 +156,7 @@ export default class GroupRowSet extends BaseRowSet {
     setGroupState(groupState) {
         // console.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
         const changes = getGroupStateChanges(groupState, this.groupState);
-        changes.forEach(([key, isExpanded]) => {
+        changes.forEach(([key, groupIdx, isExpanded]) => {
             if (key === '*') {
                 this.expandAll();
             } else {

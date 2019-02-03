@@ -1,6 +1,6 @@
 import React from 'react';
 import {renderCellContent} from '../../formatting/cellValueFormatter';
-import Cell from '../../../core/cell';
+import {getGridCellClassName} from '../../cell-utils'
 import './backgroundCell.css';
 import {Data} from '../../../../data';
 
@@ -14,7 +14,7 @@ const FlashStyle = {
     ArrowBackground: 'arrow-bg'
 };
 
-export default class BackgroundCell extends Cell {
+export default class BackgroundCell extends React.Component {
 
     constructor(props){
         super(props);
@@ -26,7 +26,8 @@ export default class BackgroundCell extends Cell {
     render(){
 
         const props = this.props;
-        const {column: {width, type: {renderer:{flashStyle}}}} = props;
+        const {column, value, cellClass} = props;
+        const {width, type: {renderer:{flashStyle}}} = column;
         const {direction} = this.state;
         
         const arrow = flashStyle === FlashStyle.ArrowOnly || flashStyle === FlashStyle.ArrowBackground
@@ -39,7 +40,7 @@ export default class BackgroundCell extends Cell {
                            flashStyle === FlashStyle.ArrowBackground ? ' arrow' : ''; 
 
         return (
-            <div className={`${this.getClassName(props)}${dirClass}${arrowClass}`} style={{width}}>
+            <div className={`${getGridCellClassName(column,value,cellClass)}${dirClass}${arrowClass}`} style={{width}}>
                 <div className='flasher'>{arrow}</div>
                 {renderCellContent(props)}
             </div>

@@ -15,10 +15,11 @@ export default class Row extends React.Component {
     render() {
 
         const { row, isFocused, isSelected, isLastSelected, rowClass,
-            cellClass: rowCellClass, idx: rowIdx, columns, style, onCellClick } = this.props;
+            cellClass: rowCellClass, idx: rowIdx, columns, style } = this.props;
 
         const groupLevel = row[GROUP_LEVEL];
         const isGroup = groupLevel !== 0;
+        const isExpanded = isGroup ? groupLevel > 0 : undefined;
 
         const className = cx(
             'GridRow',
@@ -28,6 +29,10 @@ export default class Row extends React.Component {
             rowClass ? rowClass(row) : null,
             isGroup ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}` : (rowIdx % 2 === 0 ? 'even' : 'odd') 
         );
+
+        const onClick = isGroup
+            ? this.onGroupCellClick  
+            : this.onCellClick
 
         //TODO load default formatters here and pass formatter/cellClass down to cell 
         const cells = columns.filter(column => !column.hidden).map((column,idx) => {
@@ -39,13 +44,13 @@ export default class Row extends React.Component {
                 idx,
                 rowIdx,
                 rowSelected: isSelected,
+                rowExpanded: isExpanded,
                 row,
                 value: row[column.key || idx], // always use key - it can be numeric for array access
                 column,
                 formatter: column.formatter || NULL_FORMATTER,
                 cellClass,
-                onCaptureClick: isGroup ? this.handleToggleGroup : undefined,
-                onClick: onCellClick
+                onClick
             });
         });
 
@@ -83,6 +88,13 @@ export default class Row extends React.Component {
                 nextProps.isCellEdited !== this.props.isCellEdited ||
                 nextProps.focusCellIdx !== this.props.focusCellIdx;
     }
+
+    onGroupCellClick = (cellIdx) => {
+        this.props.onToggle(this.props.row);
+        this.onCellClick(cellIdx);
+    }
+
+    onCellClick = cellIdx => this.props.onCellClick(this.props.idx, cellIdx)
 
     handleToggleGroup = () => {
         this.props.onToggle(this.props.row);

@@ -85,6 +85,7 @@ export default class ColumnFilter extends React.Component {
                 case 'number':
                     return (
                         <NumberFilter column={column} height={250}
+                            className='FilterPanel'
                             dataView={dataView}
                             filter={columnFilter}
                             onHide={this.hideFilter}

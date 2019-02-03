@@ -1,10 +1,10 @@
 import * as React from 'react';
-import Cell from '../core/cell';
+import Cell from '../cells/cell';
 import CheckboxRenderer from '../cells/rendering/renderers/checkboxCell';
 import BackgroundCellRenderer from '../cells/rendering/renderers/backgroundCell';
 import StringFormatter from '../cells/formatting/formatters/stringFormatter';
 import NumberFormatter from '../cells/formatting/formatters/numberFormatter';
-import GroupCell from '../cells/groupCell';
+import GroupCell from '../cells/group-cell';
 
 const FormatRegistry = {};
 const RegistryOfCellRenderers = {};

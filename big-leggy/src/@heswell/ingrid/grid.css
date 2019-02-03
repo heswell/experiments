@@ -147,7 +147,7 @@
 }
 
 .InnerHeaderCell {
-    position: relative;
+  position: relative;
 	font-weight: bold;
 	line-height: 22px;
 	white-space : nowrap;
@@ -365,30 +365,9 @@
 .GridCell.lowercase { text-transform: lowercase; }
 .GridCell.capitalize { text-transform: capitalize; }
 
-.collapsed .group .fa-caret:before {
-    content: "\f0da";
-}
 
-.expanded .group .fa-caret:before {
-    content: "\f0d7";
-}
-
-.GridCell .group i.fa {
-	margin-right: 6px;
-}
-
-.GridCell:focus,
-.GridCell .group:focus {
+.GridCell:focus{
 	outline: none;	
-}
-
-.GridCell .group .group-value {
-	display:inline-block;
-	max-width: calc(100% - 30px);
-	overflow:hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	vertical-align:top;
 }
 
 .GridCell.checked {

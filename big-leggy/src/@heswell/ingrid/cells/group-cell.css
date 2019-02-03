@@ -1,0 +1,24 @@
+
+.group.GridRow .GridCell:first-child {
+  padding-left: 3px
+}
+
+.GroupCell .icon {
+  width: 12px;
+  margin-right: 6px;
+  line-height: 21px;
+}
+
+.GroupCell .group-value {
+	display:inline-block;
+	max-width: calc(100% - 30px);
+	overflow:hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+  vertical-align:top;
+  cursor: default;
+}
+
+.GroupCell:focus {
+	outline: none;	
+}

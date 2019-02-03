@@ -288,10 +288,11 @@ export default class InMemoryView {
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
-
+        const columnName = column.name;
+        const colDef = this._columns.find(col => col.name === columnName);
         // No this should be decided beforehand (on client) 
-        const type = getFilterType(column);
-        const key = _columnMap[column.name];
+        const type = getFilterType(colDef);
+        const key = _columnMap[columnName];
 
         if (searchText){
             filterRowSet.searchText = searchText;

@@ -6,3 +6,12 @@
     border: solid 1px #ccc;
 }
 
+.NumberFilter .filter-inner {
+    background-color: yellow;
+}
+
+.NumberFilter .filter-row {
+    display: flex;
+    align-items: center;
+}
+

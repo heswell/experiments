@@ -1,3 +1,4 @@
+
 const SORT_ASC = 'asc';
 
 export function mapSortCriteria(sortCriteria, columnMap) {

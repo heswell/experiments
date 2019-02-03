@@ -37,14 +37,24 @@ export class SetFilter extends React.Component {
     }
 
     render(){
-        const {column,className, height, width, style=NO_STYLE, suppressHeader=false, suppressSearch=false, suppressFooter=false} = this.props;
+        const {
+            column,
+            className, 
+            height, 
+            width,
+            style=NO_STYLE,
+            suppressHeader=false,
+            suppressSearch=false,
+            suppressFooter=false
+        } = this.props;
+
         const {filterView, searchText=''} = this.state;
         const clickHandler = this.state.selectionDefault ? this.handleDeselectAll : this.handleSelectAll;
         const selectionText = this.state.selectionDefault ? 'DESELECT ALL' : 'SELECT ALL';
         const borderStyle = {borderWidth: 1, borderStyle: 'solid', borderColor: '#d4d4d4'};
 
         return (
-            <FlexBox className={cx('SetFilter',className)} style={{width,height,visibility: style.visibility}}>
+            <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width,height,visibility: style.visibility}}>
                 {suppressHeader !== true &&
                 <div className='col-header HeaderCell' style={{height: 25}}>
                     <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>

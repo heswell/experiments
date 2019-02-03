@@ -1,11 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './numberFilter.css';
+import cx from 'classnames';
+
+import FlexBox from '../../inlay/flexBox';
 import { BinView } from '../../data';
+import SearchBar from './searchBar'
+
 import Dygraph from 'dygraphs';
 import barChartPlotter from '../dygraphs/barchartPlotter';
 
+import './numberFilter.css';
+
 const DEFAULT_STATE = { op1: 'GE', val1: '', op2: 'LE', val2: '' };
+const NO_STYLE = {}
 
 export class NumberFilter extends React.Component {
 
@@ -107,43 +114,66 @@ export class NumberFilter extends React.Component {
     }
 
     render() {
-        const { height, column } = this.props;
+        const {
+            column,
+            className,
+            height,
+            width = column.width + 100,
+            style=NO_STYLE,
+            suppressHeader=false,
+            suppressSearch=false,
+            suppressFooter=false
+        } = this.props;
         const { op1, val1, op2, val2 } = this.state;
-        const width = column.width + 100;
+        // const width = column.width + 100;
+        const borderStyle = {borderWidth: 1, borderStyle: 'solid', borderColor: '#d4d4d4'};
 
         return (
-            <div className='FilterPanel NumberFilter' style={{ width: width+2, height: height + 35 }}>
-                <div className='filter-chart' ref={c => this._filterChart = ReactDOM.findDOMNode(c)}
-                    style={{width}}>
+            <FlexBox className={cx('NumberFilter','ColumnFilter', className)} style={{width,height,visibility: style.visibility}}>
+                {suppressHeader !== true &&
+                <div className='col-header HeaderCell' style={{height: 25}}>
+                    <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>
+                </div>}
+                <FlexBox className='filter-inner' style={{flex: 1, ...borderStyle}}>
+                {suppressSearch !== true &&
+                    <SearchBar style={{height: 25}}
+                        inputWidth={column.width-25}
+                        searchText={''}
+                        onSearchText={this.handleSearchText}
+                    />}
+                    <div className='filter-chart'
+                        ref={c => this._filterChart = ReactDOM.findDOMNode(c)}
+                        style={{width, height: 60}} />
+                    <div className='filter-row' style={{height: 40}}>
+                        <select name='op1' value={op1} onChange={this.onChange}>
+                            <option value='GE'>GE</option>
+                            <option value='GT'>GT</option>
+                            <option value='LE'>LE</option>
+                            <option value='LT'>LT</option>
+                            <option value='EQ'>EQ</option>
+                            <option value='NE'>NE</option>
+                        </select>
+                        <input name='val1' type='text' value={val1} onChange={this.onChange} />
+                    </div>
+                    <div className='filter-row' style={{height: 40}}>
+                        <select name='op2' value={op2} onChange={this.onChange}>
+                            <option value='LE'>LE</option>
+                            <option value='LT'>LT</option>
+                            <option value='GE'>GE</option>
+                            <option value='GT'>GT</option>
+                        </select>
+                        <input name='val2' type='text' value={val2} onChange={this.onChange} />
+                    </div>
+                    <div className='filter-row' style={{height: 40}}>
+                        <span>Save filter ...</span>
+                    </div>
+                    {suppressFooter !== true &&
+                    <div key='footer' className='footer' style={{height: 24}}>
+                        <button className='filter-done-button' onClick={this.props.onClose}>Done</button>
+                    </div>}
+                </FlexBox>
+            </FlexBox>        
 
-                </div>
-                <div className='filter-row'>
-                    <select name='op1' value={op1} onChange={this.onChange}>
-                        <option value='GE'>GE</option>
-                        <option value='GT'>GT</option>
-                        <option value='LE'>LE</option>
-                        <option value='LT'>LT</option>
-                        <option value='EQ'>EQ</option>
-                        <option value='NE'>NE</option>
-                    </select>
-                    <input name='val1' type='text' value={val1} onChange={this.onChange} />
-                </div>
-                <div className='filter-row'>
-                    <select name='op2' value={op2} onChange={this.onChange}>
-                        <option value='LE'>LE</option>
-                        <option value='LT'>LT</option>
-                        <option value='GE'>GE</option>
-                        <option value='GT'>GT</option>
-                    </select>
-                    <input name='val2' type='text' value={val2} onChange={this.onChange} />
-                </div>
-                <div className='filter-row'>
-                    <span>Save filter ...</span>
-                </div>
-                <div className='buttons'>
-                    <button className='button-apply' onClick={this.props.onClose}>Done</button>
-                </div>
-            </div>
         );
     }
 
