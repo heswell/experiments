@@ -1,16 +1,13 @@
-/* global __dirname:false */
-//import path from 'path';
-//import url from 'url';
 import fs from 'fs';
 
-//const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
-const __dirname = fs.realpathSync(process.cwd());
+const data_path = fs.realpathSync(process.cwd());
+const project_path = 'src/@heswell/viewserver/dataTables/instruments'
 
 const config = {
     name: 'Instruments',
-    dataPath: `${__dirname}/dataset`,
-    createPath: `${__dirname}/create-row`,
-    updatePath: `${__dirname}/update-row`,
+    dataPath: `${data_path}/${project_path}/dataset`,
+    createPath: `${data_path}/${project_path}/create-row`,
+    updatePath: `${data_path}/${project_path}/update-row`,
     type: 'vs',
     primaryKey: 'Symbol',
     columns: [
@@ -23,10 +20,10 @@ const config = {
         {name: 'Industry'}
     ],
     updates: {
-        interval: 1000,
+        interval: 10000,
         fields: ['Price'],
         applyInserts: false,
-        applyUpdates: false
+        applyUpdates: true
     }
 };
 

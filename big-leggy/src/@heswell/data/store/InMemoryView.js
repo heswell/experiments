@@ -37,6 +37,9 @@ export default class InMemoryView {
             this.rowSet.sort(this._sortCriteria);
         }
 
+        this.rowUpdated = this.rowUpdated.bind(this);
+        this.rowInserted = this.rowInserted.bind(this);
+
         table.on('rowUpdated', this.rowUpdated);
         table.on('rowInserted', this.rowInserted);
 
@@ -69,7 +72,65 @@ export default class InMemoryView {
         return this.rowSet.size;
     }
 
-    rowInserted = (event, idx, row) => {
+
+    // rowInsertedDeprecated = (event, idx, row) => {
+    //     const { rowSet, _update_queue } = this;
+    //     const {range: _range} = rowSet;
+    //     // const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
+    //     // to a window-only range. 
+    //     const newRow = this._tableHelper.projectColumns(this._columns, row, idx);
+    //     const { insertedRow, updates, replace, append } = rowSet.insert(newRow);
+    //     const { size, offset, data } = rowSet;
+    //     const low = _range.lo + offset;
+    //     const high = _range.hi + offset;
+
+    //     if (insertedRow) { // non-grouping RowSet
+
+    //         const index = insertedRow[System.INDEX_FIELD];
+    //         //onsole.log(`row inserted @ [${index}] new length ${size} range: ${JSON.stringify(_range)} fullRange ${JSON.stringify(fullRange)}`);
+
+    //         _update_queue.resize(size);
+
+    //         // what if the index is before low - won't all index values have changed ? YES
+    //         // not only that, but we must adjust our range
+    //         if (index > rowSet.first[System.INDEX_FIELD] && index < rowSet.last[System.INDEX_FIELD]) {
+    //             if (index < low) {
+    //                 // should be ok to mutate. This change needs to be reported back to client
+    //                 // Need a separate operation = reindex to capture this
+    //                 _range.lo += 1;
+    //                 _range.hi += 1;
+    //             }
+    //             _update_queue.replace(data.slice(_range.lo, _range.hi), size, offset);
+
+    //         } else if (index >= low && index < high) {
+    //             // we need to send updates for rows that are within buffered range not just window range
+    //             _update_queue.append(insertedRow, offset);
+    //         } else {
+    //             console.log(`don't send inserted row to client as it is outside range`)
+    //         }
+    //     } else { // GroupRowSet
+
+    //         if (replace) {
+    //             _update_queue.replace(rowSet.setRange(_range, false), size, offset);
+    //         } else {
+
+    //             if (updates) {
+    //                 updates.forEach(update => {
+    //                     const [index] = update;
+    //                     if (index >= low && index < high) {
+    //                         _update_queue.update(update);
+    //                     }
+    //                 });
+    //             }
+    //             if (append) {
+    //                 _update_queue.resize(size);
+    //                 _update_queue.append(append, offset);
+    //             }
+    //         }
+    //     }
+    // }
+
+    rowInserted(event, idx, row){
         const { _update_queue, rowSet } = this;
         const {size=null, replace, updates} = rowSet.insert(idx, row);
         if (size !== null){
@@ -87,75 +148,19 @@ export default class InMemoryView {
         // what about offset change only ?
     }
 
-    rowInsertedDeprecated = (event, idx, row) => {
+    rowUpdated(event, idx, updates){
         const { rowSet, _update_queue } = this;
-        const {range: _range} = rowSet;
-        // const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
-        // to a window-only range. 
-        const newRow = this._tableHelper.projectColumns(this._columns, row, idx);
-        const { insertedRow, updates, replace, append } = rowSet.insert(newRow);
-        const { size, offset, data } = rowSet;
-        const low = _range.lo + offset;
-        const high = _range.hi + offset;
-
-        if (insertedRow) { // non-grouping RowSet
-
-            const index = insertedRow[System.INDEX_FIELD];
-            //onsole.log(`row inserted @ [${index}] new length ${size} range: ${JSON.stringify(_range)} fullRange ${JSON.stringify(fullRange)}`);
-
-            _update_queue.resize(size);
-
-            // what if the index is before low - won't all index values have changed ? YES
-            // not only that, but we must adjust our range
-            if (index > rowSet.first[System.INDEX_FIELD] && index < rowSet.last[System.INDEX_FIELD]) {
-                if (index < low) {
-                    // should be ok to mutate. This change needs to be reported back to client
-                    // Need a separate operation = reindex to capture this
-                    _range.lo += 1;
-                    _range.hi += 1;
-                }
-                _update_queue.replace(data.slice(_range.lo, _range.hi), size, offset);
-
-            } else if (index >= low && index < high) {
-                // we need to send updates for rows that are within buffered range not just window range
-                _update_queue.append(insertedRow, offset);
-            } else {
-                console.log(`don't send inserted row to client as it is outside range`)
-            }
-        } else { // GroupRowSet
-
-            if (replace) {
-                _update_queue.replace(rowSet.setRange(_range, false), size, offset);
-            } else {
-
-                if (updates) {
-                    updates.forEach(update => {
-                        const [index] = update;
-                        if (index >= low && index < high) {
-                            _update_queue.update(update);
-                        }
-                    });
-                }
-                if (append) {
-                    _update_queue.resize(size);
-                    _update_queue.append(append, offset);
-                }
-            }
-        }
-    }
-
-    rowUpdated = (event, idx, updates) => {
-        const { _row_data, _update_queue } = this;
-        const {range, rowSet} = _row_data;
+        // const {range, rowSet} = _row_data;
         const result = rowSet.update(idx, updates);
         if (result){
             if (rowSet instanceof RowSet) {
-                if (withinRange(range, result[0], rowSet.offset)) {
+                // we wouldn't have got the update back if it wasn't in range
+                if (withinRange(rowSet.range, result[0], rowSet.offset)) {
                     _update_queue.update(result);
                 }
             } else {
                 result.forEach(rowUpdate => {
-                    if (withinRange(range, rowUpdate[0], rowSet.offset)) {
+                    if (withinRange(rowSet.range, rowUpdate[0], rowSet.offset)) {
                         _update_queue.update(rowUpdate);
                     }
                 });

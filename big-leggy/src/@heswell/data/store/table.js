@@ -2,6 +2,7 @@
 import {EventEmitter} from '@heswell/utils';
 import {buildColumnMap} from './columnUtils'
 
+// meta fields are the idx and the primary key
 const META_COUNT = 2;
 
 export default class Table extends EventEmitter {
@@ -24,6 +25,10 @@ export default class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
+console.log(`inputColumnMap ${JSON.stringify(this.inputColumnMap)}`)
+console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`)
+
+
         if (data){
             this.parseData(data);
         } else if (dataPath){
@@ -40,11 +45,13 @@ export default class Table extends EventEmitter {
         let row = this.rows[rowIdx];
         for (let i=0;i<updates.length;i+=2){
             // return [colIdx, originalValue, newValue, ...]
-            const colIdx = updates[i] + META_COUNT;
+            const absIdx = updates[i];
+            const colIdx = absIdx - META_COUNT;
             const value = updates[i+1];
-            results.push(colIdx, row[colIdx], value);
-            row[colIdx] = value;
+            results.push(colIdx, row[absIdx], value);
+            row[absIdx] = value;
         }
+        console.log(`table emit update ${results}`)
         this.emit('rowUpdated', rowIdx, results);
     }
 
@@ -178,7 +185,6 @@ export default class Table extends EventEmitter {
     }
 
     applyUpdates(){
-        console.log(`apply updates for ${this.name}`)
         for (let i=0;i<this.rows.length;i++){
             if (Math.random() > 0.75){
                 const update = this.updateRow(i, this.rows[i], this.outputColumnMap);

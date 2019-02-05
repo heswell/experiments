@@ -2,9 +2,8 @@ import Table from '../../data/store/table'
 import { toColumn } from '../../data/store/columnUtils';
 
 import Rowset from '../../data/store/rowSet';
-import {Instruments, InstrumentPrices} from '../../viewserver/dataTables';
-import {data as instrumentData} from '../../viewserver/dataTables/instruments/dataset.js';
-import {getData as instrumentPrices} from '../../viewserver/dataTables/instrumentPrices/data-generator';
+import {Instruments} from '../../viewserver/dataTables';
+import instrumentData from '../../viewserver/dataTables/instruments/dataset.js';
 const { performance } = require('perf_hooks');
 
 global.performance = performance;
@@ -131,19 +130,6 @@ export const _getInstrumentTable = () => new Table({
     data: instrumentData
 });
 
-export const InstrumentPriceColumns = InstrumentPrices.columns.map(toColumn);
-
-export const _getInstrumentPricesTable = async () => {
-
-    const data = await instrumentPrices();
-
-    return new Table({
-        name: 'InstrumentPrices',
-        primaryKey: InstrumentPrices.primaryKey,
-        columns: InstrumentPrices.columns,
-        data
-    });
-}
 
 export function _getInstrumentRowset(){
     const table = _getInstrumentTable();

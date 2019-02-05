@@ -43,6 +43,22 @@ describe('groupBy', () => {
     });
 });
 
+describe('updateRow', () => {
+    const table = _getTestTable();
+    test('update data, no grouping', () => {
+
+        const view = new InMemoryView(table,{columns: _rowset_columns});
+        view.setRange({lo: 0, hi: 10});
+
+        table.update(4, 4, 9.5, 5, 50);
+        const {updates} = view.updates;
+
+        expect(updates.length).toBe(1);
+        expect(updates[0]).toEqual({ type: 'update', updates: [ [ 104, 6, 9, 9.5, 7, 100, 50 ] ] })
+
+    });
+});
+
 describe('insertRow', () => {
     const table = _getTestTable();
     test('insert into single col grouping, all groups collapsed. Group count update, via updateQueue', () => {

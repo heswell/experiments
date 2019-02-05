@@ -13,7 +13,9 @@ import {getScrollbarSize, getColumnWidth} from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
 import {DataTypes, filterUtils, groupHelpers} from '../data';
-import {LocalView} from '../data';
+import {LocalView} from '../data/view';
+// TODO load this on demand
+import RemoteView from '../server-api/remote-view';
 
 import './grid.css';
 
@@ -39,13 +41,13 @@ export default class Grid extends React.Component {
 
     constructor(props) {
         super(props);
-        let { data = null, dataView = null/*, tableName: tablename*/, showFilters, groupBy } = props;
+        let { data = null, dataView = null, tablename, showFilters, groupBy } = props;
         if (dataView === null) {
             if (data !== null) {
                 dataView = LocalView.from(data, { columns: props.columns, groupBy });
-            } /*else if (tablename) {
+            } else if (tablename) {
                 dataView = new RemoteView({ tablename, columns: props.columns });
-            }*/
+            }
         }
 
         const scrollbarSize = getScrollbarSize();

@@ -11,7 +11,7 @@
       "args":[ 
         "${workspaceRoot}/big-leggy/node_modules/.bin/jest",
         "--",
-        "simpleRowSet"
+        "table"
       ],
       "cwd": "${workspaceRoot}/big-leggy"
   },

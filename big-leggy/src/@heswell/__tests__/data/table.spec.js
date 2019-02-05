@@ -1,5 +1,6 @@
 /*global describe test expect */
-import {_getTestTable, _getInstrumentPricesTable} from './testData';
+import {_getTestTable} from './testData';
+import {_getInstrumentPricesTable} from './instrumentPrices';
 
 describe('Table', () => {
 
@@ -55,8 +56,8 @@ describe('Table', () => {
             expect(table.status).toBe('ready');
         });
 
-        test('load data from json', () => {
-            const table = _getInstrumentPricesTable();
+        test('load data from json', async () => {
+            const table = await _getInstrumentPricesTable();
             expect(table.outputColumnMap).toEqual({
                 'ric': 2, 'description': 3, 'currency': 4, 'exchange': 5, 'lotsize': 6
             });
@@ -64,7 +65,7 @@ describe('Table', () => {
     })
 
     describe('insert', () => {
-        test.only('insert row', (done) => {
+        test('insert row', (done) => {
             const table = _getTestTable();
             table.on('rowInserted', (evtType, idx, row) => {
                 expect(table.rows[idx]).toEqual(row)

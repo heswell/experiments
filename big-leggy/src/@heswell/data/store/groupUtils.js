@@ -47,7 +47,7 @@ export class SimpleTracker {
             return acc;
         },{});
     }
-    set = (depth,pos,groupKey) => {
+    set(depth,pos,groupKey){
         if (this.levels){
             const level = this.levels[Math.abs(depth)];
             if (level && level.key !== groupKey){
@@ -59,10 +59,22 @@ export class SimpleTracker {
             }
         }
     }
-    hasParentPos = level => this.levels[level+1] && this.levels[level+1].pos !== null
-    parentPos = level => this.levels[level+1].pos
-    hasPreviousPos = level => this.levels[level] && this.levels[level].pPos !== null
-    previousPos = level => this.levels[level].pPos
+    
+    hasParentPos(level){
+        return this.levels[level+1] && this.levels[level+1].pos !== null
+    }
+    
+    parentPos(level){
+        return this.levels[level+1].pos
+    }
+    
+    hasPreviousPos(level){
+        return this.levels[level] && this.levels[level].pPos !== null
+    }
+    
+    previousPos(level){
+        return this.levels[level].pPos;
+    }
 }
 
 export class GroupIdxTracker {
@@ -77,7 +89,7 @@ export class GroupIdxTracker {
             : null;
     }
 
-    increment = (count) => {
+    increment(count){
         this.idxAdjustment += count;
         if (this.levels){
             for (let i=2; i<this.maxLevel+1;i++){
@@ -86,13 +98,19 @@ export class GroupIdxTracker {
         }
     }
 
-    previous = level => (this.levels && this.levels[level] && this.levels[level].previous) || 0
+    previous(level){
+        return (this.levels && this.levels[level] && this.levels[level].previous) || 0
+    }
 
-    hasPrevious = level => this.previous(level) > 0
+    hasPrevious(level){
+        return this.previous(level) > 0;
+    }
 
-    get = idx => this.levels === null ? null: this.levels[idx]
+    get(idx){
+        return this.levels === null ? null: this.levels[idx]
+    }
 
-    set = (depth,groupKey) => {
+    set(depth,groupKey){
         if (this.levels){
             const level = this.levels[depth];
             if (level && level.key !== groupKey){

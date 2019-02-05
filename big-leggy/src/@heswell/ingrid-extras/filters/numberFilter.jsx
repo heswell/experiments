@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 
 import FlexBox from '../../inlay/flexBox';
-import { BinView } from '../../data';
+import { BinView } from '../../data/view';
 import SearchBar from './searchBar'
 
 import Dygraph from 'dygraphs';

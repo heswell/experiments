@@ -52,7 +52,7 @@ export default class RowSet extends BaseRowSet {
         this.sortSet = arr;
     }
 
-    slice = (lo,hi) => {
+    slice(lo,hi){
 
         if (this.filterSet){
             const filteredData = this.filterSet.slice(lo, hi);
@@ -101,7 +101,7 @@ export default class RowSet extends BaseRowSet {
         this.status = status;
     }
 
-    addRows = rows => {
+    addRows(rows){
         addRowsToIndex(rows, this.index);
         this.data = this.data.concat(rows);
     }
@@ -375,7 +375,7 @@ export class FilterRowSet extends RowSet {
         return this.filterSet.map(idx => this.data[idx][2])
     }
 
-    setSelectedIndices = filter => {
+    setSelectedIndices(filter){
         const columnFilter = extractFilterForColumn(filter, this.columnName);
         const filterType = columnFilter && columnFilter.type;
         if (filterType === INCLUDE || filterType === EXCLUDE){ // what about numeric GE etc

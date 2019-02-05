@@ -1,2 +1,2 @@
-export function createRow(idx, columns) {
+module.exports = function createRow(idx, columns) {
 }

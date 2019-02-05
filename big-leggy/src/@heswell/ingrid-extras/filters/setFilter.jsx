@@ -1,7 +1,7 @@
 
 import React from 'react';
 import cx from 'classnames';
-import {FilterView} from '../../data';
+import {FilterView} from '../../data/view';
 import FlexBox from '../../inlay/flexBox';
 import {filter as filterConstants} from '../../data';
 import CheckList from './checkList';

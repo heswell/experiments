@@ -11,7 +11,9 @@
 */
 export default class UpdateQueue {
 
-      _queue = [];
+    constructor(){
+        this._queue = [];
+    }
 
       get length() { return this._queue.length; }
 
@@ -19,7 +21,7 @@ export default class UpdateQueue {
           //TODO we could also coalesce updates into an insert or rowset, if present
           const batch = this.getCurrentBatch('update');
 
-          const rowIdx = update[0];
+          const [rowIdx] = update;
           const {updates} = batch;
 
           for (let i = 0, len = updates.length; i < len; i++) {
@@ -38,9 +40,7 @@ export default class UpdateQueue {
                   return;
               }
           }
-
           updates.push(update);
-
       }
 
       resize(size) {

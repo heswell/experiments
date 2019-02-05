@@ -36,9 +36,8 @@ export const groupHelpers = {
   groupbyExtendsExistingGroupby
 }
 
-export {default as LocalView} from './view/localView';
-export {default as FilterView} from './view/filterView';
-export {default as BinView} from './view/binView';
+export {default as Table} from './store/table';
+export {default as InMemoryView} from './store/InMemoryView';
 
 export const sortUtils = {
   sortByToMap

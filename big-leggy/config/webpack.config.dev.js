@@ -35,27 +35,7 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
     {
       loader: require.resolve('css-loader'),
       options: cssOptions,
-    },
-    {
-      // Options for PostCSS as we reference these options twice
-      // Adds vendor prefixing based on your specified browser support in
-      // package.json
-      loader: require.resolve('postcss-loader'),
-      options: {
-        // Necessary for external CSS imports to work
-        // https://github.com/facebook/create-react-app/issues/2677
-        ident: 'postcss',
-        plugins: () => [
-          require('postcss-flexbugs-fixes'),
-          require('postcss-preset-env')({
-            autoprefixer: {
-              flexbox: 'no-2009',
-            },
-            stage: 3,
-          }),
-        ],
-      },
-    },
+    }
   ];
   if (preProcessor) {
     loaders.push(require.resolve(preProcessor));
@@ -74,22 +54,22 @@ module.exports = {
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   entry:{
-    // index: [
-    //   require.resolve('react-dev-utils/webpackHotDevClient'),
-    //   paths.appIndexJs,
-    // ],
-    // calendar: [
-    //   require.resolve('react-dev-utils/webpackHotDevClient'),
-    //   paths.calendarJs,
-    // ],
-    // list: [
-    //   require.resolve('react-dev-utils/webpackHotDevClient'),
-    //   paths.listJs,
-    // ],
-    // command: [
-    //   require.resolve('react-dev-utils/webpackHotDevClient'),
-    //   paths.commandJs,
-    // ],
+    index: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.appIndexJs,
+    ],
+    calendar: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.calendarJs,
+    ],
+    list: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.listJs,
+    ],
+    command: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.commandJs,
+    ],
     grid: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.gridJs,

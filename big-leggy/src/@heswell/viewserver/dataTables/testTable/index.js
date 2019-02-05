@@ -4,13 +4,13 @@
 import fs from 'fs';
 
 // const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
-const __dirname = fs.realpathSync(process.cwd());
+const path = fs.realpathSync(process.cwd());
 
 const config = {
     name: 'TestTable',
-    dataPath: `${__dirname}/data-generator`,
-    createPath: `${__dirname}/create-row.mjs`,
-    updatePath: `${__dirname}/update-row`,
+    dataPath: `${path}/data-generator`,
+    createPath: `${path}/create-row.mjs`,
+    updatePath: `${path}/update-row`,
     type: 'vs',
     primaryKey: 'Column-1',
     columns: [

@@ -4,13 +4,13 @@
 import fs from 'fs';
 
 // const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
-const __dirname = fs.realpathSync(process.cwd());
+const path = fs.realpathSync(process.cwd());
 //const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 
 
 const config = {
     name: 'InstrumentPrices',
-    dataPath: `${__dirname}/data-generator`,
+    dataPath: `${path}/data-generator`,
     // createPath: `${__dirname}/create-row.js`,
     // updatePath: `${__dirname}/update-row`,
     type: 'vs',
