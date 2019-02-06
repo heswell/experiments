@@ -6,7 +6,7 @@ import './group-cell.css';
 const DEPTH = 1;
 const CHILD_COUNT = 2;
 
-export default React.memo(({value, idx, cellClass, row, column, rowExpanded, onClick}) => {
+export default React.memo(({value, idx, cellClass, row, column, onClick}) => {
 
     const clickHandler = useCallback(e => {
         e.preventDefault();
@@ -14,11 +14,13 @@ export default React.memo(({value, idx, cellClass, row, column, rowExpanded, onC
         onClick(idx);
     },[idx, onClick])
 
+    const isExpanded = row[DEPTH] > 0;
+
     return (
         <div 
             className={getGridCellClassName(column, value, cellClass)}
             style={{ width: column.width }} tabIndex={0} >
-            {getContent(row, column.columns, rowExpanded, clickHandler)}
+            {getContent(row, column.columns, isExpanded, clickHandler)}
         </div>
     );
 })

@@ -23,16 +23,18 @@ const FlashStyle = {
 
 export default React.memo(props => {
 
-  const { column, row, value, cellClass}  = props;
+  const { idx, column, row, cellClass}  = props;
   
   const [prevColumn, setColumn] = useState(column);
   const [prevRow, setRow] = useState(row);
   const [prevValue, setValue] = useState()
   const [prevDirection, setDirection] = useState('');
 
-  const { width, type: { renderer: { flashStyle } } } = column;
+  const { key, width, type: { renderer: { flashStyle } } } = column;
+  const value = row[key || idx];
 
   let direction = prevDirection;
+
 
   if (column !== prevColumn || row[KEY] !== prevRow[KEY]) {
     setColumn(column);
@@ -64,7 +66,7 @@ export default React.memo(props => {
 function getDirection(direction, prevValue, newValue, column) {
   if (!Number.isFinite(newValue)) {
     return '';
-  } else {
+  } else if (prevValue !== null && newValue !== null){
     let diff = newValue - prevValue;
     if (diff) {
       // make sure there is still a diff when reduced to number of decimals to be displayed

@@ -4,8 +4,9 @@ const DEFAULT_TYPE = {name:'string'};
 
 export function renderCellContent(props){
 
-    const {column, value, row, formatter} = props;
-    const {type=DEFAULT_TYPE} = column;
+    const {idx, column, row} = props;
+    const {type=DEFAULT_TYPE, formatter} = column;
+    const value = row[column.key || idx];
 
     if (React.isValidElement(formatter)){
         return React.cloneElement(formatter, props);
