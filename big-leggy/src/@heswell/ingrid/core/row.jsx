@@ -40,29 +40,27 @@ export default React.memo(({
     idx,
     myKey,
     columns,
-    style,
     cellRenderer 
 }) => {
 
 
-    useReportChange({
-        idx,
-        myKey,
-        row,
-        isFocused,
-        isSelected,
-        isLastSelected,
-        rowClass,
-        onToggle,
-        onCellClick,
-        onContextMenu,
-        onDoubleClick,
-        onSelect,
-        cellClass,
-        columns,
-        style,
-        cellRenderer         
-    }) 
+    // useReportChange({
+    //     idx,
+    //     myKey,
+    //     row,
+    //     isFocused,
+    //     isSelected,
+    //     isLastSelected,
+    //     rowClass,
+    //     onToggle,
+    //     onCellClick,
+    //     onContextMenu,
+    //     onDoubleClick,
+    //     onSelect,
+    //     cellClass,
+    //     columns,
+    //     cellRenderer         
+    // }) 
 
     const handleContextMenu = useCallback(e => onContextMenu(e, {idx, row}),[idx, row]);
     const handleClick = useCallback(e => {
@@ -114,7 +112,6 @@ export default React.memo(({
     return (
         <div className={className}
             data_key={myKey}
-            style={style}
             tabIndex={0}
             onClick={handleClick} 
             onDoubleClick={handleDoubleClick} 
