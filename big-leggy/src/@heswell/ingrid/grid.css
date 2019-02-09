@@ -219,6 +219,7 @@
 	height: 15px;
 	overflow-x: scroll;
 	overflow-y: hidden;
+	scroll-behavior: smooth;
 }
 
 .Canvas::-webkit-scrollbar,
@@ -257,10 +258,12 @@
 
 .GridRow {
 	outline: 0;
-/*	left:0;
-	white-space: nowrap;
-	overflow: hidden;
-*/}
+	height: 23px;
+	position:absolute;
+	top:0;
+	left:0;
+	width: 100%;
+}
 
 .GridRow.even {
 	background-color: #f3f3f3;
@@ -526,13 +529,6 @@
 .checkbox-list .GridRow.selected {
 	background-color: inherit;
 	color:inherit;
-}
-
-.GridRow {
-	position:absolute;
-	top:0;
-	left:0;
-	width: 100%;
 }
 
 .GridRow.selected .GridCell:not(.selected) {

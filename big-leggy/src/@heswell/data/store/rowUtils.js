@@ -36,10 +36,10 @@ export function update(rows, range, updates) {
         for (let ii = 0; ii < rows.length; ii++) {
             if (rows[ii][Data.INDEX_FIELD] === idx) {
                 row = rows[ii].slice();
-
+                // updates = [colIdx, oldValue, newValue]*
                 for (let j = 0; j < fieldUpdates.length; j += 2) {
                     //TODO where should the +4 be resolved ?
-                    row[fieldUpdates[j] + 4] = fieldUpdates[j + 1];
+                    row[fieldUpdates[j] + 4] = fieldUpdates[j + 2];
                 }
                 results[ii] = row;
 

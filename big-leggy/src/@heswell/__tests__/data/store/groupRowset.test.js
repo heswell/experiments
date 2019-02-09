@@ -1,13 +1,20 @@
 /*global describe test expect */
 //TODO additonal checks of row PARENT_IDX
-import GroupRowSet from '../../data/store/groupRowSet';
+import GroupRowSet from '../../../data/store/groupRowSet';
 import { 
     _getTestRowset,
     getTestTableAndRowset,
     getEmptyTestTableAndRowset,
-    _getInstrumentRowset, InstrumentColumns,
-     _rowset_columns, _rowset_columns_with_aggregation, GROUP_COL_1, GROUP_COL_2, GROUP_COL_3 } from './testData'
-import { INCLUDE } from '../../data/store/filter';
+    _getInstrumentRowset,
+    InstrumentColumns,
+    _rowset_columns,
+    _rowset_columns_with_aggregation,
+    GROUP_COL_1,
+    GROUP_COL_2,
+    GROUP_COL_3
+} from '../testData';
+
+import { INCLUDE } from '../../../data/store/filter';
 
 // const significantCols = (d) => d.slice(0, 4).concat(d[11]);
 

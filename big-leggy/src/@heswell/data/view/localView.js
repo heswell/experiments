@@ -22,7 +22,9 @@ export default class LocalView extends EventEmitter {
     static from(data, dataOptions={}){
         const {columns, sortBy: sortCriteria,...options} = dataOptions;
         const table = new Table({data, columns});
+        window.TABLE = table;
         return new LocalView({table, ...options, sortCriteria});
+
     }
 
     constructor(config=emptyConfig){
@@ -33,7 +35,10 @@ export default class LocalView extends EventEmitter {
         this._dataView = null;
         this._rowData = null;
         this._filterData = null;
-    
+
+        this.processRowData = this.processRowData.bind(this);
+        this.processUpdate = this.processUpdate.bind(this);
+
         const {
             table=null,
             columns,
@@ -77,9 +82,6 @@ export default class LocalView extends EventEmitter {
             groupBy,
             groupState
         };
-
-        this.processRowData = this.processRowData.bind(this);
-        this.processUpdate = this.processUpdate.bind(this);
 
         this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns, 4);
     }

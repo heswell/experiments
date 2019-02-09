@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Grid from '../src/@heswell/ingrid/grid';
-// import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
-import { connect/*, subscribe2 */} from '../src/@heswell/server-api/serverApi2';
+import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
+//import { connect/*, subscribe2 */} from '../src/@heswell/server-api/serverApi2';
 
 
 // const locked = true;
@@ -23,7 +23,7 @@ class SampleGrid extends React.Component {
   render(){
     return (
       <div className='sample-grid'>
-        <Grid height={400} width={800} tablename="Instruments" columns={columns}/>
+        <Grid height={400} width={800} data={data} /*tablename="Instruments"*/ columns={columns}/>
       </div>
     )
   }
@@ -33,4 +33,4 @@ ReactDOM.render(
   <SampleGrid />,
   document.getElementById('root'));
 
-connect('127.0.0.1:9090');
+//connect('127.0.0.1:9090');

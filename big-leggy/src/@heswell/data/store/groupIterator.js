@@ -7,7 +7,6 @@ const DEPTH = 1;
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
 export default function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
-
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -59,6 +58,11 @@ export default function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*
                 return _range_positions[idx*3];
             } else {
                 const group = groups[idx];
+                if (group === undefined){
+                    console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
+                        ${JSON.stringify(_range_positions,null,2)}
+                    `)
+                }
                 if (group[DEPTH] > 0){
                     // we have the index of the group row within the rowset, the leaf row will
                     // be one of the rows following, order determined by the sortCols

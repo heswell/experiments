@@ -2321,7 +2321,14 @@ const DEPTH$1 = 1;
 const FORWARDS = 0;
 const BACKWARDS = 1;
 function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
-
+    console.log(`groupIterator 
+    groups:
+        ${JSON.stringify(groups)}
+    navset
+        ${JSON.stringify(navSet)}
+    rows:
+        ${JSON.stringify(rows)}        
+    `);
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -2373,6 +2380,11 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
                 return _range_positions[idx*3];
             } else {
                 const group = groups[idx];
+                if (group === undefined){
+                    console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
+                        ${JSON.stringify(_range_positions,null,2)}
+                    `);
+                }
                 if (group[DEPTH$1] > 0){
                     // we have the index of the group row within the rowset, the leaf row will
                     // be one of the rows following, order determined by the sortCols
@@ -3131,7 +3143,6 @@ class GroupRowSet extends BaseRowSet {
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
             rowUpdates.push(colIdx+2,value);
-            //TODO we're going to need the original values to update the aggregations
 
             // If this column is being aggregated
             if (this.aggregatedColumn[colIdx]){

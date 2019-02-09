@@ -82,10 +82,10 @@ describe('Table', () => {
             const table = _getTestTable();
             table.on('rowUpdated', (evtType, idx, updates) => {
                 expect(table.rows[4]).toEqual([4,'key05','key05','G1','I2','T3',9.5,50])
-                expect(updates).toEqual([6,9,9.5,7,100,50])
+                expect(updates).toEqual([4,9,9.5,5,100,50])
                 done()
             });
-            table.update(4, 4, 9.5, 5, 50);
+            table.update(4, 6, 9.5, 7, 50);
         })
     });
 });

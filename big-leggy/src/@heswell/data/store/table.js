@@ -25,10 +25,6 @@ export default class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
-console.log(`inputColumnMap ${JSON.stringify(this.inputColumnMap)}`)
-console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`)
-
-
         if (data){
             this.parseData(data);
         } else if (dataPath){
@@ -51,7 +47,6 @@ console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`)
             results.push(colIdx, row[absIdx], value);
             row[absIdx] = value;
         }
-        console.log(`table emit update ${results}`)
         this.emit('rowUpdated', rowIdx, results);
     }
 

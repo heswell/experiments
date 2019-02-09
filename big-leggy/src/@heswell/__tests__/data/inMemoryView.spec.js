@@ -49,12 +49,11 @@ describe('updateRow', () => {
 
         const view = new InMemoryView(table,{columns: _rowset_columns});
         view.setRange({lo: 0, hi: 10});
-
-        table.update(4, 4, 9.5, 5, 50);
+        table.update(4, 6, 9.5, 7, 50);
         const {updates} = view.updates;
 
         expect(updates.length).toBe(1);
-        expect(updates[0]).toEqual({ type: 'update', updates: [ [ 104, 6, 9, 9.5, 7, 100, 50 ] ] })
+        expect(updates[0]).toEqual({ type: 'update', updates: [ [ 104, 4, 9, 9.5, 5, 100, 50 ] ] })
 
     });
 });

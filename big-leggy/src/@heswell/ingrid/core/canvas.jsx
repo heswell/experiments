@@ -14,23 +14,35 @@ export default class Canvas extends React.Component {
         left: 0
     };
 
-    contentEl;
+    constructor(props){
+      super(props);
+
+      this.contentEl = React.createRef();
+
+    }
 
     render() {
 
-        const {rowHeight, firstVisibleRow, left, width, height, rows,
-            keyMap, selectedRows, selectionDefault, selectedCells, columnGroup, cellRenderer} = this.props;
+        const {
+          rowHeight,
+          firstVisibleRow,
+          left,
+          width,
+          height,
+          rows,
+          keyMap,
+          selectedRows,
+          selectionDefault,
+          selectedCells,
+          columnGroup,
+          cellRenderer
+        } = this.props;
 
         const focusCellRow = selectedCells ? selectedCells.rowIdx : -1;
         const focusCell = selectedCells ? selectedCells.idx : -1;
         const focusCellActive = focusCell !== -1 && selectedCells.active;
 
         // console.log(`Canvas render for rows ${rows.map(r => [r[0]])}`);
-
-        // const SPACES = '                                                ';
-        // function pad(str,len){
-        //     return (str+SPACES).slice(0,len);
-        // }
 
         const gridRows = rows.map((row, idx, data) => {
 
@@ -52,7 +64,7 @@ export default class Canvas extends React.Component {
                 myKey: keyMap[abs_idx],
                 idx: abs_idx,
                 row: row,
-                style: {transform: `translate3d(0px,${rowHeight*abs_idx}px,0)`,height: rowHeight},
+                style: {transform: `translate3d(0px,${rowHeight*abs_idx}px,0)`},
                 isFocused,
                 isSelected,
                 isCellEdited,
@@ -71,6 +83,8 @@ export default class Canvas extends React.Component {
             });
         });
 
+        // console.log(`%c[Canvas] rowsRendered = ${gridRows.length}`,'color: red; font-weight: bold;')
+
         const className = cx('Canvas', this.props.className);
 
         return (
@@ -78,7 +92,7 @@ export default class Canvas extends React.Component {
                 onContextMenu={this.handleContextMenuFromCanvas}
                 onScroll={this.props.onScroll}
                 onKeyDown={this.props.onKeyDown} >
-                <div ref={component => this.contentEl = ReactDOM.findDOMNode(component)} 
+                <div ref={this.contentEl} 
                     style={{...css.CanvasContent, width: Math.max(columnGroup.width,width), height}}>
                     {gridRows}
                 </div>
@@ -133,6 +147,13 @@ export default class Canvas extends React.Component {
       el.scrollLeft = scrollLeft;
     }
 
+  }
+
+  // called by viewserver
+  setScrollLeft(scrollLeft){
+    if (this.contentEl.current){
+      this.contentEl.current.style.left = -scrollLeft + 'px';
+    }
   }
 
   handleContextMenuFromCanvas = (e) => {

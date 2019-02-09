@@ -1,15 +1,68 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import cx from 'classnames';
 import {getCellRenderer} from '../registry/dataTypeRegistry';
 
 const DEPTH = 1;
 const NOOP = () => {}
 
+function useReportChange(props){
+    const ref = useRef();
+
+    useEffect(() => {
+        ref.current = props;
+    })
+
+    const prevProps = ref.current || {}
+
+    const changes = [];
+    Object.keys(props).forEach(key => {
+        if (props[key] !== prevProps[key]){
+            changes.push(key);
+        }
+    })
+
+    console.log(`${(props.myKey+' ').slice(0,2)} ${props.row[3]}[${props.row[0]}] : ${JSON.stringify(changes)}`)
+}
+
 // TODO combine isSelected, isFocused and isLastSelected into a single status
-export default React.memo(({ row, isFocused, isSelected, isLastSelected, rowClass,
-    onToggle, onCellClick, onContextMenu=NOOP, onDoubleClick=NOOP, onSelect,
-    cellClass, idx, columns, style,
-    cellRenderer }) => {
+export default React.memo(({
+    row,
+    isFocused,
+    isSelected,
+    isLastSelected,
+    rowClass,
+    onToggle,
+    onCellClick,
+    onContextMenu=NOOP,
+    onDoubleClick=NOOP,
+    onSelect,
+    cellClass,
+    idx,
+    myKey,
+    columns,
+    style,
+    cellRenderer 
+}) => {
+
+
+    useReportChange({
+        idx,
+        myKey,
+        row,
+        isFocused,
+        isSelected,
+        isLastSelected,
+        rowClass,
+        onToggle,
+        onCellClick,
+        onContextMenu,
+        onDoubleClick,
+        onSelect,
+        cellClass,
+        columns,
+        style,
+        cellRenderer         
+    }) 
 
     const handleContextMenu = useCallback(e => onContextMenu(e, {idx, row}),[idx, row]);
     const handleClick = useCallback(e => {
@@ -59,7 +112,10 @@ export default React.memo(({ row, isFocused, isSelected, isLastSelected, rowClas
     });
 
     return (
-        <div className={className} style={style} tabIndex={0}
+        <div className={className}
+            data_key={myKey}
+            style={style}
+            tabIndex={0}
             onClick={handleClick} 
             onDoubleClick={handleDoubleClick} 
             onContextMenu={handleContextMenu}>

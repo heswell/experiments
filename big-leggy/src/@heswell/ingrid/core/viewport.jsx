@@ -12,13 +12,14 @@ export default class Viewport extends React.Component {
 
     verticalScrollContainer;
     scrollableContainerEl;
-    scrollingCanvas;
     scrollTop = 0;
     viewState;
 
     constructor(props){
 
         super(props);
+
+        this.scrollingCanvas = React.createRef();
 
         const selectionState = SelectionModel.getInitialState(props);
 
@@ -90,7 +91,7 @@ export default class Viewport extends React.Component {
                                     {...props} /* onSelectionChange,onCellClick */
                                     {...commonSpec}
                                     className={columnGroup.locked ? 'fixed' : undefined}
-                                    ref={columnGroup.locked ? null : component => this.scrollingCanvas = component}
+                                    ref={columnGroup.locked ? null : this.scrollingCanvas}
                                     columnGroup={columnGroup}
                                     left={columnGroup.renderLeft}
                                     width={columnGroup.renderWidth}
@@ -134,7 +135,6 @@ export default class Viewport extends React.Component {
             const newState = this.getState(this.viewState, nextProps);
             const {firstVisibleRow, numberOfRowsInViewport} = newState;
             if (numberOfRowsInViewport !== viewState.numberOfRowsInViewport){
-                console.log(`%cNumber of rows in viewport ${viewState.numberOfRowsInViewport} - ${numberOfRowsInViewport}`,'color:red;font-weight:bold');
                 // This will escalate to Grid, which will reset rows, but viewport is going to re-render before that, potentially with
                 // invalid no of rows (i.e. mismatch between rows and keys)
                 nextProps.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport);
@@ -207,12 +207,11 @@ export default class Viewport extends React.Component {
             this.verticalScrollContainer.scrollTop = scrollTop;
         }
 
-        if (typeof scrollLeft === 'number'){
-            const contentEl = this.scrollingCanvas.contentEl;
-            contentEl.style.left = -scrollLeft + 'px';
+        if (typeof scrollLeft === 'number' && this.scrollingCanvas.current){
+            this.scrollingCanvas.current.setScrollLeft(scrollLeft)
         }
     }
-
+    
     getState({scrollTop=0, scrollLeft=0}, {rows, height, gridModel}){
 
         const indexOfFirstRow = rows.length ? rows[0][0] : -1;
@@ -223,7 +222,6 @@ export default class Viewport extends React.Component {
             ? this.viewState.keyMap.moveTo(firstVisibleRow, firstVisibleRow + numberOfRowsInViewport, indexOfFirstRow)
             : new KeyMap(0, numberOfRowsInViewport, indexOfFirstRow);
 
-        //console.log(keyMap);
         return {
             numberOfRowsInViewport,
             firstVisibleRow,

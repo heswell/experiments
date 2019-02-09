@@ -1,6 +1,6 @@
 import LocalView from '../../../data/view/localView';
 import {DataTypes} from '../../../data/store/types';
-import {data} from '../../../viewserver/dataTables/instruments/dataset';
+import data from '../../../viewserver/dataTables/instruments/dataset';
 
 describe('LocalView', () => {
   const locked = true;

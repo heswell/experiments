@@ -1,10 +1,6 @@
 
 export default class KeyMap {
 
-    displayStart;
-    displayEnd;
-    indexOfFirstRow;
-
     constructor(displayStart, displayEnd, indexOfFirstRow=0, keys=null){
 
         this.displayStart = displayStart;
@@ -16,13 +12,10 @@ export default class KeyMap {
                 this[k] = keys[k];
             }
         } else {
-            for (let i=displayStart,idx=0;i<displayEnd+1;i++,idx++){
+            for (let i=displayStart,idx=0;i<displayEnd;i++,idx++){
                 this[i] = idx;
             }
         }
-        // console.log(`KeyMap.constructor [${displayStart},${displayEnd}] 
-        // ${JSON.stringify(this)}
-        // keys : ${JSON.stringify(keys)}`);
     }
 
     contains(key){
@@ -55,7 +48,7 @@ function shiftKeys(keyMap, displayStart, displayEnd, shiftCount){
     }
 
     // this assumes displayStart is zero
-    for (let i=displayStart;i<=displayEnd-shiftCount;i++){
+    for (let i=displayStart;i<displayEnd-shiftCount;i++){
         if (keyMap.contains(i)){
             //key = keys[i] = keyMap[i]-shiftCount;
             key = keys[i+shiftCount] = keyMap[i];
@@ -65,7 +58,7 @@ function shiftKeys(keyMap, displayStart, displayEnd, shiftCount){
 
     const nextKey = getNext(usedKeys);
 
-    for (let i=displayStart;i<=displayEnd;i++){
+    for (let i=displayStart;i<displayEnd;i++){
         if (typeof keys[i] === 'undefined'){
             keys[i] = nextKey();
         }
@@ -89,7 +82,7 @@ function scrollKeys(keyMap, displayStart, displayEnd){
     const keys = {};
     const usedKeys = [];
 
-    for (let i=displayStart;i<=displayEnd;i++){
+    for (let i=displayStart;i<displayEnd;i++){
         if (keyMap.contains(i)){
             key = keys[i] = keyMap[i];
             usedKeys[key] = true;
@@ -98,7 +91,7 @@ function scrollKeys(keyMap, displayStart, displayEnd){
 
     const nextKey = getNext(usedKeys);
 
-    for (let i=displayStart;i<=displayEnd;i++){
+    for (let i=displayStart;i<displayEnd;i++){
         if (typeof keys[i] === 'undefined'){
             keys[i] = nextKey();
         }

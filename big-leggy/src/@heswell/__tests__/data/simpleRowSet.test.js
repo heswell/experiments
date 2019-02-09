@@ -1,9 +1,17 @@
 /*global describe test expect */
 import RowSet from '../../data/store/rowSet';
-import {_getTestTable, _getTestRowset, _rowset_columns,
-    _getInstrumentRowset,
-    _getInstrumentPricesTable, InstrumentPriceColumns,
+import {
+    _getTestTable,
+    _getTestRowset,
+    _rowset_columns,
+    _getInstrumentRowset
 } from './testData';
+
+import {
+    InstrumentPriceColumns,
+    _getInstrumentPricesTable
+} from './instrumentPrices';
+
 import {LESS_THAN, GREATER_EQ} from '../../data/store/filter';
 
 const DEFAULT_OFFSET =100;

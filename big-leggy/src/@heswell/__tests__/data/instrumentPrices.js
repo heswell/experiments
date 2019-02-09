@@ -1,6 +1,7 @@
 import {getData as instrumentPrices} from '../../viewserver/dataTables/instrumentPrices/data-generator';
 import {InstrumentPrices} from '../../viewserver/dataTables';
 import { toColumn } from '../../data/store/columnUtils';
+import Table from '../../data/store/table';
 
 export const InstrumentPriceColumns = InstrumentPrices.columns.map(toColumn);
 

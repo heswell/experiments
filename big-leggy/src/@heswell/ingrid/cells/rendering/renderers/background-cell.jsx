@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect,useRef } from 'react';
 import { renderCellContent } from '../../formatting/cellValueFormatter';
 import { getGridCellClassName } from '../../cell-utils'
 import { Data } from '../../../../data';
@@ -21,29 +21,30 @@ const FlashStyle = {
   ArrowBackground: 'arrow-bg'
 };
 
+const INITIAL_VALUE = [null, null, null, null]
+
+function useDirection(key, value, column) {
+  const ref = useRef();
+  const [prevKey, prevValue, prevColumn, prevDirection] = ref.current || INITIAL_VALUE;
+  const direction = key === prevKey &&  column === prevColumn && 
+    Number.isFinite(prevValue) && Number.isFinite(value)
+    ? getDirection(prevDirection, prevValue, value, column)
+    : '';
+
+  useEffect(() => {
+    ref.current = [key, value, column, direction]
+  })
+
+  return direction;
+}
+
 export default React.memo(props => {
 
   const { idx, column, row, cellClass}  = props;
-  
-  const [prevColumn, setColumn] = useState(column);
-  const [prevRow, setRow] = useState(row);
-  const [prevValue, setValue] = useState()
-  const [prevDirection, setDirection] = useState('');
-
   const { key, width, type: { renderer: { flashStyle } } } = column;
   const value = row[key || idx];
 
-  let direction = prevDirection;
-
-
-  if (column !== prevColumn || row[KEY] !== prevRow[KEY]) {
-    setColumn(column);
-    setRow(row);
-  } else if (value !== prevValue) {
-    direction = getDirection(prevDirection, prevValue, value, column)
-    setValue(value);
-    setDirection(direction)
-  }
+  const direction = useDirection(row[KEY], value, column)
 
   const arrow = flashStyle === FlashStyle.ArrowOnly || flashStyle === FlashStyle.ArrowBackground
     ? direction === UP1 || direction === UP2 ? CHAR_ARROW_UP :
@@ -53,6 +54,7 @@ export default React.memo(props => {
   const dirClass = direction ? ` ` + direction : '';
   const arrowClass = flashStyle === FlashStyle.ArrowOnly ? ' arrow-only' :
     flashStyle === FlashStyle.ArrowBackground ? ' arrow' : '';
+
   return (
     <div
       className={`${getGridCellClassName(column, value, cellClass)}${dirClass}${arrowClass}`}
