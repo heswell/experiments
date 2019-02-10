@@ -1679,10 +1679,6 @@ class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
-console.log(`inputColumnMap ${JSON.stringify(this.inputColumnMap)}`);
-console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`);
-
-
         if (data){
             this.parseData(data);
         } else if (dataPath){
@@ -1705,7 +1701,6 @@ console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`);
             results.push(colIdx, row[absIdx], value);
             row[absIdx] = value;
         }
-        console.log(`table emit update ${results}`);
         this.emit('rowUpdated', rowIdx, results);
     }
 
@@ -1840,7 +1835,7 @@ console.log(`outputColumnMap ${JSON.stringify(this.outputColumnMap)}`);
 
     applyUpdates(){
         for (let i=0;i<this.rows.length;i++){
-            if (Math.random() > 0.75){
+            if (Math.random() > 0.5){
                 const update = this.updateRow(i, this.rows[i], this.outputColumnMap);
                 if (update){
                     this.update(i, ...update);
@@ -2321,14 +2316,6 @@ const DEPTH$1 = 1;
 const FORWARDS = 0;
 const BACKWARDS = 1;
 function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
-    console.log(`groupIterator 
-    groups:
-        ${JSON.stringify(groups)}
-    navset
-        ${JSON.stringify(navSet)}
-    rows:
-        ${JSON.stringify(rows)}        
-    `);
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -3127,6 +3114,7 @@ class GroupRowSet extends BaseRowSet {
     }
 
     update(idx, updates){
+        console.log(`groupTowset receive updates ${JSON.stringify(updates)}`);
         const {groupRows: groups, offset, rowParents} = this;
         const { FILTER_COUNT } = metaData(this.columns);
 
@@ -3139,22 +3127,26 @@ class GroupRowSet extends BaseRowSet {
 
         // need to adjust aggregations only if the row is visible (not filtered out)
         for (let i = 0; i < updates.length; i += 3) {
+            // the col mappings in updates refer to base column definitions
             const colIdx = updates[i];
+            // whereas in the aggregatedColumn list, we have an offset of 2 ...
+            const absColIdx = colIdx+2;
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
-            rowUpdates.push(colIdx+2,value);
+            rowUpdates.push(absColIdx,value);
 
             // If this column is being aggregated
-            if (this.aggregatedColumn[colIdx]){
+            if (this.aggregatedColumn[absColIdx]){
                 const diff = value - originalValue;
-                const type = this.aggregatedColumn[colIdx];
+                const type = this.aggregatedColumn[absColIdx];
                 if (type === 'sum'){
-                    groupRow[colIdx+2] += diff;// again with the +2
+                    // ... wnd in the groupRow we have a further offset of 2 ...
+                    groupRow[absColIdx+ 2] += diff;// again with the +2
                 } else if (type === 'avg'){
                     const count = getCount(groupRow, FILTER_COUNT);
-                    groupRow[colIdx+2] = ((groupRow[colIdx+2] * count) + diff) / count;
+                    groupRow[absColIdx+2] = ((groupRow[absColIdx] * count) + diff) / count;
                 }
-                (groupUpdates || (groupUpdates=[])).push(colIdx+2, groupRow[colIdx+2]);
+                (groupUpdates || (groupUpdates=[])).push(colIdx, originalValue, groupRow[absColIdx+2]);
             }
         }
 

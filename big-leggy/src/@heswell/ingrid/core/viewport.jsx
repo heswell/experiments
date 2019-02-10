@@ -21,6 +21,8 @@ export default class Viewport extends React.Component {
 
         this.scrollingCanvas = React.createRef();
 
+        this.verticalScrollTimer = null;
+
         const selectionState = SelectionModel.getInitialState(props);
 
         //TODO selectionModel needs to be configured with selectionMode and probably 
@@ -160,8 +162,20 @@ export default class Viewport extends React.Component {
 
     onVerticalScroll = (e) => {
         if (e.target === e.currentTarget){
+
+            if (this.verticalScrollTimer){
+                console.log(`cancel animation frame`)
+                window.cancelAnimationFrame(this.scrollTimer);
+            }
+
             this.scrollTop = e.target.scrollTop;
-            this.handleVerticalScroll();
+
+            this.verticalScrollTimer = requestAnimationFrame(() => {
+                this.handleVerticalScroll();
+                this.verticalScrollTimer = null;
+            });
+        } else {
+            console.log(`what the hell is this`)
         }
     }
 

@@ -1517,11 +1517,11 @@ describe('update', () => {
     test('update single  and multiple values, group collapsed, no aggregation', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
         rowSet.setRange({lo: 0, hi: 10})
-        let results = rowSet.update(4, [6,9,9.5]);
+        let results = rowSet.update(4, [4,9,9.5]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
         // console.log(results)
         expect(results).toEqual([])
-        results = rowSet.update(4, [6,9,9.5,7,100,200]);
+        results = rowSet.update(4, [4,9,9.5,5,100,200]);
         expect(results).toEqual([])
     });
 
@@ -1529,9 +1529,9 @@ describe('update', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
         rowSet.setGroupState({'G1': true})
         rowSet.setRange({lo: 0, hi: 10});
-        const updates = rowSet.update(4, [6,9,9.5]);
+        const updates = rowSet.update(4, [4,9,9.5]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
-        expect(updates).toEqual([[105,8,9.5]]);
+        expect(updates).toEqual([[105,6,9.5]]);
     });
 
     test('update single value, single group expanded, aggregated on column', () => {
@@ -1539,22 +1539,27 @@ describe('update', () => {
         rowSet.setGroupState({'G1': true})
         // get results so update acts as though client has data
         rowSet.setRange({lo: 0, hi: 10});
-        const updates = rowSet.update(4, [6,9,9.5,7,100,50]);
+        const updates = rowSet.update(4, [4,9,9.5,5,100,50]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
         // console.log(`${join(results)}`)
         // console.log(updates)
         expect(rowSet.groupRows[0][8]).toBe(4.9375);
         expect(rowSet.groupRows[0][9]).toBe(699);
         expect(updates).toEqual([
-            [100,8,4.9375,9,699],
-            [105,8,9.5,9,50]
+            [100,4,4.875,4.9375,5,749,699],
+            [105,4,9.5,5,50]
         ]);
     });
 
+    function join(arr){
+       return '\n\n' + arr.join('\n');
+    }
+    
     test('update single value, single group expanded, aggregated on column,no data sent to client yet', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1]);
         rowSet.setGroupState({'G1': true})
-        const updates = rowSet.update(4, [6,9,9.5,7,100,50]);
+        debugger;
+        const updates = rowSet.update(4, [4,9,9.5,5,100,50]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
         // console.log(updates)
         expect(rowSet.groupRows[0][8]).toBe(4.9375);

@@ -7,11 +7,18 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Viewserver",
+      "program": "${workspaceFolder}/big-leggy/dist/viewserver.js",
+      "cwd": "${workspaceRoot}/big-leggy"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Jest Tests",
       "args":[ 
         "${workspaceRoot}/big-leggy/node_modules/.bin/jest",
         "--",
-        "inMemoryView"
+        "groupRowset"
       ],
       "cwd": "${workspaceRoot}/big-leggy"
   },

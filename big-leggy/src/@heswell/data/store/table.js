@@ -181,7 +181,7 @@ export default class Table extends EventEmitter {
 
     applyUpdates(){
         for (let i=0;i<this.rows.length;i++){
-            if (Math.random() > 0.75){
+            if (Math.random() > 0.5){
                 const update = this.updateRow(i, this.rows[i], this.outputColumnMap);
                 if (update){
                     this.update(i, ...update);

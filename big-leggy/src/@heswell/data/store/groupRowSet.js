@@ -452,6 +452,7 @@ export default class GroupRowSet extends BaseRowSet {
     }
 
     update(idx, updates){
+        console.log(`groupTowset receive updates ${JSON.stringify(updates)}`)
         const {groupRows: groups, offset, rowParents} = this
         const { FILTER_COUNT } = metaData(this.columns);
 
@@ -474,6 +475,7 @@ export default class GroupRowSet extends BaseRowSet {
 
             // If this column is being aggregated
             if (this.aggregatedColumn[absColIdx]){
+                let originalGroupValue = groupRow[absColIdx+2];
                 const diff = value - originalValue;
                 const type = this.aggregatedColumn[absColIdx];
                 if (type === 'sum'){
@@ -481,9 +483,9 @@ export default class GroupRowSet extends BaseRowSet {
                     groupRow[absColIdx+ 2] += diff;// again with the +2
                 } else if (type === 'avg'){
                     const count = getCount(groupRow, FILTER_COUNT);
-                    groupRow[absColIdx+2] = ((groupRow[absColIdx] * count) + diff) / count;
+                    groupRow[absColIdx+2] = ((groupRow[absColIdx+2] * count) + diff) / count;
                 }
-                (groupUpdates || (groupUpdates=[])).push(colIdx, originalValue, groupRow[absColIdx+2])
+                (groupUpdates || (groupUpdates=[])).push(colIdx, originalGroupValue, groupRow[absColIdx+2])
             }
         }
 

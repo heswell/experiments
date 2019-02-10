@@ -72,7 +72,7 @@
     "serve": "serve build -p 3000",
     "build:viewserver": "rollup -c rollup.config.viewserver.js --environment NODE_ENV:production,BUILD:production",
     "build:webworker": "rollup -c rollup.config.webworker.js --environment NODE_ENV:production,BUILD:production",
-    "viewserver": "node --experimental-modules ./dist/viewserver.js"
+    "viewserver": "node  ./dist/viewserver.js"
   },
   "eslintConfig": {
     "rules": {
