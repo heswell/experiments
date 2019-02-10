@@ -1,7 +1,5 @@
 import React from 'react';
 import { CommandStatus } from '../../utils/command-utils';
-import CommandOptions from './options';
-import TokenValues from './values';
 
 const styles = {
   commandCue: 'command-cue'
@@ -46,23 +44,12 @@ export default class CommandCue extends React.Component {
   render() {
     const { commandState } = this.props;
     const tokenDescriptor = this.getTokenDescriptor();
-    const optionalTokens = this.getOptionalTokens();
     const isComplete = commandState.commandStatus === CommandStatus.CommandComplete;
-    const showOptions = tokenDescriptor.required === false;
-
 
     return (
-      <>
         <div className={styles.commandCue}>
           <span>{this.getDisplayText(tokenDescriptor, isComplete)}</span>
         </div>
-        {tokenDescriptor && tokenDescriptor.valuesHelp ? (
-          <TokenValues tokenDescriptor={tokenDescriptor} />
-        ) : showOptions ? (
-          <CommandOptions tokenDescriptors={optionalTokens} />
-        ) : null
-        }
-      </>
     );
   }
 }

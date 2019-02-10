@@ -3,20 +3,23 @@ import { NORMAL_SPACE, NB_SPACE, PATTERN_SPACE_ALL } from '../../token-search/to
 // redfined here, when exported from utils - lest does not import them correctly
 const PATTERN_SPACE = new RegExp(`${NORMAL_SPACE}+`);
 
-const UNKNOWN_TOKEN_DESCRIPTOR = {
-  searchId: undefined,
-  name: undefined
-};
 export const TokenType = {
   WhiteSpace: 'whitespace',
   Text: 'text'
 }
 
+const UNKNOWN_TOKEN_DESCRIPTOR = {
+  type: TokenType.Text,
+  searchId: undefined,
+  name: undefined,
+  required: false
+};
+
 const split = (arr, cond) => {
   const match = []
   const notMatch = []
   arr.forEach(item => {
-    if (cond(item)){
+    if (cond(item)) {
       match.push(item)
     } else {
       notMatch.push(item)
@@ -34,7 +37,7 @@ export default class TokenList {
     this._optionalDescriptors = optionalTokens;
     this._searchTokens = searchTokens;
     this._tokens = [];
-    this.commandComplete= false;
+    this.commandComplete = false;
     this.text = inputText || '';
   }
   set text(value) {
@@ -50,32 +53,89 @@ export default class TokenList {
     return this._requiredDescriptors;
   }
 
-  get unusedOptionalDescriptors() {
-    return this._optionalDescriptors.filter(descriptor => descriptor.available !== false);
+  get hasOptionalTokens() {
+    return this._optionalDescriptors && this._optionalDescriptors.length > 0
   }
 
-  markOptionalTokenDescriptorUsed(tokenDescriptor){
-    this._optionalDescriptors = this._optionalDescriptors.map(td => 
+  get unusedOptionalDescriptors() {
+    return this.hasOptionalTokens
+      ? this._optionalDescriptors.filter(descriptor => descriptor.available !== false)
+      : undefined;
+  }
+
+  get lastToken() {
+    if (this.tokens && this.tokens.length > 0) {
+      return this._tokens[this._tokens.length - 1];
+    }
+  }
+
+  get beyondRequiredTokens() {
+    if (this.commandComplete) {
+      const token = this.lastToken;
+      return token.type === TokenType.WhiteSpace || token.required === false;
+    }
+    return false;
+  }
+
+  /**
+    * this will return a new tokenList
+    */
+  invalidateToken(tokenText) {
+    const { _requiredDescriptors, _optionalDescriptors, _searchTokens, _tokens, commandComplete } = this;
+    const tokenList = new TokenList();
+    tokenList._requiredDescriptors = _requiredDescriptors;
+    tokenList._optionalDescriptors = _optionalDescriptors;
+    tokenList._searchTokens = _searchTokens;
+    tokenList.commandComplete = commandComplete;
+    tokenList._tokens = _tokens.map(token => {
+      if (token.text === tokenText) {
+        return {
+          ...token,
+          invalid: true
+        }
+      } else {
+        return token;
+      }
+    });
+    return tokenList;
+  }
+
+  markOptionalTokenDescriptorUsed(tokenDescriptor) {
+    this._optionalDescriptors = this._optionalDescriptors.map(td =>
       td === tokenDescriptor
-        ? {...tokenDescriptor, available: false}
-        : td  
+        ? { ...tokenDescriptor, available: false }
+        : td
     )
   }
 
-  getNextTokenIndexAtOffset(offset){
+  /**
+*	get the text token at offset. If we find token at offset is a whitespace token,
+*	get the preceeding text token.
+*/
+  getTextTokenBeforeOffset(offset) {
+    const token = this.getTokenAtOffset(offset);
+    if (token && token.type === TokenType.WhiteSpace) {
+      return this.getTextTokenBeforeOffset(offset - 1);
+    } else {
+      // this will be either the required token or undefined if we have no text token at this offset
+      return token;
+    }
+  }
 
-    if (offset === 0 && this._tokens.length === 0){
+  getNextTokenIndexAtOffset(offset) {
+
+    if (offset === 0 && this._tokens.length === 0) {
       return -1;
     } else {
       let token = this.getTokenAtOffset(offset);
-      if (token && token.type === 'text'){
+      if (token && token.type === 'text') {
         return token.idx;
-      } else if (token && token.type === 'whitespace'){
+      } else if (token && token.type === 'whitespace') {
         const idx = this._tokens.indexOf(token);
-        if (idx === 0){
+        if (idx === 0) {
           return 0;
         } else {
-          const prevToken = this._tokens[idx-1];
+          const prevToken = this._tokens[idx - 1];
           return prevToken.idx + 1;
         }
       }
@@ -128,7 +188,8 @@ export default class TokenList {
           // will be a no-op for already resolved search tokens
           t = t.replace(PATTERN_SPACE_ALL, NB_SPACE);
         }
-        results.push(this.createToken(startOffset, t, tokenDescriptor, tokenIdx));
+        const isFinalToken = startOffset + t.length === len;
+        results.push(this.createToken(startOffset, t, tokenDescriptor, tokenIdx, isFinalToken));
         startOffset += t.length;
         tokenIdx += 1;
       }
@@ -136,13 +197,13 @@ export default class TokenList {
 
     const requiredCount = requiredDescriptors.length;
     this.commandComplete = requiredCount > 0 && tokenIdx >= requiredCount;
-    
+
     return results;
-  
+
   }
 
-  createToken(startOffset, text, tokenDescriptor, idx) {
-    const { searchId = '' } = tokenDescriptor;
+  createToken(startOffset, text, tokenDescriptor, idx, isFinalToken) {
+    const { searchId = '', required } = tokenDescriptor;
     return {
       name: tokenDescriptor.name,
       idx,
@@ -153,7 +214,8 @@ export default class TokenList {
       resolved: searchId === ''
         ? undefined
         : searchId in this._searchTokens,
-      invalid: !this.isTokenTextValid(text, tokenDescriptor)
+      invalid: !this.isTokenTextValid(text, tokenDescriptor, isFinalToken),
+      required
     };
   }
   // Is the next character a token delimiter (space). Handles special case where
@@ -168,12 +230,14 @@ export default class TokenList {
     return matchesDelimiter;
   }
 
-  isTokenTextValid = (text, tokenDescriptor) => {
-    if (tokenDescriptor === UNKNOWN_TOKEN_DESCRIPTOR){
-      if (this._optionalDescriptors.length > 0){
-        const optionalTokens  = this.unusedOptionalDescriptors;
+  isTokenTextValid = (text, tokenDescriptor, isFinalToken) => {
+    if (tokenDescriptor === UNKNOWN_TOKEN_DESCRIPTOR) {
+      // Not one of our ’required' tokenDescriptors ...
+      if (this._optionalDescriptors.length > 0) {
+        const optionalTokens = this.unusedOptionalDescriptors;
         const matchingToken = optionalTokens.find(token => token.pattern.test(text));
-        if (matchingToken){
+        if (matchingToken && !isFinalToken) {
+          // Only mark an optional token as unavailable once user has at least typed a further space
           this.markOptionalTokenDescriptorUsed(matchingToken);
           return true;
         } else {
@@ -181,13 +245,13 @@ export default class TokenList {
         }
       }
       return false;
-    } else if (tokenDescriptor.pattern){
+    } else if (tokenDescriptor.pattern) {
       return tokenDescriptor.pattern.test(text);
     } else {
       return true;
     }
   }
-  
+
 }
 
 export const EmptyTokenList = new TokenList();

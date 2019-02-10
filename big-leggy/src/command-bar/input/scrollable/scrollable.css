@@ -4,7 +4,7 @@
 
 /* this grows in response to size of token mirror */
 .scrollable .scrolling-container {
-  min-width: 100%;
+  min-width: calc(100% - 3px);
   display: inline-block;
   position: absolute;
   right: 0;

@@ -118,80 +118,16 @@ const commands = [
         pattern: DATE_PATTERN
         },
         tk.STRIKE_RATIO,
-        {
-          name: 'call/put/strategy',
-          description: 'Call or Put',
-          valuesHelp: [
-            {value: 'C', description: 'Call'},
-            {value: 'P', description: 'Put'},
-            {value: 'CS', description: 'Call Spread'},
-            {value: 'CC', description: 'Call Calendar'},
-            {value: 'PS', description: 'Put Spread'},
-            {value: 'PC', description: 'Put Calendar'},
-            {value: 'RR', description: 'Risk Reversal'},
-            {value: 'STG', description: 'Strangle'},
-            {value: 'STD', description: 'Straddle'},
-            {value: 'CF', description: 'Call Fly'},
-            {value: 'PF', description: 'Put Fly'},
-            {value: 'CSC', description: 'Call Spread Collar'},
-            {value: 'PSC', description: 'Put Spread Collar'}
-
-
-          ],
-          pattern: /^(c|p|cs|cc|ps|pc|rr|stg|std|cf|pf|csc|psc)$/i
-        },
+        tk.STRATEGY,
         { name: 'ref', description: 'Reference', formatHelp: '3300f, 97.6s, 3125.99jun2020f' },
         tk.VENUE,
-        { 
-          name: 'delta',
-          description: 'Delta',
-          formatHelp: `o/r, w/d, e/ds`,
-          pattern: /^(o\/r|w\/d|e\/ds)$/i,
-          required: false
-        },
-        { 
-          name: 'mid',
-          description: 'Mid (OTC only)',
-          formatHelp: `1023074mid`,
-          pattern: /^(\d)+mid$/i,
-          required: false
-        },
-        // { 
-        //   name: 'exchange',
-        //   description: 'Exchange',
-        //   formatHelp: `EURX, LIFE`,
-        //   pattern: /^[a-z]+$/i,
-        //   required: false
-        // },
-        { 
-          name: 'multiplier',
-          description: 'Multiplier',
-          formatHelp: `100x`,
-          pattern: /^\d+x$/i,
-          required: false
-        },
-        { 
-          name: 'notional',
-          description: 'Exchange',
-          formatHelp: `ntl`,
-          pattern: /^ntl$/i,
-          required: false
-        },
-        { 
-          name: 'lei',
-          description: 'LEI',
-          formatHelp: `xyzLE`,
-          pattern: /^[a-z0-9]+e$/i,
-          required: false
-        },
-        { 
-          name: 'pctStrike',
-          description: 'Percentage Strike',
-          formatHelp: `pct`,
-          pattern: /^pct$/i,
-          required: false
-        },
-    ]
+        tk.DELTA,
+        tk.MID,
+        tk.MULTIPLIER,
+        tk.NOTIONAL,
+        tk.LEI,
+        tk.PCT_STRIKE
+      ]
   }
 ]
 

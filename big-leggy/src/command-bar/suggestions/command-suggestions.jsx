@@ -1,5 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
+import { CommandStatus } from '../utils/command-utils';
 import { SuggestionsToolTip } from './tooltip/command-tooltip';
 import SearchSuggestions from './search/search-suggestions';
 import CommandCue from './cue/command-cue';
@@ -47,32 +48,34 @@ export default class CommandSuggestions extends React.Component {
       commandState
     } = this.props;
 
-    if (suggestions.length > 0) {
-      return (
+    const isComplete = commandState.commandStatus === CommandStatus.CommandComplete;
+    const showSuggestions = suggestions.length > 0;
+    const showCommandCue = isComplete || (!showSuggestions && tokenDescriptors.length > 0);
+    const showTooltip = !showCommandCue && !showSuggestions;
+
+    return <>
+      {showCommandCue && (
+        <CommandCue
+          commandState={commandState}
+          tokenDescriptors={tokenDescriptors}
+        />)}
+      {showSuggestions && (
         <SearchSuggestions
           searchTerm={searchTerm}
           suggestions={suggestions}
           selectedIdx={selectedSuggestionIdx}
           onSelect={onSelectSuggestion}
         />
-      );
-    } else if (tokenDescriptors.length > 0) {
-      return (
-        <CommandCue
-          commandState={commandState}
-          tokenDescriptors={tokenDescriptors}
-        />
-      );
-    } else {
-      return (
+      )}
+      {showTooltip && (
         <SuggestionsToolTip
           searchTerm={searchTerm}
           suggestions={defaultSuggestions}
           selectedSuggestionIdx={selectedSuggestionIdx}
           onSelect={onSelectSuggestion}
         />
-      );
-    }
+      )}
+    </>
   }
 }
 

@@ -1,3 +1,18 @@
 .search-suggestion-selected {
-  background-color: rgba(0,0,0,.2);
+  background-color: rgba(0,0,0, .2);
+}
+
+.search-suggestion-suggested-item:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
+
+.search-suggestion-suggested-item {
+  font-weight: bold;
+  color: black;
+}
+
+.search-suggestion-suggested-item .search-suggestion-search-match {
+  font-weight: normal;
+  color: rgba(0,0,0,.5)
 }

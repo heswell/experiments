@@ -134,37 +134,59 @@ export function replaceTextAtOffset(
   replacementText,
   offset = text.length
 ) {
-  const term = getWordAtOffset(text, offset);
-  const start = offset - term.length;
+  const term = getWordFromOffset(text, offset);
   return (
-    text.slice(0, start) +
+    text.slice(0, offset) +
     replacementText +
     // this fixes an issue with mid-text token replacement but is not a long-term fix
     // it will break multi-term tokens that happen to follow the replaced token. Needs to take
     // the searchTokens into account
-    text.slice(offset).replace(TOKEN_SPACE_ALL, NORMAL_SPACE)
+    text.slice(offset + term.length + 1).replace(TOKEN_SPACE_ALL, NORMAL_SPACE)
   );
 }
-export function removeTokenFromText(inputText, token) {
-  const { startOffset, text } = token;
-  const tail = inputText.slice(startOffset + text.length);
+
+export function replaceTokenWithinText(text, token, replacementText) {
+  const { startOffset, text: tokenText } = token;
+  const tail = text.slice(startOffset + tokenText.length);
   if (startOffset === 0) {
     return tail;
   } else {
-    return inputText.slice(0, startOffset) + tail;
+    return text.slice(0, startOffset) + replacementText + tail;
   }
 }
+
 function countTokens(text = '') {
   const trimmedText = text.trim();
   return trimmedText === '' ? 0 : trimmedText.split(PATTERN_SPACE).length;
 }
+
+/**
+  *	return the text that immediately follows the supplied offset
+  *	up to the next spacej	You,	3	days ago • initial corrnit
+  •*/
+export function getWordFromOffset(text, offset) {
+  const endPos = findNextSpace(text, offset);
+  const term = text.slice(offset, endPos);
+  return term;
+}
+
 export function getWordAtOffset(text, cursor) {
   const startPos = findLastSpace(text, cursor);
   const term = text.slice(startPos + 1, cursor);
   return term;
 }
+
 function findLastSpace(text, start = text.length) {
   for (let i = start - 1; i >= 0; i--) {
+    if (PATTERN_SPACE.test(text[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function findNextSpace(text, start) {
+  for (let i = start + 1; i < text.length - 1; i++) {
     if (PATTERN_SPACE.test(text[i])) {
       return i;
     }
@@ -211,12 +233,12 @@ export const replaceCommandTextWithValues = (
 ) => {
   const suggestions = Object.values(searchTokens);
   if (suggestions.length) {
-    suggestions.forEach(({suggestion}) => {
+    suggestions.forEach(({ suggestion }) => {
       const { speedbarText, value } = suggestion;
-      if(commandText.indexOf(speedbarText) !== -1) {
-      commandText = commandText.replace(speedbarText, value);
-    }
-  });
-}
-return commandText;
+      if (commandText.indexOf(speedbarText) !== -1) {
+        commandText = commandText.replace(speedbarText, value);
+      }
+    });
+  }
+  return commandText;
 };

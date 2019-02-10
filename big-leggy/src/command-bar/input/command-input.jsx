@@ -85,9 +85,17 @@ export default class CommandInput extends React.Component {
         if (this.getSelection() === null) {
           if (this.canClearCommand()) {
             this.props.onClear();
-          } else if (this.canClearToken()) {
-            this.cursorPosition = this.getCursorPosition();
-            this.clearToken();
+          } else {
+            const cursorPosition = this.getCursorPosition();
+            if (this.tokenAtOffsetIsResolvedSearchToken(cursorPosition - 1)) {
+              console.log('tokenAtCursorlsResolvedSearchToken =================')
+              if (e.ctrlKey) {
+                this.props.onClearSearchToken(cursorPosition);
+              } else {
+                console.log('unresolve the token =================')
+                this.props.onRevisitSearchToken(cursorPosition);
+              }
+            }
           }
         }
         break;
@@ -119,11 +127,10 @@ export default class CommandInput extends React.Component {
       commandState.commandStatus === CommandStatus.Empty && selectedSuggestionIdx >= 0;
     return prefixAcceptedCommandEmpty || prefixSelected;
   }
-  canClearToken() {
-    const { inputText, tokenList } = this.props;
-    const cursorPosition = this.getCursorPosition();
+
+  tokenAtOffsetIsResolvedSearchToken(offset) {
+    const { tokenList } = this.props;
     if (tokenList) {
-      const offset = inputText[cursorPosition - 1] === ' ' ? cursorPosition - 1 : cursorPosition
       const token = tokenList.getTokenAtOffset(offset);
       if (token && token.searchId && this.hasAcceptedSuggestion(token.searchId)) {
         return true;
@@ -132,17 +139,12 @@ export default class CommandInput extends React.Component {
     return false;
   }
 
-  clearToken() {
-    const cursorPosition = this.getCursorPosition();
-    this.props.onClearToken(cursorPosition);
-  }
-
   handleSelectionChange() {
     const scroller = this.scrollable.current;
     const tokenMirror = this.tokenMirror.current;
     const cursorPosition = this.getCursorPosition();
 
-    if (cursorPosition !== this.cursorPosition){
+    if (cursorPosition !== this.cursorPosition) {
       if (scroller && tokenMirror && scroller.canScroll()) {
         const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
         if (tokenPosition) {
@@ -152,12 +154,12 @@ export default class CommandInput extends React.Component {
       }
     }
 
-  // experiments
+    // experiments
     const idx = this.props.tokenList.getNextTokenIndexAtOffset(cursorPosition);
-    if (this.indexOfNextTokenAtCursor !== idx){
+    if (this.indexOfNextTokenAtCursor !== idx) {
       this.indexOfNextTokenAtCursor = idx;
       const descriptor = this.props.tokenList.descriptors[idx];
-      if (descriptor){
+      if (descriptor) {
         console.log(`next token idx at cursor = ${idx} ${JSON.stringify(descriptor)}`)
 
       }
@@ -206,7 +208,8 @@ export default class CommandInput extends React.Component {
     }
   }
   shouldAutoAcceptSuggestion() {
-    return this.props.suggestions.length === 1;
+    const { suggestions } = this.props;
+    return suggestions.length === 1 && suggestions[0].value !== '';
   }
   canAcceptSuggestion() {
     return this.props.suggestions.length > 0 && this.props.selectedSuggestionIdx > -1

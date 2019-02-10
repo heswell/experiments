@@ -41,13 +41,12 @@ export const QUANTITY_WITH_RATIO = {
   pattern: QTY_RATIO_REG
 };
 
-export const VENUE = {
-    name: 'venue',
-    description: 'Venue',
-    formatHelp: 'otc, listed',
-    pattern: /^(otc|listed)$/i,
-    required: false
-};
+export const STRATEGY = {
+  name: 'call/put/strategy',
+  description: 'Call or Put',
+  searchId: SearchIdentifiers.Strategy,
+  pattern: /^(c|p|cs|cc|ps|pc|rr|stg|std|cf|pf|esc|psc)$/i
+}
 
 export const STRIKE = {
   name: 'strike',
@@ -60,4 +59,70 @@ export const STRIKE_RATIO = {
   description: 'Strike Price',
   formatHelp: '1025.99, 177, 149/150, 100.25/100.89',
   pattern: DECIMAL_RATIO_REG
+}
+
+export const VENUE = {
+  name: 'venue',
+  description: 'Venue',
+  formatHelp: 'otc, listed',
+  pattern: /^(otc|listed)$/i,
+  required: false
+};
+
+export const DELTA = {
+  name: 'delta',
+  description: 'Delta',
+  formatHelp: 'o/r, w/d, e/ds',
+  valuesHelp: [
+    { value: 'o/r', description: 'Delta' },
+    { value: 'w/d', description: 'Delta' },
+    { value: 'e/ds', description: 'Delta' }
+  ],
+  pattern: /^(o\/r|w\/d|e\/ds)$/i,
+  required: false
+};
+
+export const MID = {
+  name: 'mid',
+  description: '12307mid Mid (OTC only)',
+  formatHelp: '1023074mid',
+  pattern: /^(\d)+mid$/i,
+  required: false
+}
+
+export const MULTIPLIER = {
+  name: 'multiplier',
+  description: '100x Multiplier',
+  formatHelp: '100x',
+  pattern: /^\d+x$/i,
+  required: false
+}
+export const NOTIONAL = {
+  name: 'notional',
+  description: 'Notional',
+  formatHelp: 'ntl',
+  valuesHelp: [
+    { value: 'ntl', description: 'Notional' }
+  ],
+  pattern: /^ntl$/i,
+  required: false
+}
+
+export const LEI = {
+  name: 'lei',
+  description: 'xyzLE LEI',
+  formatHelp: 'xyzLE',
+  pattern: /^[a-z0-9]+$/i,
+  required: false
+}
+
+export const PCT_STRIKE = {
+  name: 'pctStrike',
+  description: 'Percentage Strike',
+  formatHelp: 'pet',
+  valuesHelp: [
+    { value: 'pet', description: 'Pet Strike' }
+  ],
+  pattern: /^pct$/i,
+  required: false
 }

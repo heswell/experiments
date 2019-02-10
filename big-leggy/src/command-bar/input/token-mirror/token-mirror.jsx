@@ -18,7 +18,12 @@ const WhitespaceToken = ({ token }) => (
 )
 
 const TextToken = ({ idx, isComplete, token, className }) => {
-  const wrapperClassName = `token-wrapper${isComplete ? ' complete' : ''}`;
+  const wrapperClassName = cx('token-wrapper',{
+    complete: isComplete,
+    'search-token': token.searchId !== undefined,
+    'search-resolved': token.searchResolved === true
+  });
+
   return (
     <div className={wrapperClassName} data-idx={idx}>
       <div
@@ -48,11 +53,9 @@ export class TokenMirror extends React.Component {
       const count = tokenList.tokens.length;
       let width;
       if (count > 0) {
-        // const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
-        // const { offsetLeft, offsetWidth } = lastChild;
-        // width = offsetLeft + offsetWidth;
-         ({scrollWidth: width} = this.el.current);
-        // console.log(`TokenMirror componentDidUpdate offsetLeft=${offsetLeft} offsetWidth=${offsetWidth} === ${offsetLeft + offsetWidth}`)
+        const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
+        const { offsetLeft, offsetWidth } = lastChild;
+        width = offsetLeft + offsetWidth;
         this.tokenPositions = this.measureTerms();
       } else {
         ({ width } = this.el.current.getBoundingClientRect());

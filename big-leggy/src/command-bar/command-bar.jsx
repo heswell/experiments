@@ -5,16 +5,18 @@ import {
   parseCommand,
   matchCommandPrefix,
   buildDefaultSuggestions,
-  removeTokenFromText,
+  replaceTokenWithinText,
   replaceCommandTextWithValues,
   replaceTextAtOffset
 } from './utils/command-utils';
 
-import {insertNonBreakingSpaces, resolveSearchTokens} from '../token-search/token-search'
-import CommandInput, { NavigationDirection, InputMethod} from './input/command-input';
+import { getSuggestionsForOptionalTokens } from './suggestions/search/search-utils';
+
+import { insertNonBreakingSpaces, resolveSearchTokens } from '../token-search/token-search'
+import CommandInput, { NavigationDirection, InputMethod } from './input/command-input';
 import CommandSuggestions from './suggestions';
-import { EmptyTokenList } from './parsing/token-list';
-import { hideSpeedbarSuggestionsWindow} from './window-utils';
+import { EmptyTokenList, TokenType } from './parsing/token-list';
+import { hideSpeedbarSuggestionsWindow } from './window-utils';
 
 import './command-bar.css';
 
@@ -46,7 +48,7 @@ export default class CommandWindow extends React.Component {
   constructor(props) {
     super(props);
     this.state = EMPTY_STATE;
-    this.width = 9;
+    this.width = 0;
     this.defaultSuggestions = buildDefaultSuggestions(props.commands);
     this.currentSearchTerm = '';
     this.rootEl = React.createRef();
@@ -60,7 +62,9 @@ export default class CommandWindow extends React.Component {
     this.acceptSuggestion = this.acceptSuggestion.bind(this);
     this.selectSuggestion = this.selectSuggestion.bind(this);
     this.clearState = this.clearState.bind(this);
-    this.clearToken = this.clearToken.bind(this);
+    this.clearSearchToken = this.clearSearchToken.bind(this);
+    this.revisitSearchToken = this.revisitSearchToken.bind(this);
+
   }
 
   clearState(setlnactive = false) {
@@ -84,25 +88,11 @@ export default class CommandWindow extends React.Component {
     this.setState({ speedbarStatus: SpeedbarStatus.Active });
   }
   componentDidMount() {
-    this.sizeHeightToContent();
     if (this.input.current) {
       this.input.current.focus();
     }
   }
-  componentWillUnmount() {
-    this.suggestionsChannel.close();
-  }
-  componentDidUpdate() {
-    this.sizeHeightToContent();
-  }
-  sizeHeightToContent() {
-    if (this.rootEl.current) {
-      const { clientHeight } = this.rootEl.current;
-      console.log(`set height to ${clientHeight}`)
-      // const suggestionsWindow = fin.desktop.Window.getCurrent();
-      // suggestionsWindow.resizeTo(this.width, clientHeight, 'top-left');
-    }
-  }
+
   close() {
     hideSpeedbarSuggestionsWindow();
   };
@@ -137,7 +127,7 @@ export default class CommandWindow extends React.Component {
   acceptSuggestion(selectedSuggestionIdx = this.state.selectedSuggestionIdx) {
     const {
       inputText,
-      commandState: { commandStatus },
+      commandState: { commandStatus, commandTermIdx },
       tokenList
     } = this.state;
     const suggestion = this.getSuggestion(selectedSuggestionIdx);
@@ -145,30 +135,53 @@ export default class CommandWindow extends React.Component {
       this.acceptCommandprefix(suggestion.speedbarText);
     } else {
       const speedbarText = insertNonBreakingSpaces(suggestion.speedbarText);
+      const offset = this.getInsertionPositionForSearchResult();
+      const nextInputText = replaceTextAtOffset(inputText, speedbarText + ' ', offset);
       const cursorPosition = this.getCursorPosition();
-      const nextInputText = replaceTextAtOffset(inputText, speedbarText + ' ', cursorPosition);
-      const token = tokenList.getTokenAtOffset(cursorPosition);
+      let token = tokenList.getTokenAtOffset(cursorPosition);
+      if (!token || token.type === TokenType.WhiteSpace) {
+        token = tokenList.descriptors[commandTermIdx]
+      }
+
+      // No token here means we’re accepting an option token value, we don't need to record these
+      const searchTokens = token
+        ? {
+          ...this.state.searchTokens,
+          [token.searchId]: {
+            status: 'resolved',
+            suggestion: {
+              ...suggestion,
+              speedbarText
+            }
+          }
+        }
+        : this.state.searchTokens
+
       this.setState(
         {
+          searchTerm: undefined,
           inputText: nextInputText,
           selectedSuggestionIdx: -1,
           suggestions: [],
-          searchTokens: {
-            ...this.state.searchTokens,
-            [token.searchId]: {
-              status: 'resolved',
-              suggestion: {
-                ...suggestion,
-                speedbarText
-              }
-            }
-          }
+          searchTokens
         }, () => {
           this.processInput(nextInputText, InputMethod.AcceptSuggestion);
+          this.setCursorPosition(nextInputText.length);
         }
       );
     }
   };
+
+  getInsertionPositionForSearchResult() {
+    const cursorPosition = this.getCursorPosition();
+    const { tokenList } = this.state;
+    let token = tokenList.getTextTokenBeforeOffset(cursorPosition);
+    if (token && (token.required === false || (token.searchId && !token.searchResolved))) {
+      return token.startOffset;
+    } else {
+      return cursorPosition;
+    }
+  }
 
   acceptCommandprefix(inputText) {
     this.setState(
@@ -181,13 +194,35 @@ export default class CommandWindow extends React.Component {
     );
   }
 
-  clearToken(tokenOffset) {
+  /**
+  * User has edited a previously resolved search token. Remove the resolved status so search can again be triggered.
+  */
+  revisitSearchToken(tokenOffset) {
+    const { inputText, tokenList } = this.state;
+    const offset = inputText[tokenOffset - 1] === ' ' ? tokenOffset - 1 : tokenOffset;
+    const token = tokenList.getTokenAtOffset(offset);
+    if (token && token.searchId) {
+      const { [token.searchId]: _, ...searchTokens } = this.state.searchTokens;
+      this.setState(
+        {
+          searchTokens
+        }
+      );
+    }
+  }
+
+  /** User has user CTRL+Backspace to remove a word and is positioned i=on a resolved search token.
+  •* Clear the entire token,-which may incluse embedded spaces.
+  */
+  clearSearchToken(tokenOffset) {
     const { inputText, tokenList } = this.state;
     if (tokenList !== EmptyTokenList) {
       const offset = inputText[tokenOffset - 1] === ' ' ? tokenOffset - 1 : tokenOffset;
       const token = tokenList.getTokenAtOffset(offset);
       if (token && token.searchId) {
-        const newInputText = removeTokenFromText(inputText, token);
+        // the additional whitespace that we insert in place of the token we want
+        // to remove will be removed by the backspace
+        const newInputText = replaceTokenWithinText(inputText, token, ' ');
         const { [token.searchId]: _, ...searchTokens } = this.state.searchTokens;
         this.setState(
           {
@@ -213,10 +248,10 @@ export default class CommandWindow extends React.Component {
 
     let validPrefix = commandPrefix
 
-    if (selectedSuggestionIdx !== -1 && !validPrefix){
+    if (selectedSuggestionIdx !== -1 && !validPrefix) {
       // If user has navigated to a command and just starts typing without ENTER first, assume
       // command is selected ...
-      ({speedbarText: validPrefix} = this.getSuggestion(selectedSuggestionIdx));
+      ({ speedbarText: validPrefix } = this.getSuggestion(selectedSuggestionIdx));
     }
 
     const fullCommandText = `${validPrefix} ${inputText}`;
@@ -226,7 +261,7 @@ export default class CommandWindow extends React.Component {
       searchTokens
     );
 
-      // console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
+    // console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
 
     if (
       inputMethod === InputMethod.AcceptSuggestion &&
@@ -250,7 +285,12 @@ export default class CommandWindow extends React.Component {
         tokenList,
         selectedSuggestionIdx: -1,
         errorMessage: ''
+      }, () => {
+        if (inputMethod === InputMethod.UserInput) {
+          this.postInputSearchHandling(inputText);
+        }
       });
+
       if (command && inputMethod === InputMethod.PasteCommand) {
         this.setCursorPosition(inputText.length);
         const [resolvedTokenString, resolvedSearchTokens] = await resolveSearchTokens(
@@ -267,40 +307,114 @@ export default class CommandWindow extends React.Component {
             this.setCursorPosition(resolvedTokenString.length);
           }
         );
-      } else if (command && tokenList) {
-        // const cursorPosition = this.inputElement.current.selectionStart;
-        const cursorPosition = this.getCursorPosition();
-        //onsole.log(`[commandWindow] processInput cursor position ${cursorPosition}`)
-        const token = tokenList.getTokenAtOffset(cursorPosition);
-        if (token && token.searchId && !token.resolved) {
-          const searchTerm = token.text.slice(0, cursorPosition - token.startOffset);
-          this.invokeSearch(command, token.searchId, searchTerm);
-        } else if (this.state.suggestions.length) {
-          this.setState({
-            searchTerm: '',
-            suggestions: [],
-            selectedSuggestionIdx: -1
-          });
-        }
       }
     }
   };
 
+  postInputSearchHandling(inputText) {
+    const { command, commandState, tokenList } = this.state;
+    if (command && tokenList) {
+      if (this.canSearch(tokenList, commandState)) {
+        const [searchId, searchTerm] = this.getSearchTerm(inputText, tokenList, commandState)
+        this.invokeSearch(command, searchId, searchTerm);
+      } else if (this.canEnterOptionalToken(tokenList)) {
+        const searchTerm = this.getOptionalTokenSearchTerm(inputText, tokenList, commandState)
+        this.invokeSearch(command, 'optional-tokens', searchTerm);
+      } else if (this.state.suggestions.length) {
+        this.setState({
+          searchTerm: undefined,
+          suggestions: [],
+          selectedSuggestionIdx: -1
+        });
+      }
+    }
+  }
+
+  canEnterOptionalToken(tokenList) {
+    return tokenList.beyondRequiredTokens &&
+      tokenList.hasOptionalTokens &&
+      tokenList.unusedOptionalDescriptors.length > 0;
+  }
+
+  canSearch(tokenList, commandState) {
+    const cursorPosition = this.getCursorPosition();
+    const token = tokenList.getTokenAtOffset(cursorPosition);
+    if (token && token.searchId && !token.searchResolved) {
+      // user has already started typing search term(s) for this search token
+      return true;
+    } else {
+      const { commandTermIdx } = commandState;
+      const { descriptors } = tokenList;
+      const tokenDescriptor = descriptors[commandTermIdx];
+      // console.log('tokenDescriptor at offset ${JSON.stringify(tokenDescriptor)}')
+      if (tokenDescriptor && tokenDescriptor.searchId) {
+        // next expected token is a search token, but user hasn’t started typing search term(s) yet
+        // console.log('===> seems like we can do an empty search for ${tokenDescriptor.searchld}')
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  invalidateSearchTerm(searchTerm) {
+    const tokenList = this.state.tokenList.invalidateToken(searchTerm);
+    this.setState({
+      tokenList
+    })
+  }
+
+  getOptionalTokenSearchTerm(inputText, tokenList) {
+    const cursorPosition = this.getCursorPositionQ;
+    const token = tokenList.getTokenAtOffset(cursorPosition);
+    const result = token && token.type === 'text'
+      ? token.text
+      : '';
+    return result;
+  }
+
+  getSearchTerm(inputText, tokenList, commandState) {
+    const cursorPosition = this.getCursorPosition();
+    const token = tokenList.getTokenAtOffset(cursorPosition);
+
+    if (token && token.searchId && !token.searchResolved) {
+      // leave trailing space after search term is thta is what yuser has typed.-It may
+      // be significant for search service
+      const searchTerm = inputText.slice(token.startOffset, cursorPosition + 1);
+      return [token.searchId, searchTerm];
+    } else {
+      const { commandTermIdx } = commandState;
+      const { descriptors } = tokenList;
+      const tokenDescriptor = descriptors[commandTermIdx];
+      if (tokenDescriptor && tokenDescriptor.searchId) {
+        return [tokenDescriptor.searchId, '']
+      }
+    }
+    return []
+  }
+
   async invokeSearch(command, searchId, searchTerm) {
-    const trimmedSearchTerm = searchTerm.trim();
-    // don't resubmit a search if user has simply added a space
-    if (trimmedSearchTerm !== this.state.searchTerm) {
-      this.currentSearchTerm = trimmedSearchTerm;
+    if (searchTerm !== this.state.searchTerm) {
+      this.currentSearchTerm = searchTerm;
       try {
         const searchResult = await this.getSearchResults(
           command,
           searchId,
           searchTerm
         );
+
         if (searchResult.searchTerm === this.currentSearchTerm) {
           this.setState({
+            selectedSuggestionIdx: searchTerm.trim() === '' ? -1 : 0,
             searchTerm: searchResult.searchTerm,
             suggestions: searchResult.searchResults
+          }, () => {
+            if (searchTerm && searchResult.searchResults.length === 0) {
+              this.invalidateSearchTerm(searchTerm);
+            } else if (searchTerm[searchTerm.length - 1] === ' ' && searchResult.searchResults.length === 1) {
+              console.log(`shall we auto accept here ??? ${searchResult.searchResults[0].speedbarText}`)
+              this.acceptSuggestion(0);
+            }
           });
         }
       } catch (err) {
@@ -311,10 +425,18 @@ export default class CommandWindow extends React.Component {
       }
     }
   }
+
   getSearchResults = async (command, searchId, searchTerm) => {
-    const {
-      getSearchSuggestions = null
-    } = (await command.getSpeedbarHandler());
+    let getSearchSuggestions;
+
+    if (searchId === 'optional-tokens') {
+      getSearchSuggestions = getSuggestionsForOptionalTokens(this.state.tokenList)
+    } else {
+      ({
+        getSearchSuggestions = null
+      } = (await command.getSpeedbarHandler()));
+    }
+
     if (getSearchSuggestions !== null) {
       try {
         const searchResult = await getSearchSuggestions(
@@ -323,6 +445,7 @@ export default class CommandWindow extends React.Component {
         );
         return searchResult;
       } catch (err) {
+        // any point ?
         throw err;
       }
     } else {
@@ -330,7 +453,8 @@ export default class CommandWindow extends React.Component {
       console.error(errorMessage);
       throw Error(errorMessage);
     }
-  };
+  }
+
   /**
   *	Test whether user has accepted a command prefix which should execute immediately,
   *	i.e no further command input admissable.
@@ -339,6 +463,7 @@ export default class CommandWindow extends React.Component {
   shouldProcessAcceptedCommand(command) {
     return command !== undefined && command.allowCommand === false;
   }
+
   async processCommand() {
     const {
       searchTokens,
@@ -383,9 +508,9 @@ export default class CommandWindow extends React.Component {
     }
   };
 
-  getSuggestion(idx){
+  getSuggestion(idx) {
     const suggestions = this.getAvailableSuggestions();
-    if (suggestions.length > 0 && suggestions[idx]){
+    if (suggestions.length > 0 && suggestions[idx]) {
       return suggestions[idx];
     }
   }
@@ -449,8 +574,9 @@ export default class CommandWindow extends React.Component {
           onNavigateSuggestions={this.navigateSuggestions}
           onAcceptSuggestion={this.acceptSuggestion}
           onSubmit={this.processCommand}
-          onClearToken={this.clearToken}
           onClear={this.clearState}
+          onClearSearchToken={this.clearSearchToken}
+          onRevisitSearchToken={this.revisitSearchToken}
           onFocus={this.handleFocus}
           onClick={this.handleClick}
         />
