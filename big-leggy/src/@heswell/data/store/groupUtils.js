@@ -1,11 +1,8 @@
 
 import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
 import { ASC } from './types';
-import * as Data from './constants';
 import { metaData } from './columnUtils';
 
-const DEPTH = 1;
-const COUNT = 2;
 const LEAF_DEPTH = 0;
 const DEFAULT_OPTIONS = {
     startIdx: 0,
@@ -160,6 +157,7 @@ export function fillNavSetsFromGroups(groups, sortSet, sortIdx=0, filterSet=null
     return sortIdx;
 }
 
+// WHY is param order different from groupLeafRows
 export function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT_OPTIONS) {
     const { startIdx = 0, length=rows.length, rootIdx = null, baseGroupby = [], groups=[], rowParents=null,
         filterLength, filterSet, filterFn: filter } = options;
@@ -171,7 +169,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
 
     const levels = groupby.length;
     const currentGroups = Array(levels).fill(null);
-    const { DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
+    const { IDX, DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
 
     let parentIdx = rootIdx;
     let leafCount = 0;
@@ -186,7 +184,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
             const groupValue = row[columnIdx];
             // as soon as we identify a group change, each group at that level and below
             // is then aggregated and new group(s) initiated. 
-            if (currentGroup === null || currentGroup[columnIdx+2] !== groupValue) {
+            if (currentGroup === null || currentGroup[columnIdx] !== groupValue) {
                 if (currentGroup !== null) {
                     // as soon as we know we're regrouping, aggregate the open groups, in reverse order
                     for (let ii = levels - 1; ii >= level; ii--) {
@@ -202,7 +200,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
                 }
                 for (let ii = level; ii < levels; ii++) {
                     groupIdx += 1;
-                    parentIdx = ii === 0 ? rootIdx : currentGroups[ii - 1][0];
+                    parentIdx = ii === 0 ? rootIdx : currentGroups[ii - 1][IDX];
                     const depth = levels - ii;
                     // for first-level groups, row pointer is a pointer into the sortSet
                     const childIdx = depth === 1
@@ -508,7 +506,7 @@ export function findGroupPositions(groups, groupby, row) {
         // and other groupCol values  are null
         for (let j = 0; j < groupby.length; j++) {
             const colIdx = groupby[j][0];
-            const colValue = group[colIdx+2];
+            const colValue = group[colIdx];
             if (j > i) {
                 if (colValue !== null) {
                     break out;
@@ -531,28 +529,28 @@ export function buildGroupKey(groupby, row){
 }
 
 // Do we have to take columnMap out again ?
-function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
+export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const group = Array(columns.length+8); // 4 leading metadata fields, 4 trailing
+    const { IDX, DEPTH, COUNT, KEY, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
-    const { PARENT_IDX, IDX_POINTER } = metaData(columns);
-    // TODO how do we avoid this clumsy +2 offset for group column - MOVE ALL METADATA TO END OF ROW
+
     for (let i = 0; i < columns.length; i++) {
         const column = columns[i];
         const key = columnMap[column.name];
         if (column.aggregate) { // implies we can't group on aggregate columns, does the UI know that ?
-            group[key+2] = 0;
+            group[key] = 0;
         } else if ((colIdx = indexOfCol(key, groupby)) !== -1 && colIdx <= groupIdx) {
-            group[key+2] = row[key];
+            group[key] = row[key];
         } else {
-            group[key+2] = null;
+            group[key] = null;
         }
     }
 
     for (let i = 0; i < baseGroupby.length; i++) {
         const [colIdx] = baseGroupby[i];
-        group[colIdx+2] = row[colIdx];
+        group[colIdx] = row[colIdx];
     }
 
     const extractKey = ([idx]) => row[idx];
@@ -563,12 +561,13 @@ function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, column
         : '';
     const groupKey = buildKey(groupby.slice(0, groupIdx + 1));
 
-    group[0] = idx;
-    group[1] = -depth;
-    group[2] = 0;
-    group[3] = baseKey + groupKey;
+    group[IDX] = idx;
+    group[DEPTH] = -depth;
+    group[COUNT] = 0;
+    group[KEY] = baseKey + groupKey;
     group[IDX_POINTER] = childIdx;
     group[PARENT_IDX] = parentIdx;
+
     return group;
 
 }
@@ -630,6 +629,7 @@ export function incrementDepth(depth) {
 // When we build the group index, all groups are collapsed
 export function indexGroupedRows(groupedRows) {
 
+    // TODO
     const Fields = {
         Depth: 1,
         Key: 4
@@ -673,6 +673,7 @@ export function findAggregatedColumns(columns, columnMap, groupby) {
 
 export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
 
+    const {DEPTH, COUNT} = metaData(columns);
     const groupRow = groups[grpIdx];
     let [,depth] = groupRow;
     let absDepth = Math.abs(depth);
@@ -689,7 +690,7 @@ export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregati
     for (let i=grpIdx+count; i >= grpIdx; i--){
         for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
             const [colIdx] = aggregations[aggIdx];
-            groups[i][colIdx+2] = 0;
+            groups[i][colIdx] = 0;
         }
         aggregate(groups[i], groups, sortSet, rows, columns, aggregations, groups[i][COUNT])
     }
@@ -698,9 +699,9 @@ export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregati
 
 function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, leafCount, filter=null) {
 
-    const {FILTER_COUNT} = metaData(columns);
+    const {DEPTH, COUNT, FILTER_COUNT} = metaData(columns);
     const { IDX_POINTER } = metaData(columns);
-    let absDepth = Math.abs(groupRow[Data.DEPTH_FIELD]);
+    let absDepth = Math.abs(groupRow[DEPTH]);
     let count = 0;
     let filteredCount = filter === null ? undefined : 0;
 
@@ -718,7 +719,7 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
             if (filter === null || included){
                 for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
                     const [colIdx] = aggregations[aggIdx];
-                    groupRow[colIdx+2] += row[colIdx];
+                    groupRow[colIdx] += row[colIdx];
                 }
             }
         }
@@ -729,7 +730,8 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
         const startIdx = groupRows.indexOf(groupRow) + 1;
         for (let i=startIdx;i<groupRows.length;i++){
             const nestedGroupRow = groupRows[i];
-            const [,nestedRowDepth, nestedRowCount] = nestedGroupRow;
+            const nestedRowDepth = nestedGroupRow[DEPTH];
+            const nestedRowCount = nestedGroupRow[COUNT];
             const absNestedRowDepth = Math.abs(nestedRowDepth);
             if (absNestedRowDepth >= absDepth){
                 break;
@@ -737,9 +739,9 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
                 for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
                     const [colIdx, method] = aggregations[aggIdx];
                     if (method === 'avg') {
-                        groupRow[colIdx+2] += nestedGroupRow[colIdx+2] * nestedRowCount;
+                        groupRow[colIdx] += nestedGroupRow[colIdx] * nestedRowCount;
                     } else {
-                        groupRow[colIdx+2] += nestedGroupRow[colIdx+2];
+                        groupRow[colIdx] += nestedGroupRow[colIdx];
                     }
                 }
                 count += nestedRowCount;
@@ -750,11 +752,11 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
     for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
         const [colIdx, method] = aggregations[aggIdx];
         if (method === 'avg') {
-            groupRow[colIdx+2] = groupRow[colIdx+2] / count;
+            groupRow[colIdx] = groupRow[colIdx] / count;
         }
     }
 
-    groupRow[Data.COUNT_FIELD] = count;
+    groupRow[COUNT] = count;
     groupRow[FILTER_COUNT] = filteredCount;
 
 }

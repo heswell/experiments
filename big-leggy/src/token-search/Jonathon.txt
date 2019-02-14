@@ -1,0 +1,23 @@
+Hi Marie,
+I hope you are well and business is booming. Things are going ok for me so far at GS. An old colleague got in touch at the weekend, someone I worked with 12 years or so ago
+and who is now looking for work as a JavaScript developer. Jonathon doesn't fit the usual web developer mould, I suggested he contact Adaptive on the offchance that you might
+be able to offer a role for someone with his experience. He left Deutsche a year ago after 20 years there, spent in IT, Sales and Trading. We worked together on the Convertible
+Bonds Trading Desk, where he was responsible for IT (I was hacking JavaScript, naturally). He was not a hands-on developer, though he did dabble in coding. His coding background
+was C++. The roles he performed since then at Deutsche were, similarly, not programming, but business focussed. 
+
+Since leaving DB, he has been involved in a couple of tentative startup experiments with former colleagues, where he has taken on the programming duties, using a mix of python
+and JavaScript (React). Although these haven't led anywhere, he's enjoyed programming again and plans to spend the next few years just programming.
+
+So, I can't vouch for the current state of Jonathons JavaScript knowledge, but I can tell you he's a very smart guy, with a ton of business knowledge across the markets. He knows
+the operations of Sales and Trading inside out. The more obvious role might seem to be as some kind of BA, but he doesn't want to do that - he want to do programming.
+
+I told him he should drop you a line and just explain his situation, be completely honest about his scant recent real-world programming experience and see if you might be able to
+offer him anything. He knows he's not going to command market rate for a programming role.
+
+He's a very nice fellow to work with - I wouldn't be recommending him otherwise !
+
+Anyway, you'll probably hear from him and he will mention that he worked with me, that's the background.
+
+If I don't see you sooner, hope to see you at Battersea Park again in July. Look after yourself in the meantime
+
+Steve

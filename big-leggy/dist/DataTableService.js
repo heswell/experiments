@@ -1884,7 +1884,6 @@ class BaseRowSet {
         this.range = NULL_RANGE;
         this.selectedIndices = [];
         this.columns = columns;
-        // this.columnMap = columns && ColumnMap(columns);
         this.currentFilter = null;
         this.filterSet = null;
     }

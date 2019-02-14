@@ -10,7 +10,6 @@ export default class BaseRowSet {
         this.range = NULL_RANGE;
         this.selectedIndices = [];
         this.columns = columns;
-        // this.columnMap = columns && ColumnMap(columns);
         this.currentFilter = null;
         this.filterSet = null;
     }
@@ -41,10 +40,10 @@ export default class BaseRowSet {
     }
 
     selectNavigationSet(useFilter){
-        const { IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
+        const { COUNT, IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
         return useFilter
             ? [this.filterSet, NEXT_FILTER_IDX, FILTER_COUNT]
-            : [this.sortSet, IDX_POINTER, System.COUNT_FIELD];
+            : [this.sortSet, IDX_POINTER, COUNT];
     }
     
 }

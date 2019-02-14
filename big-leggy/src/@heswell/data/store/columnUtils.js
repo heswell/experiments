@@ -15,15 +15,15 @@ export function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
-export function buildColumnMap(columns, leadMetaCount=0){
+export function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
             if (typeof column === 'string'){
-                map[column] = leadMetaCount + i;
-            } else if (column.key) {
-                map[column.name] = leadMetaCount + column.key;
+                map[column] = i;
+            } else if (typeof column.key === 'number') {
+                map[column.name] = column.key;
             } else {
-                map[column.name] = leadMetaCount + i;
+                map[column.name] = i;
             }
             return map;
         },{})
@@ -32,36 +32,16 @@ export function buildColumnMap(columns, leadMetaCount=0){
     }
 }
 
-export function ColumnMap(cols) {
-    return cols.reduce((map, col) => {
-        map[col.name] = col.key; return map;
-    }, {});
-}
-
-export function rowColumnMap(columns, columnMap){
-    const results = [];
-    columns.forEach(column => {
-        if (column.composite){
-            results.push(column.colummns.map(colName => columnMap[colName]));
-        } else {
-            results.push(columnMap[column.name]);
-        }
-    })
-    return results;
-}
-
 export function projectColumns(map, columns){
     const length = columns.length;
     return startIdx => (row,i) => {
-        const out = Array(length+4);
-        out[0] = startIdx + i;
-        out[1] = 0;
-        out[2] = 0;
-        out[3] = row[1];
+        const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
-            out[i+4] = row[colIdx];
+            out[i] = row[colIdx];
         }
+        // assume row[0] is key for now
+        out.push(startIdx+i, 0, 0, row[0]);
         return out;
     }
 }
@@ -89,14 +69,17 @@ export function getDataType({type=null}){
 //TODO cache result by length
 export function metaData(columns){
     const len = columns.length;
-    let metaStart = 4;
+    let metaStart = 0;
     const next = () => len + metaStart++;
     return {
-        DEPTH: 1,
-        COUNT: 2,
+        IDX: next(),
+        DEPTH: next(),
+        COUNT: next(),
+        KEY: next(),
         PARENT_IDX: next(),
         IDX_POINTER: next(),
         FILTER_COUNT: next(),
-        NEXT_FILTER_IDX: next()
+        NEXT_FILTER_IDX: next(),
+        count: columns.length + metaStart
     }
 }

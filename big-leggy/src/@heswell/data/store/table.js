@@ -2,9 +2,6 @@
 import {EventEmitter} from '@heswell/utils';
 import {buildColumnMap} from './columnUtils'
 
-// meta fields are the idx and the primary key
-const META_COUNT = 2;
-
 export default class Table extends EventEmitter {
 
     constructor(config){
@@ -19,9 +16,7 @@ export default class Table extends EventEmitter {
         this.index = {};
         this.rows = [];
         this.updateConfig = config.updates;
-
-        this.inputColumnMap = buildColumnMap(columns);
-        this.outputColumnMap = buildColumnMap(columns, META_COUNT);
+        this.columnMap = buildColumnMap(columns);
         this.columnCount = 0;
         this.status = null;
 
@@ -40,12 +35,10 @@ export default class Table extends EventEmitter {
         const results = [];
         let row = this.rows[rowIdx];
         for (let i=0;i<updates.length;i+=2){
-            // return [colIdx, originalValue, newValue, ...]
-            const absIdx = updates[i];
-            const colIdx = absIdx - META_COUNT;
+            const colIdx = updates[i];
             const value = updates[i+1];
-            results.push(colIdx, row[absIdx], value);
-            row[absIdx] = value;
+            results.push(colIdx, row[colIdx], value);
+            row[colIdx] = value;
         }
         this.emit('rowUpdated', rowIdx, results);
     }
@@ -113,8 +106,7 @@ export default class Table extends EventEmitter {
 
         if (this.columns === null){
             this.columns = columnsFromColumnMap(this.inputColumnMap);
-            this.inputColumnMap = buildColumnMap(this.columns);
-            this.outputColumnMap = buildColumnMap(this.columns, META_COUNT);
+            this.columnMap = buildColumnMap(this.columns);
         }
         this.status = 'ready';
         this.emit('ready');
@@ -133,19 +125,20 @@ export default class Table extends EventEmitter {
 
     rowFromData(idx, data, columnnameList){
         // 2 metadata items for each row, the idx and unique key
-        const {index, primaryKey=null, inputColumnMap: map} = this;
+        const {index, primaryKey=null, columnMap: map} = this;
 
         if (Array.isArray(data)){
             const key = data[map[this.primaryKey]];
             index[key] = idx;
-            return [idx, key, ...data];
+            return [...data, idx, key];
         } else {
             // This allows us to load data from objects as rows, without predefined columns, where
             // not every row may have every column. How would we handle primary key ?
-            const columnMap = map || (this.inputColumnMap = {});
+            const columnMap = map || (this.columnMap = {});
             const colnames = columnnameList || Object.getOwnPropertyNames(data);
             const row = [idx];
             let colIdx;
+            let key;
 
             for (let i=0; i<colnames.length; i++){
                 const name = colnames[i];
@@ -153,13 +146,16 @@ export default class Table extends EventEmitter {
                 if ((colIdx = columnMap[name]) === undefined){
                     colIdx = columnMap[name] = this.columnCount++;
                 }
-                row[colIdx+2] = value;
-                // If we don't kno the primary key, assume it is the first column for now
+                row[colIdx] = value;
+                // If we don't know the primary key, assume it is the first column for now
                 if ((name === primaryKey) || (primaryKey === null && i === 0)){
-                    row[1] = value;
+                    key = value;
                     index[value] = idx;
                 }
             }
+            // doesn't this risk pushing the metadata into the wrong slots if not every row has every 
+            // field
+            row.push(idx, key)
             return row;
         }
     }
@@ -182,7 +178,7 @@ export default class Table extends EventEmitter {
     applyUpdates(){
         for (let i=0;i<this.rows.length;i++){
             if (Math.random() > 0.5){
-                const update = this.updateRow(i, this.rows[i], this.outputColumnMap);
+                const update = this.updateRow(i, this.rows[i], this.columnMap);
                 if (update){
                     this.update(i, ...update);
                 }

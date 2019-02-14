@@ -36,7 +36,7 @@ export const updateSpeedbarSuggestionsWindowPosition = (
     return;
   }
   const { left, top, width, height } = parentWindowBounds;
-  const currentWindow = suggestionWindow || fin.desktop.Window.getCurrentQ;
+  const currentWindow = suggestionWindow || fin.desktop.Window.getCurrent();
   currentWindow.setBounds(left, top, width, height);
 }
 

@@ -8,10 +8,12 @@ import {
     _getInstrumentRowset,
     InstrumentColumns,
     _rowset_columns,
+    _data,
     _rowset_columns_with_aggregation,
     GROUP_COL_1,
     GROUP_COL_2,
-    GROUP_COL_3
+    GROUP_COL_3,
+    join
 } from '../testData';
 
 import { INCLUDE } from '../../../data/store/filter';
@@ -23,11 +25,10 @@ describe('construction', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1])
         const { groupRows, sortSet } = rowSet;
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        // console.log(`${join(groupRows)} ${join(data)} ${join(results)}`);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
-            [100, -1, 8, 'G1'],
-            [101, -1, 8, 'G2'],
-            [102, -1, 8, 'G3']
+        expect(rows).toEqual([
+            [null,'G1',null,null,null,null,100, -1, 8, 'G1', null, 0, undefined, undefined],
+            [null,'G2',null,null,null,null,101, -1, 8, 'G2', null, 8, undefined, undefined],
+            [null,'G3',null,null,null,null,102, -1, 8, 'G3', null, 16, undefined, undefined]
         ]);
         expect(rowSet.rowParents).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2])
         // base dataset is already in order, so sortSet reflects this
@@ -35,37 +36,37 @@ describe('construction', () => {
         expect(groupRows.length).toBe(3);
     });
 
-    test('correctly groups by two columns', () => {
+    test.only('correctly groups by two columns', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
         const { groupRows, sortSet } = rowSet;
+
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        // console.log(`${join(groupRows)} ${join(data)}`);
-        // console.log(sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
-            [100, -2, 8, 'G1'],
-            [101, -2, 8, 'G2'],
-            [102, -2, 8, 'G3']
+        console.log(`${join(groupRows)}`);
+        console.log(sortSet)
+        expect(rows).toEqual([
+            [null,'G1',null,null,null,null,100, -2, 8, 'G1', null, 0, undefined, undefined],
+            [null,'G2',null,null,null,null,101, -2, 8, 'G2', null, 8, undefined, undefined],
+            [null,'G3',null,null,null,null,102, -2, 8, 'G3', null, 16, undefined, undefined]
         ]);
 
-        // this has to chnage, we're not going to store metadata on the row
-        expect(rowSet.rowParents).toEqual([2,2,2,2,1,1,1,1,6,6,4,4,5,5,5,5,9,9,9,9,8,8,10,11])
-        expect(sortSet).toEqual([4,5,6,7,0,1,2,3,10,11,12,13,14,15,8,9,20,21,16,17,18,19,22,23]);
-        expect(groupRows.length).toBe(12);
+        // expect(rowSet.rowParents).toEqual([2,2,2,2,1,1,1,1,6,6,4,4,5,5,5,5,9,9,9,9,8,8,10,11])
+        // expect(sortSet).toEqual([4,5,6,7,0,1,2,3,10,11,12,13,14,15,8,9,20,21,16,17,18,19,22,23]);
+        // expect(groupRows.length).toBe(12);
 
-        expect(groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
-            [0,-2,8,'G1',null,1],
-            [1,-1,4,'G1/I2',0,0],
-            [2,-1,4,'G1/U2',0,4],
-            [3,-2,8,'G2',null,4],
-            [4,-1,2,'G2/I2',3,8],
-            [5,-1,4,'G2/O2',3,10],
-            [6,-1,2,'G2/U2',3,14],
-            [7,-2,8,'G3',null,8],
-            [8,-1,2,'G3/A2',7,16],
-            [9,-1,4,'G3/E2',7,18],
-            [10,-1,1,'G3/I2',7,22],
-            [11,-1,1,'G3/O2',7,23]
-        ]);
+        // expect(groupRows).toEqual([
+        //     [0,-2,8,'G1',null,1],
+        //     [1,-1,4,'G1/I2',0,0],
+        //     [2,-1,4,'G1/U2',0,4],
+        //     [3,-2,8,'G2',null,4],
+        //     [4,-1,2,'G2/I2',3,8],
+        //     [5,-1,4,'G2/O2',3,10],
+        //     [6,-1,2,'G2/U2',3,14],
+        //     [7,-2,8,'G3',null,8],
+        //     [8,-1,2,'G3/A2',7,16],
+        //     [9,-1,4,'G3/E2',7,18],
+        //     [10,-1,1,'G3/I2',7,22],
+        //     [11,-1,1,'G3/O2',7,23]
+        // ]);
     })
 
     test('correctly groups by three columns', () => {
@@ -447,6 +448,7 @@ describe('groupBy', () => {
     });
 
     test('reverse direction on first group column of two column grouping', () => {
+        debugger;        
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2]);
         rowSet.groupBy([['Group 1','dsc'],GROUP_COL_2])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);

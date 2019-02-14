@@ -65,6 +65,9 @@ export const VENUE = {
   name: 'venue',
   description: 'Venue',
   formatHelp: 'otc, listed',
+  valuesHelp: [
+    { value: 'otc', description: 'Venue' }
+  ],
   pattern: /^(otc|listed)$/i,
   required: false
 };
@@ -112,7 +115,7 @@ export const LEI = {
   name: 'lei',
   description: 'xyzLE LEI',
   formatHelp: 'xyzLE',
-  pattern: /^[a-z0-9]+$/i,
+  pattern: /^[a-z0-9]+le$/i,
   required: false
 }
 

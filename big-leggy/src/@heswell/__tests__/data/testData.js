@@ -99,6 +99,8 @@ export function getEmptyTestTableAndRowset(){
     return [table, rowSet]
 }
 
+export const extract = (lists, idx) => lists.map(list => list[idx])
+
 export function join(arr){
     return '\n\n' + arr.join('\n');
 }
@@ -129,7 +131,6 @@ export const _getInstrumentTable = () => new Table({
     columns: Instruments.columns,
     data: instrumentData
 });
-
 
 export function _getInstrumentRowset(){
     const table = _getInstrumentTable();

@@ -38,10 +38,10 @@ export default class SearchSuggestions extends React.Component {
               className={cx(styles.suggestedItem, { [styles.selected]: isSelected })}
               onClick={this.handleClick}
             >
-              {textChunks.map((textChunk, chunkldx) => {
+              {textChunks.map((textChunk, chunkIdx) => {
                 if (pattern.test(textChunk)) {
                   return (
-                    <span key={chunkldx} className={styles.searchMatch}>
+                    <span key={chunkIdx} className={styles.searchMatch}>
                       {textChunk}
                     </span>
                   );

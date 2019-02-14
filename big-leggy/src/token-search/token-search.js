@@ -32,11 +32,11 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
     let suggestion;
     const tokens = [];
     const searchTokens = {};
-    let tokenldx = 0;
+    let tokenIdx = 0;
 
     const nextToken = async () => {
-      const descriptor = descriptors[tokenldx];
-      const nextDescriptor = descriptors[tokenldx + 1];
+      const descriptor = descriptors[tokenIdx];
+      const nextDescriptor = descriptors[tokenIdx + 1];
       suggestion = undefined;
 
       if (descriptor.searchId) {
@@ -65,7 +65,7 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
           };
         }
       }
-      tokenldx += 1;
+      tokenIdx += 1;
       if (remainingText) {
         await nextToken();
       } else {
@@ -86,30 +86,47 @@ export const resolveSearchToken = async (command, searchId, text, searchService,
         : PATTERN_MATCH_ANYTHING;
 
     const nextResult = async () => {
+      // new  
+      const previousSearchTerms = currentSearchTerms.join(' ');
+
       currentSearchTerms.push(searchTerms.shift());
       const searchText = currentSearchTerms.join(' ');
       const result = await searchService.getSearchResults(command, searchId, searchText);
       let resolved = false;
       if (result.searchResults.length === 0) {
-        if (lastSearchResult && lastSearchResult.count === 1) {
+        if (lastSearchResult && lastSearchResult.suggestions.length === 1) {
           // the most common scenario when we have a well-specified search
           // (and we’re not at the end of the command)
           resolved = true;
         } else {
-          return reject(Error(`No match found for ’${searchText}'`));
+          // is one of the results an exact match ?
+          const suggestion = lastSearchResult && lastSearchResult.suggestions.find(({speedbarText}) => speedbarText === lastSearchResult.searchTerm)
+          if (suggestion){
+            resolved = true;
+          } else {
+            if (lastSearchResult){
+              // do we try matching remaining searchTerms against remaining tokens to determine extent of search terms
+              console.log(`absolutely no match for ${searchText} what about ${lastSearchResult.searchTerm} or ${previousSearchTerms}`)
+            }
+            return reject(Error(`No match found for ’${searchText}'`));
+          }
+          // const nextTerm = currentSearchTerms[currentSearchTerms.length - 1]
+          // if (nextTokenPattern.test(nextTerm)){
+          //   console.log(`looks like we have a match against ${nextTokenDescriptor.name} for ${nextTerm}`, lastSearchResult.suggestions)
+          // }
+
         }
       } else if (
         // try and guard against consuming too many tokens by matching against next token
         result.searchResults.length > 0 &&
         lastSearchResult &&
-        lastSearchResult.count === 1 &&
+        lastSearchResult.suggestions.length === 1 &&
         nextTokenPattern.test(currentSearchTerms[currentSearchTerms.length - 1])
       ) {
         resolved = true;
       } else {
         lastSearchResult = {
-          count: result.searchResults.length,
-          suggestion: result.searchResults[0],
+          suggestions: result.searchResults,
           searchTerm: searchText,
           remainingText: searchTerms.join(' ')
         };
@@ -123,13 +140,15 @@ export const resolveSearchToken = async (command, searchId, text, searchService,
       } else if (!resolved) {
         reject(Error(`No match found for ’${searchText}'`));
       }
+
       if (resolved) {
-        const speedbarText = insertNonBreakingSpaces(lastSearchResult.suggestion.speedbarText);
+        const [suggestion] = lastSearchResult.suggestions;
+        const speedbarText = insertNonBreakingSpaces(suggestion.speedbarText);
         resolve([
           speedbarText,
           lastSearchResult.remainingText,
           {
-            ...lastSearchResult.suggestion,
+            ...suggestion,
             speedbarText
           }
         ]);

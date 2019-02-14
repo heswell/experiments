@@ -286,7 +286,7 @@ export default class CommandWindow extends React.Component {
         selectedSuggestionIdx: -1,
         errorMessage: ''
       }, () => {
-        if (inputMethod === InputMethod.UserInput) {
+        if (inputMethod !== InputMethod.PasteCommand) {
           this.postInputSearchHandling(inputText);
         }
       });
@@ -349,7 +349,7 @@ export default class CommandWindow extends React.Component {
       // console.log('tokenDescriptor at offset ${JSON.stringify(tokenDescriptor)}')
       if (tokenDescriptor && tokenDescriptor.searchId) {
         // next expected token is a search token, but user hasn’t started typing search term(s) yet
-        // console.log('===> seems like we can do an empty search for ${tokenDescriptor.searchld}')
+        // console.log('===> seems like we can do an empty search for ${tokenDescriptor.searchId}')
         return true;
       } else {
         return false;
@@ -365,9 +365,9 @@ export default class CommandWindow extends React.Component {
   }
 
   getOptionalTokenSearchTerm(inputText, tokenList) {
-    const cursorPosition = this.getCursorPositionQ;
+    const cursorPosition = this.getCursorPosition();
     const token = tokenList.getTokenAtOffset(cursorPosition);
-    const result = token && token.type === 'text'
+    const result = token && token.type === TokenType.Text
       ? token.text
       : '';
     return result;

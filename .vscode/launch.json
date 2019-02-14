@@ -18,7 +18,7 @@
       "args":[ 
         "${workspaceRoot}/big-leggy/node_modules/.bin/jest",
         "--",
-        "groupRowset"
+        "groupRowSet"
       ],
       "cwd": "${workspaceRoot}/big-leggy"
   },

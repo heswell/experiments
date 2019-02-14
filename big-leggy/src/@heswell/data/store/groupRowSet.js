@@ -21,8 +21,6 @@ import { ASC } from './types'
 import { NULL_RANGE } from './rangeUtils';
 
 const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
-const DEPTH = System.DEPTH_FIELD;
-const COUNT = System.COUNT_FIELD;
 const EMPTY_ARRAY = [];
 const GROUP_KEY_SORT = [[System.KEY_FIELD,'asc','group key']];
 
@@ -61,10 +59,11 @@ export default class GroupRowSet extends BaseRowSet {
         this.rowParents = Array(rowSet.data.length);
         this.applyGroupby(groupby);
 
-        //TODO put this in method
-        const {PARENT_IDX} = metaData(columns)
+        this.meta = metaData(columns);
+
         const [navSet, IDX, COUNT] = this.selectNavigationSet(false);
-        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, PARENT_IDX, COUNT, this.offset);
+        // TODO roll the IDX and COUNT overrides into meta
+        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, this.meta, COUNT, this.offset);
 
         if (filter){
             this.filter(filter);
@@ -100,7 +99,7 @@ export default class GroupRowSet extends BaseRowSet {
         //     ${this.iter.rangePositions}
         //     ${this.iter.rangePositionHi}`);
 
-        const filterCount = this.filterSet && metaData(this.columns).FILTER_COUNT;
+        const filterCount = this.filterSet && this.meta.FILTER_COUNT;
         const rows = rowsInRange.map((row,i) => this.cloneRow(row, idx+i, filterCount));
         this.range = range;
         return {
@@ -112,9 +111,10 @@ export default class GroupRowSet extends BaseRowSet {
         };
     }
 
-    cloneRow(row,idx, FILTER_COUNT){
-        const ind = idx + this.offset;
-        const dolly = [ind].concat(row.slice(1));
+    cloneRow(row, idx, FILTER_COUNT){
+        const {IDX, DEPTH, COUNT} = this.meta;
+        const dolly = row.slice();
+        dolly[IDX] = idx + this.offset;
 
         if (FILTER_COUNT && dolly[DEPTH] !== 0 && typeof dolly[FILTER_COUNT] === 'number'){
             dolly[COUNT] = dolly[FILTER_COUNT]

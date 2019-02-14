@@ -1,7 +1,6 @@
 import { buildRegexFromSearchTerm } from '../../../token-search';
 
-export const getSuggestionsForOptionalTokens = tokenList => (searchld, searchTerm) => {
-
+export const getSuggestionsForOptionalTokens = tokenList => (searchId, searchTerm) => {
   const searchTerms = searchTerm.trim().split(/\s+/);
   const searchPatterns = searchTerms.map(buildRegexFromSearchTerm);
   const tokenDescriptors = tokenList.unusedOptionalDescriptors;
