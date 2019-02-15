@@ -3,10 +3,7 @@ import {getGridCellClassName} from './cell-utils';
 
 import './group-cell.css';
 
-const DEPTH = 1;
-const CHILD_COUNT = 2;
-
-export default React.memo(({value, idx, cellClass, row, column, onClick}) => {
+export default React.memo(({value, idx, cellClass, row, column, onClick, meta}) => {
 
     const clickHandler = useCallback(e => {
         e.preventDefault();
@@ -14,21 +11,21 @@ export default React.memo(({value, idx, cellClass, row, column, onClick}) => {
         onClick(idx);
     },[idx, onClick])
 
-    const isExpanded = row[DEPTH] > 0;
+    const isExpanded = row[meta.DEPTH] > 0;
 
     return (
         <div 
             className={getGridCellClassName(column, value, cellClass)}
             style={{ width: column.width }} tabIndex={0} >
-            {getContent(row, column.columns, isExpanded, clickHandler)}
+            {getContent(row, column.columns, meta, isExpanded, clickHandler)}
         </div>
     );
 })
 
-function getContent(row, columns, rowExpanded, onClick) {
+function getContent(row, columns, meta, rowExpanded, onClick) {
 
-    const count = row[CHILD_COUNT];
-    const result = getValue(row,columns)
+    const count = row[meta.COUNT];
+    const result = getValue(row,columns, meta)
 
     if (result) {
         const [value, depth] = result;
@@ -43,8 +40,8 @@ function getContent(row, columns, rowExpanded, onClick) {
     }
 }
 
-function getValue(row, columns){
-    const depth = Math.abs(row[DEPTH]);
+function getValue(row, columns, meta){
+    const depth = Math.abs(row[meta.DEPTH]);
     for (let i=0;i<columns.length;i++){
         const column = columns[i];
         if (column.groupLevel === depth) {

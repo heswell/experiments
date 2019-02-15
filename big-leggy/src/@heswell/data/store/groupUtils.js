@@ -333,8 +333,8 @@ export function updateGroupBy(existingGroupBy = null, column, replace = false) {
 // TODO modify groupBy => groupby (with colIdx)
 export function toggleGroupState(groupedRow, model) {
 
-    const [, groupLevel] = groupedRow;
-    let { columns, columnMap, groupBy, groupState } = model;
+    let { columns, columnMap, groupBy, groupState, meta } = model;
+    const groupLevel = groupedRow[meta.DEPTH];
     const groupByIdx = groupBy.length - Math.abs(groupLevel);
 
     const newGroupState = groupState === null ? {} : { ...groupState };

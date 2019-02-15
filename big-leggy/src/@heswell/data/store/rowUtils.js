@@ -54,8 +54,9 @@ export function update(rows, range, updates, {IDX}) {
 // export so we can test - see if we can't use rewire
 // Called when client calls setRange, locally cached data is immediately
 // trimmed to new range and missing data filled with empty rows. 
-export function purgeAndFill({range:{lo, hi}, rows, offset = 0}, {IDX}) {
+export function purgeAndFill({range:{lo, hi}, rows, offset = 0}, meta) {
 
+    const {IDX} = meta;
     const results = [];
     const len = rows.length;
     const low = lo + offset;
@@ -75,7 +76,7 @@ export function purgeAndFill({range:{lo, hi}, rows, offset = 0}, {IDX}) {
 
     const end = Math.min(idx, high);
     for (let i = low; i < end; i++) {
-        results.push([i, 0, 0, 0]);
+        results.push(emptyRow(i, meta));
     }
 
     if (end === high) {
@@ -93,28 +94,35 @@ export function purgeAndFill({range:{lo, hi}, rows, offset = 0}, {IDX}) {
             }
         } else {
             //onsole.log(`rowUtils.purgeAndFill gap at ${i}`);
-            results.push([i, 0, 0, 0]);
+            results.push(emptyRow(i, meta));
         }
     }
 
     // 3) pad results to end of range
     const start = Math.max(idx + 1, low);
     for (let i = start; i < high; i++) {
-        results.push([i, 0, 0, 0]);
+        results.push(emptyRow(i, meta));
     }
 
     return results;
 
 }
 
+// TODO create a pool of these and reuse them
+function emptyRow(idx, {IDX, count}){
+    const row = Array(count);
+    row[IDX] = idx;
+    return row;
+}
+
 
 // New data is merged into local cache
-export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size, {IDX}) {
+export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size, meta) {
     // console.groupCollapsed(`mergeAndPurge  existing range: ${lo} - ${hi} 
     //  old   rows: [${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}]
     //  new   rows: [${newRows.length ? newRows[0][0]: null} - ${newRows.length ? newRows[newRows.length-1][0]: null}]
     //     `);
-
+    const {IDX} = meta;
     const results = [];
     const low = lo + offset;
     const high = Math.min(hi + offset, size + offset);
@@ -146,7 +154,7 @@ export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size,
     const rowCount = hi - lo;
     for (let i=0;i<rowCount;i++){
         if (results[i] === undefined){
-            results[i] = [i+low, 0, 0, 0];
+            results[i] = emptyRow(i+low, meta);
         }
     }
     // console.log(`results ${JSON.stringify(results,null,2)}`);
