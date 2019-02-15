@@ -23,6 +23,8 @@ const DEFAULT_STATE = {
     totalColumnWidth: 0,
     selectionModel: Selection.MultipleRow,
 
+    meta: null,
+
     _columns: null,
     _columnMap: null,
     _movingColumn: null,

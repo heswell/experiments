@@ -248,7 +248,6 @@ export default class Subscription {
                     //onsole.log(`client.Subscription receive updates ${JSON.stringify(update)}`);
                     for (let ii = 1; ii < update.length; ii += 2) {
                         // should we double check that the value has actually changed ?
-                        // row[update[ii] + 4] = update[ii + 1];
                         row[update[ii]] = update[ii + 1];
                     }
 

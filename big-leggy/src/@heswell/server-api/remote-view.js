@@ -1,4 +1,5 @@
 
+import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '../data';
 import {EventEmitter} from '@heswell/utils';
 // import {
@@ -41,6 +42,7 @@ export default class RemoteView extends EventEmitter {
 
         this._id = id || uuid.v1();
         this._table = tablename;
+        this.meta = metaData(columns);
 
         this._rowData = {
             rows: [],
@@ -96,7 +98,7 @@ export default class RemoteView extends EventEmitter {
                     console.log('%cRemoteView size only, size = ' + message.size,'color:blue;font-weight:bold;');
                     this._rowData.size = message.size;
                     if (message.size === 0) {
-                        this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, [], 0);
+                        this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, [], 0, this.meta);
                         this.emit(DataTypes.ROW_DATA, this._rowData.rows, this._rowData.size);
                     } else {
                         // size change will cause scrollbar t redraw
@@ -113,7 +115,7 @@ export default class RemoteView extends EventEmitter {
                     targetData.size = size;
                     targetData.offset = offset;
                     targetData.selectedIndices = selectedIndices;
-                    targetData.rows = rowUtils.mergeAndPurge(targetData, data, size);
+                    targetData.rows = rowUtils.mergeAndPurge(targetData, data, size, this.meta);
 
                     this.emit(type, targetData.rows, size, selectedIndices);
 
@@ -179,12 +181,12 @@ export default class RemoteView extends EventEmitter {
                 } else {
                     if (lo >= hi_ || hi < lo_) {
                         // no overlap, send back the full range requested
-                        targetData.rows = rowUtils.purgeAndFill(targetData);
+                        targetData.rows = rowUtils.purgeAndFill(targetData, this.meta);
                     } else {
                         lo = lo < lo_ ? lo_ : lo;
                         hi = hi > hi_ ? hi_ : hi;
 
-                        targetData.rows = rowUtils.purgeAndFill(targetData);
+                        targetData.rows = rowUtils.purgeAndFill(targetData, this.meta);
                     }
                     // we should immediately postData with empty rows for the new data here
                     this.emit(dataType, targetData.rows, targetData.size /* selected ? */);
@@ -203,7 +205,7 @@ export default class RemoteView extends EventEmitter {
         this._subscription.groupBy(groupBy);
 
         if (!extendsExistingGroupBy){
-            this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, [], 0);
+            this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, [], 0, this.meta);
             this.emit(DataTypes.ROW_DATA, this._rowData.rows, this._rowData.size);
         }
 

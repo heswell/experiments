@@ -1,7 +1,6 @@
 import * as d3 from 'd3-array';
 import { stringCollector } from './dataCollector';
 import {INCLUDE, EXCLUDE, STARTS_WITH} from './filter';
-import * as System from './constants';
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;
@@ -230,21 +229,21 @@ export function projectFilterData(filterRows) {
     return filterRows.map((row, idx) => [idx, 0, 0, null, row.name, row.count]);
 }
 
-export function getDistinctValues(rows, key, ignoreDepth=false) {
-    const collector = stringCollector(false);
-    // const start = performance.now();
-    for (let i = 0, len = rows.length; i < len; i++) {
-        if (ignoreDepth || rows[i][System.DEPTH_FIELD] === 0){
-            collector.add(rows[i][key]);
-        }
-    }
-    const values = collector.values();
-    // const end = performance.now();
-    // console.log(`%ctook ${end - start} ms to build list of set values`, 'font-weight:bold;color:red;');
+// export function getDistinctValues(rows, key, ignoreDepth=false) {
+//     const collector = stringCollector(false);
+//     // const start = performance.now();
+//     for (let i = 0, len = rows.length; i < len; i++) {
+//         if (ignoreDepth || rows[i][System.DEPTH_FIELD] === 0){
+//             collector.add(rows[i][key]);
+//         }
+//     }
+//     const values = collector.values();
+//     // const end = performance.now();
+//     // console.log(`%ctook ${end - start} ms to build list of set values`, 'font-weight:bold;color:red;');
 
-    return values;
+//     return values;
 
-}
+// }
 
 export function getBinnedValues(rows, key, numberOfBins = 20) {
     const numbers = rows.map(row => row[key]);

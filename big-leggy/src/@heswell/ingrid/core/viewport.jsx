@@ -92,6 +92,7 @@ export default class Viewport extends React.Component {
                                     keyMap={keyMap}
                                     {...props} /* onSelectionChange,onCellClick */
                                     {...commonSpec}
+                                    gridModel={model}
                                     className={columnGroup.locked ? 'fixed' : undefined}
                                     ref={columnGroup.locked ? null : this.scrollingCanvas}
                                     columnGroup={columnGroup}

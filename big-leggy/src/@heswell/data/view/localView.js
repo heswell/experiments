@@ -83,16 +83,17 @@ export default class LocalView extends EventEmitter {
             groupState
         };
 
-        this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns, 4);
+        this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
+        this.meta = columnUtils.metaData(this._dataOptions.columns)
     }
 
     processRowData(evtName, rows, size){
-        this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, rows, size);
+        this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, rows, size, this.meta);
         this.emit(evtName, this._rowData.rows, size);
     }
 
     processUpdate(evtName, updates){
-        this._rowData.rows = rowUtils.update(this._rowData.rows, this._rowData.range, updates);
+        this._rowData.rows = rowUtils.update(this._rowData.rows, this._rowData.range, updates, this.meta);
         this.emit(DataTypes.ROW_DATA, this._rowData.rows);
     }
 
@@ -141,7 +142,7 @@ export default class LocalView extends EventEmitter {
             targetData.range = { lo, hi };
             if (this._dataView){
                 const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                const rowset = rowUtils.mergeAndPurge(targetData, rows, size);
+                const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta);
                 targetData.rows = rowset;
                 this.emit(dataType, rowset, size, selectedIndices);
             }
@@ -151,7 +152,7 @@ export default class LocalView extends EventEmitter {
     sort(sortCriteria){
         const targetData = this._rowData;
         const {rows, size, selectedIndices} = this._dataView.sort(sortCriteria);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size); // NEEDED ?
+        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
     }
@@ -159,7 +160,7 @@ export default class LocalView extends EventEmitter {
     filter(filter){
         const {rows, size} = this._dataView.filter(filter);
         const targetData = this.getData(DataTypes.ROW_DATA);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size);
+        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta);
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size);
     }
@@ -168,7 +169,7 @@ export default class LocalView extends EventEmitter {
         const {rows, size, selectedIndices} = this._dataView.select(dataType, colName, selectMode);
         if (dataType === DataTypes.FILTER_DATA){
             const targetData = this.getData(DataTypes.ROW_DATA);
-            const rowset = rowUtils.mergeAndPurge(targetData, rows, size); // NEEDED ?
+            const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
             targetData.rows = rowset;
             this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
         }
@@ -178,7 +179,7 @@ export default class LocalView extends EventEmitter {
     groupBy(groupBy){
         const targetData = this._rowData;
         const {rows, size, selectedIndices} = this._dataView.groupBy(groupBy);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size); // NEEDED ?
+        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
     }
@@ -186,7 +187,7 @@ export default class LocalView extends EventEmitter {
     setGroupState(groupState){
         const targetData = this._rowData;
         const {rows, size} = this._dataView.setGroupState(groupState);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size); /// NEEDED ?
+        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); /// NEEDED ?
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size);
     }
@@ -240,7 +241,7 @@ export default class LocalView extends EventEmitter {
         const {data,size} = this._dataView.getFilterDataRange(range);
         this._filterData.range = range;
         this._filterData.size = size;
-        this._filterData.rows = rowUtils.mergeAndPurge(this._filterData, data, size);
+        this._filterData.rows = rowUtils.mergeAndPurge(this._filterData, data, size, this.meta);
 
         // we might have more data in cache than required, only emit rows specified in range
         this.emit(DataTypes.FILTER_DATA, this._filterData.rows, size, this.getFilterDataSelected());

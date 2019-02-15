@@ -11,11 +11,11 @@ const DEFAULT_OPTIONS = {
     baseGroupby: []
 };
 
-export function lowestIdxPointer(groups, IDX, start, depth){
+export function lowestIdxPointer(groups, IDX, DEPTH, start, depth){
     let result = Number.MAX_SAFE_INTEGER;
     for (let i=start; i<groups.length; i++){
         const group = groups[i];
-        const absDepth = Math.abs(group[Data.DEPTH_FIELD]);
+        const absDepth = Math.abs(group[DEPTH]);
 
         if (absDepth > depth){
             break;
@@ -31,10 +31,10 @@ export function lowestIdxPointer(groups, IDX, start, depth){
 
 }
 
-export function getCount(groupRow, FILTER_COUNT){
-    return typeof groupRow[FILTER_COUNT] === 'number'
-        ? groupRow[FILTER_COUNT]
-        : groupRow[COUNT];
+export function getCount(groupRow, PRIMARY_COUNT, FALLBACK_COUNT){
+    return typeof groupRow[PRIMARY_COUNT] === 'number'
+        ? groupRow[PRIMARY_COUNT]
+        : groupRow[FALLBACK_COUNT];
 }
 
 export class SimpleTracker {
@@ -401,65 +401,65 @@ export function indexOfCol(key, cols = null) {
     return -1;
 }
 
-export function countNestedRows(rows, idx, depth) {
-    const DEPTH = Data.DEPTH_FIELD;
-    let count = 0;
-    for (let i = idx, len = rows.length;
-        i < len && Math.abs(rows[i][DEPTH]) < depth;
-        i++) {
-        count += 1;
-    }
-    return count;
-}
+// export function countNestedRows(rows, idx, depth) {
+//     const DEPTH = Data.DEPTH_FIELD;
+//     let count = 0;
+//     for (let i = idx, len = rows.length;
+//         i < len && Math.abs(rows[i][DEPTH]) < depth;
+//         i++) {
+//         count += 1;
+//     }
+//     return count;
+// }
 
 // TBC
-export function countGroupMembers(groupedRows) {
-    const results = [];
-    const groups = [];
-    let currentGroup = null;
+// export function countGroupMembers(groupedRows) {
+//     const results = [];
+//     const groups = [];
+//     let currentGroup = null;
 
-    for (let i = 0; i < groupedRows.length; i++) {
-        let [, depth] = groupedRows[i];
-        if (depth === LEAF_DEPTH) {
-            currentGroup.count += 1;
-        } else {
-            depth = Math.abs(depth);
-            while (currentGroup && depth >= currentGroup.depth) {
-                const completedGroup = groups.shift();
-                const group = results[completedGroup.i];
-                if (group[Data.COUNT_FIELD] !== completedGroup.count) {
-                    const newGroup = group.slice();
-                    newGroup[Data.COUNT_FIELD] = completedGroup.count;
-                    results[completedGroup.i] = newGroup;
-                }
-                groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
-                ([currentGroup] = groups);
-            }
+//     for (let i = 0; i < groupedRows.length; i++) {
+//         let [, depth] = groupedRows[i];
+//         if (depth === LEAF_DEPTH) {
+//             currentGroup.count += 1;
+//         } else {
+//             depth = Math.abs(depth);
+//             while (currentGroup && depth >= currentGroup.depth) {
+//                 const completedGroup = groups.shift();
+//                 const group = results[completedGroup.i];
+//                 if (group[Data.COUNT_FIELD] !== completedGroup.count) {
+//                     const newGroup = group.slice();
+//                     newGroup[Data.COUNT_FIELD] = completedGroup.count;
+//                     results[completedGroup.i] = newGroup;
+//                 }
+//                 groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
+//                 ([currentGroup] = groups);
+//             }
 
-            currentGroup = { i, depth, count: 0 };
-            groups.unshift(currentGroup);
-        }
+//             currentGroup = { i, depth, count: 0 };
+//             groups.unshift(currentGroup);
+//         }
 
-        results[i] = groupedRows[i];
+//         results[i] = groupedRows[i];
 
-    }
+//     }
 
-    while (currentGroup) {
-        const completedGroup = groups.shift();
-        const group = results[completedGroup.i];
-        if (group[Data.COUNT_FIELD] !== completedGroup.count) {
-            const newGroup = group.slice();
-            newGroup[Data.COUNT_FIELD] = completedGroup.count;
-            results[completedGroup.i] = newGroup;
-        }
-        groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
-        ([currentGroup] = groups);
-    }
+//     while (currentGroup) {
+//         const completedGroup = groups.shift();
+//         const group = results[completedGroup.i];
+//         if (group[Data.COUNT_FIELD] !== completedGroup.count) {
+//             const newGroup = group.slice();
+//             newGroup[Data.COUNT_FIELD] = completedGroup.count;
+//             results[completedGroup.i] = newGroup;
+//         }
+//         groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
+//         ([currentGroup] = groups);
+//     }
 
-    return results;
-}
+//     return results;
+// }
 
-export function incrementGroupCount(groups, group, COUNT_IDX, PARENT_IDX){
+export function incrementGroupCount(groups, group, {COUNT, PARENT_IDX}){
     group[COUNT] += 1;
     while (group[PARENT_IDX] !== null){
         group = groups[group[PARENT_IDX]];
@@ -467,11 +467,11 @@ export function incrementGroupCount(groups, group, COUNT_IDX, PARENT_IDX){
     }
 }
 
-export function adjustGroupIndices(groups, grpIdx, IDX_POINTER, PARENT_IDX, adjustment=1){
+export function adjustGroupIndices(groups, grpIdx, {IDX, DEPTH, IDX_POINTER, PARENT_IDX}, adjustment=1){
     for (let i=0;i<groups.length;i++){
-        if (groups[i][Data.INDEX_FIELD] >= grpIdx){
-            groups[i][Data.INDEX_FIELD] += adjustment;
-            if (Math.abs(groups[i][Data.DEPTH_FIELD]) > 1){
+        if (groups[i][IDX] >= grpIdx){
+            groups[i][IDX] += adjustment;
+            if (Math.abs(groups[i][DEPTH]) > 1){
                 groups[i][IDX_POINTER] += adjustment;
             }
             let parentIdx = groups[i][PARENT_IDX];
@@ -482,10 +482,10 @@ export function adjustGroupIndices(groups, grpIdx, IDX_POINTER, PARENT_IDX, adju
     }
 }
 
-export function adjustLeafIdxPointers(groups, insertionPoint, IDX, adjustment=1){
+export function adjustLeafIdxPointers(groups, insertionPoint, {DEPTH, IDX_POINTER}, adjustment=1){
     for (let i=0;i<groups.length;i++){
-        if (Math.abs(groups[i][Data.DEPTH_FIELD]) === 1 && groups[i][IDX] >= insertionPoint){
-            groups[i][IDX] += adjustment;
+        if (Math.abs(groups[i][DEPTH]) === 1 && groups[i][IDX_POINTER] >= insertionPoint){
+            groups[i][IDX_POINTER] += adjustment;
         }
     }
 }
@@ -675,7 +675,7 @@ export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregati
 
     const {DEPTH, COUNT} = metaData(columns);
     const groupRow = groups[grpIdx];
-    let [,depth] = groupRow;
+    let depth = groupRow[DEPTH];
     let absDepth = Math.abs(depth);
     let count = 0;
     let idx = grpIdx;

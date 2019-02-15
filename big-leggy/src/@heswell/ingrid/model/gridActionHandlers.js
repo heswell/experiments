@@ -4,6 +4,7 @@ import {getFormatter} from '../registry/dataTypeRegistry';
 import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
+import {metaData} from '../../data/store/columnUtils'
 
 const DEFAULT_PRESENTER = getFormatter();
 const RESIZING = {resizing: true};
@@ -85,9 +86,28 @@ export function init(state, action) {
 
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
 
-    return {...state, width, height, headerHeight, rowHeight, rowCount, minColumnWidth,
-        columns, columnMap, sortBy, groupBy, groupState, collapsedColumns, filter, selectionModel,
-        _headingDepth, _columns, _groups, totalColumnWidth, displayWidth};
+    return {
+        ...state,
+        width,
+        height,
+        headerHeight,
+        rowHeight,
+        rowCount,
+        minColumnWidth,
+        meta: metaData(columns),
+        columns,
+        columnMap,
+        sortBy,
+        groupBy,
+        groupState,
+        collapsedColumns,
+        filter,
+        selectionModel,
+        _headingDepth,
+        _columns,
+        _groups,
+        totalColumnWidth,
+        displayWidth};
 }
 
 function setRowCount(state, {rowCount}) {
@@ -581,13 +601,13 @@ function toColumn(column, idx) {
 
     // >>>>> Don't like rolling functions into model, think about this
     if (typeof column === 'string') {
-        return { key: idx + 4, name: column, formatter: DEFAULT_PRESENTER.formatter};
+        return { key: idx, name: column, formatter: DEFAULT_PRESENTER.formatter};
     } else {
         // type is not sufficient, need to look at formatting metadata
         const presenter = getFormatter(column.type);
         return { 
             ...column, 
-            key: idx + 4,
+            key: idx,
             label: column.heading 
                 ? Array.isArray(column.heading) ? column.heading[0] : column.heading
                 : column.name,

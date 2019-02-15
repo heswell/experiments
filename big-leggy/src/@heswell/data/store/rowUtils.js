@@ -1,31 +1,30 @@
-import * as Data from './constants.js';
 
 export function isEmptyRow(row){
     return row.length === 4;
 }
 
-export function assignRowIndices(rows, offset) {
-    const s1 = new Date().getTime()
-    for (let i = 0, len = rows.length; i < len; i++) {
-        rows[i][Data.INDEX_FIELD] = i + offset;
-    }
-    const s2 = new Date().getTime()
-    console.log(`assignRowIndices took ${s2-s1} ms`)
-    return rows;
-}
+// export function assignRowIndices(rows, offset) {
+//     const s1 = new Date().getTime()
+//     for (let i = 0, len = rows.length; i < len; i++) {
+//         rows[i][Data.INDEX_FIELD] = i + offset;
+//     }
+//     const s2 = new Date().getTime()
+//     console.log(`assignRowIndices took ${s2-s1} ms`)
+//     return rows;
+// }
 
 export function indexRows(rows, indexField) {
     return addRowsToIndex(rows, {}, indexField)
 }
 
-export function addRowsToIndex(rows, index, indexField = Data.UNIQUE_KEY_FIELD){
+export function addRowsToIndex(rows, index, indexField){
     for (let idx = 0, len=rows.length; idx < len; idx++) {
-        index[rows[idx][indexField]] = idx; // USE THE PRIMARY KEY <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        index[rows[idx][indexField]] = idx;
     }
     return index;
 }
 
-export function update(rows, range, updates) {
+export function update(rows, range, updates, {IDX}) {
     const results = rows.slice();
 
     for (let i = 0; i < updates.length; i++) {
@@ -34,12 +33,11 @@ export function update(rows, range, updates) {
 
         let row;
         for (let ii = 0; ii < rows.length; ii++) {
-            if (rows[ii][Data.INDEX_FIELD] === idx) {
+            if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
                 // updates = [colIdx, oldValue, newValue]*
                 for (let j = 0; j < fieldUpdates.length; j += 2) {
-                    //TODO where should the +4 be resolved ?
-                    row[fieldUpdates[j] + 4] = fieldUpdates[j + 2];
+                    row[fieldUpdates[j]] = fieldUpdates[j + 2];
                 }
                 results[ii] = row;
 
@@ -56,7 +54,7 @@ export function update(rows, range, updates) {
 // export so we can test - see if we can't use rewire
 // Called when client calls setRange, locally cached data is immediately
 // trimmed to new range and missing data filled with empty rows. 
-export function purgeAndFill({range:{lo, hi}, rows, offset = 0}) {
+export function purgeAndFill({range:{lo, hi}, rows, offset = 0}, {IDX}) {
 
     const results = [];
     const len = rows.length;
@@ -73,7 +71,7 @@ export function purgeAndFill({range:{lo, hi}, rows, offset = 0}) {
         row = rows[firstRowIdx];
     }
 
-    let idx = row ? row[Data.INDEX_FIELD] : high;
+    let idx = row ? row[IDX] : high;
 
     const end = Math.min(idx, high);
     for (let i = low; i < end; i++) {
@@ -89,7 +87,7 @@ export function purgeAndFill({range:{lo, hi}, rows, offset = 0}) {
     for (let i = firstRowIdx; i < len; i++) {
         row = rows[i];
         if (row) {
-            idx = row[Data.INDEX_FIELD];
+            idx = row[IDX];
             if (idx >= low && idx < high) {
                 results.push(row);
             }
@@ -111,7 +109,7 @@ export function purgeAndFill({range:{lo, hi}, rows, offset = 0}) {
 
 
 // New data is merged into local cache
-export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size) {
+export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size, {IDX}) {
     // console.groupCollapsed(`mergeAndPurge  existing range: ${lo} - ${hi} 
     //  old   rows: [${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}]
     //  new   rows: [${newRows.length ? newRows[0][0]: null} - ${newRows.length ? newRows[newRows.length-1][0]: null}]
@@ -126,7 +124,7 @@ export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size)
 
     for (let i = 0; i < rows.length; i++) {
         if (row = rows[i]) {
-            idx = row[Data.INDEX_FIELD];
+            idx = row[IDX];
             if (idx >= low && idx < high) {
                 results[idx - low] = rows[i];
             }
@@ -135,7 +133,7 @@ export function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size)
 
     for (let i = 0; i < newRows.length; i++) {
         if (row = newRows[i]) {
-            idx = row[Data.INDEX_FIELD];
+            idx = row[IDX];
 
             if (idx >= low && idx < high) {
                 results[idx - low] = newRows[i];

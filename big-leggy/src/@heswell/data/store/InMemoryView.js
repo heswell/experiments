@@ -5,7 +5,6 @@ import {buildColumnMap, toColumn ,getFilterType} from './columnUtils';
 import {addFilter, extractFilterForColumn, includesNoValues} from './filterUtils';
 import {INCLUDE, EXCLUDE, EXCLUDE_SEARCH} from './filter';
 import UpdateQueue from './updateQueue';
-import * as System from './constants'
 import { DataTypes } from './types';
 
 import * as d3 from 'd3-array';
@@ -22,7 +21,7 @@ export default class InMemoryView {
         this._sortCriteria = sortCriteria;
         // DO we need this line ?
         this._columns = columns.map(toColumn);
-        this._columnMap = buildColumnMap(this._columns, 4);
+        this._columnMap = buildColumnMap(this._columns);
         this._groupby = groupBy;
         this._update_queue = updateQueue;
         // TODO we should pass columns into the rowset as it will be needed for computed columns

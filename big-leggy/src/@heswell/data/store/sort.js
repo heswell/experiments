@@ -197,8 +197,8 @@ export function GROUP_ROW_TEST(group, row, [colIdx, direction]) {
     if (group === row) {
         return 0;
     } else {
-        let a1 = direction === 'dsc' ? row[colIdx] : group[colIdx+2];
-        let b1 = direction === 'dsc' ? group[colIdx+2] : row[colIdx];
+        let a1 = direction === 'dsc' ? row[colIdx] : group[colIdx];
+        let b1 = direction === 'dsc' ? group[colIdx] : row[colIdx];
         if (b1 === null || a1 > b1) {
             return 1;
         } else if (a1 == null || a1 < b1) {

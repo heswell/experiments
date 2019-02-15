@@ -8,7 +8,6 @@ const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const safePostCssParser = require('postcss-safe-parser');
 // const ManifestPlugin = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
@@ -59,28 +58,7 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
     {
       loader: require.resolve('css-loader'),
       options: cssOptions,
-    },
-    {
-      // Options for PostCSS as we reference these options twice
-      // Adds vendor prefixing based on your specified browser support in
-      // package.json
-      loader: require.resolve('postcss-loader'),
-      options: {
-        // Necessary for external CSS imports to work
-        // https://github.com/facebook/create-react-app/issues/2677
-        ident: 'postcss',
-        plugins: () => [
-          require('postcss-flexbugs-fixes'),
-          require('postcss-preset-env')({
-            autoprefixer: {
-              flexbox: 'no-2009',
-            },
-            stage: 3,
-          }),
-        ],
-        sourceMap: shouldUseSourceMap,
-      },
-    },
+    }
   ];
   if (preProcessor) {
     loaders.push({
@@ -107,7 +85,8 @@ module.exports = {
   entry:{
     index: paths.appIndexJs,
     calendar: paths.calendarJs,
-    list: paths.listJs
+    list: paths.listJs,
+    grid: paths.gridJs
   },
   output: {
     // The build folder.
@@ -129,16 +108,16 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          parse: {
-            // we want terser to parse ecma 8 code. However, we don't want it
-            // to apply any minfication steps that turns valid ecma 5 code
-            // into invalid ecma 5 code. This is why the 'compress' and 'output'
-            // sections only apply transformations that are ecma 5 safe
-            // https://github.com/facebook/create-react-app/pull/4234
-            ecma: 8,
-          },
+          ecma: 8,
+          // parse: {
+          //   // we want terser to parse ecma 8 code. However, we don't want it
+          //   // to apply any minfication steps that turns valid ecma 5 code
+          //   // into invalid ecma 5 code. This is why the 'compress' and 'output'
+          //   // sections only apply transformations that are ecma 5 safe
+          //   // https://github.com/facebook/create-react-app/pull/4234
+          //   ecma: 8,
+          // },
           compress: {
-            ecma: 5,
             warnings: false,
             // Disabled because of an issue with Uglify breaking seemingly valid code:
             // https://github.com/facebook/create-react-app/issues/2376
@@ -155,7 +134,6 @@ module.exports = {
             safari10: true,
           },
           output: {
-            ecma: 5,
             comments: false,
             // Turned on because emoji and regex is not minified properly using default
             // https://github.com/facebook/create-react-app/issues/2488
@@ -171,7 +149,6 @@ module.exports = {
       }),
       new OptimizeCSSAssetsPlugin({
         cssProcessorOptions: {
-          parser: safePostCssParser,
           map: shouldUseSourceMap
             ? {
                 // `inline: false` forces the sourcemap to be output into a
@@ -273,7 +250,7 @@ module.exports = {
           // The preset includes JSX, Flow, and some ESnext features.
           {
             test: /\.(js|mjs|jsx)$/,
-            include: paths.appSrc,
+            include: [paths.appSrc,paths.appExamples],
 
             loader: require.resolve('babel-loader'),
             options: {
@@ -396,7 +373,12 @@ module.exports = {
       template: paths.appHtml,
       filename: 'list.html'
     }),
-
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['grid'],
+      template: paths.appHtml,
+      filename: 'grid.html'
+    }),
     // Inlines the webpack runtime script. This script is too small to warrant
     // a network request.
     shouldInlineRuntimeChunk && new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),

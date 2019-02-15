@@ -33,6 +33,7 @@ export default class Canvas extends React.Component {
           height,
           rows,
           keyMap,
+          gridModel,
           selectedRows,
           selectionDefault,
           selectedCells,
@@ -78,6 +79,8 @@ export default class Canvas extends React.Component {
                 isCellEdited,
                 isCellFocused,
                 focusCellIdx: focusCell,
+                //somehow we need to merge meta into columns
+                meta: gridModel.meta,
                 columns: columnGroup.columns,
                 rowClass: this.props.rowClass,
                 cellClass: this.props.cellClass,

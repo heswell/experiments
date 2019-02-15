@@ -1,28 +1,27 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback/*, useEffect, useRef*/} from 'react';
 import cx from 'classnames';
 import {getCellRenderer} from '../registry/dataTypeRegistry';
 
-const DEPTH = 1;
 const NOOP = () => {}
 
-function useReportChange(props){
-    const ref = useRef();
+// function useReportChange(props){
+//     const ref = useRef();
 
-    useEffect(() => {
-        ref.current = props;
-    })
+//     useEffect(() => {
+//         ref.current = props;
+//     })
 
-    const prevProps = ref.current || {}
+//     const prevProps = ref.current || {}
 
-    const changes = [];
-    Object.keys(props).forEach(key => {
-        if (props[key] !== prevProps[key]){
-            changes.push(key);
-        }
-    })
+//     const changes = [];
+//     Object.keys(props).forEach(key => {
+//         if (props[key] !== prevProps[key]){
+//             changes.push(key);
+//         }
+//     })
 
-    console.log(`${(props.myKey+' ').slice(0,2)} ${props.row[3]}[${props.row[0]}] : ${JSON.stringify(changes)}`)
-}
+//     console.log(`${(props.myKey+' ').slice(0,2)} ${props.row[3]}[${props.row[0]}] : ${JSON.stringify(changes)}`)
+// }
 
 // TODO combine isSelected, isFocused and isLastSelected into a single status
 export default React.memo(({
@@ -40,7 +39,8 @@ export default React.memo(({
     idx,
     myKey,
     columns,
-    cellRenderer 
+    cellRenderer,
+    meta
 }) => {
 
 
@@ -73,7 +73,7 @@ export default React.memo(({
         onCellClick(idx, cellIdx);
     },[idx, row])
 
-    const groupLevel = row[DEPTH];
+    const groupLevel = row[meta.DEPTH];
     const isGroup = groupLevel !== 0;
 
     const className = cx(
@@ -100,7 +100,8 @@ export default React.memo(({
             row,
             column,
             cellClass,
-            onClick
+            onClick,
+            meta
         }
 
         const renderer = column.renderer || cellRenderer;

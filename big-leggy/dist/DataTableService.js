@@ -3396,7 +3396,7 @@ class GroupRowSet extends BaseRowSet {
         const [doomed] = findDoomedColumnDepths(groupby, this.groupby);
         const groupCols = mapSortCriteria(this.groupby, this.columnMap);
         const [lastGroupIsDoomed, baseGroupby, addGroupby] = splitGroupsAroundDoomedGroup(groupCols, doomed);
-        const { IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = metaData(columns);
+        const { DEPTH, IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = metaData(columns);
         const tracker = new GroupIdxTracker(groupby.length);
         const useFilter = filterSet !== null;
         let currentGroup = null;
@@ -3418,8 +3418,8 @@ class GroupRowSet extends BaseRowSet {
                         if (lastGroupIsDoomed){
                             // our pointer will no longer be to a child group but (via the sortSet) to the data.
                             // This can be taken from the first child group (which will be removed)
-                            groupRow[IDX_POINTER] = lowestIdxPointer(groups, IDX_POINTER, i+1, absDepth-1);
-                            groupRow[NEXT_FILTER_IDX] = useFilter ? lowestIdxPointer(groups, NEXT_FILTER_IDX, i+1, absDepth-1) : undefined;
+                            groupRow[IDX_POINTER] = lowestIdxPointer(groups, IDX_POINTER, DEPTH, i+1, absDepth-1);
+                            groupRow[NEXT_FILTER_IDX] = useFilter ? lowestIdxPointer(groups, NEXT_FILTER_IDX, DEPTH, i+1, absDepth-1) : undefined;
                         } else if (currentGroup !== null){
                             const diff = this.regroupChildGroups(currentGroup, i, baseGroupby, addGroupby);
                             i -= diff;

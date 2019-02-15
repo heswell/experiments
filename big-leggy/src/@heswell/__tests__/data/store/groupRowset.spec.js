@@ -16,6 +16,7 @@ import {
     join
 } from '../testData';
 
+import {metaData} from '../../../data/store/columnUtils';
 import { INCLUDE } from '../../../data/store/filter';
 
 // const significantCols = (d) => d.slice(0, 4).concat(d[11]);
@@ -36,45 +37,29 @@ describe('construction', () => {
         expect(groupRows.length).toBe(3);
     });
 
-    test.only('correctly groups by two columns', () => {
+    test('correctly groups by two columns', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
         const { groupRows, sortSet } = rowSet;
 
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        console.log(`${join(groupRows)}`);
-        console.log(sortSet)
         expect(rows).toEqual([
-            [null,'G1',null,null,null,null,100, -2, 8, 'G1', null, 0, undefined, undefined],
-            [null,'G2',null,null,null,null,101, -2, 8, 'G2', null, 8, undefined, undefined],
-            [null,'G3',null,null,null,null,102, -2, 8, 'G3', null, 16, undefined, undefined]
+            [null,'G1',null,null,null,null,100, -2, 8, 'G1', null, 1, undefined, undefined],
+            [null,'G2',null,null,null,null,101, -2, 8, 'G2', null, 4, undefined, undefined],
+            [null,'G3',null,null,null,null,102, -2, 8, 'G3', null, 8, undefined, undefined]
         ]);
 
-        // expect(rowSet.rowParents).toEqual([2,2,2,2,1,1,1,1,6,6,4,4,5,5,5,5,9,9,9,9,8,8,10,11])
-        // expect(sortSet).toEqual([4,5,6,7,0,1,2,3,10,11,12,13,14,15,8,9,20,21,16,17,18,19,22,23]);
-        // expect(groupRows.length).toBe(12);
+        expect(rowSet.rowParents).toEqual([2,2,2,2,1,1,1,1,6,6,4,4,5,5,5,5,9,9,9,9,8,8,10,11])
+        expect(sortSet).toEqual([4,5,6,7,0,1,2,3,10,11,12,13,14,15,8,9,20,21,16,17,18,19,22,23]);
+        expect(groupRows.length).toBe(12);
 
-        // expect(groupRows).toEqual([
-        //     [0,-2,8,'G1',null,1],
-        //     [1,-1,4,'G1/I2',0,0],
-        //     [2,-1,4,'G1/U2',0,4],
-        //     [3,-2,8,'G2',null,4],
-        //     [4,-1,2,'G2/I2',3,8],
-        //     [5,-1,4,'G2/O2',3,10],
-        //     [6,-1,2,'G2/U2',3,14],
-        //     [7,-2,8,'G3',null,8],
-        //     [8,-1,2,'G3/A2',7,16],
-        //     [9,-1,4,'G3/E2',7,18],
-        //     [10,-1,1,'G3/I2',7,22],
-        //     [11,-1,1,'G3/O2',7,23]
-        // ]);
     })
 
     test('correctly groups by three columns', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2, GROUP_COL_3])
         const { groupRows } = rowSet;
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        // console.log(`${join(groupRows)} ${join(data)} ${join(results)}`);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -3, 8, 'G1'],
             [101, -3, 8, 'G2'],
             [102, -3, 8, 'G3']
@@ -82,7 +67,7 @@ describe('construction', () => {
         expect(rowSet.rowParents).toEqual([6,6,7,7,2,2,3,4,14,14,10,10,12,12,12,12,19,19,19,19,17,17,21,23])
         expect(groupRows.length).toBe(24);
 
-        expect(groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0, -3, 8, 'G1', null, 1],
             [1, -2, 4, 'G1/I2', 0, 2],
             [2, -1, 2, 'G1/I2/T3', 1,0],
@@ -114,15 +99,14 @@ describe('construction', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2, GROUP_COL_3,['Qty', 'asc']])
         const { groupRows } = rowSet;
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        // console.log(`${join(groupRows)} ${join(data)} ${join(results)}`);
 
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -4, 8, 'G1'],
             [101, -4, 8, 'G2'],
             [102, -4, 8, 'G3']
         ]);
 
-        expect(groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-4,8,'G1',null,1],
             [1,-3,4,'G1/I2',0,2],
             [2,-2,2,'G1/I2/T3',1,3],
@@ -174,7 +158,7 @@ describe('construction', () => {
         rowSet.filter({type: 'exclude', colName: 'Group 3', values: ['T4']});
         const groupRowSet = new GroupRowSet(rowSet, _rowset_columns, [GROUP_COL_1]);
         let {rows} = groupRowSet.setRange({lo: 0,hi: 10});
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -1, 5, 'G1'],
             [101, -1, 8, 'G2'],
             [102, -1, 8, 'G3']
@@ -187,13 +171,12 @@ describe('groupBy', () => {
 
     test('correctly adds additional column to groupby', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1])
+
         rowSet.groupBy([GROUP_COL_1,GROUP_COL_2]);
         const {groupRows, sortSet} = rowSet;
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
-        // console.log(`${join(groupRows)} ${join(rowSet.data)} ${join(results)}`);
-        // console.log(sortSet)
         expect(groupRows.length).toBe(12);
-        expect(groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G1',null,1],
             [1,-1,4,'G1/I2',0,0],
             [2,-1,4,'G1/U2',0,4],
@@ -208,7 +191,7 @@ describe('groupBy', () => {
             [11,-1,1,'G3/O2',7,23]
         ]);
         expect(sortSet).toEqual([4,5,6,7,0,1,2,3,10,11,12,13,14,15,8,9,20,21,16,17,18,19,22,23]);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -2, 8, 'G1'],
             [101, -2, 8, 'G2'],
             [102, -2, 8, 'G3']
@@ -221,15 +204,15 @@ describe('groupBy', () => {
         rowSet.groupBy([GROUP_COL_1,GROUP_COL_2,GROUP_COL_3])
         const {rows} = rowSet.setRange({lo: 0, hi: 4});
         const {groupRows} = rowSet;
-        // console.log(`${join(groupRows)} ${join(rowSet.data)} ${join(results)}`);
-        // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        // onsole.log(`${join(groupRows)} ${join(rowSet.data)} ${join(results)}`);
+        // onsole.log(rowSet.sortSet)
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -3, 8, 'G1'],
             [101, -3, 8, 'G2'],
             [102, -3, 8, 'G3']
         ]);
 
-        expect(groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0, -3, 8, 'G1', null, 1],
             [1, -2, 4, 'G1/I2', 0, 2],
             [2, -1, 2, 'G1/I2/T3', 1,0],
@@ -258,6 +241,7 @@ describe('groupBy', () => {
     });
 
     test('extends grouping across expanded nodes', () => {
+        const {DEPTH} = metaData(_rowset_columns)
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
         rowSet.setGroupState({'G1': true})
         rowSet.groupBy([GROUP_COL_1, GROUP_COL_2, GROUP_COL_3])
@@ -266,8 +250,8 @@ describe('groupBy', () => {
         // console.log(rowSet.sortSet)
         expect(rowSet.length).toBe(5);
         expect(rowSet.groupRows.length).toBe(24);
-        expect(rowSet.groupRows[0][1]).toBe(3);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rowSet.groupRows[0][DEPTH]).toBe(3);
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, 3, 8, 'G1'],
             [101, -2, 4, 'G1/I2'],
             [102, -2, 4, 'G1/U2'],
@@ -282,10 +266,9 @@ describe('groupBy', () => {
         rowSet.setGroupState({'G1': true})
         rowSet.groupBy([GROUP_COL_1,GROUP_COL_3])
         const {rows} = rowSet.setRange({lo: 0, hi: 8});
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
-        // console.log(rowSet.sortSet)
+
         expect(rowSet.length).toBe(6);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+2,8,'G1'],
             [101,-1,4,'G1/T3'],
             [102,-1,3,'G1/T4'],
@@ -303,7 +286,7 @@ describe('groupBy', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         expect(rowSet.length).toBe(7);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+2,8,'G1'],
             [101,-1,4,'G1/T3'],
             [102,-1,3,'G1/T4'],
@@ -322,7 +305,7 @@ describe('groupBy', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         expect(rowSet.length).toBe(12);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,3,8,'G1'],
             [101,-2,4,'G1/I2'],
             [102,-2,4,'G1/U2'],
@@ -345,14 +328,14 @@ describe('groupBy', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rows)}`);
         // console.log(rowSet.sortSet)
         expect(rowSet.length).toBe(5);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,2,'A2'],
             [101,-1,4,'E2'],
             [102,-1,7,'I2'],
             [103,-1,5,'O2'],
             [104,-1,6,'U2']
         ]);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-1,2,'A2',null,0],
             [1,-1,4,'E2',null,2],
             [2,-1,7,'I2',null,6],
@@ -369,7 +352,7 @@ describe('groupBy', () => {
         // console.log(rowSet.sortSet)
         expect(rowSet.length).toBe(3)
         expect(rowSet.groupRows.length).toBe(8)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G1',null,1],
             [1,-1,4,'G1/T3',0,0],
             [2,-1,3,'G1/T4',0,4],
@@ -386,7 +369,7 @@ describe('groupBy', () => {
         rowSet.groupBy([GROUP_COL_1, GROUP_COL_2])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G1',null,1],
             [1,-1,4,'G1/I2',0,0],
             [2,-1,4,'G1/U2',0,4],
@@ -408,7 +391,7 @@ describe('groupBy', () => {
         rowSet.groupBy([GROUP_COL_1, GROUP_COL_2]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,+2,8,'G1',null,1],
             [1,-1,4,'G1/I2',0,0],
             [2,-1,4,'G1/U2',0,4],
@@ -440,7 +423,7 @@ describe('groupBy', () => {
         rowSet.groupBy([['Group 1','dsc']])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-1,8,'G3',null,16],
             [1,-1,8,'G2',null,8],
             [2,-1,8,'G1',null,0]
@@ -448,12 +431,11 @@ describe('groupBy', () => {
     });
 
     test('reverse direction on first group column of two column grouping', () => {
-        debugger;        
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2]);
         rowSet.groupBy([['Group 1','dsc'],GROUP_COL_2])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G3',null,1],
             [1,-1,2,'G3/A2',0,16],
             [2,-1,4,'G3/E2',0,18],
@@ -475,7 +457,7 @@ describe('groupBy', () => {
         rowSet.groupBy([GROUP_COL_1, GROUP_COL_2])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G1',null,1],
             [1,-1,4,'G1/I2',0,0],
             [2,-1,4,'G1/U2',0,4],
@@ -495,10 +477,9 @@ describe('groupBy', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
         rowSet.setGroupState({'G1': true})
         rowSet.groupBy([['Group 1','dsc']])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         const {rows} = rowSet.setRange({lo: 0, hi: 10});
 
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,8,'G3'],
             [101,-1,8,'G2'],
             [102,1,8,'G1'],
@@ -518,7 +499,7 @@ describe('groupBy', () => {
         rowSet.groupBy([GROUP_COL_1,['Group 2', 'dsc'],GROUP_COL_3])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} `);
         // console.log(rowSet.sortSet);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-3,8,'G1',null,1],
             [1,-2,4,'G1/U2',0,2],
             [2,-1,2,'G1/U2/T3',1,4],
@@ -554,7 +535,7 @@ describe('groupBy', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 15});
         expect(rowSet.groupRows.length).toBe(24);
         // check the IDX_POINTER from groupedRows to sorted visibleRows
-        expect(rows.map(d => d.slice(0,4))).toEqual([
+        expect(rows.map(d => d.slice(6,10))).toEqual([
             [100, 3,8,'G1'],
             [101,-2,4,'G1/U2'],
             [102,-2,4,'G1/I2'],
@@ -571,7 +552,7 @@ describe('groupBy', () => {
         ])
     });
 
-    test('filter by col 2 of a two col gouping', () => {
+    test('filter by col 2 of a two col grouping', () => {
         const N = null;
         const U = undefined;
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
@@ -579,42 +560,42 @@ describe('groupBy', () => {
         let {rows} = rowSet.setRange({lo: 0, hi: 15});
 
         expect(rowSet.groupRows).toEqual([
-            [0,-2,8,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [1,-1,4,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [2,-1,4,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [3,-2,8,'G2',N,'G2',N,N,N,N,N,4,0,U],
-            [4,-1,2,'G2/I2',N,'G2','I2',N,N,N,3,8,0,U],
-            [5,-1,4,'G2/O2',N,'G2','O2',N,N,N,3,10,0,U],
-            [6,-1,2,'G2/U2',N,'G2','U2',N,N,N,3,14,0,U],
-            [7,-2,8,'G3',N,'G3',N,N,N,N,N,8,3,U],
-            [8,-1,2,'G3/A2',N,'G3','A2',N,N,N,7,16,0,U],
-            [9,-1,4,'G3/E2',N,'G3','E2',N,N,N,7,18,3,3],
-            [10,-1,1,'G3/I2',N,'G3','I2',N,N,N,7,22,0,U],
-            [11,-1,1,'G3/O2',N,'G3','O2',N,N,N,7,23,0,U]
+            [N,'G1',N,N,N,N,     0,-2,  8, 'G1',    N, 1, 3, U],        
+            [N,'G1','I2',N,N,N,  1,-1,  4, 'G1/I2', 0, 0, 1, 0],        
+            [N,'G1','U2',N,N,N,  2,-1,  4, 'G1/U2', 0, 4, 2,1],        
+            [N,'G2',N,N,N,N,     3,-2,  8, 'G2',    N, 4, 0, U],        
+            [N,'G2','I2',N,N,N,  4,-1,  2, 'G2/I2', 3, 8, 0, U],                    
+            [N,'G2','O2',N,N,N,  5,-1,  4, 'G2/O2', 3, 10, 0, U],       
+            [N,'G2','U2',N,N,N,  6,-1,  2, 'G2/U2', 3, 14, 0, U],       
+            [N,'G3',N,N,N,N,     7,-2,  8, 'G3',    N, 8, 3, U],         
+            [N,'G3','A2',N,N,N,  8,-1,  2, 'G3/A2', 7, 16, 0, U],
+            [N,'G3','E2',N,N,N,  9,-1,  4, 'G3/E2', 7, 18, 3, 3],
+            [N,'G3','I2',N,N,N,  10,-1, 1, 'G3/I2', 7, 22,0, U],
+            [N,'G3','O2',N,N,N,  11,-1, 1, 'G3/O2', 7, 23, 0, U] 
         ]);
 
         expect(rows).toEqual([
-            [100,-2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,-2,3,'G1',N,1,3,U],
+            [N,'G3',N,N,N,N,101,-2,3,'G3',N,8,3,U]
         ]);
 
         rowSet.setGroupState({'G1': true});
         ({rows} = rowSet.setRange({lo: 0, hi: 15},false));
         expect(rows).toEqual([
-            [100,2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,-1,1,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [102,-1,2,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [103,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,2,3,'G1',N,1,3,U],
+            [N,'G1','I2',N,N,N,101,-1,1,'G1/I2',0,0,1,0],
+            [N,'G1','U2',N,N,N,102,-1,2,'G1/U2',0,4,2,1],
+            [N,'G3',N,N,N,N,103,-2,3,'G3',N,8,3,U]
         ]);
 
         rowSet.setGroupState({'G1': {I2: true}});
         ({rows} = rowSet.setRange({lo: 0, hi: 15},false));
         expect(rows).toEqual([
-            [100,2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,1,1,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [102,0,0,'key08','key08','G1','I2','T5',5,102],
-            [103,-1,2,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [104,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,2,3,'G1',N,1,3,U],
+            [N,'G1','I2',N,N,N,101,1,1,'G1/I2',0,0,1,0],
+            ['key08','G1','I2','T5',5,102,102,0,0,'key08'],
+            [N,'G1','U2',N,N,N,103,-1,2,'G1/U2',0,4,2,1],
+            [N,'G3',N,N,N,N,104,-2,3,'G3',N,8,3,U]
         ]);
 
     });
@@ -629,44 +610,44 @@ describe('groupBy', () => {
         // console.log(`${join(rowSet.data)}`);
         // console.log(rowSet.filterSet)
         expect(rowSet.groupRows).toEqual([
-            [0,-2,8,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [1,-1,4,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [2,-1,4,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [3,-2,8,'G2',N,'G2',N,N,N,N,N,4,0,U],
-            [4,-1,2,'G2/I2',N,'G2','I2',N,N,N,3,8,0,U],
-            [5,-1,4,'G2/O2',N,'G2','O2',N,N,N,3,10,0,U],
-            [6,-1,2,'G2/U2',N,'G2','U2',N,N,N,3,14,0,U],
-            [7,-2,8,'G3',N,'G3',N,N,N,N,N,8,3,U],
-            [8,-1,2,'G3/A2',N,'G3','A2',N,N,N,7,16,0,U],
-            [9,-1,4,'G3/E2',N,'G3','E2',N,N,N,7,18,3,3],
-            [10,-1,1,'G3/I2',N,'G3','I2',N,N,N,7,22,0,U],
-            [11,-1,1,'G3/O2',N,'G3','O2',N,N,N,7,23,0,U]
+            [N,'G1',N,N,N,N,0,-2,8,'G1',N,1,3,U],
+            [N,'G1','I2',N,N,N,1,-1,4,'G1/I2',0,0,1,0],
+            [N,'G1','U2',N,N,N,2,-1,4,'G1/U2',0,4,2,1],
+            [N,'G2',N,N,N,N,3,-2,8,'G2',N,4,0,U],
+            [N,'G2','I2',N,N,N,4,-1,2,'G2/I2',3,8,0,U],
+            [N,'G2','O2',N,N,N,5,-1,4,'G2/O2',3,10,0,U],
+            [N,'G2','U2',N,N,N,6,-1,2,'G2/U2',3,14,0,U],
+            [N,'G3',N,N,N,N,7,-2,8,'G3',N,8,3,U],
+            [N,'G3','A2',N,N,N,8,-1,2,'G3/A2',7,16,0,U],
+            [N,'G3','E2',N,N,N,9,-1,4,'G3/E2',7,18,3,3],
+            [N,'G3','I2',N,N,N,10,-1,1,'G3/I2',7,22,0,U],
+            [N,'G3','O2',N,N,N,11,-1,1,'G3/O2',7,23,0,U]
         ]);
         let {rows} = rowSet.setRange({lo: 0, hi: 15},false);
         expect(rows).toEqual([
-            [100,-2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,-2,3,'G1',N,1,3,U],
+            [N,'G3',N,N,N,N,101,-2,3,'G3',N,8,3,U]
         ]);
 
         rowSet.setGroupState({G1: true});
         ({rows} = rowSet.setRange({lo: 0, hi: 15}, false));
         expect(rows).toEqual([
-            [100,+2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,-1,1,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [102,-1,2,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [103,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,+2,3,'G1',N,1,3,U],
+            [N,'G1','I2',N,N,N,101,-1,1,'G1/I2',0,0,1,0],
+            [N,'G1','U2',N,N,N,102,-1,2,'G1/U2',0,4,2,1],
+            [N,'G3',N,N,N,N,103,-2,3,'G3',N,8,3,U]
         ]);
 
         rowSet.setGroupState({G1: {I2: true, U2: true}});
         ({rows} = rowSet.setRange({lo: 0, hi: 15}, false));
         expect(rows).toEqual([
-            [100,+2,3,'G1',N,'G1',N,N,N,N,N,1,3,U],
-            [101,+1,1,'G1/I2',N,'G1','I2',N,N,N,0,0,1,0],
-            [102,0,0,'key08','key08','G1','I2','T5',5,102],
-            [103,+1,2,'G1/U2',N,'G1','U2',N,N,N,0,4,2,1],
-            [104,0,0,'key01','key01','G1','U2','T3',5,101],
-            [105,0,0,'key02','key02','G1','U2','T3',5,102],
-            [106,-2,3,'G3',N,'G3',N,N,N,N,N,8,3,U]
+            [N,'G1',N,N,N,N,100,+2,3,'G1',N,1,3,U],
+            [N,'G1','I2',N,N,N,101,+1,1,'G1/I2',0,0,1,0],
+            ['key08','G1','I2','T5',5,102,102,0,0,'key08'],
+            [N,'G1','U2',N,N,N,103,+1,2,'G1/U2',0,4,2,1],
+            ['key01','G1','U2','T3',5,101,104,0,0,'key01'],
+            ['key02','G1','U2','T3',5,102,105,0,0,'key02'],
+            [N,'G3',N,N,N,N,106,-2,3,'G3',N,8,3,U]
         ]);
 
     })
@@ -682,11 +663,11 @@ describe('groupBy', () => {
         rowSet.setGroupState({'G1': true});
         let {rows} = rowSet.setRange({lo: 0, hi: 10},false);
         expect(rows.map(row => row.slice(0,10))).toEqual([
-            [100,+1,3,'G1',N,'G1',N,N,N,N],
-            [101,0,0,'key08','key08','G1','I2','T5',5,102],
-            [102,0,0,'key01','key01','G1','U2','T3',5,101],
-            [103,0,0,'key02','key02','G1','U2','T3',5,102],
-            [104,-1,3,'G3',N,'G3',N,N,N,N]
+            [N,'G1',N,N,N,N,100,+1,3,'G1'],
+            ['key08','G1','I2','T5',5,102,101,0,0,'key08'],
+            ['key01','G1','U2','T3',5,101,102,0,0,'key01'],
+            ['key02','G1','U2','T3',5,102,103,0,0,'key02'],
+            [N,'G3',N,N,N,N,104,-1,3,'G3']
         ]);
 
     })
@@ -701,7 +682,7 @@ describe('setGroupState', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // TODO is this right ? should the leaf rows have uniqie id in pos 3 ?
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, 1, 8, 'G1'],
             [101, 0, 0, 'key01'],
             [102, 0, 0, 'key02'],
@@ -720,7 +701,7 @@ describe('setGroupState', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 8});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, 2, 8, 'G1'],
             [101, -1, 4, 'G1/I2'],
             [102, -1, 4, 'G1/U2'],
@@ -737,7 +718,7 @@ describe('setGroupState', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 8});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, 2, 8, 'G1'],
             [101, -1, 4, 'G1/I2'],
             [102, 1, 4, 'G1/U2'],
@@ -756,7 +737,7 @@ describe('setGroupState', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 8});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, 2, 8, 'G1'],
             [101, -1, 4, 'G1/I2'],
             [102, 1, 4, 'G1/U2'],
@@ -777,13 +758,13 @@ describe('setGroupState', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 8});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -2, 8, 'G1'],
             [101, -2, 8, 'G2'],
             [102, -2, 8, 'G3']
         ]);
         expect(rowSet.length).toBe(3)
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-2,8,'G1',null,1],
             [1,-1,4,'G1/I2',0,0],
             [2,-1,4,'G1/U2',0,4],
@@ -805,7 +786,7 @@ describe('setGroupState', () => {
         rowSet.setGroupState({'G1': true})
         const {rows} = rowSet.setRange({lo: 0, hi: 10});
 
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100, -2, 8, 'G3'],
             [101, -2, 8, 'G2'],
             [102, +2, 8, 'G1'],
@@ -887,9 +868,7 @@ describe('sort', () => {
         rowSet.setGroupState({'G3': {'T3': true}});
         rowSet.sort([['Qty','asc']]);
         const {rows} = rowSet.setRange({lo: 0, hi: 10});
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rows)}`);
-        // console.log(rowSet.sortSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-2,8,'G1'],
             [101,-2,8,'G2'],
             [102,2,8,'G3'],
@@ -1018,7 +997,7 @@ describe('filter',() => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,5,'G1'],
             [101,-1,5,'G3']
         ]);
@@ -1033,7 +1012,7 @@ describe('filter',() => {
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
         expect(rowSet.length).toBe(7)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,1,5,'G1'],
             [101,0,0,'key01'],
             [102,0,0,'key02'],
@@ -1049,10 +1028,7 @@ describe('filter',() => {
         rowSet.filter({type: 'exclude', colName: 'Qty',values: [100]});
         rowSet.clearFilter();
         const {rows} = rowSet.setRange({lo: 0, hi: 10});
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
-        // console.log(rowSet.sortSet)
-        // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0,4))).toEqual([
+        expect(rows.map(d => d.slice(6,10))).toEqual([
             [100,-1,8,'G1'],
             [101,-1,8,'G2'],
             [102,-1,8,'G3']
@@ -1071,7 +1047,7 @@ describe('filter',() => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,3,'G1'],
             [101,-1,8,'G2'],
             [102,-1,8,'G3']
@@ -1091,7 +1067,7 @@ describe('filter',() => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,3,'G1'],
             [101,-1,8,'G2'],
             [102,-1,8,'G3']
@@ -1106,7 +1082,7 @@ describe('filter',() => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+1,4,'G1'],
             [101,0,0,'key01'],
             [102,0,0,'key02'],
@@ -1126,7 +1102,7 @@ describe('filter',() => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(results)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+1,8,'G1'],
             [101,0,0,'key01'],
             [102,0,0,'key02'],
@@ -1147,7 +1123,7 @@ describe('filter',() => {
         rowSet.filter({type: 'EQ', colName: 'Group 3', value: 'T3'}, true);
         const {rows} = rowSet.setRange({lo: 0, hi: 10});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,13)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,13)))).toEqual([
             [0, +3, 8, 'G1', null, 1, 4],
             [1, -2, 4, 'G1/I2', 0, 2, 2],
             [2, -1, 2, 'G1/I2/T3', 1,0,2],
@@ -1174,7 +1150,7 @@ describe('filter',() => {
             [23, -1, 1, 'G3/O2/T3',22,23,1]
         ]);
 
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+3,4,'G1'],
             [101,-2,2,'G1/I2'],
             [102,-2,2,'G1/U2'],
@@ -1187,16 +1163,16 @@ describe('filter',() => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns_with_aggregation, [GROUP_COL_1]);
         rowSet.filter({type: 'EQ', colName: 'Group 3', value: 'T3'});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows[0][8]).toBe(6)
-        expect(rowSet.groupRows[0][9]).toBe(348)
+        expect(rowSet.groupRows[0][4]).toBe(6)
+        expect(rowSet.groupRows[0][5]).toBe(348)
     });
 
     test('filter forces recalculation of aggregations, through full group hierarchy', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns_with_aggregation, [GROUP_COL_1, GROUP_COL_2]);
         rowSet.filter({type: 'EQ', colName: 'Group 3', value: 'T3'});
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows[0][8]).toBe(6)
-        expect(rowSet.groupRows[0][9]).toBe(348)
+        expect(rowSet.groupRows[0][4]).toBe(6)
+        expect(rowSet.groupRows[0][5]).toBe(348)
     });
 
     test('filter by grouped col, progressively extending filter. Aggregations should be updated correctly', () => {
@@ -1211,7 +1187,7 @@ describe('filter',() => {
         rowSet.filter({colName: 'Sector', type: INCLUDE, values: ['Basic Industries']});
         ({rows,size} = rowSet.setRange({lo: 0, hi: 10}));
         expect(size).toBe(1);
-        expect(rows[0]).toEqual([100,-2,27,'Basic Industries',N,N,22.48922592592592,30965590000,N,'Basic Industries',N,N,1,27,U])
+        expect(rows[0]).toEqual([N,N,22.48922592592592,30965590000,N,'Basic Industries',N,100,-2,27,'Basic Industries',N,1,27,U])
         
         rowSet.filter({colName: 'Sector', type: INCLUDE, values: ['Basic Industries', 'Capital Goods']});
         ({rows,size} = rowSet.setRange({lo: 0, hi: 10}));
@@ -1220,9 +1196,9 @@ describe('filter',() => {
         ({rows,size} = rowSet.setRange({lo: 0, hi: 10}, false));
         expect(size).toBe(3);
         expect(rows).toEqual([
-            [100,-2,27,'Basic Industries',N,N,22.48922592592592,30965590000,N,'Basic Industries',N,N,1,27,U],
-            [101,-2,79,'Capital Goods',N,N,27.76405949367089,135023840000,N,'Capital Goods',N,N,13,79,U],
-            [102,-2,35,'Consumer Durables',N,N,19.910882857142855,34227080000,N,'Consumer Durables',N,N,34,35,U]
+            [N,N,22.48922592592592,30965590000,N,'Basic Industries',N,100,-2,27,'Basic Industries',N,1,27,U],
+            [N,N,27.76405949367089,135023840000,N,'Capital Goods',N,101,-2,79,'Capital Goods',N,13,79,U],
+            [N,N,19.910882857142855,34227080000,N,'Consumer Durables',N,102,-2,35,'Consumer Durables',N,34,35,U]
         ]);
 
     })
@@ -1244,8 +1220,7 @@ describe('clearFilter', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns_with_aggregation, [GROUP_COL_1, GROUP_COL_2]);
         rowSet.filter({type: 'EQ', colName: 'Group 3', value: 'T3'});
         rowSet.clearFilter();
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(8,10)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(4,6)))).toEqual([
             [0,-2,8,'G1',4.875,749],
             [1,-1,4,'G1/I2',5,347],
             [2,-1,4,'G1/U2',4.75,402],
@@ -1270,10 +1245,9 @@ describe('insert', () => {
         rowSet.setRange({lo: 0, hi: 10});
         table.insert(['key25','G1','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
-        expect(rowSet.data[24]).toEqual([24,'key25', 'key25','G1','I2','T5',6,112]);
+        expect(rowSet.data[24]).toEqual(['key25','G1','I2','T5',6,112, 24,'key25']);
         expect(results).toEqual({updates: [[100, -2, 9]]});
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(11,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11,12)))).toEqual([
             [0,-1,9,'G1',0],
             [1,-1,8,'G2',9],
             [2,-1,8,'G3',17]
@@ -1289,7 +1263,7 @@ describe('insert', () => {
         table.insert(['key25','G1','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(11,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11,12)))).toEqual([
             [0,+1,9,'G1',0],
             [1,-1,8,'G2',9],
             [2,-1,8,'G3',17]
@@ -1297,7 +1271,7 @@ describe('insert', () => {
         expect(results).toEqual({replace: true})
         const {rows,size} = rowSet.setRange({lo: 0, hi: 10},false);
         expect(size).toBe(12);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+1,9,'G1'],
             [101,0,0,'key01'],
             [102,0,0,'key02'],
@@ -1319,7 +1293,7 @@ describe('insert', () => {
         table.insert(['key25','G1','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10))).toEqual([
             [0,-2,9,'G1'],
             [1,-1,5,'G1/I2'],
             [2,-1,4,'G1/U2'],
@@ -1344,7 +1318,7 @@ describe('insert', () => {
         table.insert(['key25','G4','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(11,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11,12)))).toEqual([
             [0,-1,8,'G1',0],
             [1,-1,8,'G2',8],
             [2,-1,8,'G3',16],
@@ -1363,7 +1337,7 @@ describe('insert', () => {
         table.insert(['key25','G0','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(11,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11,12)))).toEqual([
             [0,-1,1,'G0',24],
             [1,-1,8,'G1',0],
             [2,-1,8,'G2',8],
@@ -1372,7 +1346,7 @@ describe('insert', () => {
         expect(results).toEqual({replace: true});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 10},false);
         expect(size).toBe(4);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,1,'G0'],
             [101,-1,8,'G1'],
             [102,-1,8,'G2'],
@@ -1387,7 +1361,7 @@ describe('insert', () => {
         table.insert(['key25','G25','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(11,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11,12)))).toEqual([
             [0,-1,8,'G1',0],
             [1,-1,8,'G2',8],
             [2,-1,1,'G25',24],
@@ -1396,7 +1370,7 @@ describe('insert', () => {
         expect(results).toEqual({replace: true});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 10},false);
         expect(size).toBe(4);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-1,8,'G1'],
             [101,-1,8,'G2'],
             [102,-1,1,'G25'],
@@ -1411,7 +1385,7 @@ describe('insert', () => {
         table.insert(['key25','G0','I2','T5',6, 112]);
         const results = rowSet.insert(24,table.rows[24])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0, -3, 1, 'G0', null, 1],
             [1, -2, 1, 'G0/I2', 0, 2],
             [2, -1, 1, 'G0/I2/T5', 1,24],
@@ -1443,7 +1417,7 @@ describe('insert', () => {
         expect(results).toEqual({replace: true});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 10},false);
         expect(size).toBe(4);
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,-3,1,'G0'],
             [101,-3,8,'G1'],
             [102,-3,8,'G2'],
@@ -1458,15 +1432,15 @@ describe('insert', () => {
         rowSet.setRange({lo: 0, hi: 10});
         table.insert(['key01','G1','I2','T3',6, 112]);
         let results = rowSet.insert(0,table.rows[0])
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0, -3, 1, 'G1', null, 1],
             [1, -2, 1, 'G1/I2', 0, 2],
             [2, -1, 1, 'G1/I2/T3', 1, 0]
         ]);
+
         table.insert(['key02','G1','O2','T3',8, 88]);
         results = rowSet.insert(1,table.rows[1])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-3,2,'G1',null,1],
             [1,-2,1,'G1/I2',0,2],
             [2,-1,1,'G1/I2/T3',1,0],
@@ -1474,10 +1448,10 @@ describe('insert', () => {
             [4,-1,1,'G1/O2/T3',3,1]
         ]);
         expect(results).toEqual({replace: true});
+
         table.insert(['key03','G1','I2','T4',8, 88]);
         results = rowSet.insert(2,table.rows[2])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-3,3,'G1',null,1],
             [1,-2,2,'G1/I2',0,2],
             [2,-1,1,'G1/I2/T3',1,0],
@@ -1488,7 +1462,7 @@ describe('insert', () => {
 
         table.insert(['key04','G1','I2','T3',10, 100]);
         results = rowSet.insert(3,table.rows[3])
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-3,4,'G1',null,1],
             [1,-2,3,'G1/I2',0,2],
             [2,-1,2,'G1/I2/T3',1,0],
@@ -1499,7 +1473,7 @@ describe('insert', () => {
 
         table.insert(['key05','G3','E2','T3',10, 100]);
         results = rowSet.insert(4,table.rows[4])
-        expect(rowSet.groupRows.map(d => d.slice(0, 4).concat(d.slice(10,12)))).toEqual([
+        expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10,12)))).toEqual([
             [0,-3,4,'G1',null,1],
             [1,-2,3,'G1/I2',0,2],
             [2,-1,2,'G1/I2/T3',1,0],
@@ -1533,7 +1507,7 @@ describe('update', () => {
         rowSet.setRange({lo: 0, hi: 10});
         const updates = rowSet.update(4, [4,9,9.5]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
-        expect(updates).toEqual([[105,6,9.5]]);
+        expect(updates).toEqual([[105,4,9.5]]);
     });
 
     test('update single value, single group expanded, aggregated on column', () => {
@@ -1545,27 +1519,22 @@ describe('update', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
         // console.log(`${join(results)}`)
         // console.log(updates)
-        expect(rowSet.groupRows[0][8]).toBe(4.9375);
-        expect(rowSet.groupRows[0][9]).toBe(699);
+        expect(rowSet.groupRows[0][4]).toBe(4.9375);
+        expect(rowSet.groupRows[0][5]).toBe(699);
         expect(updates).toEqual([
             [100,4,4.875,4.9375,5,749,699],
             [105,4,9.5,5,50]
         ]);
     });
 
-    function join(arr){
-       return '\n\n' + arr.join('\n');
-    }
-    
     test('update single value, single group expanded, aggregated on column,no data sent to client yet', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1]);
         rowSet.setGroupState({'G1': true})
-        debugger;
         const updates = rowSet.update(4, [4,9,9.5,5,100,50]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
         // console.log(updates)
-        expect(rowSet.groupRows[0][8]).toBe(4.9375);
-        expect(rowSet.groupRows[0][9]).toBe(699);
+        expect(rowSet.groupRows[0][4]).toBe(4.9375);
+        expect(rowSet.groupRows[0][5]).toBe(699);
         expect(updates).toEqual([]);
     });
 
@@ -1590,27 +1559,27 @@ describe('aggregation', () => {
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
         // console.log(rowSet.sortSet)
         // console.log(rowSet.filterSet)
-        expect(rowSet.groupRows[0][8]).toBe(4.875)
-        expect(rowSet.groupRows[0][9]).toBe(749)
+        expect(rowSet.groupRows[0][4]).toBe(4.875)
+        expect(rowSet.groupRows[0][5]).toBe(749)
 
     })
 
     test('aggregation across two columns', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1,GROUP_COL_2])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows[0][8]).toBe(4.875)
-        expect(rowSet.groupRows[0][9]).toBe(749)
-        expect(rowSet.groupRows[1][8]).toBe(5);
-        expect(rowSet.groupRows[1][9]).toBe(347);
-        expect(rowSet.groupRows[2][8]).toBe(4.75);
-        expect(rowSet.groupRows[2][9]).toBe(402);
+        expect(rowSet.groupRows[0][4]).toBe(4.875)
+        expect(rowSet.groupRows[0][5]).toBe(749)
+        expect(rowSet.groupRows[1][4]).toBe(5);
+        expect(rowSet.groupRows[1][5]).toBe(347);
+        expect(rowSet.groupRows[2][4]).toBe(4.75);
+        expect(rowSet.groupRows[2][5]).toBe(402);
     });
 
     test('aggregation across three columns', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1,GROUP_COL_2,GROUP_COL_3])
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
-        expect(rowSet.groupRows[0][8]).toBe(4.875);
-        expect(rowSet.groupRows[0][9]).toBe(749);
+        expect(rowSet.groupRows[0][4]).toBe(4.875);
+        expect(rowSet.groupRows[0][5]).toBe(749);
     });
 
     // test('updates affecting aggregation', () =>{
@@ -1647,7 +1616,7 @@ describe('setRange', () => {
         rowSet.setGroupState({G1: true, G2: true, G3: true});
 
         let {rows} = rowSet.setRange({lo: 0, hi: 10});
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+1, 8, 'G1'],
             [101, 0, 0, 'key01'],
             [102, 0, 0, 'key02'],
@@ -1660,7 +1629,7 @@ describe('setRange', () => {
             [109,+1, 8, 'G2']
         ]);
         ({rows} = rowSet.setRange({lo: 5, hi: 15}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [110, 0, 0, 'key09'],
             [111, 0, 0, 'key10'],
             [112, 0, 0, 'key11'],
@@ -1668,7 +1637,7 @@ describe('setRange', () => {
             [114, 0, 0, 'key13']
         ]);
         ({rows} = rowSet.setRange({lo: 15, hi: 25}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [115, 0, 0, 'key14'],
             [116, 0, 0, 'key15'],
             [117, 0, 0, 'key16'],
@@ -1681,7 +1650,7 @@ describe('setRange', () => {
             [124, 0, 0, 'key22']
         ]);
         ({rows} = rowSet.setRange({lo: 20, hi: 30}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [125, 0, 0, 'key23'],
             [126, 0, 0, 'key24']
         ]);
@@ -1694,7 +1663,7 @@ describe('setRange', () => {
         let {rows} = rowSet.setRange({lo: 0, hi: 10});
 
         ({rows} = rowSet.setRange({lo: 11, hi: 15}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [111, 0, 0, 'key10'],
             [112, 0, 0, 'key11'],
             [113, 0, 0, 'key12'],
@@ -1702,7 +1671,7 @@ describe('setRange', () => {
         ]);
 
         ({rows} = rowSet.setRange({lo: 20, hi: 25}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [120, 0, 0, 'key18'],
             [121, 0, 0, 'key19'],
             [122, 0, 0, 'key20'],
@@ -1711,7 +1680,7 @@ describe('setRange', () => {
         ]);
 
         ({rows} = rowSet.setRange({lo: 26, hi: 27}));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [126, 0, 0, 'key24']
         ]);
     });
@@ -1724,9 +1693,9 @@ describe('setRange', () => {
         ({rows} = rowSet.setRange({lo: 5, hi: 15}));
         ({rows} = rowSet.setRange({lo: 15, hi: 25}));
         ({rows} = rowSet.setRange({lo: 20, hi: 27}));
-        ({rows} = rowSet.setRange({lo: 10, hi: 20}));
 
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        ({rows} = rowSet.setRange({lo: 10, hi: 20}));
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [110, 0, 0, 'key09'],
             [111, 0, 0, 'key10'],
             [112, 0, 0, 'key11'],
@@ -1748,7 +1717,7 @@ describe('setRange', () => {
         let {rows} = rowSet.setRange({lo: 0, hi: 10});
 
         ({rows} = rowSet.setRange({lo: 0, hi: 10}, false));
-        expect(rows.map(d => d.slice(0, 4))).toEqual([
+        expect(rows.map(d => d.slice(6, 10))).toEqual([
             [100,+1, 8, 'G1'],
             [101, 0, 0, 'key01'],
             [102, 0, 0, 'key02'],
@@ -1772,46 +1741,46 @@ describe('setRange', () => {
         // console.log(`${join(rows)}`)
         expect(size).toBe(25)
         expect(rows).toEqual([
-            [100,3,27,'Basic Industries',N,N,22.48922592592592,30965590000,N,'Basic Industries',N,N,1,U,U],
-            [101,2,2,'Basic Industries/Agricultural Chemicals',N,N,2.57,382560000,N,'Basic Industries','Agricultural Chemicals',0,2,U,U],
-            [102,-1,1,'Basic Industries/Agricultural Chemicals/1991',N,N,1.26,287890000,1991,'Basic Industries','Agricultural Chemicals',1,0,U,U],
-            [103,-1,1,'Basic Industries/Agricultural Chemicals/2013',N,N,3.88,94670000,2013,'Basic Industries','Agricultural Chemicals',1,1,U,U],
-            [104,-2,1,'Basic Industries/Aluminum',N,N,23.1,2050000000,N,'Basic Industries','Aluminum',0,5,U,U],
-            [105,-2,1,'Basic Industries/Containers/Packaging',N,N,0.44,59480000,N,'Basic Industries','Containers/Packaging',0,7,U,U],
-            [106,-2,3,'Basic Industries/Engineering & Construction',N,N,28.483333333333334,6218610000,N,'Basic Industries','Engineering & Construction',0,9,U,U],
-            [107,-2,1,'Basic Industries/Environmental Services',N,N,131.07,11130000000,N,'Basic Industries','Environmental Services',0,13,U,U],
-            [108,-2,2,'Basic Industries/Forest Products',N,N,48.135,1736160000,N,'Basic Industries','Forest Products',0,15,U,U],
-            [109,-2,10,'Basic Industries/Major Chemicals',N,N,16.2859,3689640000,N,'Basic Industries','Major Chemicals',0,18,U,U],
-            [110,-2,1,'Basic Industries/Metal Fabrications',N,N,16.29,178900000,N,'Basic Industries','Metal Fabrications',0,26,U,U],
-            [111,-2,1,'Basic Industries/Miscellaneous',N,N,12.05,265900000,N,'Basic Industries','Miscellaneous',0,28,U,U],
-            [112,-2,1,'Basic Industries/Specialty Chemicals',N,N,3.9,12870000,N,'Basic Industries','Specialty Chemicals',0,30,U,U],
-            [113,-2,4,'Basic Industries/Steel/Iron Ore',N,N,17.660025,5241470000,N,'Basic Industries','Steel/Iron Ore',0,32,U,U],
-            [114,-3,79,'Capital Goods',N,N,27.76405949367089,135023840000,N,'Capital Goods',N,N,37,U,U],
-            [115,-3,35,'Consumer Durables',N,N,19.910882857142855,34227080000,N,'Consumer Durables',N,N,125,U,U],
-            [116,-3,40,'Consumer Non-Durables',N,N,35.0023825,76043890000,N,'Consumer Non-Durables',N,N,174,U,U]
+            [N,N,22.48922592592592,30965590000,N,'Basic Industries',N,100,3,27,'Basic Industries',N, 1,U,U],
+            [N,N,2.57,382560000,N,'Basic Industries','Agricultural Chemicals',101,2,2,'Basic Industries/Agricultural Chemicals',0,2,U,U],
+            [N,N,1.26,287890000,1991,'Basic Industries','Agricultural Chemicals',102,-1,1,'Basic Industries/Agricultural Chemicals/1991',1,0,U,U],
+            [N,N,3.88,94670000,2013,'Basic Industries','Agricultural Chemicals',103,-1,1,'Basic Industries/Agricultural Chemicals/2013',1,1,U,U],
+            [N,N,23.1,2050000000,N,'Basic Industries','Aluminum',104,-2,1,'Basic Industries/Aluminum',0,5,U,U],
+            [N,N,0.44,59480000,N,'Basic Industries','Containers/Packaging',105,-2,1,'Basic Industries/Containers/Packaging',0,7,U,U],
+            [N,N,28.483333333333334,6218610000,N,'Basic Industries','Engineering & Construction',106,-2,3,'Basic Industries/Engineering & Construction',0,9,U,U],
+            [N,N,131.07,11130000000,N,'Basic Industries','Environmental Services',107,-2,1,'Basic Industries/Environmental Services',0,13,U,U],
+            [N,N,48.135,1736160000,N,'Basic Industries','Forest Products',108,-2,2,'Basic Industries/Forest Products',0,15,U,U],
+            [N,N,16.2859,3689640000,N,'Basic Industries','Major Chemicals',109,-2,10,'Basic Industries/Major Chemicals',0,18,U,U],
+            [N,N,16.29,178900000,N,'Basic Industries','Metal Fabrications',110,-2,1,'Basic Industries/Metal Fabrications',0,26,U,U],
+            [N,N,12.05,265900000,N,'Basic Industries','Miscellaneous',111,-2,1,'Basic Industries/Miscellaneous',0,28,U,U],
+            [N,N,3.9,12870000,N,'Basic Industries','Specialty Chemicals',112,-2,1,'Basic Industries/Specialty Chemicals',0,30,U,U],
+            [N,N,17.660025,5241470000,N,'Basic Industries','Steel/Iron Ore',113,-2,4,'Basic Industries/Steel/Iron Ore',0,32,U,U],
+            [N,N,27.76405949367089,135023840000,N,'Capital Goods',N, 114,-3,79,'Capital Goods',N,37,U,U],
+            [N,N,19.910882857142855,34227080000,N,'Consumer Durables',N, 115,-3,35,'Consumer Durables',N,125,U,U],
+            [N,N,35.0023825,76043890000,N,'Consumer Non-Durables',N, 116,-3,40,'Consumer Non-Durables',N,174,U,U]
         ]);
 
         rowSet.groupBy([['Sector', 'asc'],['Industry', 'asc']]);
         ({rows, size} = rowSet.setRange({lo: 0, hi: 17},false));
         // console.log(`${join(rows)}`)
         expect(rows).toEqual([
-            [100,2,27,'Basic Industries',N,N,22.48922592592592,30965590000,N,'Basic Industries',N,N,1,U,U],
-            [101,1,2,'Basic Industries/Agricultural Chemicals',N,N,2.57,382560000,N,'Basic Industries','Agricultural Chemicals',0,0,U,U],
-            [102,0,0,'RTK','RTK','Rentech, Inc.',1.26,287890000,1991,'Basic Industries','Agricultural Chemicals'],
-            [103,0,0,'MBII','MBII','Marrone Bio Innovations, Inc.',3.88,94670000,2013,'Basic Industries','Agricultural Chemicals'],
-            [104,-1,1,'Basic Industries/Aluminum',N,N,23.1,2050000000,N,'Basic Industries','Aluminum',0,2,U,U],
-            [105,-1,1,'Basic Industries/Containers/Packaging',N,N,0.44,59480000,N,'Basic Industries','Containers/Packaging',0,3,U,U],
-            [106,-1,3,'Basic Industries/Engineering & Construction',N,N,28.483333333333334,6218610000,N,'Basic Industries','Engineering & Construction',0,4,U,U],
-            [107,-1,1,'Basic Industries/Environmental Services',N,N,131.07,11130000000,N,'Basic Industries','Environmental Services',0,7,U,U],
-            [108,-1,2,'Basic Industries/Forest Products',N,N,48.135,1736160000,N,'Basic Industries','Forest Products',0,8,U,U],
-            [109,-1,10,'Basic Industries/Major Chemicals',N,N,16.2859,3689640000,N,'Basic Industries','Major Chemicals',0,10,U,U],
-            [110,-1,1,'Basic Industries/Metal Fabrications',N,N,16.29,178900000,N,'Basic Industries','Metal Fabrications',0,20,U,U],
-            [111,-1,1,'Basic Industries/Miscellaneous',N,N,12.05,265900000,N,'Basic Industries','Miscellaneous',0,21,U,U],
-            [112,-1,1,'Basic Industries/Specialty Chemicals',N,N,3.9,12870000,N,'Basic Industries','Specialty Chemicals',0,22,U,U],
-            [113,-1,4,'Basic Industries/Steel/Iron Ore',N,N,17.660025,5241470000,N,'Basic Industries','Steel/Iron Ore',0,23,U,U],
-            [114,-2,79,'Capital Goods',N,N,27.76405949367089,135023840000,N,'Capital Goods',N,N,13,U,U],
-            [115,-2,35,'Consumer Durables',N,N,19.910882857142855,34227080000,N,'Consumer Durables',N,N,34,U,U],
-            [116,-2,40,'Consumer Non-Durables',N,N,35.0023825,76043890000,N,'Consumer Non-Durables',N,N,49,U,U]
+            [N,N,22.48922592592592,30965590000,N,'Basic Industries',N,100,2,27,'Basic Industries',N,1,U,U],
+            [N,N,2.57,382560000,N,'Basic Industries','Agricultural Chemicals',101,1,2,'Basic Industries/Agricultural Chemicals',0,0,U,U],
+            ['RTK','Rentech, Inc.',1.26,287890000,1991,'Basic Industries','Agricultural Chemicals',102,0,0,'RTK'],
+            ['MBII','Marrone Bio Innovations, Inc.',3.88,94670000,2013,'Basic Industries','Agricultural Chemicals',103,0,0,'MBII'],
+            [N,N,23.1,2050000000,N,'Basic Industries','Aluminum',104,-1,1,'Basic Industries/Aluminum',0,2,U,U],
+            [N,N,0.44,59480000,N,'Basic Industries','Containers/Packaging',105,-1,1,'Basic Industries/Containers/Packaging',0,3,U,U],
+            [N,N,28.483333333333334,6218610000,N,'Basic Industries','Engineering & Construction',106,-1,3,'Basic Industries/Engineering & Construction',0,4,U,U],
+            [N,N,131.07,11130000000,N,'Basic Industries','Environmental Services',107,-1,1,'Basic Industries/Environmental Services',0,7,U,U],
+            [N,N,48.135,1736160000,N,'Basic Industries','Forest Products',108,-1,2,'Basic Industries/Forest Products',0,8,U,U],
+            [N,N,16.2859,3689640000,N,'Basic Industries','Major Chemicals',109,-1,10,'Basic Industries/Major Chemicals',0,10,U,U],
+            [N,N,16.29,178900000,N,'Basic Industries','Metal Fabrications',110,-1,1,'Basic Industries/Metal Fabrications',0,20,U,U],
+            [N,N,12.05,265900000,N,'Basic Industries','Miscellaneous',111,-1,1,'Basic Industries/Miscellaneous',0,21,U,U],
+            [N,N,3.9,12870000,N,'Basic Industries','Specialty Chemicals',112,-1,1,'Basic Industries/Specialty Chemicals',0,22,U,U],
+            [N,N,17.660025,5241470000,N,'Basic Industries','Steel/Iron Ore',113,-1,4,'Basic Industries/Steel/Iron Ore',0,23,U,U],
+            [N,N,27.76405949367089,135023840000,N,'Capital Goods',N,114,-2,79,'Capital Goods',N,13,U,U],
+            [N,N,19.910882857142855,34227080000,N,'Consumer Durables',N,115,-2,35,'Consumer Durables',N,34,U,U],
+            [N,N,35.0023825,76043890000,N,'Consumer Non-Durables',N,116,-2,40,'Consumer Non-Durables',N,49,U,U]
         ]);
 
         // rowSet.setGroupState({'Basic Industries': true});
@@ -1876,9 +1845,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const results = filterRowset.setRange({lo: 0, hi: 10});
         expect(results.rows).toEqual([
-            [0,0,0,'T3', 'T3', 20],
-            [1,0,0,'T4', 'T4', 3],
-            [2,0,0,'T5', 'T5', 1]
+            ['T3', 20, 0,0,0,'T3'],
+            ['T4', 3, 1,0,0,'T4'],
+            ['T5', 1, 2,0,0,'T5']
         ])
     });
 
@@ -1888,8 +1857,8 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const results = filterRowset.setRange({lo: 0, hi: 10});
         expect(results.rows).toEqual([
-            [0,0,0,'T3','T3', 15],
-            [1,0,0,'T4','T4', 2]
+            ['T3', 15, 0,0,0,'T3'],
+            ['T4', 2, 1,0,0,'T4']
         ])
     });
 
@@ -1906,9 +1875,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 1'});
         const results = filterRowset.setRange({lo: 0, hi: 10});
         expect(results.rows).toEqual([
-            [0,0,0,'G1','G1',4],
-            [1,0,0,'G2','G2',6],
-            [2,0,0,'G3','G3',7]
+            ['G1',4, 0,0,0,'G1'],
+            ['G2',6, 1,0,0,'G2'],
+            ['G3',7, 2,0,0,'G3']
         ])
     });
 
@@ -1917,15 +1886,14 @@ describe('getDistinctValuesForColumn', () => {
         let {rows} = rowSet.setRange({lo: 0, hi: 17});
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'})
         const results = filterRowset.setRange({lo: 0, hi: 10});
-        expect(results.rows[0]).toEqual([0,0,0,'Advertising','Advertising',10])
-
+        expect(results.rows[0]).toEqual(['Advertising',10, 0,0,0,'Advertising'])
         rowSet.filter({type: 'include', colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
 
         rowSet.filter({type: 'include', colName: 'Industry', values: ['Advertising']});
         ({rows} = rowSet.setRange({lo: 0,hi: 17},false));
 
-        expect(rows.map(d => d.slice(0, 5))).toEqual([
+        expect(rows.map(d => d.slice(7, 12))).toEqual([
             [100,-1, 4, 'Consumer Services', null],
             [101,-1, 6, 'Technology', null]
         ]);

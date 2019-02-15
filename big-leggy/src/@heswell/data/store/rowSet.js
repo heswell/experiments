@@ -30,6 +30,7 @@ export default class RowSet extends BaseRowSet {
         super(columns, offset);
         this.table = table;
         this.project = projectColumns(table.columnMap, columns);
+        this.meta = metaData(columns);
         this.data = table.rows;
         this.columnMap = table.columnMap;
         this.sortCols = null;
@@ -102,7 +103,7 @@ export default class RowSet extends BaseRowSet {
     }
 
     addRows(rows){
-        addRowsToIndex(rows, this.index);
+        addRowsToIndex(rows, this.index, this.meta.IDX);
         this.data = this.data.concat(rows);
     }
 

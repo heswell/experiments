@@ -192,7 +192,7 @@ export default function GroupIterator(groups, navSet, rows, IDX, meta, COUNT/*, 
             }
 
         }
-debugger;
+
         const rows = [];
         let row;
         let startIdx = null;
@@ -304,8 +304,13 @@ debugger;
             if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
                 rowIdx = rowIdx === null ? 0 : rowIdx + 1;
                 const idx = navSet[groupRow[IDX]+rowIdx];
-                const [i, ...rest] = rows[idx];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx === null ? 0 : rowIdx];
+                // the equivalent of project row
+                const row = rows[idx].slice()
+                row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx === null ? 0 : rowIdx];
             } else if (depth > 0){
 
                 do {
@@ -344,8 +349,15 @@ debugger;
             } else {
                 rowIdx -= 1;
                 const navIdx = lastGroup[IDX] + rowIdx;
-                const [i, ...rest] = rows[navSet[navIdx]];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx];
+                // const [i, ...rest] = rows[navSet[navIdx]];
+
+                const row = rows[navSet[navIdx]].slice()
+                // row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
             }
         } else {
             if (grpIdx === null){
@@ -359,8 +371,13 @@ debugger;
             if (lastGroup[meta.DEPTH] === 1){
                 rowIdx = getCount(lastGroup, COUNT) - 1;
                 const navIdx = lastGroup[IDX] + rowIdx;
-                const [i, ...rest] = rows[navSet[navIdx]];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx];
+                const row = rows[navSet[navIdx]].slice()
+                // row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
             }
             while (lastGroup[meta.PARENT_IDX] !== null && groups[lastGroup[meta.PARENT_IDX]][meta.DEPTH] < 0){
                 grpIdx = lastGroup[meta.PARENT_IDX];

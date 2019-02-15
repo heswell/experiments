@@ -88,8 +88,8 @@ describe('groupUtils', () => {
       expect(extract(groups,9)).toEqual(['G1','G1/I2','G1/U2','G2','G2/I2','G2/O2','G2/U2','G3','G3/A2','G3/E2','G3/I2','G3/O2'])
       // parent
       expect(extract(groups,10)).toEqual([null,0,0,null,3,3,3,null,7,7,7,7])
-      // row idx
-      expect(extract(groups,11)).toEqual([null,4,0,null,10,12,8,null,20,16,22,23])
+      // row pointer (note the child row indices point to the sort set, not the underlying row indices)
+      expect(extract(groups,11)).toEqual([1,0,4,4,8,10,14,8,16,18,22,23])
       // filter cols
       expect(extract(groups,12)).toEqual(undef)
       expect(extract(groups,13)).toEqual(undef)

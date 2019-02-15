@@ -1,13 +1,11 @@
 import React, { useEffect,useRef } from 'react';
 import { renderCellContent } from '../../formatting/cellValueFormatter';
 import { getGridCellClassName } from '../../cell-utils'
-import { Data } from '../../../../data';
 
 import './background-cell.css';
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
-const KEY = Data.KEY_FIELD;
 
 const UP1 = 'up1';
 const UP2 = 'up2';
@@ -40,11 +38,11 @@ function useDirection(key, value, column) {
 
 export default React.memo(props => {
 
-  const { idx, column, row, cellClass}  = props;
+  const { idx, column, row, cellClass, meta}  = props;
   const { key, width, type: { renderer: { flashStyle } } } = column;
   const value = row[key || idx];
 
-  const direction = useDirection(row[KEY], value, column)
+  const direction = useDirection(row[meta.KEY], value, column)
 
   const arrow = flashStyle === FlashStyle.ArrowOnly || flashStyle === FlashStyle.ArrowBackground
     ? direction === UP1 || direction === UP2 ? CHAR_ARROW_UP :
