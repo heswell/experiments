@@ -1,7 +1,7 @@
 // we need a transpiling build just for jest
 // import babel from 'rollup-plugin-babel';
 import nodeResolve from 'rollup-plugin-node-resolve'
-
+// import alias from 'rollup-plugin-alias';
 import replace from 'rollup-plugin-replace'
 
 export default [{
@@ -32,5 +32,8 @@ export default [{
     output: {
         file: 'public/websocket.js',
         format: 'esm'
-    }
+    },
+    // plugins: [alias({
+    //     '@heswell/data': '././src/data'
+    //   })],    
 }];

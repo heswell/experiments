@@ -4,7 +4,7 @@ import {getCount} from './groupUtils';
 // IDX = NAV_IDX, COUNT = NAV_COUNT
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
-export default function GroupIterator(groups, navSet, rows, IDX, meta, COUNT/*, offset=0*/) {
+export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -55,7 +55,8 @@ export default function GroupIterator(groups, navSet, rows, IDX, meta, COUNT/*, 
             if (rowIdx === null){
                 return _range_positions[idx*3];
             } else {
-                const group = groups[idx];
+                // const group = groups[idx];
+                const group = groups[grpIdx];
                 if (group === undefined){
                     console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
                         ${JSON.stringify(_range_positions,null,2)}

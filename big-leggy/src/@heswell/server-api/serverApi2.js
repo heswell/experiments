@@ -94,7 +94,7 @@ export function connect(
 export function subscribe(message){
     console.log(`[serverApi2.subscribe] vp ${message.viewport}`)
     const viewport = message.viewport || `viewport-${_subscriptionId++}`;
-    const subscription = subscriptions[viewport] = new Subscription(null, viewport)
+    const subscription = subscriptions[viewport] = new ClientSubscription(null, viewport)
 
     // const timeoutHandle = setTimeout(() => {throw new Error(`Timed out`)}, 1000)
     getDefaultConnection().then(connection => {
@@ -130,7 +130,7 @@ class ServerAPI {
             subscriptions[viewport].connectionId = this.connectionId;
             return subscriptions[viewport];
         } else {
-            return subscriptions[viewport] = new Subscription(this.connectionId, viewport);
+            return subscriptions[viewport] = new ClientSubscription(this.connectionId, viewport);
         }
     }
 
@@ -205,7 +205,7 @@ function connectionMessage(message){
     }
 }
 
-class Subscription {
+class ClientSubscription {
     constructor(connectionId, subscriptionId){
         this.connectionId = connectionId;
         this.id = subscriptionId;

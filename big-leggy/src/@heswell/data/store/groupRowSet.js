@@ -62,7 +62,7 @@ export default class GroupRowSet extends BaseRowSet {
 
         const [navSet, IDX, COUNT] = this.selectNavigationSet(false);
         // TODO roll the IDX and COUNT overrides into meta
-        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, this.meta, COUNT, this.offset);
+        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, COUNT, this.meta);
 
         if (filter){
             this.filter(filter);

@@ -1,6 +1,6 @@
 
 import {metaData} from '../data/store/columnUtils';
-import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '../data';
+import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
 import {EventEmitter} from '@heswell/utils';
 // import {
 //     subscribe,
@@ -42,7 +42,6 @@ export default class RemoteView extends EventEmitter {
 
         this._id = id || uuid.v1();
         this._table = tablename;
-        this.meta = metaData(columns);
 
         this._rowData = {
             rows: [],
@@ -61,7 +60,9 @@ export default class RemoteView extends EventEmitter {
             groupState
         };
 
-        this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns, 4);
+        this.meta = metaData(this._dataOptions.columns);
+
+        this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
 
         if (tablename) {
             this.subscribe();
@@ -134,7 +135,7 @@ export default class RemoteView extends EventEmitter {
                 // updates [${message.updates.map(r=>r.join('\n'))}]
                 // `,'color:vrown;font-weight:bold');
 
-                    this._rowData.rows = rowUtils.update(this._rowData.rows, this._rowData.range, message.updates);
+                    this._rowData.rows = rowUtils.update(this._rowData.rows, this._rowData.range, message.updates, this.meta);
 
                     this.emit(DataTypes.ROW_DATA, this._rowData.rows);
                     break;

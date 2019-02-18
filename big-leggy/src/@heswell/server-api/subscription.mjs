@@ -1,5 +1,6 @@
 import { replace, indexOf } from './utils/arrayUtils.mjs';
-import {rangeUtils, DataTypes, Data} from '../data/index';
+import {rangeUtils, DataTypes} from '../data/index';
+import { metaData } from '../data/store/columnUtils';
 
 const {NULL_RANGE} = rangeUtils;
 
@@ -36,7 +37,9 @@ export class DataRange {
 export default class Subscription {
 
     // TODO need to allow for large bufferSize, so we can load entire dataset
-    constructor({ range, size = 0, offset = 0 }) {
+    constructor({ columns, range, size = 0, offset = 0 }) {
+        this.columns = columns;
+        this.meta = metaData(columns);
         this.bufferSize = 100;
         this._data = new DataRange(range, size, offset);
         this._filterData = new DataRange();
@@ -127,6 +130,7 @@ export default class Subscription {
 
     _putRange(targetData, lo, hi) {
         const { data, range, offset } = targetData;
+        const {IDX} = this.meta;
 
         const low = lo + offset;
         const high = hi + offset;
@@ -166,7 +170,7 @@ export default class Subscription {
             // we have discarded some data when we were going forwards, but the server doesn't know
             // that, so hasn't sent us enough data 
             if (row) {
-                let idx = row[Data.INDEX_FIELD];
+                let idx = row[IDX];
 
                 if (idx >= bufferHigh) {
                     break;
@@ -186,6 +190,7 @@ export default class Subscription {
 
     _putRows(targetData, rows, newOffset = 0) {
         const { data, range, offset } = targetData;
+        const {IDX} = this.meta;
         const { lo, hi } = range;
         const low = lo + offset;
         const high = hi + offset;
@@ -196,7 +201,7 @@ export default class Subscription {
 
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
-            let idx = row[Data.INDEX_FIELD];
+            let idx = row[IDX];
 
             if (lo === 0 && idx < offset) {
                 //onsole.log(`Subscription.putRows we are at the top and this.is an insert at the top`);
@@ -269,9 +274,9 @@ export default class Subscription {
     // We have the opportunity for more caching opportunities here - caching the 
     // child contents of grouped data.
     toggleGroupNode(groupKey) {
-        const { KEY_FIELD, DEPTH_FIELD } = Data;
-        const idx = indexOf(this._data.data, row => row[KEY_FIELD] === groupKey);
+        const { KEY, DEPTH } = this.meta;
+        const idx = indexOf(this._data.data, row => row[KEY] === groupKey);
         const groupRow = this._data.data[idx];
-        return this._data.data[idx] = replace(groupRow, DEPTH_FIELD, -groupRow[DEPTH_FIELD]);
+        return this._data.data[idx] = replace(groupRow, DEPTH, -groupRow[DEPTH]);
     }
 }

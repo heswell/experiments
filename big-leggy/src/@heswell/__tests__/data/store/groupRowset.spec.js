@@ -1515,6 +1515,7 @@ describe('update', () => {
         rowSet.setGroupState({'G1': true})
         // get results so update acts as though client has data
         rowSet.setRange({lo: 0, hi: 10});
+debugger;        
         const updates = rowSet.update(4, [4,9,9.5,5,100,50]);
         // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
         // console.log(`${join(results)}`)

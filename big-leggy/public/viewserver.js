@@ -1,3 +1,4 @@
+const SUBSCRIBE = 'AddSubscription';
 const COLUMN_LIST = 'ColumnList';
 const DATA = 'data';
 const TABLE_LIST = 'TableList';
@@ -7,7 +8,6 @@ const SET_VIEWPORT_RANGE = 'setViewRange';
 const VIEWPORT_RANGE_CHANGED = 'ViewRangeChanged';
 const EXPAND_GROUP = 'ExpandGroup';
 const COLLAPSE_GROUP = 'CollapseGroup';
-const SUBSCRIBE = 'AddSubscription';
 
 const WELCOME = 'Welcome';
 const NOT_WELCOME = 'Not Welcome';

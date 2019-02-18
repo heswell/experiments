@@ -3,7 +3,6 @@ import Subscription from './subscription.mjs';
 import * as Message from './messages.js';
 import {DataTypes} from '../data/store/types.js';
 import {NULL_RANGE} from '../data/store/rangeUtils.js';
-import * as Data from '../data/store/constants.js';
 
 const serverModule = process.env.SERVER_MODULE || '/server-api/dist/viewserver.js';
 console.log(`[ServerProxy] serverModule = ${serverModule}`)
@@ -73,9 +72,12 @@ export class ServerProxy {
 
         switch (type) {
 
-            case 'connect':
-                console.log(`[ServerProxy] call this.connect`)
+            case Message.CONNECT:
                 this.connect(message);
+                break;
+
+            case Message.SUBSCRIBE:
+                this.subscribe(message)
                 break;
 
             case Message.SET_VIEWPORT_RANGE:
@@ -111,7 +113,8 @@ export class ServerProxy {
 
                 if (subscription = this.subscriptions[viewport]) {
                     const groupRow = subscription.toggleGroupNode(message.groupKey);
-                    const updates = [[groupRow[Data.INDEX_FIELD], Data.DEPTH_FIELD - 4, groupRow[Data.DEPTH_FIELD]]];
+                    const {IDX, DEPTH} = subscription.meta;
+                    const updates = [[groupRow[IDX], DEPTH, groupRow[DEPTH]]];
                     this.postMessage({ data: { type: 'update', viewport, updates } });
                 }
 
@@ -121,32 +124,6 @@ export class ServerProxy {
 
                 this.sendIfReady(message, isReady);
                 delete this.subscriptions[viewport];
-
-                break;
-
-            case Message.SUBSCRIBE:
-
-                if (message) {
-                    const byTypeAndViewport = msg => msg.viewport === viewport && msg.type === Message.SET_VIEWPORT_RANGE;
-                    const [rangeMessages, remainingMessages] = partition(this.queuedRequests, byTypeAndViewport);
-            
-                    const { connectionId, range = NULL_RANGE } = message;
-                    this.pendingSubscriptionRequests[viewport] = message;
-                    console.log(`%c SUBSCRIBE to ${viewport} 
-                        with range ${range.lo} = ${range.hi} stored
-                             range ${range.lo} = ${range.hi === 0 ? 10 : range.hi} sent to server
-                             we have ${rangeMessages.length} range messages
-
-                        ${JSON.stringify(this.queuedRequests,null,2)}`,'background-color: brown;color: cyan')
-                    this.sendIfReady({
-                        ...message,
-                        range: {
-                            lo: 0,
-                            hi: range.hi || 10, // where should this come from. This will cause key errors if bigger than viewport
-                            bufferSize: BUFFER_SIZE
-                        }
-                    }, isReady);
-                }
 
                 break;
 
@@ -250,6 +227,93 @@ export class ServerProxy {
         });
     }
 
+    subscribe(/* client message */ message ){
+        const isReady = this.connectionStatus === 'ready';
+        const { viewport } = message;
+
+        if (message) {
+            const byTypeAndViewport = msg => msg.viewport === viewport && msg.type === Message.SET_VIEWPORT_RANGE;
+            const [rangeMessages] = partition(this.queuedRequests, byTypeAndViewport);
+
+            const { range = NULL_RANGE } = message;
+            this.pendingSubscriptionRequests[viewport] = message;
+            console.log(`%c SUBSCRIBE to ${viewport} 
+                with range ${range.lo} = ${range.hi} stored
+                        range ${range.lo} = ${range.hi === 0 ? 10 : range.hi} sent to server
+                        we have ${rangeMessages.length} range messages
+
+                ${JSON.stringify(this.queuedRequests,null,2)}`,'background-color: brown;color: cyan')
+                console.log(message)
+
+            this.sendIfReady({
+                ...message,
+                range: {
+                    lo: 0,
+                    hi: range.hi || 10, // where should this come from. This will cause key errors if bigger than viewport
+                    bufferSize: BUFFER_SIZE
+                }
+            }, isReady);
+        }
+
+    }
+
+    subscribed(/* server message */ message){
+        const {viewport} = message;
+        if (this.pendingSubscriptionRequests[viewport]) {
+
+            const { size, offset } = message;
+            const request = this.pendingSubscriptionRequests[viewport];
+            // const {table, columns, sort, filter, groupBy} = request;
+            let { range, columns } = request;
+            console.log(`%c[ServerProxy.handleMessageFromServer] SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`,'background-color: yellow')
+            const subscription = this.subscriptions[viewport] = new Subscription({
+                columns,
+                range,
+                size,
+                offset,
+            });
+
+            this.pendingSubscriptionRequests[viewport] = undefined;
+
+            const byViewport = vp => item => item.viewport === vp;
+            const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
+            const [messagesForThisViewport, messagesForOtherViewports] = partition(this.queuedRequests, byViewport(viewport));
+            const [rangeMessages, otherMessages] = partition(messagesForThisViewport, byMessageType);
+
+            this.queuedRequests = messagesForOtherViewports;
+            rangeMessages.forEach(msg => {
+
+                range = msg.range;
+
+                const rows = subscription.putRange(range);
+
+                if (rows.length) {
+                    // is it ever likely that we will have data immediately following subscription ?
+                    //onsole.log(`ServerProxy.subscribed ${rows.length} rows in range, following queued message handling`);
+                    this.postMessage({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rows, size } } });
+                }
+
+            });
+
+            if (otherMessages.length) {
+                console.log(`we have ${otherMessages.length} messages still to process`);
+            }
+
+            // send a widened range request to populate buffer
+            this.sendMessageToServer({
+                type: Message.SET_VIEWPORT_RANGE,
+                dataType: DataTypes.ROW_DATA,
+                viewport,
+                range: {
+                    lo: Math.max(0, range.lo - BUFFER_ROWS),
+                    hi: range.hi + BUFFER_ROWS
+                }
+            });
+
+        }
+
+    }
+
     onReady(connectionId){
         this.connectionStatus = 'ready';
         // messages which have no dependency on previous subscription
@@ -332,59 +396,7 @@ export class ServerProxy {
                 break;
 
             case Message.SUBSCRIBED:
-
-                if (this.pendingSubscriptionRequests[viewport]) {
-
-                    const { size, offset } = message;
-                    const request = this.pendingSubscriptionRequests[viewport];
-                    // const {table, columns, sort, filter, groupBy} = request;
-                    let { range } = request;
-                    console.log(`%c[ServerProxy.handleMessageFromServer] SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`,'background-color: yellow')
-                    subscription = this.subscriptions[viewport] = new Subscription({
-                        range,
-                        size,
-                        offset
-                    });
-
-                    this.pendingSubscriptionRequests[viewport] = undefined;
-
-                    const byViewport = vp => item => item.viewport === vp;
-                    const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
-                    const [messagesForThisViewport, messagesForOtherViewports] = partition(this.queuedRequests, byViewport(viewport));
-                    const [rangeMessages, otherMessages] = partition(messagesForThisViewport, byMessageType);
-
-                    this.queuedRequests = messagesForOtherViewports;
-                    rangeMessages.forEach(msg => {
-
-                        range = msg.range;
-
-                        const rows = subscription.putRange(range);
-
-                        if (rows.length) {
-                            // is it ever likely that we will have data immediately following subscription ?
-                            //onsole.log(`ServerProxy.subscribed ${rows.length} rows in range, following queued message handling`);
-                            this.postMessage({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rows, size } } });
-                        }
-
-                    });
-
-                    if (otherMessages.length) {
-                        console.log(`we have ${otherMessages.length} messages still to process`);
-                    }
-
-                    // send a widened range request to populate buffer
-                    this.sendMessageToServer({
-                        type: Message.SET_VIEWPORT_RANGE,
-                        dataType: DataTypes.ROW_DATA,
-                        viewport,
-                        range: {
-                            lo: Math.max(0, range.lo - BUFFER_ROWS),
-                            hi: range.hi + BUFFER_ROWS
-                        }
-                    });
-
-                }
-
+                this.subscribed(message);
                 break;
 
             case Message.FILTER_DATA:

@@ -120,7 +120,7 @@ const EMPTY_ARRAY$1 = [];
 const ROWSET = 'rowset';
 const UPDATE = 'update';
 const FILTER_DATA = 'filterData';
-const INDEX_FIELD$1 = 0;
+const INDEX_FIELD = 0;
 
 class MessageQueue {
 
@@ -197,7 +197,7 @@ function mergeAndPurgeFilterData(queue, message) {
             }
             else {
                 var overlaps = data.rows.filter(
-                    row => row[INDEX_FIELD$1] >= lo && row[INDEX_FIELD$1] < hi);
+                    row => row[INDEX_FIELD] >= lo && row[INDEX_FIELD] < hi);
 
                 // TODO selectedIndices    
                 if (lo < lo1) {
@@ -245,7 +245,7 @@ function mergeAndPurgeRowset(queue, message) {
                 if (lo1 >= hi || hi1 < lo) ;
                 else {
                     var overlaps = data.rows.filter(
-                        row => row[INDEX_FIELD$1] >= low && row[INDEX_FIELD$1] < high);
+                        row => row[INDEX_FIELD] >= low && row[INDEX_FIELD] < high);
 
                     if (lo < lo1) {
                         message.data.rows = rows.concat(overlaps);
@@ -260,16 +260,16 @@ function mergeAndPurgeRowset(queue, message) {
                 // if we have updates for rows within the current rowset, discard them - the rowset
                 // represents latest data.
                 let validUpdates = queue[i].updates.filter(u => {
-                    let idx = u[INDEX_FIELD$1];
+                    let idx = u[INDEX_FIELD];
 
-                    if (typeof rows[INDEX_FIELD$1] === 'undefined') {
+                    if (typeof rows[INDEX_FIELD] === 'undefined') {
                         console.warn(`MessageQueue:about to error, these are the rows that have been passed `);
-                        console.warn(`[${rows.map(r => r[INDEX_FIELD$1]).join(',')}]`);
+                        console.warn(`[${rows.map(r => r[INDEX_FIELD]).join(',')}]`);
                     }
 
 
-                    let min = rows[0][INDEX_FIELD$1];
-                    let max = rows[rows.length - 1][INDEX_FIELD$1];
+                    let min = rows[0][INDEX_FIELD];
+                    let max = rows[rows.length - 1][INDEX_FIELD];
 
                     return idx >= low && idx < high &&   	// within range 
                         idx < size &&  				// within dataset  

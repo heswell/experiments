@@ -1,3 +1,5 @@
+export const CONNECT = 'connect';
+export const SUBSCRIBE = 'AddSubscription';
 export const COLUMN_LIST = 'ColumnList';
 export const DATA = 'data';
 export const FILTER_DATA = 'filterData';
@@ -18,7 +20,6 @@ export const GET_FILTER_DATA = 'GetFilterData';
 export const GET_SEARCH_DATA = 'GetSearchData';
 export const SEARCH_DATA = 'searchData';
 export const SNAPSHOT = 'snapshot';
-export const SUBSCRIBE = 'AddSubscription';
 
 export const RowData = 'rowData';
 export const Size = 'size';

@@ -1,4 +1,3 @@
-import * as Constants from './store/constants';
 
 import {INCLUDE, EXCLUDE, INCLUDE_SEARCH, EXCLUDE_SEARCH, STARTS_WITH} from './store/filter'
 import { getFilterType, toColumn, buildColumnMap } from './store/columnUtils'
@@ -74,8 +73,6 @@ export const rangeUtils = {
   getFullRange,
   resetRange
 }
-
-export const Data = Constants
 
 export const DataTypes = types.DataTypes;
 

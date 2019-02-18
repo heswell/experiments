@@ -7,12 +7,6 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var path = _interopDefault(require('path'));
 var url = _interopDefault(require('url'));
 
-const INDEX_FIELD = 0;
-const DEPTH_FIELD = 1;
-const COUNT_FIELD = 2;
-const KEY_FIELD = 3;
-const UNIQUE_KEY_FIELD = 4;
-
 const EQUALS = 'EQ';
 const GREATER_THAN = 'GT';
 const GREATER_EQ = 'GE';
@@ -100,15 +94,15 @@ function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
-function buildColumnMap(columns, leadMetaCount=0){
+function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
             if (typeof column === 'string'){
-                map[column] = leadMetaCount + i;
-            } else if (column.key) {
-                map[column.name] = leadMetaCount + column.key;
+                map[column] = i;
+            } else if (typeof column.key === 'number') {
+                map[column.name] = column.key;
             } else {
-                map[column.name] = leadMetaCount + i;
+                map[column.name] = i;
             }
             return map;
         },{})
@@ -120,15 +114,13 @@ function buildColumnMap(columns, leadMetaCount=0){
 function projectColumns(map, columns){
     const length = columns.length;
     return startIdx => (row,i) => {
-        const out = Array(length+4);
-        out[0] = startIdx + i;
-        out[1] = 0;
-        out[2] = 0;
-        out[3] = row[1];
+        const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
-            out[i+4] = row[colIdx];
+            out[i] = row[colIdx];
         }
+        // assume row[0] is key for now
+        out.push(startIdx+i, 0, 0, row[0]);
         return out;
     }
 }
@@ -156,15 +148,18 @@ function getDataType({type=null}){
 //TODO cache result by length
 function metaData(columns){
     const len = columns.length;
-    let metaStart = 4;
+    let metaStart = 0;
     const next = () => len + metaStart++;
     return {
-        DEPTH: 1,
-        COUNT: 2,
+        IDX: next(),
+        DEPTH: next(),
+        COUNT: next(),
+        KEY: next(),
         PARENT_IDX: next(),
         IDX_POINTER: next(),
         FILTER_COUNT: next(),
-        NEXT_FILTER_IDX: next()
+        NEXT_FILTER_IDX: next(),
+        count: columns.length + metaStart
     }
 }
 
@@ -269,8 +264,8 @@ function GROUP_ROW_TEST(group, row, [colIdx, direction]) {
     if (group === row) {
         return 0;
     } else {
-        let a1 = direction === 'dsc' ? row[colIdx] : group[colIdx+2];
-        let b1 = direction === 'dsc' ? group[colIdx+2] : row[colIdx];
+        let a1 = direction === 'dsc' ? row[colIdx] : group[colIdx];
+        let b1 = direction === 'dsc' ? group[colIdx] : row[colIdx];
         if (b1 === null || a1 > b1) {
             return 1;
         } else if (a1 == null || a1 < b1) {
@@ -851,8 +846,6 @@ function compareRanges(range1, range2){
     }
 }
 
-const DEPTH = 1;
-const COUNT = 2;
 const DEFAULT_OPTIONS = {
     startIdx: 0,
     rootIdx: null,
@@ -860,11 +853,11 @@ const DEFAULT_OPTIONS = {
     baseGroupby: []
 };
 
-function lowestIdxPointer(groups, IDX, start, depth){
+function lowestIdxPointer(groups, IDX, DEPTH, start, depth){
     let result = Number.MAX_SAFE_INTEGER;
     for (let i=start; i<groups.length; i++){
         const group = groups[i];
-        const absDepth = Math.abs(group[DEPTH_FIELD]);
+        const absDepth = Math.abs(group[DEPTH]);
 
         if (absDepth > depth){
             break;
@@ -880,10 +873,10 @@ function lowestIdxPointer(groups, IDX, start, depth){
 
 }
 
-function getCount(groupRow, FILTER_COUNT){
-    return typeof groupRow[FILTER_COUNT] === 'number'
-        ? groupRow[FILTER_COUNT]
-        : groupRow[COUNT];
+function getCount(groupRow, PRIMARY_COUNT, FALLBACK_COUNT){
+    return typeof groupRow[PRIMARY_COUNT] === 'number'
+        ? groupRow[PRIMARY_COUNT]
+        : groupRow[FALLBACK_COUNT];
 }
 
 class SimpleTracker {
@@ -1006,6 +999,7 @@ function fillNavSetsFromGroups(groups, sortSet, sortIdx=0, filterSet=null, filte
     return sortIdx;
 }
 
+// WHY is param order different from groupLeafRows
 function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT_OPTIONS) {
     const { startIdx = 0, length=rows.length, rootIdx = null, baseGroupby = [], groups=[], rowParents=null,
         filterLength, filterSet, filterFn: filter } = options;
@@ -1017,7 +1011,7 @@ function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT
 
     const levels = groupby.length;
     const currentGroups = Array(levels).fill(null);
-    const { DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
+    const { IDX, DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
 
     let parentIdx = rootIdx;
     let leafCount = 0;
@@ -1032,7 +1026,7 @@ function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT
             const groupValue = row[columnIdx];
             // as soon as we identify a group change, each group at that level and below
             // is then aggregated and new group(s) initiated. 
-            if (currentGroup === null || currentGroup[columnIdx+2] !== groupValue) {
+            if (currentGroup === null || currentGroup[columnIdx] !== groupValue) {
                 if (currentGroup !== null) {
                     // as soon as we know we're regrouping, aggregate the open groups, in reverse order
                     for (let ii = levels - 1; ii >= level; ii--) {
@@ -1048,7 +1042,7 @@ function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT
                 }
                 for (let ii = level; ii < levels; ii++) {
                     groupIdx += 1;
-                    parentIdx = ii === 0 ? rootIdx : currentGroups[ii - 1][0];
+                    parentIdx = ii === 0 ? rootIdx : currentGroups[ii - 1][IDX];
                     const depth = levels - ii;
                     // for first-level groups, row pointer is a pointer into the sortSet
                     const childIdx = depth === 1
@@ -1174,7 +1168,65 @@ function indexOfCol(key, cols = null) {
     return -1;
 }
 
-function incrementGroupCount(groups, group, COUNT_IDX, PARENT_IDX){
+// export function countNestedRows(rows, idx, depth) {
+//     const DEPTH = Data.DEPTH_FIELD;
+//     let count = 0;
+//     for (let i = idx, len = rows.length;
+//         i < len && Math.abs(rows[i][DEPTH]) < depth;
+//         i++) {
+//         count += 1;
+//     }
+//     return count;
+// }
+
+// TBC
+// export function countGroupMembers(groupedRows) {
+//     const results = [];
+//     const groups = [];
+//     let currentGroup = null;
+
+//     for (let i = 0; i < groupedRows.length; i++) {
+//         let [, depth] = groupedRows[i];
+//         if (depth === LEAF_DEPTH) {
+//             currentGroup.count += 1;
+//         } else {
+//             depth = Math.abs(depth);
+//             while (currentGroup && depth >= currentGroup.depth) {
+//                 const completedGroup = groups.shift();
+//                 const group = results[completedGroup.i];
+//                 if (group[Data.COUNT_FIELD] !== completedGroup.count) {
+//                     const newGroup = group.slice();
+//                     newGroup[Data.COUNT_FIELD] = completedGroup.count;
+//                     results[completedGroup.i] = newGroup;
+//                 }
+//                 groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
+//                 ([currentGroup] = groups);
+//             }
+
+//             currentGroup = { i, depth, count: 0 };
+//             groups.unshift(currentGroup);
+//         }
+
+//         results[i] = groupedRows[i];
+
+//     }
+
+//     while (currentGroup) {
+//         const completedGroup = groups.shift();
+//         const group = results[completedGroup.i];
+//         if (group[Data.COUNT_FIELD] !== completedGroup.count) {
+//             const newGroup = group.slice();
+//             newGroup[Data.COUNT_FIELD] = completedGroup.count;
+//             results[completedGroup.i] = newGroup;
+//         }
+//         groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
+//         ([currentGroup] = groups);
+//     }
+
+//     return results;
+// }
+
+function incrementGroupCount(groups, group, {COUNT, PARENT_IDX}){
     group[COUNT] += 1;
     while (group[PARENT_IDX] !== null){
         group = groups[group[PARENT_IDX]];
@@ -1182,11 +1234,11 @@ function incrementGroupCount(groups, group, COUNT_IDX, PARENT_IDX){
     }
 }
 
-function adjustGroupIndices(groups, grpIdx, IDX_POINTER, PARENT_IDX, adjustment=1){
+function adjustGroupIndices(groups, grpIdx, {IDX, DEPTH, IDX_POINTER, PARENT_IDX}, adjustment=1){
     for (let i=0;i<groups.length;i++){
-        if (groups[i][INDEX_FIELD] >= grpIdx){
-            groups[i][INDEX_FIELD] += adjustment;
-            if (Math.abs(groups[i][DEPTH_FIELD]) > 1){
+        if (groups[i][IDX] >= grpIdx){
+            groups[i][IDX] += adjustment;
+            if (Math.abs(groups[i][DEPTH]) > 1){
                 groups[i][IDX_POINTER] += adjustment;
             }
             let parentIdx = groups[i][PARENT_IDX];
@@ -1197,10 +1249,10 @@ function adjustGroupIndices(groups, grpIdx, IDX_POINTER, PARENT_IDX, adjustment=
     }
 }
 
-function adjustLeafIdxPointers(groups, insertionPoint, IDX, adjustment=1){
+function adjustLeafIdxPointers(groups, insertionPoint, {DEPTH, IDX_POINTER}, adjustment=1){
     for (let i=0;i<groups.length;i++){
-        if (Math.abs(groups[i][DEPTH_FIELD]) === 1 && groups[i][IDX] >= insertionPoint){
-            groups[i][IDX] += adjustment;
+        if (Math.abs(groups[i][DEPTH]) === 1 && groups[i][IDX_POINTER] >= insertionPoint){
+            groups[i][IDX_POINTER] += adjustment;
         }
     }
 }
@@ -1221,7 +1273,7 @@ function findGroupPositions(groups, groupby, row) {
         // and other groupCol values  are null
         for (let j = 0; j < groupby.length; j++) {
             const colIdx = groupby[j][0];
-            const colValue = group[colIdx+2];
+            const colValue = group[colIdx];
             if (j > i) {
                 if (colValue !== null) {
                     break out;
@@ -1246,26 +1298,26 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const group = Array(columns.length+8); // 4 leading metadata fields, 4 trailing
+    const { IDX, DEPTH, COUNT, KEY, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
-    const { PARENT_IDX, IDX_POINTER } = metaData(columns);
-    // TODO how do we avoid this clumsy +2 offset for group column - MOVE ALL METADATA TO END OF ROW
+
     for (let i = 0; i < columns.length; i++) {
         const column = columns[i];
         const key = columnMap[column.name];
         if (column.aggregate) { // implies we can't group on aggregate columns, does the UI know that ?
-            group[key+2] = 0;
+            group[key] = 0;
         } else if ((colIdx = indexOfCol(key, groupby)) !== -1 && colIdx <= groupIdx) {
-            group[key+2] = row[key];
+            group[key] = row[key];
         } else {
-            group[key+2] = null;
+            group[key] = null;
         }
     }
 
     for (let i = 0; i < baseGroupby.length; i++) {
         const [colIdx] = baseGroupby[i];
-        group[colIdx+2] = row[colIdx];
+        group[colIdx] = row[colIdx];
     }
 
     const extractKey = ([idx]) => row[idx];
@@ -1276,12 +1328,13 @@ function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, column
         : '';
     const groupKey = buildKey(groupby.slice(0, groupIdx + 1));
 
-    group[0] = idx;
-    group[1] = -depth;
-    group[2] = 0;
-    group[3] = baseKey + groupKey;
+    group[IDX] = idx;
+    group[DEPTH] = -depth;
+    group[COUNT] = 0;
+    group[KEY] = baseKey + groupKey;
     group[IDX_POINTER] = childIdx;
     group[PARENT_IDX] = parentIdx;
+
     return group;
 
 }
@@ -1351,8 +1404,9 @@ function findAggregatedColumns(columns, columnMap, groupby) {
 
 function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
 
+    const {DEPTH, COUNT} = metaData(columns);
     const groupRow = groups[grpIdx];
-    let [,depth] = groupRow;
+    let depth = groupRow[DEPTH];
     let absDepth = Math.abs(depth);
     let count = 0;
     let idx = grpIdx;
@@ -1367,7 +1421,7 @@ function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
     for (let i=grpIdx+count; i >= grpIdx; i--){
         for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
             const [colIdx] = aggregations[aggIdx];
-            groups[i][colIdx+2] = 0;
+            groups[i][colIdx] = 0;
         }
         aggregate(groups[i], groups, sortSet, rows, columns, aggregations, groups[i][COUNT]);
     }
@@ -1376,9 +1430,9 @@ function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
 
 function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, leafCount, filter=null) {
 
-    const {FILTER_COUNT} = metaData(columns);
+    const {DEPTH, COUNT, FILTER_COUNT} = metaData(columns);
     const { IDX_POINTER } = metaData(columns);
-    let absDepth = Math.abs(groupRow[DEPTH_FIELD]);
+    let absDepth = Math.abs(groupRow[DEPTH]);
     let count = 0;
     let filteredCount = filter === null ? undefined : 0;
 
@@ -1396,7 +1450,7 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
             if (filter === null || included){
                 for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
                     const [colIdx] = aggregations[aggIdx];
-                    groupRow[colIdx+2] += row[colIdx];
+                    groupRow[colIdx] += row[colIdx];
                 }
             }
         }
@@ -1407,7 +1461,8 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
         const startIdx = groupRows.indexOf(groupRow) + 1;
         for (let i=startIdx;i<groupRows.length;i++){
             const nestedGroupRow = groupRows[i];
-            const [,nestedRowDepth, nestedRowCount] = nestedGroupRow;
+            const nestedRowDepth = nestedGroupRow[DEPTH];
+            const nestedRowCount = nestedGroupRow[COUNT];
             const absNestedRowDepth = Math.abs(nestedRowDepth);
             if (absNestedRowDepth >= absDepth){
                 break;
@@ -1415,9 +1470,9 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
                 for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
                     const [colIdx, method] = aggregations[aggIdx];
                     if (method === 'avg') {
-                        groupRow[colIdx+2] += nestedGroupRow[colIdx+2] * nestedRowCount;
+                        groupRow[colIdx] += nestedGroupRow[colIdx] * nestedRowCount;
                     } else {
-                        groupRow[colIdx+2] += nestedGroupRow[colIdx+2];
+                        groupRow[colIdx] += nestedGroupRow[colIdx];
                     }
                 }
                 count += nestedRowCount;
@@ -1428,18 +1483,18 @@ function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, le
     for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
         const [colIdx, method] = aggregations[aggIdx];
         if (method === 'avg') {
-            groupRow[colIdx+2] = groupRow[colIdx+2] / count;
+            groupRow[colIdx] = groupRow[colIdx] / count;
         }
     }
 
-    groupRow[COUNT_FIELD] = count;
+    groupRow[COUNT] = count;
     groupRow[FILTER_COUNT] = filteredCount;
 
 }
 
-function addRowsToIndex(rows, index, indexField = UNIQUE_KEY_FIELD){
+function addRowsToIndex(rows, index, indexField){
     for (let idx = 0, len=rows.length; idx < len; idx++) {
-        index[rows[idx][indexField]] = idx; // USE THE PRIMARY KEY <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        index[rows[idx][indexField]] = idx;
     }
     return index;
 }
@@ -1656,9 +1711,6 @@ function isUndefined(arg) {
 
 /*global fetch */
 
-// meta fields are the idx and the primary key
-const META_COUNT = 2;
-
 class Table extends EventEmitter {
 
     constructor(config){
@@ -1673,9 +1725,7 @@ class Table extends EventEmitter {
         this.index = {};
         this.rows = [];
         this.updateConfig = config.updates;
-
-        this.inputColumnMap = buildColumnMap(columns);
-        this.outputColumnMap = buildColumnMap(columns, META_COUNT);
+        this.columnMap = buildColumnMap(columns);
         this.columnCount = 0;
         this.status = null;
 
@@ -1694,12 +1744,10 @@ class Table extends EventEmitter {
         const results = [];
         let row = this.rows[rowIdx];
         for (let i=0;i<updates.length;i+=2){
-            // return [colIdx, originalValue, newValue, ...]
-            const absIdx = updates[i];
-            const colIdx = absIdx - META_COUNT;
+            const colIdx = updates[i];
             const value = updates[i+1];
-            results.push(colIdx, row[absIdx], value);
-            row[absIdx] = value;
+            results.push(colIdx, row[colIdx], value);
+            row[colIdx] = value;
         }
         this.emit('rowUpdated', rowIdx, results);
     }
@@ -1767,8 +1815,7 @@ class Table extends EventEmitter {
 
         if (this.columns === null){
             this.columns = columnsFromColumnMap(this.inputColumnMap);
-            this.inputColumnMap = buildColumnMap(this.columns);
-            this.outputColumnMap = buildColumnMap(this.columns, META_COUNT);
+            this.columnMap = buildColumnMap(this.columns);
         }
         this.status = 'ready';
         this.emit('ready');
@@ -1787,19 +1834,20 @@ class Table extends EventEmitter {
 
     rowFromData(idx, data, columnnameList){
         // 2 metadata items for each row, the idx and unique key
-        const {index, primaryKey=null, inputColumnMap: map} = this;
+        const {index, primaryKey=null, columnMap: map} = this;
 
         if (Array.isArray(data)){
             const key = data[map[this.primaryKey]];
             index[key] = idx;
-            return [idx, key, ...data];
+            return [...data, idx, key];
         } else {
             // This allows us to load data from objects as rows, without predefined columns, where
             // not every row may have every column. How would we handle primary key ?
-            const columnMap = map || (this.inputColumnMap = {});
+            const columnMap = map || (this.columnMap = {});
             const colnames = columnnameList || Object.getOwnPropertyNames(data);
             const row = [idx];
             let colIdx;
+            let key;
 
             for (let i=0; i<colnames.length; i++){
                 const name = colnames[i];
@@ -1807,13 +1855,16 @@ class Table extends EventEmitter {
                 if ((colIdx = columnMap[name]) === undefined){
                     colIdx = columnMap[name] = this.columnCount++;
                 }
-                row[colIdx+2] = value;
-                // If we don't kno the primary key, assume it is the first column for now
+                row[colIdx] = value;
+                // If we don't know the primary key, assume it is the first column for now
                 if ((name === primaryKey) || (primaryKey === null && i === 0)){
-                    row[1] = value;
+                    key = value;
                     index[value] = idx;
                 }
             }
+            // doesn't this risk pushing the metadata into the wrong slots if not every row has every 
+            // field
+            row.push(idx, key);
             return row;
         }
     }
@@ -1836,7 +1887,7 @@ class Table extends EventEmitter {
     applyUpdates(){
         for (let i=0;i<this.rows.length;i++){
             if (Math.random() > 0.5){
-                const update = this.updateRow(i, this.rows[i], this.outputColumnMap);
+                const update = this.updateRow(i, this.rows[i], this.columnMap);
                 if (update){
                     this.update(i, ...update);
                 }
@@ -1914,10 +1965,10 @@ class BaseRowSet {
     }
 
     selectNavigationSet(useFilter){
-        const { IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
+        const { COUNT, IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
         return useFilter
             ? [this.filterSet, NEXT_FILTER_IDX, FILTER_COUNT]
-            : [this.sortSet, IDX_POINTER, COUNT_FIELD];
+            : [this.sortSet, IDX_POINTER, COUNT];
     }
     
 }
@@ -1944,9 +1995,10 @@ class RowSet extends BaseRowSet {
     constructor(table, columns, offset=0, {filter=null}=NO_OPTIONS) {
         super(columns, offset);
         this.table = table;
-        this.project = projectColumns(table.outputColumnMap, columns);
+        this.project = projectColumns(table.columnMap, columns);
+        this.meta = metaData(columns);
         this.data = table.rows;
-        this.columnMap = table.outputColumnMap;
+        this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
         this.sortReverse= false;
@@ -2017,7 +2069,7 @@ class RowSet extends BaseRowSet {
     }
 
     addRows(rows){
-        addRowsToIndex(rows, this.index);
+        addRowsToIndex(rows, this.index, this.meta.IDX);
         this.data = this.data.concat(rows);
     }
 
@@ -2309,12 +2361,10 @@ class FilterRowSet extends RowSet {
 
 }
 
-const DEPTH$1 = 1;
-
 // IDX = NAV_IDX, COUNT = NAV_COUNT
 const FORWARDS = 0;
 const BACKWARDS = 1;
-function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
+function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -2365,13 +2415,14 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
             if (rowIdx === null){
                 return _range_positions[idx*3];
             } else {
-                const group = groups[idx];
+                // const group = groups[idx];
+                const group = groups[grpIdx];
                 if (group === undefined){
                     console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
                         ${JSON.stringify(_range_positions,null,2)}
                     `);
                 }
-                if (group[DEPTH$1] > 0){
+                if (group[meta.DEPTH] > 0){
                     // we have the index of the group row within the rowset, the leaf row will
                     // be one of the rows following, order determined by the sortCols
                     const count = group[COUNT];
@@ -2608,14 +2659,19 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
             return [null,_grpIdx = null, _rowIdx = null];
         } else {
             let groupRow = groups[grpIdx];
-            const depth = groupRow[DEPTH$1];
+            const depth = groupRow[meta.DEPTH];
             const count = getCount(groupRow,COUNT);
             // Note: we're unlikely to be passed the row if row count is zero
             if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
                 rowIdx = rowIdx === null ? 0 : rowIdx + 1;
                 const idx = navSet[groupRow[IDX]+rowIdx];
-                const [i, ...rest] = rows[idx];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx === null ? 0 : rowIdx];
+                // the equivalent of project row
+                const row = rows[idx].slice();
+                row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx === null ? 0 : rowIdx];
             } else if (depth > 0){
 
                 do {
@@ -2633,7 +2689,7 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
                 do {
                     grpIdx += 1;
                 } while (grpIdx < groups.length && (
-                    (Math.abs(groups[grpIdx][DEPTH$1]) < absDepth) ||
+                    (Math.abs(groups[grpIdx][meta.DEPTH]) < absDepth) ||
                     (getCount(groups[grpIdx],COUNT) === 0)
                 ));
                 if (grpIdx >= groups.length){
@@ -2647,15 +2703,22 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
 
     function previous(grpIdx=_grpIdx, rowIdx=_rowIdx){
         _direction = BACKWARDS;
-        if (grpIdx !== null && groups[grpIdx][DEPTH$1] === 1 && typeof rowIdx === 'number'){
+        if (grpIdx !== null && groups[grpIdx][meta.DEPTH] === 1 && typeof rowIdx === 'number'){
             let lastGroup = groups[grpIdx];
             if (rowIdx === 0){
                 return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
             } else {
                 rowIdx -= 1;
                 const navIdx = lastGroup[IDX] + rowIdx;
-                const [i, ...rest] = rows[navSet[navIdx]];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx];
+                // const [i, ...rest] = rows[navSet[navIdx]];
+
+                const row = rows[navSet[navIdx]].slice();
+                // row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
             }
         } else {
             if (grpIdx === null){
@@ -2666,14 +2729,19 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
                 grpIdx -= 1;
             }
             let lastGroup = groups[grpIdx];
-            if (lastGroup[DEPTH$1] === 1){
+            if (lastGroup[meta.DEPTH] === 1){
                 rowIdx = getCount(lastGroup, COUNT) - 1;
                 const navIdx = lastGroup[IDX] + rowIdx;
-                const [i, ...rest] = rows[navSet[navIdx]];
-                return [[i,0,0,...rest], _grpIdx = grpIdx, _rowIdx = rowIdx];
+                const row = rows[navSet[navIdx]].slice();
+                // row[meta.IDX] = idx;
+                row[meta.DEPTH] = 0;
+                row[meta.COUNT] = 0;
+                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+
+                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
             }
-            while (lastGroup[PARENT] !== null && groups[lastGroup[PARENT]][DEPTH$1] < 0){
-                grpIdx = lastGroup[PARENT];
+            while (lastGroup[meta.PARENT_IDX] !== null && groups[lastGroup[meta.PARENT_IDX]][meta.DEPTH] < 0){
+                grpIdx = lastGroup[meta.PARENT_IDX];
                 lastGroup = groups[grpIdx];
             }
             return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
@@ -2682,10 +2750,7 @@ function GroupIterator(groups, navSet, rows, IDX, PARENT, COUNT/*, offset=0*/) {
 }
 
 const FILTER_DATA_COLUMNS$1 = [{name: 'value'}, {name: 'count'}];
-const DEPTH$2 = DEPTH_FIELD;
-const COUNT$1 = COUNT_FIELD;
 const EMPTY_ARRAY = [];
-const GROUP_KEY_SORT = [[KEY_FIELD,'asc','group key']];
 
 class GroupRowSet extends BaseRowSet {
 
@@ -2701,6 +2766,7 @@ class GroupRowSet extends BaseRowSet {
 
         this.collapseChildGroups = this.collapseChildGroups.bind(this);
         this.countChildGroups = this.countChildGroups.bind(this);
+        this.meta = metaData(columns);
 
         columns.forEach(column => {
             if (column.aggregate) {
@@ -2720,12 +2786,13 @@ class GroupRowSet extends BaseRowSet {
         this.sortSet = rowSet.data.map((d,i) => i);
         // we will store an array of pointers to parent Groups.mirroring sequence of leaf rows
         this.rowParents = Array(rowSet.data.length);
+
         this.applyGroupby(groupby);
 
-        //TODO put this in method
-        const {PARENT_IDX} = metaData(columns);
+
         const [navSet, IDX, COUNT] = this.selectNavigationSet(false);
-        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, PARENT_IDX, COUNT, this.offset);
+        // TODO roll the IDX and COUNT overrides into meta
+        this.iter = GroupIterator(this.groupRows, navSet, this.data, IDX, COUNT, this.meta);
 
         if (filter){
             this.filter(filter);
@@ -2744,7 +2811,7 @@ class GroupRowSet extends BaseRowSet {
     }
 
     get filteredData() {
-        return this.groupedRows.filter(row => row[DEPTH_FIELD] === 0);
+        return this.groupedRows.filter(row => row[this.meta.DEPTH] === 0);
     }
 
     currentRange(){
@@ -2761,7 +2828,7 @@ class GroupRowSet extends BaseRowSet {
         //     ${this.iter.rangePositions}
         //     ${this.iter.rangePositionHi}`);
 
-        const filterCount = this.filterSet && metaData(this.columns).FILTER_COUNT;
+        const filterCount = this.filterSet && this.meta.FILTER_COUNT;
         const rows = rowsInRange.map((row,i) => this.cloneRow(row, idx+i, filterCount));
         this.range = range;
         return {
@@ -2773,12 +2840,13 @@ class GroupRowSet extends BaseRowSet {
         };
     }
 
-    cloneRow(row,idx, FILTER_COUNT){
-        const ind = idx + this.offset;
-        const dolly = [ind].concat(row.slice(1));
+    cloneRow(row, idx, FILTER_COUNT){
+        const {IDX, DEPTH, COUNT} = this.meta;
+        const dolly = row.slice();
+        dolly[IDX] = idx + this.offset;
 
-        if (FILTER_COUNT && dolly[DEPTH$2] !== 0 && typeof dolly[FILTER_COUNT] === 'number'){
-            dolly[COUNT$1] = dolly[FILTER_COUNT];
+        if (FILTER_COUNT && dolly[DEPTH] !== 0 && typeof dolly[FILTER_COUNT] === 'number'){
+            dolly[COUNT] = dolly[FILTER_COUNT];
         }
         return dolly;
     }
@@ -2817,7 +2885,7 @@ class GroupRowSet extends BaseRowSet {
     setGroupState(groupState) {
         // console.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
         const changes = getGroupStateChanges(groupState, this.groupState);
-        changes.forEach(([key, groupIdx, isExpanded]) => {
+        changes.forEach(([key, ,isExpanded]) => {
             if (key === '*') {
                 this.expandAll();
             } else {
@@ -2846,25 +2914,26 @@ class GroupRowSet extends BaseRowSet {
     }
 
     toggleGroup(groupIdx, groupRows$$1, processChildGroups){
-        const {COUNT, FILTER_COUNT} = metaData(this.columns);
+        const {DEPTH, COUNT, FILTER_COUNT} = this.meta;
         let adjustment = 0;
         const groupRow = groupRows$$1[groupIdx];
-        const depth = groupRow[DEPTH$2];
+        const depth = groupRow[DEPTH];
         const useFilter = this.filterSet !== null;
-        groupRow[DEPTH$2] = -depth;
+        groupRow[DEPTH] = -depth;
         if (Math.abs(depth) === 1){
             const COUNT_IDX = useFilter ? FILTER_COUNT : COUNT;
             adjustment = groupRow[COUNT_IDX];
         } else {
-            adjustment = processChildGroups(Math.abs(depth)-1, groupIdx+1, groupRows$$1, useFilter, FILTER_COUNT);
+            adjustment = processChildGroups(Math.abs(depth)-1, groupIdx+1, groupRows$$1, useFilter);
         }
         return adjustment;
     }
 
-    countChildGroups(childDepth, startIdx, groupRows$$1, useFilter, FILTER_COUNT){
+    countChildGroups(childDepth, startIdx, groupRows$$1, useFilter){
+        const {DEPTH, FILTER_COUNT} = this.meta;
         let adjustment = 0;
         for (let i=startIdx; i<groupRows$$1.length; i++){
-            const [,nextDepth] = groupRows$$1[i];
+            const nextDepth = groupRows$$1[i][DEPTH];
             if (Math.abs(nextDepth) === childDepth){
                 if (!useFilter || groupRows$$1[i][FILTER_COUNT] > 0){
                     adjustment += 1;
@@ -2876,10 +2945,11 @@ class GroupRowSet extends BaseRowSet {
         return adjustment;
     }
 
-    collapseChildGroups(childDepth, startIdx, groupRows$$1, useFilter, FILTER_COUNT){
+    collapseChildGroups(childDepth, startIdx, groupRows$$1, useFilter){
+        const {DEPTH, FILTER_COUNT} = this.meta;
         let adjustment = 0;
         for (let i=startIdx; i<groupRows$$1.length; i++){
-            const [,nextDepth] = groupRows$$1[i];
+            const nextDepth = groupRows$$1[i][DEPTH];
             if (Math.abs(nextDepth) === childDepth){
                 if (!useFilter || groupRows$$1[i][FILTER_COUNT] > 0){
                     adjustment += 1;
@@ -2896,7 +2966,7 @@ class GroupRowSet extends BaseRowSet {
 
     sort(sortCriteria) {
         const {groupRows: groups} = this;
-        const { IDX_POINTER } = metaData(this.columns);
+        const { IDX, DEPTH, COUNT, IDX_POINTER } = this.meta;
         this.sortCriteria = Array.isArray(sortCriteria) && sortCriteria.length
             ? sortCriteria
             : null;
@@ -2905,17 +2975,18 @@ class GroupRowSet extends BaseRowSet {
         //TODO only need to handle visible rows
         for (let i=0;i<groups.length;i++){
             const groupRow = groups[i];
-            const [,depth, count] = groupRow;
+            const depth = groupRow[DEPTH];
+            const count = groupRow[COUNT];
             const absDepth = Math.abs(depth);
             const sortIdx = groupRow[IDX_POINTER];
             if (absDepth === 1){
-                this.sortDataSubset(sortIdx, count, sortCols);
+                this.sortDataSubset(sortIdx, count, sortCols, IDX);
 
             }
         }
     }
 
-    sortDataSubset(startIdx, length, sortCriteria){
+    sortDataSubset(startIdx, length, sortCriteria, IDX){
         const rows = [];
         for (let i=startIdx;i<startIdx+length;i++){
             const rowIdx = this.sortSet[i];
@@ -2923,7 +2994,7 @@ class GroupRowSet extends BaseRowSet {
         }
         rows.sort(sortBy(sortCriteria));
         for (let i=0;i<rows.length;i++){
-            this.sortSet[i+startIdx] = rows[i][0];
+            this.sortSet[i+startIdx] = rows[i][IDX];
         }
     }
 
@@ -2932,12 +3003,12 @@ class GroupRowSet extends BaseRowSet {
         this.filterSet = null;
         // rebuild agregations for groups where filter count is less than count, remove filter count
         const { data: rows, groupRows: groups, sortSet, columns } = this;
-        const { FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
+        const { COUNT, FILTER_COUNT, NEXT_FILTER_IDX } = this.meta;
         const aggregations = findAggregatedColumns(columns, this.columnMap, this.groupby);
 
         for (let i=0;i<groups.length; i++){
             let groupRow = groups[i];
-            if (typeof groupRow[FILTER_COUNT] === 'number' && groupRow[COUNT$1] > groupRow[FILTER_COUNT]){
+            if (typeof groupRow[FILTER_COUNT] === 'number' && groupRow[COUNT] > groupRow[FILTER_COUNT]){
                 aggregateGroup(groups, i, sortSet, rows, columns, aggregations);
                 groupRow[FILTER_COUNT] = null;
                 groupRow[NEXT_FILTER_IDX] = null;
@@ -2952,15 +3023,15 @@ class GroupRowSet extends BaseRowSet {
     filter(filter){
         const extendsCurrentFilter = extendsFilter(this.currentFilter, filter);
         const fn = filter && functor(this.columnMap, filter);
-        const { /*COUNT,*/ PARENT_IDX, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
+        const { COUNT, DEPTH, PARENT_IDX, FILTER_COUNT, NEXT_FILTER_IDX } = this.meta;
         const { data: rows, groupRows: groups } = this;
         let [navSet, NAV_IDX, NAV_COUNT] = this.selectNavigationSet(extendsCurrentFilter && this.filterSet);
         const newFilterSet= [];
 
         for (let i=0;i<groups.length; i++){
             let groupRow = groups[i];
-            const [,depth] = groupRow;
-            const count = getCount(groupRow,NAV_COUNT);
+            const depth = groupRow[DEPTH];
+            const count = getCount(groupRow,NAV_COUNT, COUNT);
             const absDepth = Math.abs(depth);
 
             if (absDepth === 1){
@@ -2999,9 +3070,9 @@ class GroupRowSet extends BaseRowSet {
                     aggregations.forEach(aggregation => {
                         const [colIdx, type, sum] = aggregation;
                         if (type === 'sum') {
-                            groupRow[colIdx+2] = sum;
+                            groupRow[colIdx] = sum;
                         } else if (type === 'avg') {
-                            groupRow[colIdx+2] = sum / rowCount;
+                            groupRow[colIdx] = sum / rowCount;
                         }
                     });
                 }
@@ -3014,11 +3085,11 @@ class GroupRowSet extends BaseRowSet {
                         aggregations.forEach(aggregation => {
                             const [colIdx, type, sum] = aggregation;
                             if (type === 'sum') {
-                                groupRow[colIdx+2] += sum;
+                                groupRow[colIdx] += sum;
                             } else if (type === 'avg') {
                                 const originalCount = groupRow[FILTER_COUNT];
-                                const originalSum = originalCount * groupRow[colIdx+2];
-                                groupRow[colIdx+2] = (originalSum + sum) / (originalCount + rowCount);
+                                const originalSum = originalCount * groupRow[colIdx];
+                                groupRow[colIdx] = (originalSum + sum) / (originalCount + rowCount);
                             }
                         });
                         groupRow[FILTER_COUNT] += rowCount;
@@ -3031,7 +3102,7 @@ class GroupRowSet extends BaseRowSet {
                 groupRow[FILTER_COUNT] = 0;
                 this.aggregations.forEach(aggregation => {
                     const [colIdx] = aggregation;
-                    groupRow[colIdx+2] = 0;
+                    groupRow[colIdx] = 0;
                 });
             }
         }
@@ -3048,7 +3119,7 @@ class GroupRowSet extends BaseRowSet {
     getDistinctValuesForColumn(column) {
         const { data: rows, groupRows: groups, currentFilter, columnMap } = this;
         const colIdx = columnMap[column.name];
-        const { FILTER_COUNT, NEXT_FILTER_IDX } = metaData(this.columns);
+        const { DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = this.meta;
         const results = {};
 
         if (this.currentFilter === null) {
@@ -3080,7 +3151,7 @@ class GroupRowSet extends BaseRowSet {
             // TODO maybe extend iterator ?
             const {filterSet: navSet} = this;
             for (let i=0;i<groups.length; i++){
-                if (Math.abs(groups[i][DEPTH_FIELD]) === 1){
+                if (Math.abs(groups[i][DEPTH]) === 1){
                     const filterIdx = groups[i][NEXT_FILTER_IDX];
                     const count = groups[i][FILTER_COUNT];
                     for (let j=0;j<count;j++){
@@ -3113,9 +3184,8 @@ class GroupRowSet extends BaseRowSet {
     }
 
     update(idx, updates){
-        console.log(`groupTowset receive updates ${JSON.stringify(updates)}`);
         const {groupRows: groups, offset, rowParents} = this;
-        const { FILTER_COUNT } = metaData(this.columns);
+        const { COUNT, FILTER_COUNT } = this.meta;
 
         // 1) how do we find the group, now we cant store PARENT on row
         let grpIdx = rowParents[idx];
@@ -3129,23 +3199,23 @@ class GroupRowSet extends BaseRowSet {
             // the col mappings in updates refer to base column definitions
             const colIdx = updates[i];
             // whereas in the aggregatedColumn list, we have an offset of 2 ...
-            const absColIdx = colIdx+2;
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
-            rowUpdates.push(absColIdx,value);
+            rowUpdates.push(colIdx,value);
 
             // If this column is being aggregated
-            if (this.aggregatedColumn[absColIdx]){
+            if (this.aggregatedColumn[colIdx]){
+                let originalGroupValue = groupRow[colIdx];
                 const diff = value - originalValue;
-                const type = this.aggregatedColumn[absColIdx];
+                const type = this.aggregatedColumn[colIdx];
                 if (type === 'sum'){
                     // ... wnd in the groupRow we have a further offset of 2 ...
-                    groupRow[absColIdx+ 2] += diff;// again with the +2
+                    groupRow[colIdx] += diff;// again with the +2
                 } else if (type === 'avg'){
-                    const count = getCount(groupRow, FILTER_COUNT);
-                    groupRow[absColIdx+2] = ((groupRow[absColIdx] * count) + diff) / count;
+                    const count = getCount(groupRow, FILTER_COUNT, COUNT);
+                    groupRow[colIdx] = ((groupRow[colIdx] * count) + diff) / count;
                 }
-                (groupUpdates || (groupUpdates=[])).push(colIdx, originalValue, groupRow[absColIdx+2]);
+                (groupUpdates || (groupUpdates=[])).push(colIdx, originalGroupValue, groupRow[colIdx]);
             }
         }
 
@@ -3170,20 +3240,31 @@ class GroupRowSet extends BaseRowSet {
         const { groupRows: groups, groupby, data: rows, sortSet, offset, columns } = this;
         const groupCols = mapSortCriteria(groupby, this.columnMap);
         const groupPositions = findGroupPositions(groups, groupCols, row);
-        const {PARENT_IDX, IDX_POINTER} = metaData(columns);
+        const {IDX, DEPTH, COUNT, KEY, IDX_POINTER} = this.meta;
         let result;
+        const GROUP_KEY_SORT = [[KEY, 'asc']];
+
+        const expandRow = (groupCols, row) => {
+            const r = row.slice();
+            r[IDX] = 0;
+            r[DEPTH] = 0; 
+            r[COUNT] = 0;
+            r[KEY] = buildGroupKey(groupCols, row);
+            return r;
+        };
+
 
         if (groupPositions.length === groupby.length){
             let grpIdx = groupPositions[groupPositions.length-1];
             const groupRow = groups[grpIdx];
             // row[PARENT_IDX] = grpIdx;
-            let count = groupRow[COUNT$1];
-            incrementGroupCount(groups, groupRow, COUNT$1, PARENT_IDX);
+            let count = groupRow[COUNT];
+            incrementGroupCount(groups, groupRow, this.meta);
             const sortIdx = groupRow[IDX_POINTER];
             const insertionPoint = sortIdx + count;
             // all existing pointers from the insertionPoint forward are going to be displaced by +1
-            adjustLeafIdxPointers(groups, insertionPoint, IDX_POINTER);
-            sortSet.splice(insertionPoint,0,row[0]);
+            adjustLeafIdxPointers(groups, insertionPoint, this.meta);
+            sortSet.splice(insertionPoint,0,row[IDX]);
             let rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
             if (rangeIdx !== -1){
                 // the row is going to be sent to the client, we will resend the whole rowset
@@ -3196,7 +3277,7 @@ class GroupRowSet extends BaseRowSet {
                 // the row is not in the client range, most we have to send is/are update(s) to group
                 for (let i=0;i<groupPositions.length;i++){
                     grpIdx = groupPositions[i];
-                    count = groups[grpIdx][COUNT$1];
+                    count = groups[grpIdx][COUNT];
                     rangeIdx = this.iter.getRangeIndexOfRow(grpIdx);
                     if (rangeIdx !== -1){
                         result.updates.push([rangeIdx+offset, -2, count]);
@@ -3206,7 +3287,7 @@ class GroupRowSet extends BaseRowSet {
         } else if (groupPositions.length === 0){
             // all groups are missing
             const sorter = sortBy(GROUP_KEY_SORT);
-            const newGroupedRowIdx = sortPosition(groups, sorter, [0,0,0,buildGroupKey(groupCols, row)], 'last-available');
+            const newGroupedRowIdx = sortPosition(groups, sorter, expandRow(groupCols, row), 'last-available');
             const sortIdx = sortSet.length;
             sortSet.push(idx);
             const nestedGroups = groupRows(rows, sortSet, columns, this.columnMap, groupCols, {
@@ -3214,7 +3295,7 @@ class GroupRowSet extends BaseRowSet {
             });
             // set up the pointer to sortSet, add row idx to sortset, add row to data
             // nestedGroups.forEach((group,i) => group[System.INDEX_FIELD] = newGroupedRowIdx+i)
-            adjustGroupIndices(groups, newGroupedRowIdx, IDX_POINTER, PARENT_IDX, nestedGroups.length);
+            adjustGroupIndices(groups, newGroupedRowIdx, this.meta, nestedGroups.length);
             groups.splice.apply(groups,[newGroupedRowIdx,0].concat(nestedGroups));
 
             let rangeIdx = this.iter.injectRow(newGroupedRowIdx);
@@ -3228,10 +3309,10 @@ class GroupRowSet extends BaseRowSet {
             const baseGroupby = groupCols.slice(0,groupPositions.length);
             const newGroupbyClause = groupCols.slice(groupPositions.length);
             const sorter = sortBy(GROUP_KEY_SORT);
-            const [rootIdx] = groups[groupPositions[groupPositions.length-1]];
+            const rootIdx = groups[groupPositions[groupPositions.length-1]][IDX];
             const sortIdx = sortSet.length;
             sortSet.push(idx);
-            const newGroupedRowIdx = sortPosition(groups, sorter, [0,0,0,buildGroupKey(groupCols, row)], 'last-available');
+            const newGroupedRowIdx = sortPosition(groups, sorter, expandRow(groupCols, row), 'last-available');
             const nestedGroups = groupRows(rows, sortSet, columns, this.columnMap, newGroupbyClause, {
                 baseGroupby, rootIdx, startIdx: sortIdx, length: 1, groupIdx: newGroupedRowIdx-1
             });
@@ -3240,9 +3321,9 @@ class GroupRowSet extends BaseRowSet {
             // set up the pointer to sortSet, add row idx to sortset, add row to data
             groupPositions.forEach(grpIdx => {
                 const group = groups[grpIdx];
-                group[COUNT_FIELD] += 1;
+                group[COUNT] += 1;
             });
-            adjustGroupIndices(groups, newGroupedRowIdx, IDX_POINTER, PARENT_IDX, nestedGroups.length);
+            adjustGroupIndices(groups, newGroupedRowIdx, this.meta, nestedGroups.length);
             groups.splice.apply(groups,[newGroupedRowIdx,0].concat(nestedGroups));
 
             let rangeIdx = this.iter.injectRow(newGroupedRowIdx);
@@ -3258,9 +3339,9 @@ class GroupRowSet extends BaseRowSet {
 
     // start with a simplesequential search
     findGroupIdx(groupKey){
-        const {groupRows: groupRows$$1} = this;
+        const {groupRows: groupRows$$1, meta} = this;
         for (let i=0;i<groupRows$$1.length;i++){
-            if (groupRows$$1[i][3] === groupKey){
+            if (groupRows$$1[i][meta.KEY] === groupKey){
                 return i;
             }
         }
@@ -3271,25 +3352,26 @@ class GroupRowSet extends BaseRowSet {
     expandAll() {
         // iterate groupedRows and make every group row depth positive,
         // Then visible rows is not going to be different from grouped rows
+        const {DEPTH} = this.meta;
         const { groupedRows } = this;
         this.expandedByDefault = true;
         for (let i = 0, len = groupedRows.length; i < len; i++) {
-            const depth = groupedRows[i][DEPTH$2];
+            const depth = groupedRows[i][DEPTH];
             if (depth !== 0) {
-                groupedRows[i][DEPTH$2] = Math.abs(depth);
+                groupedRows[i][DEPTH] = Math.abs(depth);
             }
         }
     }
 
     sortGroupby(groupby){
-        const { IDX_POINTER, PARENT_IDX } = metaData(this.columns);
+        const { IDX, KEY, DEPTH, IDX_POINTER, PARENT_IDX } = this.meta;
         const {groupRows: groups} = this;
         const groupCols = mapSortCriteria(groupby, this.columnMap);
         const [colIdx, depth] = findSortedCol(groupby, this.groupby);
         let count = 0;
         let i=0;
         for (;i<groups.length;i++){
-            if (Math.abs(groups[i][DEPTH$2]) > depth){
+            if (Math.abs(groups[i][DEPTH]) > depth){
                 if (count > 0){
                     this.sortGroupRowsSubset(groupCols, colIdx, i-count, count);
                     count = 0;
@@ -3303,10 +3385,11 @@ class GroupRowSet extends BaseRowSet {
 
         const tracker = new SimpleTracker(groupby.length);
         this.groupRows.forEach((groupRow,i) => {
-            const [,depth,,groupKey] = groupRow;
+            const depth = groupRow[DEPTH];
+            const groupKey = groupRow[KEY];
             const absDepth = Math.abs(depth);
             tracker.set(absDepth, i, groupKey);
-            groupRow[0] = i;
+            groupRow[IDX] = i;
             if (absDepth > 1){
                 groupRow[IDX_POINTER] = i+1;
             }
@@ -3324,7 +3407,7 @@ class GroupRowSet extends BaseRowSet {
         const after = (k1, k2) => direction === ASC ? k2 < k1 : k1 < k2;
         let currentKey = null;
         for (let i=startPos;i<startPos+length;i++){
-            const key = groups[i][groupColIdx + 2]; //TODO again with the +2
+            const key = groups[i][groupColIdx];
             if (currentKey === null){
                 currentKey = key;
             } else if (before(key,currentKey)){
@@ -3346,8 +3429,8 @@ class GroupRowSet extends BaseRowSet {
         const groupCols = mapSortCriteria(groupby, this.columnMap);
         const baseGroupCols = groupCols.slice(0, this.groupby.length);
         const newGroupbyClause = groupCols.slice(this.groupby.length);
-        const {groupRows: groups, groupby: baseGroupby, data: rows, columns, sortSet, filterSet} = this;
-        const { IDX_POINTER, PARENT_IDX, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
+        const {groupRows: groups, groupby: baseGroupby, data: rows, columns, sortSet, filterSet, meta} = this;
+        const { IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = meta;
         const baseLevels = baseGroupby.length;
         const tracker = new GroupIdxTracker(baseLevels-1);
         const filterFn = this.currentFilter
@@ -3358,15 +3441,19 @@ class GroupRowSet extends BaseRowSet {
         for (let i=0;i<groups.length;i++){
             const groupRow = groups[i];
             if (tracker.idxAdjustment){
-                groupRow[0] += tracker.idxAdjustment;
+                groupRow[meta.IDX] += tracker.idxAdjustment;
             }
 
-            const [rootIdx, depth, length, groupKey] = groupRow;
+            const rootIdx = groupRow[meta.IDX];
+            const depth = groupRow[meta.DEPTH];
+            const length = groupRow[meta.COUNT];
+            const groupKey = groupRow[meta.KEY];
+
             const absDepth = Math.abs(depth);
-            groupRow[DEPTH$2] = incrementDepth(depth);
-            const filterLength = groupRow[FILTER_COUNT];
+            groupRow[meta.DEPTH] = incrementDepth(depth);
+            const filterLength = groupRow[meta.FILTER_COUNT];
             const filterIdx = groupRow[NEXT_FILTER_IDX];
-            groupRow[NEXT_FILTER_IDX] = undefined;
+            groupRow[meta.NEXT_FILTER_IDX] = undefined;
 
             if (tracker.hasPrevious(absDepth+1)){
                 groupRow[PARENT_IDX] += tracker.previous(absDepth+1);
@@ -3392,18 +3479,19 @@ class GroupRowSet extends BaseRowSet {
     }
 
     reduceGroupby(groupby) {
-        const { groupRows: groups, columns, filterSet } = this;
+        const { groupRows: groups, filterSet } = this;
         const [doomed] = findDoomedColumnDepths(groupby, this.groupby);
         const groupCols = mapSortCriteria(this.groupby, this.columnMap);
         const [lastGroupIsDoomed, baseGroupby, addGroupby] = splitGroupsAroundDoomedGroup(groupCols, doomed);
-        const { DEPTH, IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = metaData(columns);
+        const { IDX, DEPTH, KEY, IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = this.meta;
         const tracker = new GroupIdxTracker(groupby.length);
         const useFilter = filterSet !== null;
         let currentGroup = null;
         let i = 0;
         for (let len=groups.length;i<len;i++){
             const groupRow = groups[i];
-            const [,depth,,groupKey] = groupRow;
+            const depth = groupRow[DEPTH];
+            const groupKey = groupRow[KEY];
             const absDepth = Math.abs(depth);
 
             if (absDepth === doomed){
@@ -3431,11 +3519,11 @@ class GroupRowSet extends BaseRowSet {
                     if (tracker.hasPrevious(absDepth+1)){
                         groupRow[PARENT_IDX] -= tracker.previous(absDepth+1);
                     }
-                    groupRow[1] = decrementDepth(depth);
+                    groupRow[DEPTH] = decrementDepth(depth);
                 }
                 if (tracker.idxAdjustment > 0){
-                    groupRow[0] -= tracker.idxAdjustment;
-                    if (Math.abs(groupRow[DEPTH$2]) > 1){
+                    groupRow[IDX] -= tracker.idxAdjustment;
+                    if (Math.abs(groupRow[DEPTH]) > 1){
                         groupRow[IDX_POINTER] -= tracker.idxAdjustment;
                     }
                 }
@@ -3448,10 +3536,10 @@ class GroupRowSet extends BaseRowSet {
     }
 
     regroupChildGroups(currentGroupIdx, nextGroupIdx, baseGroupby, addGroupby){
-        const { groupRows: groups, data: rows, columns } = this;
-        const { IDX_POINTER } = metaData(columns);
+        const { groupRows: groups, data: rows, columns, meta } = this;
+        const { COUNT, IDX_POINTER } = meta;
         const group = groups[currentGroupIdx];
-        const [,,length] = group;
+        const length = group[COUNT];
         const startIdx = groups[currentGroupIdx+1][IDX_POINTER];
         // We don't really need to go back to rows to regroup, we have partially grouped data already
         // we could perform the whole operation within groupRows
@@ -3468,16 +3556,16 @@ class GroupRowSet extends BaseRowSet {
     // Note: this assumes no leaf rows visible. Is that always valid ?
     // NOt after removing a groupBy ! Not after a filter
     countVisibleRows(groupRows$$1, usingFilter=false){
-        const {COUNT, FILTER_COUNT} = metaData(this.columns);
+        const {DEPTH, COUNT, FILTER_COUNT} = this.meta;
         let count = 0;
         for (let i=0, len=groupRows$$1.length;i<len;i++){
             const zeroCount = usingFilter && groupRows$$1[i][FILTER_COUNT] === 0;
             if (!zeroCount){
                 count += 1;
             }
-            const depth = groupRows$$1[i][1];
+            const depth = groupRows$$1[i][DEPTH];
             if (depth < 0 || zeroCount){
-                while (i<len-1 && Math.abs(groupRows$$1[i+1][1]) < -depth){
+                while (i<len-1 && Math.abs(groupRows$$1[i+1][DEPTH]) < -depth){
                     i += 1;
                 }
             } else if (depth === 1){
@@ -3605,7 +3693,7 @@ class InMemoryView {
         this._sortCriteria = sortCriteria;
         // DO we need this line ?
         this._columns = columns.map(toColumn);
-        this._columnMap = buildColumnMap(this._columns, 4);
+        this._columnMap = buildColumnMap(this._columns);
         this._groupby = groupBy;
         this._update_queue = updateQueue;
         // TODO we should pass columns into the rowset as it will be needed for computed columns

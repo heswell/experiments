@@ -66,7 +66,7 @@ export default class GroupHeader extends React.Component {
         return this.props.columnGroup.columns.filter(column => !column.hidden).map((column, idx) => {
 
             const props = {
-                key: column.key || idx,
+                key: column.key,
                 column,
                 onResize: this.props.onColumnResize,
                 onMove: this.props.onColumnMove,
