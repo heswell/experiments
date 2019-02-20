@@ -1,6 +1,10 @@
 import * as d3 from 'd3-array';
-import { stringCollector } from './dataCollector';
+// import { stringCollector } from './dataCollector';
 import {INCLUDE, EXCLUDE, STARTS_WITH} from './filter';
+import {metaData} from './columnUtils';
+
+export const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+export const filterColumnMeta = metaData(FILTER_DATA_COLUMNS)
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;

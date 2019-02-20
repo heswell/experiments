@@ -12,7 +12,9 @@ const ColHeader = (props) => {
         <div className={cx('ColHeader', className,{expanded: expandState === 1, collapsed: expandState === -1})}>
             <i className='fa fa-caret' onClick={() => onToggle(column, -expandState)}></i>
             <span className='ColHeaderLabel' onClick={() => onClick(column)}>{column.name}</span>
-            <div className='groupby-remove' onClick={() => onRemoveColumn(column)} />
+            <div className='groupby-remove' onClick={() => onRemoveColumn(column)} >
+                <i className='material-icons icon'>cancel</i>
+            </div>
         </div>
     );
 };
@@ -42,8 +44,8 @@ export default class GroupbyHeaderCell extends HeaderCell {
                             onToggle={this.props.onToggleGroupState}
                             className={columnClassName(columns, idx, column)}
                         />)}
-                    <Draggable className='resizeHandle' onDrag={this.handleResize} onDragStart={this.handleResizeStart} onDragEnd={this.handleResizeEnd} />
                 </div>
+                <Draggable className='resizeHandle' onDrag={this.handleResize} onDragStart={this.handleResizeStart} onDragEnd={this.handleResizeEnd} />
             </div>
         );
     }

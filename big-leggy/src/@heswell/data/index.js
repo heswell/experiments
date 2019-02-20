@@ -1,6 +1,6 @@
 
 import {INCLUDE, EXCLUDE, INCLUDE_SEARCH, EXCLUDE_SEARCH, STARTS_WITH} from './store/filter'
-import { getFilterType, toColumn, buildColumnMap } from './store/columnUtils'
+import { getFilterType, toColumn, buildColumnMap, metaData } from './store/columnUtils'
 import { sortByToMap } from './store/sort'
 import { 
   addFilter,
@@ -45,7 +45,8 @@ export const sortUtils = {
 export const columnUtils = {
   buildColumnMap,
   getFilterType,
-  toColumn
+  toColumn,
+  metaData
 }
 
 export const rowUtils = {

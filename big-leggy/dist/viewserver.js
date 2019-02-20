@@ -120,7 +120,6 @@ const EMPTY_ARRAY$1 = [];
 const ROWSET = 'rowset';
 const UPDATE = 'update';
 const FILTER_DATA = 'filterData';
-const INDEX_FIELD = 0;
 
 class MessageQueue {
 
@@ -136,7 +135,7 @@ class MessageQueue {
         return q;
     }
 
-    push(message) {
+    push(message, meta) {
         console.log(`MessageQueue. push<${message.type}|${message.dataType || ''}> ${JSON.stringify(message.range || (message.data && message.data.range))}`);
 
         const { type, data } = message;
@@ -147,10 +146,10 @@ class MessageQueue {
             if (message.data.rows.length === 0 && message.size > 0) {
                 return;
             }
-            mergeAndPurgeRowset(this._queue, message);
+            mergeAndPurgeRowset(this._queue, message, meta);
 
         } else if (type === FILTER_DATA && data.type !== 'numeric-bins') {
-            mergeAndPurgeFilterData(this._queue, message);
+            mergeAndPurgeFilterData(this._queue, message, meta);
         }
 
         this._queue.push(message);
@@ -174,7 +173,8 @@ class MessageQueue {
 // This purges redundant messages from the queue and merges their data into the new message. 
 // AN unintended consequence of this might be that data slips down the queue, as the new 
 // message is added at the back of the queue - INVESTIGATE.
-function mergeAndPurgeFilterData(queue, message) {
+function mergeAndPurgeFilterData(queue, message, meta) {
+    const {IDX} = meta;
     //onsole.log(`mergeAndPurgeFiltreData new message with range ${JSON.stringify(message.data.range)}`);
     const { viewport, data: filterData } = message;
     const { range, size } = filterData;
@@ -197,7 +197,7 @@ function mergeAndPurgeFilterData(queue, message) {
             }
             else {
                 var overlaps = data.rows.filter(
-                    row => row[INDEX_FIELD] >= lo && row[INDEX_FIELD] < hi);
+                    row => row[IDX] >= lo && row[IDX] < hi);
 
                 // TODO selectedIndices    
                 if (lo < lo1) {
@@ -220,8 +220,7 @@ function mergeAndPurgeFilterData(queue, message) {
 }
 
 // we need to know the current range in order to be able to merge rowsets which are still valid
-function mergeAndPurgeRowset(queue, message) {
-
+function mergeAndPurgeRowset(queue, message, meta) {
     const { viewport, data: { rows, size, range, offset=0 } } = message;
     const { lo, hi } = rangeUtils.getFullRange(range);
     const low = lo + offset;
@@ -231,6 +230,8 @@ function mergeAndPurgeRowset(queue, message) {
         console.log(`MESSAGE PUSHED TO MESAGEQ WITH NO ROWS`);
         return;
     }
+
+    const {IDX} = meta;
 
     for (var i = queue.length - 1; i >= 0; i--) {
 
@@ -245,7 +246,7 @@ function mergeAndPurgeRowset(queue, message) {
                 if (lo1 >= hi || hi1 < lo) ;
                 else {
                     var overlaps = data.rows.filter(
-                        row => row[INDEX_FIELD] >= low && row[INDEX_FIELD] < high);
+                        row => row[IDX] >= low && row[IDX] < high);
 
                     if (lo < lo1) {
                         message.data.rows = rows.concat(overlaps);
@@ -260,16 +261,16 @@ function mergeAndPurgeRowset(queue, message) {
                 // if we have updates for rows within the current rowset, discard them - the rowset
                 // represents latest data.
                 let validUpdates = queue[i].updates.filter(u => {
-                    let idx = u[INDEX_FIELD];
+                    let idx = u[IDX];
 
-                    if (typeof rows[INDEX_FIELD] === 'undefined') {
+                    if (typeof rows[IDX] === 'undefined') {
                         console.warn(`MessageQueue:about to error, these are the rows that have been passed `);
-                        console.warn(`[${rows.map(r => r[INDEX_FIELD]).join(',')}]`);
+                        console.warn(`[${rows.map(r => r[IDX]).join(',')}]`);
                     }
 
 
-                    let min = rows[0][INDEX_FIELD];
-                    let max = rows[rows.length - 1][INDEX_FIELD];
+                    let min = rows[0][IDX];
+                    let max = rows[rows.length - 1][IDX];
 
                     return idx >= low && idx < high &&   	// within range 
                         idx < size &&  				// within dataset  

@@ -1,6 +1,5 @@
 .GroupbyHeaderCell {
 	overflow:hidden;
-	border-bottom: solid 1px black;
 }
 
 .GroupbyHeaderCell .inner-container {
@@ -59,15 +58,14 @@
 	position: absolute;
 	width: 20px;
 	height: 18px;
-	top:1px;
-	right: 0px;
+	top: 5px;
+	right: 4px;
 	cursor: pointer;
 	visibility:hidden;
 }
 
-.ColHeader .groupby-remove:before {
-	content:'\f057';
-	font: normal normal normal 14px/1 FontAwesome;
+.ColHeader .groupby-remove .icon {
+	font-size: 16px;
 }
 
 .ColHeader:hover {
@@ -77,10 +75,6 @@
 
 .ColHeader:hover .groupby-remove {
 	visibility: visible;
-}
-
-.ColHeader .groupby-remove:hover:before {
-	color: blue;
 }
 
 .HeaderCell.colgroup-header:hover .fa-caret {

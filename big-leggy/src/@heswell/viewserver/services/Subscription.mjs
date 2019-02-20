@@ -1,4 +1,4 @@
-import {InMemoryView as View} from '../../data';
+import {InMemoryView as View, columnUtils} from '../../data';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
@@ -8,6 +8,8 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
     let view = new View(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
+
+    const meta = columnUtils.metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)}`)
 
@@ -50,7 +52,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                 size,
                 offset,
                 range
-            });
+            }, meta);
         });
 
 
@@ -71,7 +73,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                         viewport,
                         type,
                         data
-                    });
+                    }, meta);
                 }
             }
         },

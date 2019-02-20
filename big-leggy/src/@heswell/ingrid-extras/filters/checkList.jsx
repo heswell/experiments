@@ -37,9 +37,9 @@ export default class CheckList extends React.Component {
         const filterMode = this.props.selectionDefault === true
             ? 'exclude'
             : 'include';
+        const {meta} = this.props.dataView;
 
-        const value = this.props.dataView.itemAtIdx(idx)[4];
-        // can't keep this hardcoded 4 - where does it belong
+        const value = this.props.dataView.itemAtIdx(idx)[meta.KEY];
         const selectedValues = deselected
             ? this.state.selectedValues.filter(v => v !== value)
             : this.state.selectedValues.concat(value);

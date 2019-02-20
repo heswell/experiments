@@ -15,11 +15,11 @@ import { sortBy, sortPosition } from './sort';
 import { extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn } from './filterUtils';
 import { metaData, mapSortCriteria } from './columnUtils';
 import { functor as filterPredicate } from './filter';
+import {FILTER_DATA_COLUMNS} from './filterUtils';
 import GroupIterator from './groupIterator';
 import { ASC } from './types'
 import { NULL_RANGE } from './rangeUtils';
 
-const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
 const EMPTY_ARRAY = [];
 
 export default class GroupRowSet extends BaseRowSet {

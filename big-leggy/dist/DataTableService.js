@@ -4007,6 +4007,13 @@ class InMemoryView {
 
 }
 
+const columnUtils = {
+  buildColumnMap,
+  getFilterType,
+  toColumn,
+  metaData
+};
+
 class Table$1 extends Table {
 
     async loadData(dataPath){
@@ -4037,6 +4044,8 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
 
     let view = new InMemoryView(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
+
+    const meta = columnUtils.metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)}`);
 
@@ -4079,7 +4088,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
                 size,
                 offset,
                 range
-            });
+            }, meta);
         });
 
 
@@ -4100,7 +4109,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
                         viewport,
                         type,
                         data
-                    });
+                    }, meta);
                 }
             }
         },

@@ -1,5 +1,6 @@
 import {EventEmitter} from '@heswell/utils';
 import {DataTypes} from '../store/types';
+import {metaData} from '../store/columnUtils';
 
 export default class FilterView extends EventEmitter {
     _dataView;
@@ -7,6 +8,7 @@ export default class FilterView extends EventEmitter {
         super();
         this._dataView = dataView;
         this.column = column;
+        this.meta = metaData(this.columns);
         console.log(`filterView attach listener to dataView`)
         dataView.on(DataTypes.FILTER_DATA, this.onFilterData);
     }
@@ -20,15 +22,16 @@ export default class FilterView extends EventEmitter {
         console.log(`FilterView<${this.column.name}> emit 
             selected ${JSON.stringify(selected)} ` +
             (rows.length
-                ? ` rowData ${rows[0][0]}(${rows[0][4]}) - ${rows[rows.length-1][0]} (${rows[rows.length-1][4]})`
+                ? ` rowData ${rows[0][this.meta.IDX]}(${rows[0][this.meta.KEY]}) - ${rows[rows.length-1][this.meta.IDX]} (${rows[rows.length-1][this.meta.KEY]})`
                 : ` no data`)
         );
         this.emit(DataTypes.ROW_DATA,rows, rowCount, selected);
     }
 
     selectAll(){
+        const {IDX} = this.meta;
         const selected = this.getSelectedIndices();
-        const dataIndices = this._dataView.filterRows.map(row => row[0]);
+        const dataIndices = this._dataView.filterRows.map(row => row[IDX]);
         const set = new Set(selected.concat(dataIndices));
         return Array.from(set).sort();
     }
@@ -38,7 +41,7 @@ export default class FilterView extends EventEmitter {
     }
 
     get columns (){
-        return [{name: 'name'},{name:'count',width: 60, type:'number'}];
+        return [{name: 'name', key: 0},{name:'count',width: 60, type:'number', key: 1}];
     }
 
     setRange(lo, hi, sendDelta){
@@ -46,12 +49,14 @@ export default class FilterView extends EventEmitter {
     }
 
     itemAtIdx(idx){
-        return this._dataView.filterRows.find(r => r[0] === idx);
+        const {IDX} = this.meta;
+        return this._dataView.filterRows.find(r => r[IDX] === idx);
     }
 
     indexOf(value){
-        const item = this._dataView.filterRows.find(r => r[4] === value);
-        return item ? item[0] : -1;
+        const {IDX, KEY} = this.meta;
+        const item = this._dataView.filterRows.find(r => r[KEY] === value);
+        return item ? item[IDX] : -1;
     }
   
     getSelectedIndices(){

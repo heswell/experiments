@@ -2,12 +2,10 @@ import BaseRowSet from './baseRowSet';
 import Table from './table';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from './sort';
 import {functor as filterPredicate, INCLUDE, EXCLUDE} from './filter';
-import {extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn, extractFilterForColumn} from './filterUtils';
+import {extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn, extractFilterForColumn, FILTER_DATA_COLUMNS} from './filterUtils';
 import { addRowsToIndex } from './rowUtils';
 import {groupbyExtendsExistingGroupby} from './groupUtils';
 import { metaData, projectColumns, mapSortCriteria } from './columnUtils';
-
-const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
 
 const numerically = (a,b) => a-b;
 const removeUndefined = i => i !== undefined;

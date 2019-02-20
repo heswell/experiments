@@ -4,6 +4,7 @@ import Table from '../store/table';
 import InMemoryView from '../store/InMemoryView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
+import {filterColumnMeta} from '../store/filterUtils';
 import * as columnUtils from '../store/columnUtils';
 import * as rowUtils from '../store/rowUtils';
 
@@ -85,6 +86,7 @@ export default class LocalView extends EventEmitter {
 
         this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
         this.meta = columnUtils.metaData(this._dataOptions.columns)
+        //TODO need separate meta for filterData
     }
 
     processRowData(evtName, rows, size){
@@ -119,10 +121,10 @@ export default class LocalView extends EventEmitter {
     // duplicated in remoteView
     getData(dataType) {
         return dataType === DataTypes.ROW_DATA
-            ? this._rowData
+            ? [this._rowData, this.meta]
             : dataType === DataTypes.FILTER_DATA
-                ? this._filterData
-                : null;
+                ? [this._filterData, filterColumnMeta]
+                : [null];
     }
 
     // setData(data){
@@ -136,13 +138,13 @@ export default class LocalView extends EventEmitter {
     // }
 
     setRange(lo, hi, useDelta=true, dataType=DataTypes.ROW_DATA){
-        const targetData = this.getData(dataType);
+        const [targetData, meta] = this.getData(dataType);
         const { range: { lo: lo_, hi: hi_ }} = targetData;
         if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
             targetData.range = { lo, hi };
             if (this._dataView){
                 const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta);
+                const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
                 targetData.rows = rowset;
                 this.emit(dataType, rowset, size, selectedIndices);
             }
@@ -159,8 +161,8 @@ export default class LocalView extends EventEmitter {
 
     filter(filter){
         const {rows, size} = this._dataView.filter(filter);
-        const targetData = this.getData(DataTypes.ROW_DATA);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta);
+        const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
+        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
         targetData.rows = rowset;
         this.emit(DataTypes.ROW_DATA, rowset, size);
     }
@@ -168,8 +170,8 @@ export default class LocalView extends EventEmitter {
     select(dataType, colName, selectMode){
         const {rows, size, selectedIndices} = this._dataView.select(dataType, colName, selectMode);
         if (dataType === DataTypes.FILTER_DATA){
-            const targetData = this.getData(DataTypes.ROW_DATA);
-            const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
+            const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
+            const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta); // NEEDED ?
             targetData.rows = rowset;
             this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
         }
@@ -208,6 +210,8 @@ export default class LocalView extends EventEmitter {
         const range = this._filterData /* && (searchText || this._filterData.searchText) */
             ? this._filterData.range
             : NULL_RANGE;
+
+        // when we have set data, need to save meta someghow
 
         this._filterData = this._dataView.getFilterData(column, searchText, range);
         // shoulf getFilterData return this ?
