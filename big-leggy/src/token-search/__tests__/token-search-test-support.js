@@ -33,7 +33,7 @@ export const searchStrategy = searchTerm =>
       searchResult.searchResults = strategies.map(([command, description]) => ({
         value: command,
         speedbarText: command,
-        suggestionText: `${command} ${description}`
+        suggestionText: [command,description]
       }))
     } else {
       trailingSpace = searchTerm[searchTerm.length - 1] === ' ';
@@ -46,7 +46,7 @@ export const searchStrategy = searchTerm =>
           searchResult.searchResults.push({
             value: command,
             speedbarText: command,
-            suggestionText: `${command} ${description}`
+            suggestionText: [command,description]
           });
         }
       });

@@ -228,8 +228,8 @@ export default class Viewport extends React.Component {
     }
     
     getState({scrollTop=0, scrollLeft=0}, {rows, height, gridModel}){
-
-        const indexOfFirstRow = rows.length ? rows[0][0] : -1;
+        const {IDX} = this.props.gridModel.meta;
+        const indexOfFirstRow = rows.length ? rows[0][IDX] : -1;
         const {totalColumnWidth, displayWidth} = gridModel;
         const numberOfRowsInViewport = visibleRows(height, gridModel.rowHeight, scrollTop, totalColumnWidth, displayWidth);
         const firstVisibleRow = Math.floor(scrollTop / gridModel.rowHeight);

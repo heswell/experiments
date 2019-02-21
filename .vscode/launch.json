@@ -18,7 +18,7 @@
       "args":[ 
         "${workspaceRoot}/big-leggy/node_modules/.bin/jest",
         "--",
-        "groupIterator"
+        "inMemoryView"
       ],
       "cwd": "${workspaceRoot}/big-leggy"
   },

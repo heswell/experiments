@@ -100,10 +100,12 @@ export class SetFilter extends React.Component {
 
     handleDeselectAll= () => {
         if (this.searchText){
-            const selectedValues = this.props.dataView.filterRows.map(row => row[4]);
+            const {filterView, selectedValues} = this.state;
+            const {KEY} = filterView.meta;
+            const values = this.props.dataView.filterRows.map(row => row[KEY]);
             this.setState({
-                selected: this.state.filterView.selectAll(),
-                selectedValues: Array.from(new Set(this.state.selectedValues.concat(selectedValues)))
+                selected: filterView.selectAll(),
+                selectedValues: Array.from(new Set(selectedValues.concat(values)))
             }, () => {
                 this.props.onSelectionChange(null, EXCLUDE_SEARCH);
             });
@@ -123,13 +125,15 @@ export class SetFilter extends React.Component {
     handleSelectAll= () => {
         // we don't want to list individually the selected items, we need to use a starts with filter
         if (this.searchText){
+            const {filterView, selectedValues} = this.state;
+            const {KEY} = filterView.meta;
             // we do want to select all the items currently in the grid
             // add everything in the current viewport to selected, emit an event which will create a
             // new filter which included all values matching starts with filter
-            const selectedValues = this.props.dataView.filterRows.map(row => row[4]);
+            const values = this.props.dataView.filterRows.map(row => row[KEY]);
             this.setState({
-                selected: this.state.filterView.selectAll(),
-                selectedValues: Array.from(new Set(this.state.selectedValues.concat(selectedValues)))
+                selected: filterView.selectAll(),
+                selectedValues: Array.from(new Set(selectedValues.concat(values)))
             }, () => {
                 this.props.onSelectionChange(null, INCLUDE_SEARCH);
             });
@@ -146,14 +150,15 @@ export class SetFilter extends React.Component {
     }
 
     handleSelectionChange = (selectedIndices, idx) => {
-        const {selectionDefault, selectedValues: previousSelection} = this.state;
+        const {selectionDefault, selectedValues: previousSelection, filterView} = this.state;
         const deselected = selectedIndices.indexOf(idx) === -1;
         const filterMode = selectionDefault === true
             ? 'exclude'
             : 'include';
 
-        const value = this.state.filterView.itemAtIdx(idx)[4];
-        // can't keep this hardcoded 4 - where does it belong
+        const {KEY} = filterView.meta;
+        const value = filterView.itemAtIdx(idx)[KEY];
+
         const selectedValues = deselected
             ? previousSelection.filter(v => v !== value)
             : previousSelection.concat(value);

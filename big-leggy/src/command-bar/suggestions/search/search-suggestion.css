@@ -1,0 +1,23 @@
+.search-suggestion-suggested-item {
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 20px;
+  display: table-row;
+}
+
+.search-suggestion-search-col {
+  display: table-cell;
+  padding: 0 6px;
+}
+  
+.search-suggestion-search-col:last-child {
+  width: 100%;
+}
+  
+.search-suggestion-search-match {
+  color: #888;
+}
+  
+.search-suggestion-selected {
+  background-color: #ccc;
+}

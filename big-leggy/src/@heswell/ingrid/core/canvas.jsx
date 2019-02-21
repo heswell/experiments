@@ -51,6 +51,7 @@ export default class Canvas extends React.Component {
           const absIdx = firstVisibleRow + idx
           return [keyMap[absIdx], rowHeight*absIdx, row, absIdx]
         })
+        .filter(([key]) => key !== undefined)
         .sort(byKey)
 
         const gridRows = this.rowPositions

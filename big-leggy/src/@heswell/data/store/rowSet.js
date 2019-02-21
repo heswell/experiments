@@ -2,13 +2,14 @@ import BaseRowSet from './baseRowSet';
 import Table from './table';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from './sort';
 import {functor as filterPredicate, INCLUDE, EXCLUDE} from './filter';
-import {extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn, extractFilterForColumn, FILTER_DATA_COLUMNS} from './filterUtils';
+import {extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn, FILTER_DATA_COLUMNS, extractFilterForColumn} from './filterUtils';
 import { addRowsToIndex } from './rowUtils';
 import {groupbyExtendsExistingGroupby} from './groupUtils';
 import { metaData, projectColumns, mapSortCriteria } from './columnUtils';
 
 const numerically = (a,b) => a-b;
 const removeUndefined = i => i !== undefined;
+
 const SINGLE_COLUMN = 1;
 
 const NO_OPTIONS = {
@@ -354,26 +355,29 @@ export default class RowSet extends BaseRowSet {
     }
 }
 
+// This class must be declared here as there is a mutual dependency between
+// this and RowSet and this extends RowSet
 export class FilterRowSet extends RowSet {
     constructor(table, columns, columnName){
         super(table, columns);
         this.columnName = columnName;
         this._searchText = null;
     }
-
+  
     get searchText(){
         return this._searchText;
     }
-
+  
     set searchText(text){
         this.filter({type: 'SW',colName: 'value', value: text});
         this._searchText = text;
     }
-
+  
     get values() {
-        return this.filterSet.map(idx => this.data[idx][2])
+        const KEY = 3;
+        return this.filterSet.map(idx => this.data[idx][KEY])
     }
-
+  
     setSelectedIndices(filter){
         const columnFilter = extractFilterForColumn(filter, this.columnName);
         const filterType = columnFilter && columnFilter.type;
@@ -382,13 +386,14 @@ export class FilterRowSet extends RowSet {
             this.selectedIndices = this.filterSet === null
                 ? selectedIndices
                 : selectedIndices.map(idx => this.filterSet.indexOf(idx)).filter(idx => ~idx);
-
+  
         }
     }
-
+  
     indexOfKeys(values){
         const index = this.table.index;
         return values.map(value => index[value]).filter(removeUndefined).sort(numerically);
     }
-
-}
+  
+  }
+  

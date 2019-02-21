@@ -46,6 +46,7 @@ export default class BinView extends EventEmitter {
     }
 
     indexOf(value){
+        //TODO get the meta KEY
         const item = this._dataView.filterRows.find(r => r[4] === value);
         return item ? item[0] : -1;
     }

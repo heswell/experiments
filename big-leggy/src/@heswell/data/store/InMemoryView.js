@@ -220,7 +220,6 @@ export default class InMemoryView {
         const { rowSet, _filter, filterRowSet } = this;
         const {range} = rowSet;
         this._filter = filter;
-
         if (filter === null) {
             if (_filter) {
                 rowSet.clearFilter();
@@ -298,11 +297,25 @@ export default class InMemoryView {
         const type = getFilterType(colDef);
         const key = _columnMap[columnName];
 
-        if (searchText){
+        if (type === 'number'){
+            const rows = rowSet.filteredData;
+            const numbers = rows.map(row => row[key]);
+            const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+            return {
+                type: 'numeric-bins', values
+            };
+        
+        } else if (!filterRowSet || filterRowSet.columnName !== column.name){
+        
+            this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
+        
+        } else if (searchText){
+
             filterRowSet.searchText = searchText;
             if (filter){
                 filterRowSet.setSelectedIndices(filter);
             }
+        
         } else if (filterRowSet && filterRowSet.searchText){
             // reset the filter
             filterRowSet.clearFilter();
@@ -310,23 +323,12 @@ export default class InMemoryView {
                 filterRowSet.setSelectedIndices(filter);
             }
 
-        } else if (filter && filter.colName === column.name && filterRowSet.columnName === column.name){
+        } else if (filter && filter.colName === column.name){
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
             filterRowSet.setSelectedIndices(filter);
             filterRowSet.setRange({lo: 0,hi: 0});
-
-        } else {
-            if (type === 'number') {
-                const rows = rowSet.filteredData;
-                const numbers = rows.map(row => row[key]);
-                const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-                return {
-                    type: 'numeric-bins', values
-                };
-            }
-            this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
-        }
+        } 
 
         // do we need to returtn searchText ?
         return this.filterRowSet.setRange(range, false);
