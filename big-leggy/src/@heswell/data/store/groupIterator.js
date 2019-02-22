@@ -66,13 +66,16 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
                     // we have the index of the group row within the rowset, the leaf row will
                     // be one of the rows following, order determined by the sortCols
                     const count = group[COUNT];
-                    for (let i=idx+5; i<idx+count*3; i+=3){
+                    const start = idx*3;
+                    const end = start + count*3;
+                    for (let i=start+5; i<end; i+=3){
                         const rowPos = _range_positions[i];
                         const sortRowPos = navSet[rowPos];
                         if (sortRowPos === rowIdx){
                             return Math.floor(i/3);
                         }
                     }
+                    // whts this ?
                     return _range_positions[idx];
                 }
             }

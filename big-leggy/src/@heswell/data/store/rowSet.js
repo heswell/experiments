@@ -162,9 +162,8 @@ export default class RowSet extends BaseRowSet {
         }
 
     }
-    //TODO where does this get called from ?
-    update(idx, updates) {
 
+    update(idx, updates) {
         if (this.currentFilter === null && this.sortCols === null){
             if (idx >= this.range.lo && idx < this.range.hi){
                 return [idx+this.offset,...updates];

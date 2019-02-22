@@ -151,8 +151,19 @@ export function replaceTokenWithinText(text, token, replacementText) {
   if (startOffset === 0) {
     return tail;
   } else {
-    return text.slice(0, startOffset) + replacementText + tail;
+    // collapse spaces if replacement is empty
+    const pos = 
+      replacementText === '' && tokenSurroundedBySpaces(text, token)
+        ? startOffset - 1
+        : startOffset;
+
+    return text.slice(0, pos) + replacementText + tail;
   }
+}
+
+function tokenSurroundedBySpaces(text, token){
+  const { startOffset, text: tokenText } = token;
+  return text[startOffset - 1] === ' ' && text[startOffset + tokenText.length] === ' ';
 }
 
 function countTokens(text = '') {

@@ -6,15 +6,18 @@ import {expandStatesfromGroupState} from '../model/utils';
 import css from '../style/grid';
 import './header.css';
 
+const styles = {
+    groupByHeaderCell: 'GroupbyHeaderCell'
+}
+
 const ColHeader = (props) => {
     const {column, className, onClick, onRemoveColumn, expandState, onToggle} = props
+    const expanded = expandState === 1;
     return (
-        <div className={cx('ColHeader', className,{expanded: expandState === 1, collapsed: expandState === -1})}>
-            <i className='fa fa-caret' onClick={() => onToggle(column, -expandState)}></i>
+        <div className={cx('ColHeader', className,{expanded, collapsed: !expanded})}>
+            <i className='material-icons toggle-icon' onClick={() => onToggle(column, -expandState)}>{expanded ? 'arrow_drop_down' : 'arrow_right'}</i>
             <span className='ColHeaderLabel' onClick={() => onClick(column)}>{column.name}</span>
-            <div className='groupby-remove' onClick={() => onRemoveColumn(column)} >
-                <i className='material-icons icon'>cancel</i>
-            </div>
+            <i className='material-icons remove-icon' onClick={() => onRemoveColumn(column)}>cancel</i>
         </div>
     );
 };
@@ -25,7 +28,8 @@ export default class GroupbyHeaderCell extends HeaderCell {
         const {column: groupCol, groupState, onRemoveColumn} = this.props;
         const {columns, resizing, width} = groupCol;
         const className = cx(
-            'GroupbyHeaderCell HeaderCell group',
+            styles.groupByHeaderCell,
+            'HeaderCell group',
             this.props.className,
             resizing ? 'HeaderCell--resizing': ''
         );

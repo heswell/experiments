@@ -533,6 +533,9 @@ function histogram() {
   return histogram;
 }
 
+const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
+
 function includesNoValues(filter) {
     // TODO make sure we catch all cases...
     if (!filter){
@@ -1973,10 +1976,9 @@ class BaseRowSet {
     
 }
 
-const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
-
 const numerically$1 = (a,b) => a-b;
 const removeUndefined = i => i !== undefined;
+
 const SINGLE_COLUMN = 1;
 
 const NO_OPTIONS = {
@@ -2129,9 +2131,8 @@ class RowSet extends BaseRowSet {
         }
 
     }
-    //TODO where does this get called from ?
-    update(idx, updates) {
 
+    update(idx, updates) {
         if (this.currentFilter === null && this.sortCols === null){
             if (idx >= this.range.lo && idx < this.range.hi){
                 return [idx+this.offset,...updates];
@@ -2322,26 +2323,29 @@ class RowSet extends BaseRowSet {
     }
 }
 
+// This class must be declared here as there is a mutual dependency between
+// this and RowSet and this extends RowSet
 class FilterRowSet extends RowSet {
     constructor(table, columns, columnName){
         super(table, columns);
         this.columnName = columnName;
         this._searchText = null;
     }
-
+  
     get searchText(){
         return this._searchText;
     }
-
+  
     set searchText(text){
         this.filter({type: 'SW',colName: 'value', value: text});
         this._searchText = text;
     }
-
+  
     get values() {
-        return this.filterSet.map(idx => this.data[idx][2])
+        const KEY = 3;
+        return this.filterSet.map(idx => this.data[idx][KEY])
     }
-
+  
     setSelectedIndices(filter){
         const columnFilter = extractFilterForColumn(filter, this.columnName);
         const filterType = columnFilter && columnFilter.type;
@@ -2350,16 +2354,16 @@ class FilterRowSet extends RowSet {
             this.selectedIndices = this.filterSet === null
                 ? selectedIndices
                 : selectedIndices.map(idx => this.filterSet.indexOf(idx)).filter(idx => ~idx);
-
+  
         }
     }
-
+  
     indexOfKeys(values){
         const index = this.table.index;
         return values.map(value => index[value]).filter(removeUndefined).sort(numerically$1);
     }
-
-}
+  
+  }
 
 // IDX = NAV_IDX, COUNT = NAV_COUNT
 const FORWARDS = 0;
@@ -2426,13 +2430,16 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
                     // we have the index of the group row within the rowset, the leaf row will
                     // be one of the rows following, order determined by the sortCols
                     const count = group[COUNT];
-                    for (let i=idx+5; i<idx+count*3; i+=3){
+                    const start = idx*3;
+                    const end = start + count*3;
+                    for (let i=start+5; i<end; i+=3){
                         const rowPos = _range_positions[i];
                         const sortRowPos = navSet[rowPos];
                         if (sortRowPos === rowIdx){
                             return Math.floor(i/3);
                         }
                     }
+                    // whts this ?
                     return _range_positions[idx];
                 }
             }
@@ -2749,7 +2756,6 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
     }
 }
 
-const FILTER_DATA_COLUMNS$1 = [{name: 'value'}, {name: 'count'}];
 const EMPTY_ARRAY = [];
 
 class GroupRowSet extends BaseRowSet {
@@ -3175,8 +3181,8 @@ class GroupRowSet extends BaseRowSet {
             filterSet[i] = [keys[i],results[keys[i]]];
         }
 
-        const table = new Table({data: filterSet, primaryKey: 'value', columns: FILTER_DATA_COLUMNS$1});
-        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS$1, column.name);
+        const table = new Table({data: filterSet, primaryKey: 'value', columns: FILTER_DATA_COLUMNS});
+        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS, column.name);
         filterRowset.setSelectedIndices(currentFilter);
 
         return filterRowset;
@@ -3201,7 +3207,7 @@ class GroupRowSet extends BaseRowSet {
             // whereas in the aggregatedColumn list, we have an offset of 2 ...
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
-            rowUpdates.push(colIdx,value);
+            rowUpdates.push(colIdx,originalValue,value);
 
             // If this column is being aggregated
             if (this.aggregatedColumn[colIdx]){
@@ -3892,7 +3898,6 @@ class InMemoryView {
         const { rowSet, _filter, filterRowSet } = this;
         const {range: range$$1} = rowSet;
         this._filter = filter;
-
         if (filter === null) {
             if (_filter) {
                 rowSet.clearFilter();
@@ -3970,11 +3975,25 @@ class InMemoryView {
         const type = getFilterType(colDef);
         const key = _columnMap[columnName];
 
-        if (searchText){
+        if (type === 'number'){
+            const rows = rowSet.filteredData;
+            const numbers = rows.map(row => row[key]);
+            const values = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+            return {
+                type: 'numeric-bins', values
+            };
+        
+        } else if (!filterRowSet || filterRowSet.columnName !== column.name){
+        
+            this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
+        
+        } else if (searchText){
+
             filterRowSet.searchText = searchText;
             if (filter){
                 filterRowSet.setSelectedIndices(filter);
             }
+        
         } else if (filterRowSet && filterRowSet.searchText){
             // reset the filter
             filterRowSet.clearFilter();
@@ -3982,23 +4001,12 @@ class InMemoryView {
                 filterRowSet.setSelectedIndices(filter);
             }
 
-        } else if (filter && filter.colName === column.name && filterRowSet.columnName === column.name){
+        } else if (filter && filter.colName === column.name){
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
             filterRowSet.setSelectedIndices(filter);
             filterRowSet.setRange({lo: 0,hi: 0});
-
-        } else {
-            if (type === 'number') {
-                const rows = rowSet.filteredData;
-                const numbers = rows.map(row => row[key]);
-                const values = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-                return {
-                    type: 'numeric-bins', values
-                };
-            }
-            this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
-        }
+        } 
 
         // do we need to returtn searchText ?
         return this.filterRowSet.setRange(range$$1, false);

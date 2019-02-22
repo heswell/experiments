@@ -215,6 +215,7 @@ export default class CommandWindow extends React.Component {
   •* Clear the entire token,-which may incluse embedded spaces.
   */
   clearSearchToken(tokenOffset) {
+    console.log(`clear search token at ${tokenOffset}`)
     const { inputText, tokenList } = this.state;
     if (tokenList !== EmptyTokenList) {
       const offset = inputText[tokenOffset - 1] === ' ' ? tokenOffset - 1 : tokenOffset;
@@ -222,12 +223,14 @@ export default class CommandWindow extends React.Component {
       if (token && token.searchId) {
         // the additional whitespace that we insert in place of the token we want
         // to remove will be removed by the backspace
-        const newInputText = replaceTokenWithinText(inputText, token, ' ');
+        const newInputText = replaceTokenWithinText(inputText, token, '');
+        console.log(`[clearSearchToken newInputText '${newInputText}'`)
         const { [token.searchId]: _, ...searchTokens } = this.state.searchTokens;
         this.setState(
           {
             searchTokens
           }, () => {
+            console.log(`[clearSearchToken state callback newInputText '${newInputText}'`)
             this.processInput(newInputText);
           }
         );
@@ -248,7 +251,7 @@ export default class CommandWindow extends React.Component {
 
     let validPrefix = commandPrefix
 
-    if (selectedSuggestionIdx !== -1 && !validPrefix) {
+   if (selectedSuggestionIdx !== -1 && !validPrefix) {
       // If user has navigated to a command and just starts typing without ENTER first, assume
       // command is selected ...
       ({ speedbarText: validPrefix } = this.getSuggestion(selectedSuggestionIdx));
@@ -261,7 +264,7 @@ export default class CommandWindow extends React.Component {
       searchTokens
     );
 
-    // console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
+    console.log(`processInput inputText ${inputText} ${JSON.stringify(commandState)}`)
 
     if (
       inputMethod === InputMethod.AcceptSuggestion &&
@@ -312,6 +315,7 @@ export default class CommandWindow extends React.Component {
   };
 
   postInputSearchHandling(inputText) {
+    console.log(`postInputSearchHandling '${inputText}'`)
     const { command, commandState, tokenList } = this.state;
     if (command && tokenList) {
       if (this.canSearch(tokenList, commandState)) {
@@ -394,6 +398,7 @@ export default class CommandWindow extends React.Component {
   }
 
   async invokeSearch(command, searchId, searchTerm) {
+    console.log(`[invokeSEarch] '${searchTerm}'`)
     if (searchTerm !== this.state.searchTerm) {
       this.currentSearchTerm = searchTerm;
       try {

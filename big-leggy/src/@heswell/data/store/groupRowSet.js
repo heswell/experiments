@@ -471,7 +471,7 @@ export default class GroupRowSet extends BaseRowSet {
             // whereas in the aggregatedColumn list, we have an offset of 2 ...
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
-            rowUpdates.push(colIdx,value);
+            rowUpdates.push(colIdx,originalValue,value);
 
             // If this column is being aggregated
             if (this.aggregatedColumn[colIdx]){

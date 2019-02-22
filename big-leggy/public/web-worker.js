@@ -337,6 +337,9 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending);
 
+const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
+
 const NULL_RANGE = {lo: 0,hi: 0};
 
 function resetRange({lo,hi,bufferSize=0}){

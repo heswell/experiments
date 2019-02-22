@@ -44,6 +44,24 @@ function killSubscriptions(clientId, queue){
 
 }
 
+//TODO cache result by length
+function metaData(columns){
+    const len = columns.length;
+    let metaStart = 0;
+    const next = () => len + metaStart++;
+    return {
+        IDX: next(),
+        DEPTH: next(),
+        COUNT: next(),
+        KEY: next(),
+        PARENT_IDX: next(),
+        IDX_POINTER: next(),
+        FILTER_COUNT: next(),
+        NEXT_FILTER_IDX: next(),
+        count: columns.length + metaStart
+    }
+}
+
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
@@ -81,6 +99,9 @@ function ascendingComparator(f) {
 }
 
 var ascendingBisect = bisector(ascending);
+
+const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
 
 function resetRange({lo,hi,bufferSize=0}){
     return {

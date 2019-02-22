@@ -36,7 +36,7 @@ export function update(rows, range, updates, {IDX}) {
             if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
                 // updates = [colIdx, oldValue, newValue]*
-                for (let j = 0; j < fieldUpdates.length; j += 2) {
+                for (let j = 0; j < fieldUpdates.length; j += 3) {
                     row[fieldUpdates[j]] = fieldUpdates[j + 2];
                 }
                 results[ii] = row;

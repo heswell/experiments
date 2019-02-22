@@ -61,6 +61,7 @@ export default class CommandInput extends React.Component {
 
   async handleChange(e) {
     const value = e.target.value;
+    console.log(`handle cjange '${value}'`)
     this.cursorPosition = this.getCursorPosition();
     this.props.onChange(value);
   };
@@ -91,6 +92,7 @@ export default class CommandInput extends React.Component {
               console.log('tokenAtCursorlsResolvedSearchToken =================')
               if (e.ctrlKey) {
                 this.props.onClearSearchToken(cursorPosition);
+                e.preventDefault();
               } else {
                 console.log('unresolve the token =================')
                 this.props.onRevisitSearchToken(cursorPosition);

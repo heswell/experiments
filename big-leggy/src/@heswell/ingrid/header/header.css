@@ -14,7 +14,7 @@
   display:inline-block;
   background-color: inherit;
   position: relative;
-  padding-right: 26px;
+  padding-right: 8px;
   flex: 0 1 auto;
 }
 
@@ -23,18 +23,6 @@
 	z-index:1;
 }
 
-.ColHeader i.fa {
-	width: 20px;
-	height: 100%;
-	vertical-align: top;
-	line-height: 24px;
-	padding-left: 11px;
-	margin-right: 0;
-	box-sizing: border-box;
-}
-.expanded.ColHeader i.fa {
-	padding-left: 9px;
-}
 
 .ColHeader:not(.first){
 	margin-left: -6px;
@@ -54,19 +42,22 @@
 	height: 100%;
 }
 
-.ColHeader .groupby-remove {
-	position: absolute;
-	width: 20px;
-	height: 18px;
-	top: 5px;
-	right: 4px;
+.ColHeader .toggle-icon,
+.ColHeader .remove-icon {
+	height: 100%;
+	line-height: 24px;
 	cursor: pointer;
-	visibility:hidden;
 }
 
-.ColHeader .groupby-remove .icon {
+.ColHeader .remove-icon {
+	visibility:hidden;
 	font-size: 16px;
+	padding-left: 3px;
 }
+
+.ColHeader:hover .remove-icon {
+	visibility: visible;
+} 
 
 .ColHeader:hover {
   background-color: rgb(66, 139, 202);
@@ -77,34 +68,3 @@
 	visibility: visible;
 }
 
-.HeaderCell.colgroup-header:hover .fa-caret {
-	position: absolute;
-	left:0px;
-	top:0px;
-	width: 20px;
-	height: 100%;
-	cursor:pointer;
-}
-
-.HeaderCell.colgroup-header:hover .fa-caret:before {
-  content: "\f0da";	
-	position: absolute;
-	left:3px;
-	top:6px;
-}
-
-.collapsed.HeaderCell.colgroup-header:hover .fa-caret:before {
-    content: "\f0d7";	
-}
-
-.ColHeader .fa-caret {
-	cursor: pointer;
-}
-
-.collapsed.ColHeader .fa-caret:before {
-    content: "\f0da";
-}
-
-.expanded.ColHeader .fa-caret:before {
-    content: "\f0d7";
-}
