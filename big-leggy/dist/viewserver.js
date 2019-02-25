@@ -344,11 +344,11 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`);
+    // console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`)
     return extract;
 }
 
-const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;
+// const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;
 
 function updateLoop(name, connection, interval, fn){
   
@@ -575,7 +575,7 @@ const config = {
         {name: 'Industry'}
     ],
     updates: {
-        interval: 10000,
+        interval: 250,
         fields: ['Price'],
         applyInserts: false,
         applyUpdates: true

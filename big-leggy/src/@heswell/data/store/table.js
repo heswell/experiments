@@ -2,12 +2,18 @@
 import {EventEmitter} from '@heswell/utils';
 import {buildColumnMap} from './columnUtils'
 
+const defaultUpdateConfig = {
+    applyUpdates: false,
+    applyInserts: false,
+    interval: 500
+}
+
 export default class Table extends EventEmitter {
 
     constructor(config){
         super();
 
-        const {name, columns=null, primaryKey, dataPath, data} = config;
+        const {name, columns=null, primaryKey, dataPath, data, updates = {}} = config;
 
         this.name = name;
         this.primaryKey = primaryKey;
@@ -15,7 +21,10 @@ export default class Table extends EventEmitter {
         this.keys = {};
         this.index = {};
         this.rows = [];
-        this.updateConfig = config.updates;
+        this.updateConfig = {
+            ...defaultUpdateConfig,
+            ...updates
+        }
         this.columnMap = buildColumnMap(columns);
         this.columnCount = 0;
         this.status = null;
@@ -40,6 +49,7 @@ export default class Table extends EventEmitter {
             results.push(colIdx, row[colIdx], value);
             row[colIdx] = value;
         }
+        console.log(`[Table.update] update rowId ${rowIdx}`)
         this.emit('rowUpdated', rowIdx, results);
     }
 
@@ -176,16 +186,19 @@ export default class Table extends EventEmitter {
     }
 
     applyUpdates(){
-        for (let i=0;i<this.rows.length;i++){
-            if (Math.random() > 0.5){
-                const update = this.updateRow(i, this.rows[i], this.columnMap);
-                if (update){
-                    this.update(i, ...update);
-                }
+        const {rows} = this;
+        // const count = Math.round(rows.length / 50);
+        const count = 250;
+
+        for (let i=0; i<count; i++){
+            const rowIdx = getRandomInt(rows.length - 1);
+            const update = this.updateRow(rowIdx, this.rows[rowIdx], this.columnMap);
+            if (update){
+                this.update(rowIdx, ...update);
             }
         }
 
-        setTimeout(() => this.applyUpdates(),500);
+        setTimeout(() => this.applyUpdates(),this.updateConfig.interval);
 
     }
 
@@ -201,6 +214,10 @@ export default class Table extends EventEmitter {
         //console.warn(`installDataGenerators must be implemented by a more specific subclass`);
     }
 
+}
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
 }
 
 function columnsFromColumnMap(columnMap){

@@ -1,5 +1,8 @@
 import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './rangeUtils';
-import {getCount} from './groupUtils';
+import {getCount, groupRows} from './groupUtils';
+
+
+const RANGE_POS_TUPLE_SIZE = 3;
 
 // IDX = NAV_IDX, COUNT = NAV_COUNT
 export const FORWARDS = 0;
@@ -17,23 +20,23 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
     return {
         get direction(){ return _direction },
         get rangePositions(){ return _range_positions },
-        get rangePositionLo(){ return _range_position_lo },
-        get rangePositionHi(){ return _range_position_hi },
         setRange,
         currentRange,
-        next,
-        previous,
         getRangeIndexOfRow,
         injectRow,
         refresh,
         reset
     };
 
+    function getAbsRowIdx(group, relRowIdx){
+        return navSet[group[IDX] + relRowIdx];
+    }
+
     function injectRow(grpIdx){
 
         let idx;
 
-        for (let i=0;i<_range_positions.length;i+=3){
+        for (let i=0;i<_range_positions.length;i+=RANGE_POS_TUPLE_SIZE){
             idx = _range_positions[i];
             let grpIdx1 = _range_positions[i+1];
             let rowIdx1 = _range_positions[i+2];
@@ -43,53 +46,55 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             }
         }
         const rangeSize = _range.hi - _range.lo;
-        if (_range_positions.length / 3 < rangeSize){
+        if (_range_positions.length / RANGE_POS_TUPLE_SIZE < rangeSize){
             return idx + 1;
         }
         return -1;
     }
 
+    // grpIdx is always the top-level group, however many levels of
+    // grouping may be present
+    // why dont we add the absRowIdx to simplify lookup
     function getRangeIndexOfRow(grpIdx, rowIdx=null){
-        const idx = findGrpIndex(_range_positions, grpIdx);
-        if (idx !== -1){
-            if (rowIdx === null){
-                return _range_positions[idx*3];
-            } else {
-                // const group = groups[idx];
-                const group = groups[grpIdx];
-                if (group === undefined){
-                    console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
-                        ${JSON.stringify(_range_positions,null,2)}
-                    `)
-                }
-                if (group[meta.DEPTH] > 0){
-                    // we have the index of the group row within the rowset, the leaf row will
-                    // be one of the rows following, order determined by the sortCols
-                    const count = group[COUNT];
-                    const start = idx*3;
-                    const end = start + count*3;
-                    for (let i=start+5; i<end; i+=3){
-                        const rowPos = _range_positions[i];
-                        const sortRowPos = navSet[rowPos];
-                        if (sortRowPos === rowIdx){
-                            return Math.floor(i/3);
-                        }
-                    }
-                    // whts this ?
-                    return _range_positions[idx];
+        const [groupRowFound, idx] = getRangeIndexOfGroup(_range_positions, grpIdx);
+        if (rowIdx === null){
+            return groupRowFound ? idx : -1;
+        } else if (idx === -1){
+            return -1;
+        } else {
+            const group = groups[grpIdx];
+            if (group === undefined){
+                console.error(`[GroupIterator] ERROR grpIdx ${grpIdx}
+                    ${JSON.stringify(_range_positions,null,2)}
+                `)
+            }
+
+            const start = (idx+1) * RANGE_POS_TUPLE_SIZE;
+            // this test is going to fail beyond 1 level of grouping if base group is scrolled
+            // out of viewport]
+            for (let i=start; _range_positions[i+1] === grpIdx; i+=RANGE_POS_TUPLE_SIZE){
+                const relRowIdx = _range_positions[i+2];
+                if (rowIdx === getAbsRowIdx(group, relRowIdx)){
+                    return i/RANGE_POS_TUPLE_SIZE;
                 }
             }
+
         }
         return -1;
     }
 
-    function findGrpIndex(list, target){
-        for (let i=1; i< list.length; i += 3){
-            if (list[i] === target) {
-                return Math.floor(i/3);
+    function getRangeIndexOfGroup(list, target){
+        for (let i=0; i< list.length; i += RANGE_POS_TUPLE_SIZE){
+            if (list[i+1] === target) {
+                if (list[i+2] === null){
+                    return [true, i/RANGE_POS_TUPLE_SIZE];
+                } else {
+                    // happend when we have scrolled - the group row is out of viewport
+                    return [false, i/RANGE_POS_TUPLE_SIZE];
+                }
             }
         }
-        return -1;
+        return [false,-1];
     }
 
     function reset(){
@@ -161,7 +166,7 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             if (_direction === FORWARDS && (rangeDiff & RangeFlags.BWD)){
                 ([_idx, _grpIdx, _rowIdx] = _range_positions);
             } else if (_direction === BACKWARDS && (rangeDiff & RangeFlags.FWD)){
-                ([_idx, _grpIdx, _rowIdx] = _range_positions.slice(-3));
+                ([_idx, _grpIdx, _rowIdx] = _range_positions.slice(-RANGE_POS_TUPLE_SIZE));
                 _idx += 1;
             }
 
@@ -176,21 +181,21 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             const loDiff = range.lo - _range.lo;
             const hiDiff = _range.hi - range.hi;
             // allow for a range that overshoots data
-            const missingQuota = (_range.hi - _range.lo) - _range_positions.length/3;
+            const missingQuota = (_range.hi - _range.lo) - _range_positions.length/RANGE_POS_TUPLE_SIZE;
 
             if (loDiff > 0){
-                const removed = _range_positions.splice(0,loDiff*3);
+                const removed = _range_positions.splice(0,loDiff*RANGE_POS_TUPLE_SIZE);
                 if (removed.length){
-                    _range_position_lo = removed.slice(-3);
+                    _range_position_lo = removed.slice(-RANGE_POS_TUPLE_SIZE);
                 }
             }
             if (hiDiff > 0){
                 //TODO allow for scenatio where both lo and HI have changed
                 if (hiDiff > missingQuota){
                     const absDiff = hiDiff - missingQuota;
-                    const removed = _range_positions.splice(-absDiff*3,absDiff*3);
+                    const removed = _range_positions.splice(-absDiff*RANGE_POS_TUPLE_SIZE,absDiff*RANGE_POS_TUPLE_SIZE);
                     if (removed.length){
-                        _range_position_hi = removed.slice(0,3);
+                        _range_position_hi = removed.slice(0,RANGE_POS_TUPLE_SIZE);
                     }
                 }
             }
@@ -206,9 +211,12 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
                 let i = resultLo;
                 startIdx = _idx;
                 do {
+                    // confusing...next() increments _rowIdx
                     ([row] = next());
                     if (row){
+                        console.log(`row = ${JSON.stringify(row)}`)
                         rows.push(row);
+                        //TODO why not add the absRowIdx here
                         _range_positions.push(_idx, _grpIdx, _rowIdx);
                         i += 1
                         _idx += 1;
@@ -251,7 +259,7 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             // the appropriate adjustment will be made nest time range is set
             if (rangeDiff & RangeFlags.FWD){
                 console.log(`adjust thye idx`);
-                ([_idx, _grpIdx, _rowIdx] = _range_positions.slice(-3));
+                ([_idx, _grpIdx, _rowIdx] = _range_positions.slice(-RANGE_POS_TUPLE_SIZE));
                 _idx += 1;
             } else {
                 ([_idx, _grpIdx, _rowIdx] = _range_positions);
@@ -307,10 +315,10 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             // Note: we're unlikely to be passed the row if row count is zero
             if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
                 rowIdx = rowIdx === null ? 0 : rowIdx + 1;
-                const idx = navSet[groupRow[IDX]+rowIdx];
+                const absRowIdx = getAbsRowIdx(groupRow, rowIdx)
                 // the equivalent of project row
-                const row = rows[idx].slice()
-                row[meta.IDX] = idx;
+                const row = rows[absRowIdx].slice()
+                row[meta.IDX] = absRowIdx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;
                 row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
@@ -352,10 +360,8 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
                 return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
             } else {
                 rowIdx -= 1;
-                const navIdx = lastGroup[IDX] + rowIdx;
-                // const [i, ...rest] = rows[navSet[navIdx]];
-
-                const row = rows[navSet[navIdx]].slice()
+                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx)
+                const row = rows[absRowIdx].slice()
                 // row[meta.IDX] = idx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;
@@ -374,8 +380,8 @@ export default function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             let lastGroup = groups[grpIdx];
             if (lastGroup[meta.DEPTH] === 1){
                 rowIdx = getCount(lastGroup, COUNT) - 1;
-                const navIdx = lastGroup[IDX] + rowIdx;
-                const row = rows[navSet[navIdx]].slice()
+                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx)
+                const row = rows[absRowIdx].slice()
                 // row[meta.IDX] = idx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;

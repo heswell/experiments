@@ -220,8 +220,8 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`)
+    // console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`)
     return extract;
 }
 
-const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;
+// const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;

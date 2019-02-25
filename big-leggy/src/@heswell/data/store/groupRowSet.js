@@ -93,11 +93,6 @@ export default class GroupRowSet extends BaseRowSet {
             ? this.iter.currentRange()
             : this.iter.setRange(range, useDelta);
 
-        // console.log(`${range.lo}: ${range.hi}    -----------------
-        //     ${this.iter.rangePositionLo}
-        //     ${this.iter.rangePositions}
-        //     ${this.iter.rangePositionHi}`);
-
         const filterCount = this.filterSet && this.meta.FILTER_COUNT;
         const rows = rowsInRange.map((row,i) => this.cloneRow(row, idx+i, filterCount));
         this.range = range;
@@ -454,7 +449,7 @@ export default class GroupRowSet extends BaseRowSet {
     }
 
     update(idx, updates){
-        const {groupRows: groups, offset, rowParents} = this
+        const {groupRows: groups, offset, rowParents, range: {lo}} = this
         const { COUNT, FILTER_COUNT } = this.meta;
 
         // 1) how do we find the group, now we cant store PARENT on row
@@ -492,14 +487,14 @@ export default class GroupRowSet extends BaseRowSet {
         if (groupUpdates){
             const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx);
             if (rangeIdx !== -1){
-                results.push([rangeIdx+offset, ...groupUpdates]);
+                results.push([lo+rangeIdx+offset, ...groupUpdates]);
             }
         }
-
         // has the row been sent to the client, hence do we need to send update
         const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
         if (rangeIdx !== -1){
-            results.push([rangeIdx+offset, ...rowUpdates]);
+            // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
+            results.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
 
         return results;
@@ -525,9 +520,9 @@ export default class GroupRowSet extends BaseRowSet {
 
 
         if (groupPositions.length === groupby.length){
+            // all necessary groups are already in place
             let grpIdx = groupPositions[groupPositions.length-1];
             const groupRow = groups[grpIdx];
-            // row[PARENT_IDX] = grpIdx;
             let count = groupRow[COUNT];
             incrementGroupCount(groups, groupRow, this.meta);
             const sortIdx = groupRow[IDX_POINTER];
@@ -535,6 +530,8 @@ export default class GroupRowSet extends BaseRowSet {
             // all existing pointers from the insertionPoint forward are going to be displaced by +1
             adjustLeafIdxPointers(groups, insertionPoint, this.meta);
             sortSet.splice(insertionPoint,0,row[IDX]);
+            // this won't work becayse the new row is not yet known to the iterator
+            // TODO need to injectRow into iterator, see code below
             let rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
             if (rangeIdx !== -1){
                 // the row is going to be sent to the client, we will resend the whole rowset

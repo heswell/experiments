@@ -1714,12 +1714,18 @@ function isUndefined(arg) {
 
 /*global fetch */
 
+const defaultUpdateConfig = {
+    applyUpdates: false,
+    applyInserts: false,
+    interval: 500
+};
+
 class Table extends EventEmitter {
 
     constructor(config){
         super();
 
-        const {name, columns=null, primaryKey, dataPath, data} = config;
+        const {name, columns=null, primaryKey, dataPath, data, updates = {}} = config;
 
         this.name = name;
         this.primaryKey = primaryKey;
@@ -1727,7 +1733,10 @@ class Table extends EventEmitter {
         this.keys = {};
         this.index = {};
         this.rows = [];
-        this.updateConfig = config.updates;
+        this.updateConfig = {
+            ...defaultUpdateConfig,
+            ...updates
+        };
         this.columnMap = buildColumnMap(columns);
         this.columnCount = 0;
         this.status = null;
@@ -1752,6 +1761,7 @@ class Table extends EventEmitter {
             results.push(colIdx, row[colIdx], value);
             row[colIdx] = value;
         }
+        console.log(`[Table.update] update rowId ${rowIdx}`);
         this.emit('rowUpdated', rowIdx, results);
     }
 
@@ -1888,16 +1898,19 @@ class Table extends EventEmitter {
     }
 
     applyUpdates(){
-        for (let i=0;i<this.rows.length;i++){
-            if (Math.random() > 0.5){
-                const update = this.updateRow(i, this.rows[i], this.columnMap);
-                if (update){
-                    this.update(i, ...update);
-                }
+        const {rows} = this;
+        // const count = Math.round(rows.length / 50);
+        const count = 250;
+
+        for (let i=0; i<count; i++){
+            const rowIdx = getRandomInt(rows.length - 1);
+            const update = this.updateRow(rowIdx, this.rows[rowIdx], this.columnMap);
+            if (update){
+                this.update(rowIdx, ...update);
             }
         }
 
-        setTimeout(() => this.applyUpdates(),500);
+        setTimeout(() => this.applyUpdates(),this.updateConfig.interval);
 
     }
 
@@ -1913,6 +1926,10 @@ class Table extends EventEmitter {
         //console.warn(`installDataGenerators must be implemented by a more specific subclass`);
     }
 
+}
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
 }
 
 function columnsFromColumnMap(columnMap){
@@ -2385,13 +2402,16 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
         get rangePositionHi(){ return _range_position_hi },
         setRange,
         currentRange,
-        next,
-        previous,
+        // dont think next/previous are needed externally
         getRangeIndexOfRow,
         injectRow,
         refresh,
         reset
     };
+
+    function getAbsRowIdx(group, relRowIdx){
+        return navSet[group[IDX] + relRowIdx];
+    }
 
     function injectRow(grpIdx){
 
@@ -2413,47 +2433,48 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
         return -1;
     }
 
+    // grpIdx is always the top-level group, however many levels of
+    // grouping may be present
     function getRangeIndexOfRow(grpIdx, rowIdx=null){
-        const idx = findGrpIndex(_range_positions, grpIdx);
-        if (idx !== -1){
-            if (rowIdx === null){
-                return _range_positions[idx*3];
-            } else {
-                // const group = groups[idx];
-                const group = groups[grpIdx];
-                if (group === undefined){
-                    console.log(`[GroupIterator] ERROR grpIdx ${grpIdx}
-                        ${JSON.stringify(_range_positions,null,2)}
-                    `);
-                }
-                if (group[meta.DEPTH] > 0){
-                    // we have the index of the group row within the rowset, the leaf row will
-                    // be one of the rows following, order determined by the sortCols
-                    const count = group[COUNT];
-                    const start = idx*3;
-                    const end = start + count*3;
-                    for (let i=start+5; i<end; i+=3){
-                        const rowPos = _range_positions[i];
-                        const sortRowPos = navSet[rowPos];
-                        if (sortRowPos === rowIdx){
-                            return Math.floor(i/3);
-                        }
-                    }
-                    // whts this ?
-                    return _range_positions[idx];
+        const [groupRowFound, idx] = getRangeIndexOfGroup(_range_positions, grpIdx);
+        if (rowIdx === null){
+            return groupRowFound ? idx : -1;
+        } else if (idx === -1){
+            return -1;
+        } else {
+            const group = groups[grpIdx];
+            if (group === undefined){
+                console.error(`[GroupIterator] ERROR grpIdx ${grpIdx}
+                    ${JSON.stringify(_range_positions,null,2)}
+                `);
+            }
+
+            const start = (idx+1) * 3;
+            // this test is going to fail beyond 1 level of grouping if base group is scrolled
+            // out of viewport]
+            for (let i=start; _range_positions[i+1] === grpIdx; i+=3){
+                const relRowIdx = _range_positions[i+2];
+                if (rowIdx === getAbsRowIdx(group, relRowIdx)){
+                    return Math.floor(i/3);
                 }
             }
+
         }
         return -1;
     }
 
-    function findGrpIndex(list, target){
+    function getRangeIndexOfGroup(list, target){
         for (let i=1; i< list.length; i += 3){
             if (list[i] === target) {
-                return Math.floor(i/3);
+                if (list[i+1] === null){
+                    return [true, Math.floor(i/3)];
+                } else {
+                    // happend when we have scrolled - the group row is out of viewport
+                    return [false, Math.floor(i/3)];
+                }
             }
         }
-        return -1;
+        return [false,-1];
     }
 
     function reset(){
@@ -2671,10 +2692,10 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             // Note: we're unlikely to be passed the row if row count is zero
             if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
                 rowIdx = rowIdx === null ? 0 : rowIdx + 1;
-                const idx = navSet[groupRow[IDX]+rowIdx];
+                const absRowIdx = getAbsRowIdx(groupRow, rowIdx);
                 // the equivalent of project row
-                const row = rows[idx].slice();
-                row[meta.IDX] = idx;
+                const row = rows[absRowIdx].slice();
+                row[meta.IDX] = absRowIdx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;
                 row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
@@ -2716,10 +2737,8 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
                 return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
             } else {
                 rowIdx -= 1;
-                const navIdx = lastGroup[IDX] + rowIdx;
-                // const [i, ...rest] = rows[navSet[navIdx]];
-
-                const row = rows[navSet[navIdx]].slice();
+                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx);
+                const row = rows[absRowIdx].slice();
                 // row[meta.IDX] = idx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;
@@ -2738,8 +2757,8 @@ function GroupIterator(groups, navSet, rows, IDX, COUNT, meta) {
             let lastGroup = groups[grpIdx];
             if (lastGroup[meta.DEPTH] === 1){
                 rowIdx = getCount(lastGroup, COUNT) - 1;
-                const navIdx = lastGroup[IDX] + rowIdx;
-                const row = rows[navSet[navIdx]].slice();
+                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx);
+                const row = rows[absRowIdx].slice();
                 // row[meta.IDX] = idx;
                 row[meta.DEPTH] = 0;
                 row[meta.COUNT] = 0;
@@ -3190,7 +3209,7 @@ class GroupRowSet extends BaseRowSet {
     }
 
     update(idx, updates){
-        const {groupRows: groups, offset, rowParents} = this;
+        const {groupRows: groups, offset, rowParents, range: {lo}} = this;
         const { COUNT, FILTER_COUNT } = this.meta;
 
         // 1) how do we find the group, now we cant store PARENT on row
@@ -3228,14 +3247,14 @@ class GroupRowSet extends BaseRowSet {
         if (groupUpdates){
             const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx);
             if (rangeIdx !== -1){
-                results.push([rangeIdx+offset, ...groupUpdates]);
+                results.push([lo+rangeIdx+offset, ...groupUpdates]);
             }
         }
-
         // has the row been sent to the client, hence do we need to send update
         const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
         if (rangeIdx !== -1){
-            results.push([rangeIdx+offset, ...rowUpdates]);
+            // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
+            results.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
 
         return results;
@@ -3261,9 +3280,9 @@ class GroupRowSet extends BaseRowSet {
 
 
         if (groupPositions.length === groupby.length){
+            // all necessary groups are already in place
             let grpIdx = groupPositions[groupPositions.length-1];
             const groupRow = groups[grpIdx];
-            // row[PARENT_IDX] = grpIdx;
             let count = groupRow[COUNT];
             incrementGroupCount(groups, groupRow, this.meta);
             const sortIdx = groupRow[IDX_POINTER];
@@ -3271,6 +3290,8 @@ class GroupRowSet extends BaseRowSet {
             // all existing pointers from the insertionPoint forward are going to be displaced by +1
             adjustLeafIdxPointers(groups, insertionPoint, this.meta);
             sortSet.splice(insertionPoint,0,row[IDX]);
+            // this won't work becayse the new row is not yet known to the iterator
+            // TODO need to injectRow into iterator, see code below
             let rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
             if (rangeIdx !== -1){
                 // the row is going to be sent to the client, we will resend the whole rowset

@@ -10,9 +10,14 @@ import { connect/*, subscribe2 */} from '../src/@heswell/server-api/serverApi2';
 const columns = [
   { name: 'Symbol', width: 120} ,
   { name: 'Name', width: 200} ,
-  { name: 'Price', type: { name: 'number', 
-    renderer: {name: 'background', flashStyle:'arrow-bg'},
-    formatting: { decimals:2, zeroPad: true }}},
+  { name: 'Price', 
+    type: { 
+      name: 'number', 
+      renderer: {name: 'background', flashStyle:'arrow-bg'},
+      formatting: { decimals:2, zeroPad: true }
+    },
+    aggregate: 'avg'
+  },
   { name: 'MarketCap', type: 'number', aggregate: 'sum' },
   { name: 'IPO'},
   { name: 'Sector'},

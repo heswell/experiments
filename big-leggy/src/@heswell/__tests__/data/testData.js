@@ -56,6 +56,7 @@ export const _data = [
     ['key14', 'G2', 'O2', 'T3', 5, 100],
     ['key15', 'G2', 'O2', 'T3', 5, 100],
     ['key16', 'G2', 'O2', 'T3', 5, 100],
+    
     ['key17', 'G3', 'E2', 'T3', 5, 110],
     ['key18', 'G3', 'E2', 'T3', 5, 101],
     ['key19', 'G3', 'E2', 'T3', 5, 100],
@@ -102,6 +103,14 @@ export function getEmptyTestTableAndRowset(){
 
 export const extract = (lists, idx) => lists.map(list => list[idx])
 
+export function toTuple(val,i){
+    if (i % 3 === 0){
+      return `\t${val}`
+    } else {
+      return val;
+    }
+  }
+  
 export function join(arr){
     return '\n\n' + arr.join('\n');
 }
