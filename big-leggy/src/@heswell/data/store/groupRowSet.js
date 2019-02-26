@@ -448,56 +448,85 @@ export default class GroupRowSet extends BaseRowSet {
 
     }
 
-    update(idx, updates){
+    update(rowIdx, updates){
         const {groupRows: groups, offset, rowParents, range: {lo}} = this
-        const { COUNT, FILTER_COUNT } = this.meta;
+        const { COUNT, FILTER_COUNT, PARENT_IDX } = this.meta;
 
-        // 1) how do we find the group, now we cant store PARENT on row
-        let grpIdx = rowParents[idx];
-        let groupRow = groups[grpIdx];
         let groupUpdates;
-        const results = [];
         const rowUpdates = [];
 
-        // need to adjust aggregations only if the row is visible (not filtered out)
         for (let i = 0; i < updates.length; i += 3) {
             // the col mappings in updates refer to base column definitions
             const colIdx = updates[i];
-            // whereas in the aggregatedColumn list, we have an offset of 2 ...
             const originalValue = updates[i + 1];
             const value = updates[i + 2];
             rowUpdates.push(colIdx,originalValue,value);
 
+
+            const dataRow = this.data[rowIdx]
+            console.log(`dataRow (idx ${rowIdx})  ${dataRow[5]}  ${dataRow[6]}`);
+
+
+
+            let grpIdx = rowParents[rowIdx];
+            // this seems to return 0 an awful lot
+            console.log(`parent Group of row ${rowIdx} = ${grpIdx}`)
+            let ii = 0;
+            
             // If this column is being aggregated
             if (this.aggregatedColumn[colIdx]){
-                let originalGroupValue = groupRow[colIdx];
-                const diff = value - originalValue;
-                const type = this.aggregatedColumn[colIdx];
-                if (type === 'sum'){
-                    // ... wnd in the groupRow we have a further offset of 2 ...
-                    groupRow[colIdx] += diff;// again with the +2
-                } else if (type === 'avg'){
-                    const count = getCount(groupRow, FILTER_COUNT, COUNT);
-                    groupRow[colIdx] = ((groupRow[colIdx] * count) + diff) / count;
-                }
-                (groupUpdates || (groupUpdates=[])).push(colIdx, originalGroupValue, groupRow[colIdx])
+
+                groupUpdates = groupUpdates || [];
+                // collect adjusted aggregations for each group level
+                do {
+                    let groupRow = groups[grpIdx];
+                    console.log(`groupRow (row ${rowIdx}) = ${grpIdx} ${groupRow[5]}  ${groupRow[6]}`);
+
+                    let originalGroupValue = groupRow[colIdx];
+                    const diff = value - originalValue;
+                    const type = this.aggregatedColumn[colIdx];
+                    if (type === 'sum'){
+                        // ... wnd in the groupRow we have a further offset of 2 ...
+                        groupRow[colIdx] += diff;// again with the +2
+                    } else if (type === 'avg'){
+                        const count = getCount(groupRow, FILTER_COUNT, COUNT);
+                        groupRow[colIdx] = ((groupRow[colIdx] * count) + diff) / count;
+                    }
+
+                    (groupUpdates[ii] || (groupUpdates[ii]=[grpIdx])).push(colIdx, originalGroupValue, groupRow[colIdx])
+
+                    grpIdx = groupRow[PARENT_IDX];
+                    ii += 1;
+
+                } while (grpIdx !== null)
+
             }
         }
 
+        const outgoingUpdates = [];
+        // check rangeIdx for both row and group updates, if they are not in range, they have not been
+        // sent to client and do not need to be added to outgoing updates
         if (groupUpdates){
-            const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx);
-            if (rangeIdx !== -1){
-                results.push([lo+rangeIdx+offset, ...groupUpdates]);
+            // the groups are currently in reverse order, lets send them out outermost group first
+            for (let i=groupUpdates.length-1; i >=0; i--){
+                const [grpIdx, ...updates] = groupUpdates[i];
+                // won't work - need to chnage groupIterator
+                const rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
+                console.log(`rangeIdx of group ${grpIdx} = ${rangeIdx}`)
+                if (rangeIdx !== -1){
+                    outgoingUpdates.push([lo+rangeIdx+offset, ...updates]);
+                }
             }
         }
-        // has the row been sent to the client, hence do we need to send update
-        const rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
+        const rangeIdx = this.iter.getRangeIndexOfRow(rowIdx);
+        console.log(`rangeIdx of row ${rowIdx} = ${rangeIdx}`)
         if (rangeIdx !== -1){
             // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
-            results.push([lo+rangeIdx+offset, ...rowUpdates]);
+            outgoingUpdates.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
-
-        return results;
+        
+    console.log(outgoingUpdates)    
+        return outgoingUpdates;
     }
 
     insert(idx, row){
@@ -532,7 +561,7 @@ export default class GroupRowSet extends BaseRowSet {
             sortSet.splice(insertionPoint,0,row[IDX]);
             // this won't work becayse the new row is not yet known to the iterator
             // TODO need to injectRow into iterator, see code below
-            let rangeIdx = this.iter.getRangeIndexOfRow(grpIdx, idx);
+            let rangeIdx = this.iter.getRangeIndexOfRow(idx);
             if (rangeIdx !== -1){
                 // the row is going to be sent to the client, we will resend the whole rowset
                 result = {replace: true}
@@ -545,7 +574,7 @@ export default class GroupRowSet extends BaseRowSet {
                 for (let i=0;i<groupPositions.length;i++){
                     grpIdx = groupPositions[i];
                     count = groups[grpIdx][COUNT];
-                    rangeIdx = this.iter.getRangeIndexOfRow(grpIdx);
+                    rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
                     if (rangeIdx !== -1){
                         result.updates.push([rangeIdx+offset, -2, count]);
                     }
@@ -729,8 +758,16 @@ export default class GroupRowSet extends BaseRowSet {
             if (absDepth === 1){
                 const startIdx = groupRow[IDX_POINTER]
                 const nestedGroupRows = groupRows(rows, sortSet, columns, this.columnMap, newGroupbyClause, {
-                    startIdx, length, rootIdx, baseGroupby: baseGroupCols, groupIdx: rootIdx,
-                    filterIdx, filterLength, filterSet, filterFn
+                    startIdx,
+                    length,
+                    rootIdx,
+                    baseGroupby: baseGroupCols,
+                    groupIdx: rootIdx,
+                    filterIdx,
+                    filterLength,
+                    filterSet,
+                    filterFn,
+                    rowParents: this.rowParents
                 });
                 const nestedGroupCount = nestedGroupRows.length;
                 // this might be a performance problem for large arrays, might need to concat
@@ -753,7 +790,7 @@ export default class GroupRowSet extends BaseRowSet {
         const { IDX, DEPTH, KEY, IDX_POINTER, PARENT_IDX, NEXT_FILTER_IDX } = this.meta;
         const tracker = new GroupIdxTracker(groupby.length);
         const useFilter = filterSet !== null;
-        let currentGroup = null;
+        let currentGroupIdx = null;
         let i = 0
         for (let len=groups.length;i<len;i++){
             const groupRow = groups[i];
@@ -762,6 +799,7 @@ export default class GroupRowSet extends BaseRowSet {
             const absDepth = Math.abs(depth);
 
             if (absDepth === doomed){
+                this.reParentLeafRows(i, currentGroupIdx);
                 groups.splice(i,1);
                 i -= 1;
                 len -= 1;
@@ -775,14 +813,14 @@ export default class GroupRowSet extends BaseRowSet {
                             // This can be taken from the first child group (which will be removed)
                             groupRow[IDX_POINTER] = lowestIdxPointer(groups, IDX_POINTER, DEPTH, i+1, absDepth-1);
                             groupRow[NEXT_FILTER_IDX] = useFilter ? lowestIdxPointer(groups, NEXT_FILTER_IDX, DEPTH, i+1, absDepth-1) : undefined;
-                        } else if (currentGroup !== null){
-                            const diff = this.regroupChildGroups(currentGroup, i, baseGroupby, addGroupby);
+                        } else if (currentGroupIdx !== null){
+                            const diff = this.regroupChildGroups(currentGroupIdx, i, baseGroupby, addGroupby);
                             i -= diff;
                             len -= diff;
                             tracker.increment(diff);
                         }
                     }
-                    currentGroup = i;
+                    currentGroupIdx = i;
                     if (tracker.hasPrevious(absDepth+1)){
                         groupRow[PARENT_IDX] -= tracker.previous(absDepth+1);
                     }
@@ -798,8 +836,22 @@ export default class GroupRowSet extends BaseRowSet {
         }
         if (!lastGroupIsDoomed){
             // don't forget the final group ...
-            this.regroupChildGroups(currentGroup, i, baseGroupby, addGroupby)
+            this.regroupChildGroups(currentGroupIdx, i, baseGroupby, addGroupby)
         }
+    }
+
+    reParentLeafRows(groupIdx, newParentGroupIdx){
+        // TODO what about filterSet ?
+        const {groupRows: groups, rowParents, sortSet, meta: {IDX_POINTER, COUNT}} = this;
+        const group = groups[groupIdx];
+        const idx = group[IDX_POINTER];
+        const count = group[COUNT];
+
+        for (let i=idx; i< idx+count; i++){
+            const rowIdx = sortSet[i];
+            rowParents[rowIdx] = newParentGroupIdx; 
+        }
+
     }
 
     regroupChildGroups(currentGroupIdx, nextGroupIdx, baseGroupby, addGroupby){
@@ -811,7 +863,12 @@ export default class GroupRowSet extends BaseRowSet {
         // We don't really need to go back to rows to regroup, we have partially grouped data already
         // we could perform the whole operation within groupRows
         const nestedGroupRows = groupRows(rows, this.sortSet, columns, this.columnMap, addGroupby, {
-            startIdx, length, rootIdx: currentGroupIdx, baseGroupby, groupIdx: currentGroupIdx
+            startIdx,
+            length,
+            rootIdx: currentGroupIdx,
+            baseGroupby,
+            groupIdx: currentGroupIdx,
+            rowParents: this.rowParents
         });
         const existingChildNodeCount = nextGroupIdx - currentGroupIdx - 1;
         groups.splice(currentGroupIdx+1,existingChildNodeCount,...nestedGroupRows)

@@ -63,7 +63,7 @@ export default class GroupHeader extends React.Component {
 
         const {multiColumnSort, groupState} = this.props;
 
-        return this.props.columnGroup.columns.filter(column => !column.hidden).map((column, idx) => {
+        return this.props.columnGroup.columns.filter(column => !column.hidden).map(column => {
 
             const props = {
                 key: column.key,

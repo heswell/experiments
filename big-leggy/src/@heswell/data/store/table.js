@@ -188,7 +188,7 @@ export default class Table extends EventEmitter {
     applyUpdates(){
         const {rows} = this;
         // const count = Math.round(rows.length / 50);
-        const count = 250;
+        const count = 100;
 
         for (let i=0; i<count; i++){
             const rowIdx = getRandomInt(rows.length - 1);

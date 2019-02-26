@@ -1,6 +1,5 @@
 import {getDeltaRange, getFullRange, NULL_RANGE} from './rangeUtils';
 import { metaData } from './columnUtils';
-import * as System from './constants';
 
 export default class BaseRowSet {
 

@@ -32,7 +32,6 @@ describe('construction', () => {
             [null, 'G2', null, null, null, null, 101, -1, 8, 'G2', null, 8, undefined, undefined],
             [null, 'G3', null, null, null, null, 102, -1, 8, 'G3', null, 16, undefined, undefined]
         ]);
-        expect(rowSet.rowParents).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2])
         // base dataset is already in order, so sortSet reflects this
         expect(sortSet).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
         expect(groupRows.length).toBe(3);
@@ -167,6 +166,50 @@ describe('construction', () => {
 
     });
 });
+
+describe('rowParents', () => {
+    test('correctly constructed when grouped by a single column (applyGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1])
+        expect(rowSet.rowParents).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2])
+    });
+
+    test('correctly constructed when grouped by two columns (applyGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
+        expect(rowSet.rowParents).toEqual([2, 2, 2, 2, 1, 1, 1, 1, 6, 6, 4, 4, 5, 5, 5, 5, 9, 9, 9, 9, 8, 8, 10, 11])
+    });
+
+    test('correctly rebuilt when groupBy set to new column (applyGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1])
+        rowSet.groupBy([GROUP_COL_2]);
+        expect(rowSet.rowParents).toEqual([4, 4, 4, 4, 2, 2, 2, 2, 4, 4, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 2, 3])
+
+    });
+    test('correctly rebuilt when column added to groupBy  (extendGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1])
+        rowSet.groupBy([GROUP_COL_1, GROUP_COL_2]);
+        expect(rowSet.rowParents).toEqual([2, 2, 2, 2, 1, 1, 1, 1, 6, 6, 4, 4, 5, 5, 5, 5, 9, 9, 9, 9, 8, 8, 10, 11])
+    });
+    test('correctly rebuilt when last column removed from groupBy  (reduceGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
+        rowSet.groupBy([GROUP_COL_1]);
+        expect(rowSet.rowParents).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2])
+    });
+
+    test('correctly rebuilt when first column removed from groupBy  (reduceGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
+        rowSet.groupBy([GROUP_COL_2]);
+        console.log(join(rowSet.groupRows))
+        expect(rowSet.rowParents).toEqual([4, 4, 4, 4, 2, 2, 2, 2, 4, 4, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 2, 3])
+    });
+  
+    test('correctly rebuilt when middle column removed from three col groupBy  (reduceGroupBy)', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2,  GROUP_COL_3])
+        rowSet.groupBy([GROUP_COL_1, GROUP_COL_3]);
+        console.log(join(rowSet.groupRows))
+        expect(rowSet.rowParents).toEqual([1, 1, 2, 2, 1, 1, 2, 3, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7])
+    });
+
+})
 
 describe('groupBy', () => {
 
@@ -1173,7 +1216,7 @@ describe('filter', () => {
     test('filter forces recalculation of aggregations, through full group hierarchy', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns_with_aggregation, [GROUP_COL_1, GROUP_COL_2]);
         rowSet.filter({ type: 'EQ', colName: 'Group 3', value: 'T3' });
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
+        // onsole.log(`${join(rowSet.groupRows)} ${join(rowSet.data)}`);
         expect(rowSet.groupRows[0][4]).toBe(6)
         expect(rowSet.groupRows[0][5]).toBe(348)
     });
@@ -1183,7 +1226,7 @@ describe('filter', () => {
         const U = undefined;
         const rowSet = new GroupRowSet(_getInstrumentRowset(), InstrumentColumns, [
             ['Sector', 'asc'], ['Industry', 'asc']]);
-        // console.log(`${join(rowSet.groupRows.filter(r => r[1]===-2).slice(0,10))}`);
+        // onsole.log(`${join(rowSet.groupRows.filter(r => r[1]===-2).slice(0,10))}`);
         rowSet.filter({ colName: 'Sector', type: INCLUDE, values: [] });
         let { rows, size } = rowSet.setRange({ lo: 0, hi: 10 });
         expect(size).toBe(0);
@@ -1265,7 +1308,7 @@ describe('insert', () => {
         rowSet.setRange({ lo: 0, hi: 10 });
         table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
         const results = rowSet.insert(24, table.rows[24])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
+        // onsole.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11, 12)))).toEqual([
             [0, +1, 9, 'G1', 0],
             [1, -1, 8, 'G2', 9],
@@ -1295,7 +1338,7 @@ describe('insert', () => {
         rowSet.setRange({ lo: 0, hi: 10 });
         table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
         const results = rowSet.insert(24, table.rows[24])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
+        // onsole.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
         expect(rowSet.groupRows.map(d => d.slice(6, 10))).toEqual([
             [0, -2, 9, 'G1'],
             [1, -1, 5, 'G1/I2'],
@@ -1387,7 +1430,7 @@ describe('insert', () => {
         rowSet.setRange({ lo: 0, hi: 10 });
         table.insert(['key25', 'G0', 'I2', 'T5', 6, 112]);
         const results = rowSet.insert(24, table.rows[24])
-        // console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
+        // onsole.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${join(rowSet.sortSet)}`);
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10, 12)))).toEqual([
             [0, -3, 1, 'G0', null, 1],
             [1, -2, 1, 'G0/I2', 0, 2],
@@ -1527,7 +1570,7 @@ describe('update', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
         rowSet.setGroupState({ 'G2': true })
         rowSet.setRange({ lo: 0, hi: 10 });
-        console.log(rowSet.iter.rangePositions.map(toTuple).join())
+        //onsole.log(rowSet.iter.rangePositions.map(toTuple).join())
 
         const updates = rowSet.update(8, [4, 5, 5.5]);
         //console.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} \n${JSON.stringify(rowSet.clientRowMap)}`);
@@ -1566,6 +1609,41 @@ describe('update', () => {
         expect(updates).toEqual([
             [100, 4, 4.875, 4.9375, 5, 749, 699],
             [105, 4, 9, 9.5, 5, 100, 50]
+        ]);
+    });
+
+    test('update single value, two level grouping, first groups expanded, aggregated on column', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1, GROUP_COL_2]);
+        rowSet.setGroupState({ 'G1': {'I2': true} })
+        // get results so update acts as though client has data
+        const {rows} = rowSet.setRange({ lo: 0, hi: 10 });
+        //onsole.log(join(rows))
+        const updates = rowSet.update(4, [4, 9, 9.5, 5, 100, 50]);
+
+        //onsole.log(`${join(rowSet.groupRows)} \n${JSON.stringify(rowSet.clientRowMap)}`);
+        //onsole.log(`${join(updates)}`);
+        //onsole.log(updates);
+
+        // expect(rowSet.groupRows[0][4]).toBe(4.9375);
+        // expect(rowSet.groupRows[0][5]).toBe(699);
+        expect(updates).toEqual([
+            [100, 4, 4.875, 4.9375, 5, 749, 699],
+            [101, 4, 5, 5.125, 5, 347, 297],
+            [102, 4, 9, 9.5, 5, 100, 50]
+        ]);
+    });
+
+    test('update single value, two level grouping, non-first groups expanded, aggregated on column', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), aggColumns, [GROUP_COL_1, GROUP_COL_2]);
+        rowSet.setGroupState({ 'G2': {'U2': true} })
+        // get results so update acts as though client has data
+        rowSet.setRange({ lo: 0, hi: 10 });
+        const updates = rowSet.update(8, [4, 5, 99, 5, 100, 199]);
+
+        expect(updates).toEqual([
+            [101, 4, 5, 16.75, 5, 800, 899],
+            [104, 4, 5, 52, 5, 200, 299],
+            [105, 4, 5, 99, 5, 100, 199]
         ]);
     });
 

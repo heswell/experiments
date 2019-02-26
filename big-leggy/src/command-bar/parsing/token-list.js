@@ -66,6 +66,8 @@ export default class TokenList {
   get lastToken() {
     if (this.tokens && this.tokens.length > 0) {
       return this._tokens[this._tokens.length - 1];
+    } else {
+      return undefined;
     }
   }
 
