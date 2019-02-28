@@ -115,6 +115,14 @@ export function join(arr){
     return '\n\n' + arr.join('\n');
 }
 
+export const pluck = (list, ...idx) => {
+    return list.map(row => {
+        const out = [];
+        idx.forEach((idx,i) => out[i] = row[idx]);
+        return out;
+    })
+}
+
 export function join2(arr){
     const len = arr.length > 0 ? arr[0].length: 0;
     const PARENT_IDX = len-4;

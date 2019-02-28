@@ -575,7 +575,7 @@ const config = {
         {name: 'Industry'}
     ],
     updates: {
-        interval: 250,
+        interval: 100,
         fields: ['Price'],
         applyInserts: false,
         applyUpdates: true

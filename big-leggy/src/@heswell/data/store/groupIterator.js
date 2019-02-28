@@ -3,10 +3,11 @@ import {getCount} from './groupUtils';
 
 
 const RANGE_POS_TUPLE_SIZE = 4;
+const NO_RESULT = [null,null,null]
 
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
-export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, meta) {
+export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, meta) {
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -27,10 +28,6 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
         refresh,
         reset
     };
-
-    function getAbsRowIdx(group, relRowIdx){
-        return navSet[group[NAV_IDX] + relRowIdx];
-    }
 
     function injectRow(grpIdx){
 
@@ -108,7 +105,8 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
         let row;
         let i = _range.lo;
         do {
-            ([row] = next());
+            _direction = FORWARDS;
+            ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
             if (row){
                 rows.push(row);
                 _idx += 1;
@@ -118,8 +116,9 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
             }
         } while (row && i < _range.hi)
         if (row){
+            _direction = FORWARDS;
             const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
-            [row] = next();
+            [row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
             _idx += 1;
             _range_position_hi = [row ? _idx : null, _grpIdx, _rowIdx];
             ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
@@ -171,6 +170,12 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
                 const removed = _range_positions.splice(0,loDiff*RANGE_POS_TUPLE_SIZE);
                 if (removed.length){
                     _range_position_lo = removed.slice(-RANGE_POS_TUPLE_SIZE);
+
+                    // experiment - is this A) always correct B) enough
+                    if (useDelta === false){
+                        [_idx, _grpIdx, _rowIdx] = _range_position_lo;
+                    }
+
                 }
             }
             if (hiDiff > 0){
@@ -195,8 +200,8 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
                 let i = resultLo;
                 startIdx = _idx;
                 do {
-                    // confusing...next() increments _rowIdx
-                    ([row] = next());
+                    _direction = FORWARDS;
+                    ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
                     if (row){
                         rows.push(row);
                         const absRowIdx = _rowIdx === null ? null : row[IDX];
@@ -206,8 +211,9 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
                     }
                 } while (row && i < resultHi)
                 if (row){
+                    _direction = FORWARDS;
                     const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
-                    [row] = next();
+                    ([row, _grpIdx, _rowIdx] = next(groups, data ,_grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
                     _range_position_hi = [row ? _idx : null, _grpIdx, _rowIdx];
                     ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
                 } else {
@@ -217,7 +223,8 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
             } else {
                 let i = resultHi - 1;
                 do {
-                    ([row] = previous());
+                    _direction = BACKWARDS;
+                    ([row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
                     if (row){
                         _idx -= 1;
                         rows.unshift(row);
@@ -229,7 +236,8 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
                 startIdx = _idx;
                 if (row){
                     const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
-                    [row] = previous();
+                    _direction = BACKWARDS;
+                    [row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
                     _range_position_lo = [row ? _idx-1 : 0, _grpIdx, _rowIdx];
                     ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
                 } else {
@@ -258,15 +266,16 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
 
         let i=0;
         let row;
+
         do {
-            [row] = fn();
+            [row, _grpIdx, _rowIdx] = fn(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
             if (fn === next){
                 _idx += 1;
-                i += 1;
             } else {
                 _idx -= 1;
-                i += 1;
             }
+            i += 1;
+
         } while (row && i < n)
         if (fn === next){
             _range_position_lo = [_idx-1, _grpIdx, _rowIdx];
@@ -275,109 +284,111 @@ export default function GroupIterator(groups, navSet, rows, NAV_IDX, NAV_COUNT, 
         }
     }
 
-    function next(grpIdx=_grpIdx, rowIdx=_rowIdx){
-        _direction = FORWARDS;
-        if (grpIdx === null){
-            grpIdx = -1;
+}
+
+function getAbsRowIdx(group, relRowIdx, navSet, NAV_IDX){
+    return navSet[group[NAV_IDX] + relRowIdx];
+}
+
+function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
+    if (grpIdx === null){
+        grpIdx = -1;
+        do {
+            grpIdx += 1;
+        } while (grpIdx < groups.length && (
+            (getCount(groups[grpIdx],NAV_COUNT) === 0)
+        ));
+
+        if (grpIdx >= groups.length){
+            return NO_RESULT;
+        } else {
+            return [groups[grpIdx], grpIdx, null];
+        }
+    } else if (grpIdx >= groups.length){
+        return NO_RESULT;
+    } else {
+        let groupRow = groups[grpIdx];
+        const depth = groupRow[meta.DEPTH];
+        const count = getCount(groupRow,NAV_COUNT);
+        // Note: we're unlikely to be passed the row if row count is zero
+        if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
+            rowIdx = rowIdx === null ? 0 : rowIdx + 1;
+            const absRowIdx = getAbsRowIdx(groupRow, rowIdx, navSet, NAV_IDX)
+            // the equivalent of project row
+            const row = rows[absRowIdx].slice()
+            row[meta.IDX] = absRowIdx;
+            row[meta.DEPTH] = 0;
+            row[meta.COUNT] = 0;
+            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+            return [row, grpIdx, rowIdx === null ? 0 : rowIdx];
+        } else if (depth > 0){
+
             do {
                 grpIdx += 1;
             } while (grpIdx < groups.length && (
                 (getCount(groups[grpIdx],NAV_COUNT) === 0)
             ));
-
             if (grpIdx >= groups.length){
-                return [null,_grpIdx = null, _rowIdx = null];
+                return NO_RESULT;
             } else {
-                return [groups[grpIdx], _grpIdx = grpIdx, _rowIdx = null];
+                return [groups[grpIdx], grpIdx, null];
             }
-        } else if (grpIdx >= groups.length){
-            return [null,_grpIdx = null, _rowIdx = null];
         } else {
-            let groupRow = groups[grpIdx];
-            const depth = groupRow[meta.DEPTH];
-            const count = getCount(groupRow,NAV_COUNT);
-            // Note: we're unlikely to be passed the row if row count is zero
-            if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
-                rowIdx = rowIdx === null ? 0 : rowIdx + 1;
-                const absRowIdx = getAbsRowIdx(groupRow, rowIdx)
-                // the equivalent of project row
-                const row = rows[absRowIdx].slice()
-                row[meta.IDX] = absRowIdx;
-                row[meta.DEPTH] = 0;
-                row[meta.COUNT] = 0;
-                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
-                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx === null ? 0 : rowIdx];
-            } else if (depth > 0){
-
-                do {
-                    grpIdx += 1;
-                } while (grpIdx < groups.length && (
-                    (getCount(groups[grpIdx],NAV_COUNT) === 0)
-                ));
-                if (grpIdx >= groups.length){
-                    return [null,_grpIdx = null, _rowIdx = null];
-                } else {
-                    return [groups[grpIdx], _grpIdx = grpIdx, _rowIdx = null];
-                }
+            const absDepth = Math.abs(depth);
+            do {
+                grpIdx += 1;
+            } while (grpIdx < groups.length && (
+                (Math.abs(groups[grpIdx][meta.DEPTH]) < absDepth) ||
+                (getCount(groups[grpIdx],NAV_COUNT) === 0)
+            ));
+            if (grpIdx >= groups.length){
+                return NO_RESULT;
             } else {
-                const absDepth = Math.abs(depth);
-                do {
-                    grpIdx += 1;
-                } while (grpIdx < groups.length && (
-                    (Math.abs(groups[grpIdx][meta.DEPTH]) < absDepth) ||
-                    (getCount(groups[grpIdx],NAV_COUNT) === 0)
-                ));
-                if (grpIdx >= groups.length){
-                    return [null,_grpIdx = null, _rowIdx = null];
-                } else {
-                    return [groups[grpIdx], _grpIdx = grpIdx, _rowIdx = null];
-                }
+                return [groups[grpIdx], grpIdx, null];
             }
         }
     }
+}
 
-    function previous(grpIdx=_grpIdx, rowIdx=_rowIdx){
-        _direction = BACKWARDS;
-        if (grpIdx !== null && groups[grpIdx][meta.DEPTH] === 1 && typeof rowIdx === 'number'){
-            let lastGroup = groups[grpIdx];
-            if (rowIdx === 0){
-                return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
-            } else {
-                rowIdx -= 1;
-                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx)
-                const row = rows[absRowIdx].slice()
-                // row[meta.IDX] = idx;
-                row[meta.DEPTH] = 0;
-                row[meta.COUNT] = 0;
-                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
-
-                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
-            }
+function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
+    if (grpIdx !== null && groups[grpIdx][meta.DEPTH] === 1 && typeof rowIdx === 'number'){
+        let lastGroup = groups[grpIdx];
+        if (rowIdx === 0){
+            return [lastGroup, grpIdx, null];
         } else {
-            if (grpIdx === null){
-                grpIdx = groups.length-1;
-            } else if (grpIdx === 0) {
-                return [null, _grpIdx = null, _rowIdx = null];
-            } else {
-                grpIdx -= 1;
-            }
-            let lastGroup = groups[grpIdx];
-            if (lastGroup[meta.DEPTH] === 1){
-                rowIdx = getCount(lastGroup, NAV_COUNT) - 1;
-                const absRowIdx = getAbsRowIdx(lastGroup, rowIdx)
-                const row = rows[absRowIdx].slice()
-                // row[meta.IDX] = idx;
-                row[meta.DEPTH] = 0;
-                row[meta.COUNT] = 0;
-                row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+            rowIdx -= 1;
+            const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
+            const row = data[absRowIdx].slice()
+            // row[meta.IDX] = idx;
+            row[meta.DEPTH] = 0;
+            row[meta.COUNT] = 0;
+            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
 
-                return [row, _grpIdx = grpIdx, _rowIdx = rowIdx];
-            }
-            while (lastGroup[meta.PARENT_IDX] !== null && groups[lastGroup[meta.PARENT_IDX]][meta.DEPTH] < 0){
-                grpIdx = lastGroup[meta.PARENT_IDX];
-                lastGroup = groups[grpIdx];
-            }
-            return [lastGroup, _grpIdx = grpIdx, _rowIdx = null];
+            return [row, grpIdx, rowIdx];
         }
+    } else {
+        if (grpIdx === null){
+            grpIdx = groups.length-1;
+        } else if (grpIdx === 0) {
+            return NO_RESULT;
+        } else {
+            grpIdx -= 1;
+        }
+        let lastGroup = groups[grpIdx];
+        if (lastGroup[meta.DEPTH] === 1){
+            rowIdx = getCount(lastGroup, NAV_COUNT) - 1;
+            const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
+            const row = data[absRowIdx].slice()
+            row[meta.DEPTH] = 0;
+            row[meta.COUNT] = 0;
+            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+
+            return [row, grpIdx, rowIdx];
+        }
+        while (lastGroup[meta.PARENT_IDX] !== null && groups[lastGroup[meta.PARENT_IDX]][meta.DEPTH] < 0){
+            grpIdx = lastGroup[meta.PARENT_IDX];
+            lastGroup = groups[grpIdx];
+        }
+        return [lastGroup, grpIdx, null];
     }
 }

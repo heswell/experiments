@@ -48,7 +48,6 @@ describe('construction', () => {
             [null, 'G3', null, null, null, null, 102, -2, 8, 'G3', null, 8, undefined, undefined]
         ]);
 
-        expect(rowSet.rowParents).toEqual([2, 2, 2, 2, 1, 1, 1, 1, 6, 6, 4, 4, 5, 5, 5, 5, 9, 9, 9, 9, 8, 8, 10, 11])
         expect(sortSet).toEqual([4, 5, 6, 7, 0, 1, 2, 3, 10, 11, 12, 13, 14, 15, 8, 9, 20, 21, 16, 17, 18, 19, 22, 23]);
         expect(groupRows.length).toBe(12);
 
@@ -64,7 +63,6 @@ describe('construction', () => {
             [101, -3, 8, 'G2'],
             [102, -3, 8, 'G3']
         ]);
-        expect(rowSet.rowParents).toEqual([6, 6, 7, 7, 2, 2, 3, 4, 14, 14, 10, 10, 12, 12, 12, 12, 19, 19, 19, 19, 17, 17, 21, 23])
         expect(groupRows.length).toBe(24);
 
         expect(groupRows.map(d => d.slice(6, 10).concat(d.slice(10, 12)))).toEqual([
@@ -198,17 +196,30 @@ describe('rowParents', () => {
     test('correctly rebuilt when first column removed from groupBy  (reduceGroupBy)', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2])
         rowSet.groupBy([GROUP_COL_2]);
-        console.log(join(rowSet.groupRows))
         expect(rowSet.rowParents).toEqual([4, 4, 4, 4, 2, 2, 2, 2, 4, 4, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 2, 3])
     });
   
     test('correctly rebuilt when middle column removed from three col groupBy  (reduceGroupBy)', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2,  GROUP_COL_3])
         rowSet.groupBy([GROUP_COL_1, GROUP_COL_3]);
-        console.log(join(rowSet.groupRows))
         expect(rowSet.rowParents).toEqual([1, 1, 2, 2, 1, 1, 2, 3, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7])
     });
 
+    test('inserted row correctly added to rowParents, single col grouping', () => {
+        const [table, rowset] = getTestTableAndRowset();
+        const rowSet = new GroupRowSet(rowset, _rowset_columns, [GROUP_COL_1]);
+        table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
+        rowSet.insert(24, table.rows[24])
+        expect(rowSet.rowParents).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0])
+    });
+
+    test('inserted row correctly added to rowParents, two col grouping', () => {
+        const [table, rowset] = getTestTableAndRowset();
+        const rowSet = new GroupRowSet(rowset, _rowset_columns, [GROUP_COL_1,GROUP_COL_3]);
+        table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
+        rowSet.insert(24, table.rows[24])
+        expect(rowSet.rowParents).toEqual([1, 1, 2, 2, 1, 1, 2, 3, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 3])
+    });
 })
 
 describe('groupBy', () => {
@@ -1292,7 +1303,7 @@ describe('insert', () => {
         table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
         const results = rowSet.insert(24, table.rows[24])
         expect(rowSet.data[24]).toEqual(['key25', 'G1', 'I2', 'T5', 6, 112, 24, 'key25']);
-        expect(results).toEqual({ updates: [[100, -2, 9]] });
+        expect(results).toEqual({ updates: [[100, rowSet.meta.COUNT, 9]] });
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11, 12)))).toEqual([
             [0, -1, 9, 'G1', 0],
             [1, -1, 8, 'G2', 9],
@@ -1308,13 +1319,12 @@ describe('insert', () => {
         rowSet.setRange({ lo: 0, hi: 10 });
         table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
         const results = rowSet.insert(24, table.rows[24])
-        // onsole.log(`${join(rowSet.groupRows)} ${join(rowSet.data)} ${JSON.stringify(rowSet.index)}`);
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11, 12)))).toEqual([
             [0, +1, 9, 'G1', 0],
             [1, -1, 8, 'G2', 9],
             [2, -1, 8, 'G3', 17]
         ]);
-        expect(results).toEqual({ replace: true })
+        expect(results).toEqual({"updates":[[100,rowset.meta.COUNT,9]]})
         const { rows, size } = rowSet.setRange({ lo: 0, hi: 10 }, false);
         expect(size).toBe(12);
         expect(rows.map(d => d.slice(6, 10))).toEqual([
@@ -1353,7 +1363,7 @@ describe('insert', () => {
             [10, -1, 1, 'G3/I2'],
             [11, -1, 1, 'G3/O2']
         ]);
-        expect(results).toEqual({ updates: [[100, -2, 9]] });
+        expect(results).toEqual({ updates: [[100, rowset.meta.COUNT, 9]] });
     });
 
     test('insert into correct position in groupedRows, single col groupby, group not present, new group at end', () => {
@@ -1813,7 +1823,6 @@ describe('setRange', () => {
         ({ rows } = rowSet.setRange({ lo: 5, hi: 15 }));
         ({ rows } = rowSet.setRange({ lo: 15, hi: 25 }));
         ({ rows } = rowSet.setRange({ lo: 20, hi: 27 }));
-
         ({ rows } = rowSet.setRange({ lo: 10, hi: 20 }));
         expect(rows.map(d => d.slice(6, 10))).toEqual([
             [110, 0, 0, 'key09'],

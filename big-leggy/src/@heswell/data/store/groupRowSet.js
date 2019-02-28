@@ -9,7 +9,11 @@ import {
     groupbyExtendsExistingGroupby, groupbyReducesExistingGroupby,
     findGroupPositions, groupbySortReversed,
     GroupIdxTracker, SimpleTracker, getCount, incrementGroupCount,
-    aggregateGroup, findAggregatedColumns, adjustGroupIndices, adjustLeafIdxPointers
+    aggregateGroup,
+    findAggregatedColumns,
+    adjustGroupIndices,
+    adjustLeafIdxPointers,
+    allGroupsExpanded
 } from './groupUtils';
 import { sortBy, sortPosition } from './sort';
 import { extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn } from './filterUtils';
@@ -462,15 +466,8 @@ export default class GroupRowSet extends BaseRowSet {
             const value = updates[i + 2];
             rowUpdates.push(colIdx,originalValue,value);
 
-
-            const dataRow = this.data[rowIdx]
-            console.log(`dataRow (idx ${rowIdx})  ${dataRow[5]}  ${dataRow[6]}`);
-
-
-
             let grpIdx = rowParents[rowIdx];
             // this seems to return 0 an awful lot
-            console.log(`parent Group of row ${rowIdx} = ${grpIdx}`)
             let ii = 0;
             
             // If this column is being aggregated
@@ -480,7 +477,6 @@ export default class GroupRowSet extends BaseRowSet {
                 // collect adjusted aggregations for each group level
                 do {
                     let groupRow = groups[grpIdx];
-                    console.log(`groupRow (row ${rowIdx}) = ${grpIdx} ${groupRow[5]}  ${groupRow[6]}`);
 
                     let originalGroupValue = groupRow[colIdx];
                     const diff = value - originalValue;
@@ -512,20 +508,17 @@ export default class GroupRowSet extends BaseRowSet {
                 const [grpIdx, ...updates] = groupUpdates[i];
                 // won't work - need to chnage groupIterator
                 const rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
-                console.log(`rangeIdx of group ${grpIdx} = ${rangeIdx}`)
                 if (rangeIdx !== -1){
                     outgoingUpdates.push([lo+rangeIdx+offset, ...updates]);
                 }
             }
         }
         const rangeIdx = this.iter.getRangeIndexOfRow(rowIdx);
-        console.log(`rangeIdx of row ${rowIdx} = ${rangeIdx}`)
         if (rangeIdx !== -1){
             // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
             outgoingUpdates.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
         
-    console.log(outgoingUpdates)    
         return outgoingUpdates;
     }
 
@@ -547,11 +540,11 @@ export default class GroupRowSet extends BaseRowSet {
             return r;
         }
 
-
         if (groupPositions.length === groupby.length){
             // all necessary groups are already in place
             let grpIdx = groupPositions[groupPositions.length-1];
             const groupRow = groups[grpIdx];
+            this.rowParents[idx] = grpIdx;
             let count = groupRow[COUNT];
             incrementGroupCount(groups, groupRow, this.meta);
             const sortIdx = groupRow[IDX_POINTER];
@@ -559,13 +552,14 @@ export default class GroupRowSet extends BaseRowSet {
             // all existing pointers from the insertionPoint forward are going to be displaced by +1
             adjustLeafIdxPointers(groups, insertionPoint, this.meta);
             sortSet.splice(insertionPoint,0,row[IDX]);
-            // this won't work becayse the new row is not yet known to the iterator
+            if (allGroupsExpanded(groups, groupRow, this.meta)){
+                this.currentLength += 1;
+            }
             // TODO need to injectRow into iterator, see code below
             let rangeIdx = this.iter.getRangeIndexOfRow(idx);
             if (rangeIdx !== -1){
                 // the row is going to be sent to the client, we will resend the whole rowset
                 result = {replace: true}
-                this.currentLength += 1;
             } else {
                 // we will have at least 1 update - the top-level group, more if multiple group levels
                 // and top group is expanded
@@ -576,7 +570,7 @@ export default class GroupRowSet extends BaseRowSet {
                     count = groups[grpIdx][COUNT];
                     rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
                     if (rangeIdx !== -1){
-                        result.updates.push([rangeIdx+offset, -2, count]);
+                        result.updates.push([rangeIdx+offset, COUNT, count]);
                     }
                 }
             }
@@ -593,13 +587,11 @@ export default class GroupRowSet extends BaseRowSet {
             // nestedGroups.forEach((group,i) => group[System.INDEX_FIELD] = newGroupedRowIdx+i)
             adjustGroupIndices(groups, newGroupedRowIdx, this.meta, nestedGroups.length);
             groups.splice.apply(groups,[newGroupedRowIdx,0].concat(nestedGroups));
-
             let rangeIdx = this.iter.injectRow(newGroupedRowIdx);
             if (rangeIdx !== -1){
                 result = {replace: true}
                 this.currentLength += 1;
             }
-
         } else {
             // some but not all groups are missing
             const baseGroupby = groupCols.slice(0,groupPositions.length)

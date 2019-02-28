@@ -467,6 +467,19 @@ export function incrementGroupCount(groups, group, {COUNT, PARENT_IDX}){
     }
 }
 
+export function allGroupsExpanded(groups, group, {DEPTH, PARENT_IDX}){
+
+    do {
+        if (group[DEPTH] < 0){
+            return false;
+        }
+        group = groups[group[PARENT_IDX]];
+
+    } while (group)
+    
+    return true;
+}
+
 export function adjustGroupIndices(groups, grpIdx, {IDX, DEPTH, IDX_POINTER, PARENT_IDX}, adjustment=1){
     for (let i=0;i<groups.length;i++){
         if (groups[i][IDX] >= grpIdx){

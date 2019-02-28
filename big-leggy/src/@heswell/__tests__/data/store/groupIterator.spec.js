@@ -9,6 +9,7 @@ import {
   GROUP_COL_2,
   GROUP_COL_3,
   toTuple,
+  pluck,
   join
 } from '../testData';
 
@@ -234,7 +235,7 @@ describe('groupIterator', () => {
 
   })
 
-  describe.only('getRangeIndexOfGroup', () => {
+  describe('getRangeIndexOfGroup', () => {
     test('all groups collapsed, single level grouping', () => {
       const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
       const {iter} = rowSet;
@@ -262,13 +263,163 @@ describe('groupIterator', () => {
       const {iter} = rowSet;
       iter.setRange({lo:0, hi: 30})
 
-      console.log(join(rowSet.groupRows))
-
       expect(iter.getRangeIndexOfGroup(0)).toEqual(0) // G1
       expect(iter.getRangeIndexOfGroup(1)).toEqual(1) // G1/I2
       expect(iter.getRangeIndexOfGroup(2)).toEqual(2) // G1/U2
     })
+  });
 
+  describe('setRange', () => {
+
+    test('gets initial range and subsequent contiguous ranges', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+
+      let [rows] = iter.setRange({lo:0, hi: 10})
+      expect(pluck(rows,6, 0,1)).toEqual([
+        [0, null, 'G1'],     // 0 is grpIdx
+        [0, 'key01', 'G1'],  // 0 id rowIdx
+        [1, 'key02', 'G1'],
+        [2, 'key03', 'G1'],
+        [3, 'key04', 'G1'],
+        [4, 'key05', 'G1'],
+        [5, 'key06', 'G1'],
+        [6, 'key07', 'G1'],
+        [7, 'key08', 'G1'],
+        [1, null, 'G2' ]
+      ]);
+
+      [rows] = iter.setRange({lo:10, hi: 20});
+      expect(pluck(rows,6, 0,1)).toEqual([ 
+      [ 8, 'key09', 'G2' ],
+      [ 9, 'key10', 'G2' ],
+      [ 10, 'key11', 'G2' ],
+      [ 11, 'key12', 'G2' ],
+      [ 12, 'key13', 'G2' ],
+      [ 13, 'key14', 'G2' ],
+      [ 14, 'key15', 'G2' ],
+      [ 15, 'key16', 'G2' ],
+      [ 2, null, 'G3' ],
+      [ 16, 'key17', 'G3' ] ]);
+
+      [rows] = iter.setRange({lo:20, hi: 30});
+      expect(pluck(rows,6, 0,1)).toEqual([
+        [ 17, 'key18', 'G3' ],
+        [ 18, 'key19', 'G3' ],
+        [ 19, 'key20', 'G3' ],
+        [ 20, 'key21', 'G3' ],
+        [ 21, 'key22', 'G3' ],
+        [ 22, 'key23', 'G3' ],
+        [ 23, 'key24', 'G3' ] ]
+      );
+    })
+
+    test('gets initial range and subsequent overlapping, same size range, using delta', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+
+      let [rows] = iter.setRange({lo:0, hi: 10});
+      [rows] = iter.setRange({lo:6, hi: 16});
+      expect(pluck(rows,6, 0,1)).toEqual([ 
+      [ 8, 'key09', 'G2' ],
+      [ 9, 'key10', 'G2' ],
+      [ 10, 'key11', 'G2' ],
+      [ 11, 'key12', 'G2' ],
+      [ 12, 'key13', 'G2' ],
+      [ 13, 'key14', 'G2' ]
+    ]);
+    })
+
+    test('gets initial range and subsequent overlapping, same size range, not delta', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+
+      let [rows] = iter.setRange({lo:0, hi: 10});
+      [rows] = iter.setRange({lo:6, hi: 16}, false);
+      expect(pluck(rows,6, 0,1)).toEqual([ 
+      [5, 'key06', 'G1'],
+      [6, 'key07', 'G1'],
+      [7, 'key08', 'G1'],
+      [1, null, 'G2' ],
+      [ 8, 'key09', 'G2' ],
+      [ 9, 'key10', 'G2' ],
+      [ 10, 'key11', 'G2' ],
+      [ 11, 'key12', 'G2' ],
+      [ 12, 'key13', 'G2' ],
+      [ 13, 'key14', 'G2' ]
+    ]);
+    })
+
+    test('skips rows where next range is not contiguous', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+
+      let [rows] = iter.setRange({lo:0, hi: 10});
+      [rows] = iter.setRange({lo:20, hi: 30});
+      expect(pluck(rows,6, 0,1)).toEqual([
+        [ 17, 'key18', 'G3' ],
+        [ 18, 'key19', 'G3' ],
+        [ 19, 'key20', 'G3' ],
+        [ 20, 'key21', 'G3' ],
+        [ 21, 'key22', 'G3' ],
+        [ 22, 'key23', 'G3' ],
+        [ 23, 'key24', 'G3' ] ]
+      );
+    })
+
+    test('backward navigation', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+      let [rows] = iter.setRange({lo:0, hi: 10});
+      [rows] = iter.setRange({lo:10, hi: 20});
+      [rows] = iter.setRange({lo:0, hi: 10});
+      expect(pluck(rows,6, 0,1)).toEqual([
+        [0, null, 'G1'],     // 0 is grpIdx
+        [0, 'key01', 'G1'],  // 0 id rowIdx
+        [1, 'key02', 'G1'],
+        [2, 'key03', 'G1'],
+        [3, 'key04', 'G1'],
+        [4, 'key05', 'G1'],
+        [5, 'key06', 'G1'],
+        [6, 'key07', 'G1'],
+        [7, 'key08', 'G1'],
+        [1, null, 'G2' ]
+      ]);
+    })
+
+    test('backward navigation, skipping rows', () => {
+      const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+      rowSet.setGroupState({'G1': true, 'G2': true, 'G3': true})
+      const {iter} = rowSet;
+      let [rows] = iter.setRange({lo:0, hi: 10});
+      [rows] = iter.setRange({lo:10, hi: 20});
+      [rows] = iter.setRange({lo:20, hi: 30});
+      [rows] = iter.setRange({lo:0, hi: 10});
+
+      expect(pluck(rows,6, 0,1)).toEqual([
+        [0, null, 'G1'],     // 0 is grpIdx
+        [0, 'key01', 'G1'],  // 0 id rowIdx
+        [1, 'key02', 'G1'],
+        [2, 'key03', 'G1'],
+        [3, 'key04', 'G1'],
+        [4, 'key05', 'G1'],
+        [5, 'key06', 'G1'],
+        [6, 'key07', 'G1'],
+        [7, 'key08', 'G1'],
+        [1, null, 'G2' ]
+      ]);
+
+
+    })
+
+  })
+
+  describe('getCurrentRange', () => {
 
   })
 
