@@ -6,7 +6,9 @@ const NULL_FORMATTER = () => {};
 
 const ColumnBearer = (props) => {
     
-    const {rows, column, headerHeight, headingDepth} = props;
+    const {rows, gridModel} = props;
+    const {_movingColumn: column, meta, headerHeight, _headingDepth: headingDepth} = gridModel
+
     const {left,width} = column;
     const top = (headingDepth - 1) * headerHeight; 
 
@@ -21,7 +23,9 @@ const ColumnBearer = (props) => {
                         {getCellRenderer({
                             idx,
                             column,
+                            meta,
                             formatter: column.formatter || NULL_FORMATTER,
+                            row,
                             value:row[column.key]})}
                     </div>
                 )

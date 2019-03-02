@@ -166,11 +166,7 @@ export default class Grid extends React.Component {
                 {emptyDisplay}
 
                 {model._movingColumn &&
-                    <ColumnBearer
-                        column={model._movingColumn}
-                        headingDepth={_headingDepth}
-                        headerHeight={model.headerHeight}
-                        rows={rows} />}
+                    <ColumnBearer gridModel={model} rows={rows} />}
 
             </div>
         );

@@ -1318,13 +1318,16 @@ describe('insert', () => {
         rowSet.setGroupState({ G1: true });
         rowSet.setRange({ lo: 0, hi: 10 });
         table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
+
         const results = rowSet.insert(24, table.rows[24])
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(11, 12)))).toEqual([
             [0, +1, 9, 'G1', 0],
             [1, -1, 8, 'G2', 9],
             [2, -1, 8, 'G3', 17]
         ]);
-        expect(results).toEqual({"updates":[[100,rowset.meta.COUNT,9]]})
+
+        // the new row must be sent to client, so we will be asked to send whole rowset
+        expect(results).toEqual({replace: true})
         const { rows, size } = rowSet.setRange({ lo: 0, hi: 10 }, false);
         expect(size).toBe(12);
         expect(rows.map(d => d.slice(6, 10))).toEqual([
@@ -1495,7 +1498,7 @@ describe('insert', () => {
         ]);
 
         table.insert(['key02', 'G1', 'O2', 'T3', 8, 88]);
-        results = rowSet.insert(1, table.rows[1])
+        results = rowSet.insert(1, table.rows[1]);
         expect(rowSet.groupRows.map(d => d.slice(6, 10).concat(d.slice(10, 12)))).toEqual([
             [0, -3, 2, 'G1', null, 1],
             [1, -2, 1, 'G1/I2', 0, 2],
@@ -1503,7 +1506,9 @@ describe('insert', () => {
             [3, -2, 1, 'G1/O2', 0, 4],
             [4, -1, 1, 'G1/O2/T3', 3, 1]
         ]);
-        expect(results).toEqual({ replace: true });
+
+        // neither row or new groups will be sent to client, but count shoule be updated on top group
+        expect(results).toEqual({ updates: [[100, rowset.meta.COUNT, 2]] });
 
         table.insert(['key03', 'G1', 'I2', 'T4', 8, 88]);
         results = rowSet.insert(2, table.rows[2])
@@ -1543,6 +1548,40 @@ describe('insert', () => {
 
     });
 });
+
+describe('insert + update', () => {
+
+    test('single col grouping, all collapsed', () => {
+        const aggColumns = _rowset_columns_with_aggregation;
+        const [table, rowset] = getTestTableAndRowset();
+        const rowSet = new GroupRowSet(rowset, aggColumns, [GROUP_COL_1]);
+        rowSet.setRange({ lo: 0, hi: 10 })
+
+        table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
+        rowSet.insert(24, table.rows[24])
+        
+        let results = rowSet.update(24, [4, 9, 10.125]);
+        expect(results).toEqual([[100, 4, 4.875, 5]])    
+    })
+
+    test('single col grouping, target group expanded', () => {
+        const aggColumns = _rowset_columns_with_aggregation;
+        const [table, rowset] = getTestTableAndRowset();
+        const rowSet = new GroupRowSet(rowset, aggColumns, [GROUP_COL_1]);
+        rowSet.setGroupState({ 'G1': true });
+        rowSet.setRange({ lo: 0, hi: 10 })
+
+        table.insert(['key25', 'G1', 'I2', 'T5', 6, 112]);
+        rowSet.insert(24, table.rows[24])
+
+        let results = rowSet.update(24, [4, 9, 10.125]);
+        expect(results).toEqual([
+            [100, 4, 4.875, 5],
+            [109, 4, 9, 10.125]
+        ])    
+    })
+
+})
 
 describe('update', () => {
     const aggColumns = _rowset_columns_with_aggregation;

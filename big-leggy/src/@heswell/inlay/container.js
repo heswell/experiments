@@ -107,7 +107,7 @@ export default class Container extends React.Component {
         let {layoutModel/*,style*/} = this.props;
 
         if (layoutModel === undefined){
-            console.log(`getRootLayoutModel for ${typeOf(this)}`);
+            // console.log(`getRootLayoutModel for ${typeOf(this)}`);
             return applyLayout(getLayoutModel(this));
         } /*else if (layoutModel.children && layoutModel.children.length === 0){
             alert('it happens')

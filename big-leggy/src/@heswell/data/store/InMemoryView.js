@@ -224,6 +224,8 @@ export default class InMemoryView {
             if (_filter) {
                 rowSet.clearFilter();
             }
+            // Note this is not strictly necessary. If filter in only on one column and filterRowSet is for same column, it can be kept
+            this.filterRowSet = null;
         } else if (includesNoValues(filter)) {
             // this accommodates where user has chosen de-select all from filter set - 
             // TODO couldn't we handle that entirely on the client ?

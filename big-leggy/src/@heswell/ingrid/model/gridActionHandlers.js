@@ -310,7 +310,12 @@ function moveBegin(state, {column, scrollLeft=0}) {
     const _virtualLeft = getColumnLeft(state._groups,column);
     const left = _virtualLeft - scrollLeft;
     const moveBoundaries = getColumnMoveBoundaries(state._groups);
-    const {updatedGroups: _groups, groupIdx, groupColIdx} = replaceGroupColumn(state._groups,column,{ key: 'move-target', isPlaceHolder: true, width: column.width });
+    const {updatedGroups: _groups, groupIdx, groupColIdx} = replaceGroupColumn(state._groups,column,{ 
+        key: 'move-target',
+        isPlaceHolder: true, 
+        width: column.width,
+        formatter: column.formatter
+    });
     const _movingColumn = {...column, moving: true,left,_virtualLeft,moveBoundaries,groupIdx,groupColIdx};
     return {...state, _groups, _movingColumn, _columnDragPlaceholder: {groupIdx, groupColIdx}, scrollLeft};
 }

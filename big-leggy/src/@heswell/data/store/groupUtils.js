@@ -459,14 +459,6 @@ export function indexOfCol(key, cols = null) {
 //     return results;
 // }
 
-export function incrementGroupCount(groups, group, {COUNT, PARENT_IDX}){
-    group[COUNT] += 1;
-    while (group[PARENT_IDX] !== null){
-        group = groups[group[PARENT_IDX]];
-        group[COUNT] += 1;
-    }
-}
-
 export function allGroupsExpanded(groups, group, {DEPTH, PARENT_IDX}){
 
     do {
@@ -536,7 +528,16 @@ export function findGroupPositions(groups, groupby, row) {
 
 }
 
-export function buildGroupKey(groupby, row){
+export const expandRow = (groupCols, row, meta) => {
+    const r = row.slice();
+    r[meta.IDX] = 0;
+    r[meta.DEPTH] = 0; 
+    r[meta.COUNT] = 0;
+    r[meta.KEY] = buildGroupKey(groupCols, row);
+    return r;
+}
+
+function buildGroupKey(groupby, row){
     const extractKey = ([idx]) => row[idx];
     return groupby.map(extractKey).join('/');
 }

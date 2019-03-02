@@ -104,7 +104,7 @@ export function getEmptyTestTableAndRowset(){
 export const extract = (lists, idx) => lists.map(list => list[idx])
 
 export function toTuple(val,i){
-    if (i % 3 === 0){
+    if (i % 4 === 0){
       return `\t${val}`
     } else {
       return val;
@@ -119,7 +119,7 @@ export const pluck = (list, ...idx) => {
     return list.map(row => {
         const out = [];
         idx.forEach((idx,i) => out[i] = row[idx]);
-        return out;
+        return out.join('\t');
     })
 }
 

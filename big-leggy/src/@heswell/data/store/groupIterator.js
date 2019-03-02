@@ -24,30 +24,11 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         currentRange,
         getRangeIndexOfGroup,
         getRangeIndexOfRow,
-        injectRow,
-        refresh,
-        reset
+        setNavSet,
+        refresh: currentRange,
+        clear
     };
 
-    function injectRow(grpIdx){
-
-        let idx;
-
-        for (let i=0;i<_range_positions.length;i+=RANGE_POS_TUPLE_SIZE){
-            idx = _range_positions[i];
-            let grpIdx1 = _range_positions[i+1];
-            let rowIdx1 = _range_positions[i+2];
-
-            if (grpIdx1 === grpIdx && rowIdx1 === null){
-                return idx;
-            }
-        }
-        const rangeSize = _range.hi - _range.lo;
-        if (_range_positions.length / RANGE_POS_TUPLE_SIZE < rangeSize){
-            return idx + 1;
-        }
-        return -1;
-    }
 
     function getRangeIndexOfGroup(grpIdx){
         const list = _range_positions;
@@ -75,7 +56,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         return -1
     }
 
-    function reset(){
+    function clear(){
         _idx = 0;
         _grpIdx = null;
         _rowIdx = null;
@@ -86,10 +67,10 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         _range_position_hi = [null, null, null];
     }
 
-    function refresh(_navSet, _IDX, _COUNT){
-        navSet = _navSet;
-        NAV_IDX = _IDX;
-        NAV_COUNT = _COUNT;
+    function setNavSet([newNavSet, navIdx, navCount]){
+        navSet = newNavSet;
+        NAV_IDX = navIdx;
+        NAV_COUNT = navCount;
     }
 
     function currentRange(){

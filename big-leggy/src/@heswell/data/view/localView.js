@@ -160,6 +160,7 @@ export default class LocalView extends EventEmitter {
     }
 
     filter(filter){
+        console.log(`LocalView filter ${JSON.stringify(filter)}`)
         const {rows, size} = this._dataView.filter(filter);
         const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
         const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);

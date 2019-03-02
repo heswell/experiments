@@ -4,7 +4,9 @@ import {
     _getTestTable,
     _getTestRowset,
     _rowset_columns,
-    _getInstrumentRowset
+    _getInstrumentRowset,
+    join,
+    pluck
 } from '../testData';
 
 import {
@@ -618,5 +620,6 @@ describe('getDistinctValuesForColumn', () => {
             ['VISN','VisionChina Media, Inc.',12.9,65510000,2007,'Technology','Advertising',109,0,0,'VISN']
         ])
 
-    })
+    });
+
 });

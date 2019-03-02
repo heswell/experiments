@@ -4,11 +4,12 @@ import Table from './table';
 import {
     groupRows,
     findSortedCol, findDoomedColumnDepths, getGroupStateChanges,
-    incrementDepth, decrementDepth,buildGroupKey,
+    incrementDepth, decrementDepth,
+    expandRow,
     splitGroupsAroundDoomedGroup, lowestIdxPointer,
     groupbyExtendsExistingGroupby, groupbyReducesExistingGroupby,
     findGroupPositions, groupbySortReversed,
-    GroupIdxTracker, SimpleTracker, getCount, incrementGroupCount,
+    GroupIdxTracker, SimpleTracker, getCount,
     aggregateGroup,
     findAggregatedColumns,
     adjustGroupIndices,
@@ -140,7 +141,7 @@ export default class GroupRowSet extends BaseRowSet {
         } else if (groupbyReducesExistingGroupby(groupby, this.groupby)) {
             this.reduceGroupby(groupby);
             this.range = NULL_RANGE
-            this.iter.reset();
+            this.iter.clear();
             this.currentLength = this.countVisibleRows(this.groupRows, this.filterSet !== null);
         } else {
             this.applyGroupby(groupby);
@@ -284,8 +285,7 @@ export default class GroupRowSet extends BaseRowSet {
             }
         }
 
-        let [navSet, NAV_IDX, NAV_COUNT] = this.selectNavigationSet(false);
-        this.iter.refresh(navSet, NAV_IDX, NAV_COUNT);
+        this.iter.setNavSet(this.selectNavigationSet(false));
         this.currentLength = this.countVisibleRows(groups, false);
     }
 
@@ -379,8 +379,7 @@ export default class GroupRowSet extends BaseRowSet {
         this.currentFilter = filter;
         this.currentLength = this.countVisibleRows(this.groupRows, true);
 
-        [navSet, NAV_IDX, NAV_COUNT] = this.selectNavigationSet(true);
-        this.iter.refresh(navSet, NAV_IDX, NAV_COUNT)
+        this.iter.setNavSet(this.selectNavigationSet(true))
 
     }
 
@@ -522,107 +521,93 @@ export default class GroupRowSet extends BaseRowSet {
         return outgoingUpdates;
     }
 
-    insert(idx, row){
+    insert(newRowIdx, row){
         // TODO look at append and idx manipulation for insertion at head. See insertDeprecated
-        const { groupRows: groups, groupby, data: rows, sortSet, offset, columns } = this
-        const groupCols = mapSortCriteria(groupby, this.columnMap);
+        const { groupRows: groups, groupby, data: rows, sortSet, columns, meta, iter: iterator } = this
+        let groupCols = mapSortCriteria(groupby, this.columnMap);
         const groupPositions = findGroupPositions(groups, groupCols, row);
-        const {IDX, DEPTH, COUNT, KEY, IDX_POINTER} = this.meta;
-        let result;
+        const {IDX, COUNT, KEY, IDX_POINTER} = meta;
         const GROUP_KEY_SORT = [[KEY, 'asc']]
+        const allGroupsExist = groupPositions.length === groupby.length;
+        const noGroupsExist = groupPositions.length === 0;
+        const someGroupsExist = !noGroupsExist && !allGroupsExist;
+        let result;
+        let newGroupIdx = null;
 
-        const expandRow = (groupCols, row) => {
-            const r = row.slice();
-            r[IDX] = 0;
-            r[DEPTH] = 0; 
-            r[COUNT] = 0;
-            r[KEY] = buildGroupKey(groupCols, row);
-            return r;
-        }
-
-        if (groupPositions.length === groupby.length){
-            // all necessary groups are already in place
+        if (allGroupsExist){
+            // all necessary groups are already in place, we will just insert a row and update counts/aggregates
             let grpIdx = groupPositions[groupPositions.length-1];
             const groupRow = groups[grpIdx];
-            this.rowParents[idx] = grpIdx;
+            this.rowParents[newRowIdx] = grpIdx;
             let count = groupRow[COUNT];
-            incrementGroupCount(groups, groupRow, this.meta);
-            const sortIdx = groupRow[IDX_POINTER];
-            const insertionPoint = sortIdx + count;
+
+            const insertionPoint = groupRow[IDX_POINTER] + count;
             // all existing pointers from the insertionPoint forward are going to be displaced by +1
-            adjustLeafIdxPointers(groups, insertionPoint, this.meta);
+            adjustLeafIdxPointers(groups, insertionPoint, meta);
             sortSet.splice(insertionPoint,0,row[IDX]);
-            if (allGroupsExpanded(groups, groupRow, this.meta)){
+            if (allGroupsExpanded(groups, groupRow, meta)){
                 this.currentLength += 1;
             }
-            // TODO need to injectRow into iterator, see code below
-            let rangeIdx = this.iter.getRangeIndexOfRow(idx);
-            if (rangeIdx !== -1){
-                // the row is going to be sent to the client, we will resend the whole rowset
-                result = {replace: true}
-            } else {
-                // we will have at least 1 update - the top-level group, more if multiple group levels
-                // and top group is expanded
-                result = {updates: []}
-                // the row is not in the client range, most we have to send is/are update(s) to group
-                for (let i=0;i<groupPositions.length;i++){
-                    grpIdx = groupPositions[i];
-                    count = groups[grpIdx][COUNT];
-                    rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
-                    if (rangeIdx !== -1){
-                        result.updates.push([rangeIdx+offset, COUNT, count]);
-                    }
-                }
-            }
-        } else if (groupPositions.length === 0){
-            // all groups are missing
-            const sorter = sortBy(GROUP_KEY_SORT);
-            const newGroupedRowIdx = sortPosition(groups, sorter, expandRow(groupCols, row), 'last-available');
-            const sortIdx = sortSet.length;
-            sortSet.push(idx);
-            const nestedGroups = groupRows(rows, sortSet, columns, this.columnMap, groupCols, {
-                startIdx: sortIdx, length: 1, groupIdx: newGroupedRowIdx-1
-            });
-            // set up the pointer to sortSet, add row idx to sortset, add row to data
-            // nestedGroups.forEach((group,i) => group[System.INDEX_FIELD] = newGroupedRowIdx+i)
-            adjustGroupIndices(groups, newGroupedRowIdx, this.meta, nestedGroups.length);
-            groups.splice.apply(groups,[newGroupedRowIdx,0].concat(nestedGroups));
-            let rangeIdx = this.iter.injectRow(newGroupedRowIdx);
-            if (rangeIdx !== -1){
-                result = {replace: true}
-                this.currentLength += 1;
-            }
+            
         } else {
-            // some but not all groups are missing
-            const baseGroupby = groupCols.slice(0,groupPositions.length)
-            const newGroupbyClause = groupCols.slice(groupPositions.length);
-            const sorter = sortBy(GROUP_KEY_SORT);
-            const rootIdx = groups[groupPositions[groupPositions.length-1]][IDX];
-            const sortIdx = sortSet.length;
-            sortSet.push(idx);
-            const newGroupedRowIdx = sortPosition(groups, sorter, expandRow(groupCols, row), 'last-available');
-            const nestedGroups = groupRows(rows, sortSet, columns, this.columnMap, newGroupbyClause, {
-                baseGroupby, rootIdx, startIdx: sortIdx, length: 1, groupIdx: newGroupedRowIdx-1
+
+            newGroupIdx = sortPosition(groups, sortBy(GROUP_KEY_SORT), expandRow(groupCols, row, meta), 'last-available');
+            sortSet.push(newRowIdx);
+            let nestedGroups, baseGroupby, rootIdx;
+
+            if (someGroupsExist){
+                baseGroupby = groupCols.slice(0,groupPositions.length)
+                rootIdx = groups[groupPositions[groupPositions.length-1]][IDX];
+                groupCols = groupCols.slice(groupPositions.length);
+            }
+
+            nestedGroups = groupRows(rows, sortSet, columns, this.columnMap, groupCols, {
+                startIdx: sortSet.length - 1, length: 1, groupIdx: newGroupIdx-1,
+                baseGroupby, rootIdx
             });
 
-            // const newGroupedRowIdx = sortPosition(groups, sorter, nestedGroups[0], 'last-available');
-            // set up the pointer to sortSet, add row idx to sortset, add row to data
-            groupPositions.forEach(grpIdx => {
-                const group = groups[grpIdx];
-                group[COUNT] += 1;
-            })
-            adjustGroupIndices(groups, newGroupedRowIdx, this.meta, nestedGroups.length);
-            groups.splice.apply(groups,[newGroupedRowIdx,0].concat(nestedGroups));
+            adjustGroupIndices(groups, newGroupIdx, meta, nestedGroups.length);
+            groups.splice.apply(groups,[newGroupIdx,0].concat(nestedGroups));
+        }
 
-            let rangeIdx = this.iter.injectRow(newGroupedRowIdx);
-            if (rangeIdx !== -1){
-                result = {replace: true}
+        this.incrementGroupCounts(groupPositions);
+
+        iterator.refresh(); // force iterator to rebuild rangePositions
+        let rangeIdx = allGroupsExist
+            ? iterator.getRangeIndexOfRow(newRowIdx)
+            : iterator.getRangeIndexOfGroup(newGroupIdx);
+        if (rangeIdx !== -1){
+            result = {replace: true}
+            if (newGroupIdx !== null){
                 this.currentLength += 1;
             }
+        } else if (noGroupsExist === false){
+            result = {updates: this.collectGroupCountUpdates(groupPositions)}
         }
 
         return result;
+    }
 
+    incrementGroupCounts(groupPositions){
+        const {groupRows: groups, meta:{COUNT}} = this;
+        groupPositions.forEach(grpIdx => {
+            const group = groups[grpIdx];
+            group[COUNT] += 1;
+        })
+    }
+
+    collectGroupCountUpdates(groupPositions){
+        const {groupRows: groups, meta:{COUNT}, offset} = this;
+        const updates = [];
+        for (let i=0;i<groupPositions.length;i++){
+            const grpIdx = groupPositions[i];
+            const count = groups[grpIdx][COUNT];
+            const rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
+            if (rangeIdx !== -1){
+                updates.push([rangeIdx+offset, COUNT, count]);
+            }
+        }
+        return updates;
     }
 
     // start with a simplesequential search

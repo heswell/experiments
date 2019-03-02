@@ -3,7 +3,7 @@ import InMemoryView from '../../../data/store/InMemoryView';
 import { DataTypes } from '../../../data/store/types'
 import { INCLUDE, INCLUDE_SEARCH, EXCLUDE_SEARCH } from '../../../data/store/filter'
 
-import { _getTestTable, _rowset_columns, _getInstrumentTable, InstrumentColumns as columns } from '../testData'
+import { _getTestTable, _rowset_columns, _getInstrumentTable, InstrumentColumns as columns, join,pluck } from '../testData'
 
 describe('construction', () => {
     test('construction', () => {
@@ -78,7 +78,7 @@ describe('insertRow', () => {
         expect(updates.length).toBe(1);
         expect(updates[0]).toEqual({
             type: 'update',
-            updates: [[102, -2, 9]]
+            updates: [[102, view.rowSet.meta.COUNT, 9]]
         });
 
     });
@@ -244,8 +244,26 @@ describe('getFilterData', () => {
             selectedIndices: []
         })
 
-
     });
+
+    test('when filter is cleared on col1, distinct values on cols are refreshed', () => {
+        const view = new InMemoryView(_getInstrumentTable(), { columns });
+
+        view.filter({type: 'include', colName: 'Sector', values: ['Basic Industries']});
+        view.setRange({lo: 0,hi: 30}, false);
+
+        view.getFilterData({ name: 'Industry' });
+        let {size} = view.setRange({ lo: 0, hi: 12 }, true, DataTypes.FILTER_DATA);
+        expect(size).toEqual(11);
+
+        view.filter(null);
+
+        view.getFilterData({ name: 'Industry' });
+        ({size} = view.setRange({ lo: 0, hi: 12 }, true, DataTypes.FILTER_DATA));
+        expect(size).toEqual(109);
+    
+    })
+
 
     test('groupedRowset, single col grouping, apply filter to col then re-request filter data', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
@@ -532,7 +550,7 @@ describe('combined features', () => {
 });
 
 describe('select', () => {
-    test.only('exclude-search-results, no existing filter', () => {
+    test('exclude-search-results, no existing filter', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
 
