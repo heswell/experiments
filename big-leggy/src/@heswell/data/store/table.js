@@ -49,7 +49,6 @@ export default class Table extends EventEmitter {
             results.push(colIdx, row[colIdx], value);
             row[colIdx] = value;
         }
-        console.log(`[Table.update] update rowId ${rowIdx}`)
         this.emit('rowUpdated', rowIdx, results);
     }
 
@@ -90,7 +89,6 @@ export default class Table extends EventEmitter {
     }
 
     async loadData(url){
-        console.log(`load data from ${url} for ${this.name}`)
         fetch(url,{
 
         })

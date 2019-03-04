@@ -2,8 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import { SetFilter, NumberFilter, MultiColumnFilter } from '../../ingrid-extras';
-import { DataTypes, filterUtils, columnUtils } from '../../data';
+import { filterUtils, columnUtils, filter } from '../../data';
 import { PopupService } from '../services';
+
+const {SET, STARTS_WITH, EXCLUDE} = filter;
 
 //TODO how do we determine if filter is active sans filterData
 export default class ColumnFilter extends React.Component {
@@ -33,15 +35,25 @@ export default class ColumnFilter extends React.Component {
         this.props.onClearFilter(this.props.column);
     }
 
-    handleSetSelectionChange = (selected, filterMode, column = this.props.column) => {
+    handleSetSelectionChange = (selected, filterMode, searchText) => {
+        const {column, onFilter} = this.props;
         // same for an include filter that includes every value, but we don't normally represent it that way
-        if (filterMode === 'exclude' && selected.length === 0) {
+        if (filterMode === EXCLUDE && selected !== null && selected.length === 0) {
             this.props.onClearFilter(column);
-        } else if (filterMode === 'exclude-search-results' || filterMode === 'include-search-results') {
-            this.props.onSelect(DataTypes.FILTER_DATA, column.name, filterMode);
+        } else if (searchText) {
+            // This will create an EXCLUDE filter on dataView, but we don't have  corresponding filter
+            // here so there is no way to remove it.
+            //this.props.onSelect(DataTypes.FILTER_DATA, column.name, filterMode);
+            onFilter(column, {
+                type: STARTS_WITH,
+                mode: filterMode,
+                colName: column.name,
+                value: searchText
+            });
         } else {
-            this.props.onFilter(column, {
-                type: filterMode,
+            onFilter(column, {
+                type: SET,
+                mode: filterMode,
                 colName: column.name,
                 values: selected
             });

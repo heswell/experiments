@@ -1,7 +1,9 @@
 import React from 'react';
 import {Grid, Selection} from '../../ingrid';
-
+import {filter} from '../../data';
 const Count = {name: 'count',width: 80, type: 'number'};
+
+const {INCLUDE, EXCLUDE} = filter;
 
 export default class CheckList extends React.Component {
 
@@ -35,8 +37,9 @@ export default class CheckList extends React.Component {
     handleSelectionChange = (selectedIndices, idx) => {
         const deselected = selectedIndices.indexOf(idx) === -1;
         const filterMode = this.props.selectionDefault === true
-            ? 'exclude'
-            : 'include';
+            ? EXCLUDE
+            : INCLUDE;
+            
         const {meta} = this.props.dataView;
 
         const value = this.props.dataView.itemAtIdx(idx)[meta.KEY];

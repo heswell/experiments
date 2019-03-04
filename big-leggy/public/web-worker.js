@@ -337,7 +337,12 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending);
 
-const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+const FILTER_DATA_COLUMNS = [
+    {name: 'value'}, 
+    {name: 'count'}, 
+    {name: 'totalCount'}
+];
+
 const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
 
 const NULL_RANGE = {lo: 0,hi: 0};
@@ -358,6 +363,8 @@ function getFullRange({lo,hi,bufferSize=0}){
 }
 
 /*global fetch */
+
+// Note, these must be exported in this order and must be consumed from this file.
 
 /*
     Inserts (and size records) and updates must be batched separately. Because updates are 

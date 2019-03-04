@@ -1,14 +1,10 @@
 import BaseRowSet from './baseRowSet';
-import Table from './table';
-import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from './sort';
-import {functor as filterPredicate, INCLUDE, EXCLUDE} from './filter';
-import {extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn, FILTER_DATA_COLUMNS, extractFilterForColumn} from './filterUtils';
-import { addRowsToIndex } from './rowUtils';
-import {groupbyExtendsExistingGroupby} from './groupUtils';
-import { metaData, projectColumns, mapSortCriteria } from './columnUtils';
-
-const numerically = (a,b) => a-b;
-const removeUndefined = i => i !== undefined;
+import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
+import {functor as filterPredicate} from '../filter';
+import {extendsFilter} from '../filterUtils';
+import { addRowsToIndex } from '../rowUtils';
+import {groupbyExtendsExistingGroupby} from '../groupUtils';
+import { projectColumns, mapSortCriteria } from '../columnUtils';
 
 const SINGLE_COLUMN = 1;
 
@@ -16,7 +12,7 @@ const NO_OPTIONS = {
     filter: null
 }
 //TODO should range be baked into the concept of RowSet ?
-export default class RowSet extends BaseRowSet {
+export class RowSet extends BaseRowSet {
 
     // TODO stream as above
     static fromGroupRowSet({table,columns,offset,currentFilter: filter}){
@@ -29,13 +25,12 @@ export default class RowSet extends BaseRowSet {
         super(columns, offset);
         this.table = table;
         this.project = projectColumns(table.columnMap, columns);
-        this.meta = metaData(columns);
         this.data = table.rows;
         this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
         this.sortReverse= false;
-        this.buildSortSet();
+        this.sortSet = this.buildSortSet();
         this.sortRequired = false;
         if (filter){
             this.currentFilter = filter;
@@ -49,7 +44,7 @@ export default class RowSet extends BaseRowSet {
         for (let i=0;i<len;i++){
             arr[i] = [i,null,null];
         }
-        this.sortSet = arr;
+        return arr;
     }
 
     slice(lo,hi){
@@ -158,6 +153,7 @@ export default class RowSet extends BaseRowSet {
 
         if (!extendsCurrentFilter && this.sortRequired){
             // TODO this might be very expensive for large dataset
+            // WHEN DO WE DO THIS - IS THIS CORRECT !!!!!
             this.sort(this.sortCols)
         }
 
@@ -186,63 +182,6 @@ export default class RowSet extends BaseRowSet {
                 }
             }
         }
-    }
-
-    getDistinctValuesForColumn(column){
-        const {data: rows, currentFilter, columnMap} = this;
-        const colIdx = columnMap[column.name]
-        // TODO use filterSet
-        const {FILTER_IND} = metaData(this.columns);
-        const results = {};
-
-        if (this.currentFilter === null){
-            for (let i = 0, len = rows.length; i < len; i++) {
-                const val = rows[i][colIdx]
-                if (results[val]) {
-                    results[val] += 1;
-                } else {
-                    results[val] = 1;
-                }
-            }
-        } else if (filterIncludesColumn(currentFilter, column)){
-            const reducedFilter = removeFilterForColumn(currentFilter, column);
-            const fn = filterPredicate(columnMap, reducedFilter);
-
-            for (let i = 0, len = rows.length; i < len; i++) {
-                if (rows[i][FILTER_IND] === 1 || fn(rows[i])) {
-                    const val = rows[i][colIdx]
-                    if (results[val]) {
-                        results[val] += 1;
-                    } else {
-                        results[val] = 1;
-                    }
-                }
-            }
-
-        } else {
-            const {filterSet} = this;
-            for (let i = 0, len = filterSet.length; i < len; i++) {
-                const rowIdx = filterSet[i];
-                const val = rows[rowIdx][colIdx]
-                if (results[val]) {
-                    results[val] += 1;
-                } else {
-                    results[val] = 1;
-                }
-            }
-        }
-
-        const keys = Object.keys(results).sort();
-        const filterSet = Array(keys.length);
-        for (let i=0,len=keys.length;i<len;i++){
-            filterSet[i] = [keys[i],results[keys[i]]]
-        }
-
-        const table = new Table({data: filterSet, primaryKey: 'value', columns: FILTER_DATA_COLUMNS});
-        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS, column.name);
-
-        return filterRowset;
-
     }
 
     insert(idx, row){
@@ -353,46 +292,4 @@ export default class RowSet extends BaseRowSet {
         }
     }
 }
-
-// This class must be declared here as there is a mutual dependency between
-// this and RowSet and this extends RowSet
-export class FilterRowSet extends RowSet {
-    constructor(table, columns, columnName){
-        super(table, columns);
-        this.columnName = columnName;
-        this._searchText = null;
-    }
-  
-    get searchText(){
-        return this._searchText;
-    }
-  
-    set searchText(text){
-        this.filter({type: 'SW',colName: 'value', value: text});
-        this._searchText = text;
-    }
-  
-    get values() {
-        const KEY = 3;
-        return this.filterSet.map(idx => this.data[idx][KEY])
-    }
-  
-    setSelectedIndices(filter){
-        const columnFilter = extractFilterForColumn(filter, this.columnName);
-        const filterType = columnFilter && columnFilter.type;
-        if (filterType === INCLUDE || filterType === EXCLUDE){ // what about numeric GE etc
-            const selectedIndices = this.indexOfKeys(columnFilter.values);
-            this.selectedIndices = this.filterSet === null
-                ? selectedIndices
-                : selectedIndices.map(idx => this.filterSet.indexOf(idx)).filter(idx => ~idx);
-  
-        }
-    }
-  
-    indexOfKeys(values){
-        const index = this.table.index;
-        return values.map(value => index[value]).filter(removeUndefined).sort(numerically);
-    }
-  
-  }
   

@@ -1,5 +1,5 @@
 
-import {INCLUDE, EXCLUDE, INCLUDE_SEARCH, EXCLUDE_SEARCH, STARTS_WITH} from './store/filter'
+import {SET, INCLUDE, EXCLUDE, INCLUDE_SEARCH, EXCLUDE_SEARCH, STARTS_WITH} from './store/filter'
 import { getFilterType, toColumn, buildColumnMap, metaData } from './store/columnUtils'
 import { sortByToMap } from './store/sort'
 import { 
@@ -54,11 +54,10 @@ export const rowUtils = {
 }
 
 export const filter = {
+  SET,
   INCLUDE,
   EXCLUDE,
-  STARTS_WITH,
-  INCLUDE_SEARCH,
-  EXCLUDE_SEARCH
+  STARTS_WITH
 }
 
 export const filterUtils = {

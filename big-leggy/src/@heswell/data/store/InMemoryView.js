@@ -1,9 +1,7 @@
 import { NULL_RANGE, resetRange, withinRange } from './rangeUtils';
-import RowSet from './rowSet';
-import GroupRowSet from './groupRowSet';
+import {RowSet, GroupRowSet} from './rowset';
 import {buildColumnMap, toColumn ,getFilterType} from './columnUtils';
-import {addFilter, extractFilterForColumn, includesNoValues} from './filterUtils';
-import {INCLUDE, EXCLUDE, EXCLUDE_SEARCH} from './filter';
+import {includesNoValues} from './filterUtils';
 import UpdateQueue from './updateQueue';
 import { DataTypes } from './types';
 
@@ -186,36 +184,6 @@ export default class InMemoryView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    select(dataType, colName, filterMode) {
-        if (dataType === DataTypes.FILTER_DATA){
-            const {filterRowSet, _filter: existingFilter} = this;
-            const searchValues = filterRowSet.values;
-            if (existingFilter === null){
-                if (filterMode === EXCLUDE_SEARCH){
-                    return this.filter({
-                        type: EXCLUDE,
-                        colName,
-                        values: searchValues
-                    })
-                } else {
-                    console.error(`we don't expect to encounter filterMode ${filterMode} when there is no filter in place`)
-                }
-            } else {
-                let filter = extractFilterForColumn(existingFilter, colName);
-                if (filter === null){
-                    filter = addFilter(existingFilter, {
-                        colName,
-                        type: INCLUDE,
-                        values: searchValues
-                    });
-                } else if (filter.type === INCLUDE || filter.type === EXCLUDE){
-                    filter.values = Array.from(new Set(filter.values.concat(searchValues)));
-                }
-                return this.filter(filter);
-            }
-        }
-    }
-
     filter(filter) {
         const { rowSet, _filter, filterRowSet } = this;
         const {range} = rowSet;
@@ -290,6 +258,7 @@ export default class InMemoryView {
     }
 
     getFilterData(column, searchText=null, range=NULL_RANGE) {
+
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -314,23 +283,21 @@ export default class InMemoryView {
         } else if (searchText){
 
             filterRowSet.searchText = searchText;
-            if (filter){
-                filterRowSet.setSelectedIndices(filter);
-            }
-        
+       
         } else if (filterRowSet && filterRowSet.searchText){
             // reset the filter
             filterRowSet.clearFilter();
-            if (filter){
-                filterRowSet.setSelectedIndices(filter);
-            }
 
         } else if (filter && filter.colName === column.name){
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
-            filterRowSet.setSelectedIndices(filter);
+            // filterRowSet.setSelectedIndices(filter);
             filterRowSet.setRange({lo: 0,hi: 0});
         } 
+
+        if (filter){
+            this.filterRowSet.setSelectedIndices(filter);
+        }
 
         // do we need to returtn searchText ?
         return this.filterRowSet.setRange(range, false);

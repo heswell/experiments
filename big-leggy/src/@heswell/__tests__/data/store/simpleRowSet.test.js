@@ -1,5 +1,5 @@
 /*global describe test expect */
-import RowSet from '../../../data/store/rowSet';
+import {RowSet} from '../../../data/store/rowset';
 import {
     _getTestTable,
     _getTestRowset,
@@ -14,7 +14,7 @@ import {
     _getInstrumentPricesTable
 } from '../instrumentPrices';
 
-import {LESS_THAN, GREATER_EQ} from '../../../data/store/filter';
+import {SET, EXCLUDE, LESS_THAN, GREATER_EQ} from '../../../data/store/filter';
 
 const DEFAULT_OFFSET =100;
 
@@ -287,7 +287,7 @@ describe('filter', () => {
 
     test('filter exclude all', () => {
         const rowSet = _getTestRowset();
-        rowSet.filter({type: 'include',colName: 'Group 1', values: []});
+        rowSet.filter({type: SET,colName: 'Group 1', values: []});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(0);
         expect(rows).toEqual([])
@@ -556,20 +556,34 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 0, 0, 0, 'T3'],
-            ['T4', 3, 1, 0, 0, 'T4'],
-            ['T5', 1, 2, 0, 0, 'T5']
+            ['T3', 20, 20, 0, 0, 0, 'T3'],
+            ['T4', 3, 3, 1, 0, 0, 'T4'],
+            ['T5', 1, 1, 2, 0, 0, 'T5']
+        ])
+    });
+
+    test('with filter on current column', () => {
+        const rowSet = _getTestRowset();
+        rowSet.filter({type: SET, colName: 'Group 3',values: ['T3']})
+        const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
+        const {rows} = filterRowset.setRange({lo: 0,hi: 25});
+        expect(rows).toEqual([
+            ['T3', 20, 20,  0,0,0, 'T3'],
+            ['T4', 3 ,3,  1,0,0, 'T4'],
+            ['T5', 1 ,1,  2,0,0, 'T5']
         ])
     });
 
     test('with filter on another column', () => {
         const rowSet = _getTestRowset();
-        rowSet.filter({type: 'exclude', colName: 'Group 2',values: ['I2']})
+        rowSet.filter({type: SET, mode: EXCLUDE, colName: 'Group 2',values: ['I2']})
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
-        const {rows} = filterRowset.setRange({lo: 0,hi: 25});
+        const {rows, selectedIndices} = filterRowset.setRange({lo: 0,hi: 25});
+        expect(selectedIndices).toEqual([]);
         expect(rows).toEqual([
-            ['T3', 15, 0,0,0, 'T3'],
-            ['T4', 2 ,1,0,0, 'T4']
+            ['T3', 15, 20,  0,0,0, 'T3'],
+            ['T4', 2 ,3,    1,0,0, 'T4'],
+            ['T5', 0 ,1,    2,0,0, 'T5']
         ])
     });
 
@@ -579,16 +593,16 @@ describe('getDistinctValuesForColumn', () => {
             type: 'AND',
             filters: [
                 {type: 'eq', colName: 'Group 1', value: 'G1'},
-                {type: 'exclude', colName: 'Group 2',values: ['I2']}
+                {type: SET, mode: EXCLUDE, colName: 'Group 2',values: ['I2']}
             ]}
         );
 
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 1'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['G1', 4, 0, 0, 0, 'G1'],
-            ['G2', 6, 1, 0, 0, 'G2'],
-            ['G3', 7, 2, 0, 0, 'G3']
+            ['G1', 4, 8,   0, 0, 0, 'G1'],
+            ['G2', 6, 8,   1, 0, 0, 'G2'],
+            ['G3', 7, 8,   2, 0, 0, 'G3']
         ])
     });
 
@@ -599,25 +613,25 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'});
         ({rows} = filterRowset.setRange({lo: 0,hi: 25}));
 
-        expect(rows[0]).toEqual(['Advertising',10, 0,0,0,'Advertising'])
+        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,'Advertising'])
 
-        rowSet.filter({type: 'include', colName: 'Industry', values: []});
+        rowSet.filter({type: SET, colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
 
-        rowSet.filter({type: 'include', colName: 'Industry', values: ['Advertising']});
+        rowSet.filter({type: SET, colName: 'Industry', values: ['Advertising']});
         ({rows} = rowSet.setRange({lo: 0,hi: 17},false));
 
         expect(rows).toEqual([
-            ['AMCN','AirMedia Group Inc',2.28,135810000,2007,'Technology','Advertising',100,0,0,'AMCN'],
-            ['ANGI','Angie&#39;s List, Inc.',5.02,293750000,2011,'Consumer Services','Advertising',101,0,0,'ANGI'],
-            ['CTCT','Constant Contact, Inc.',42.48,1350000000,2007,'Technology','Advertising',102,0,0,'CTCT'],
-            ['CRTO','Criteo S.A.',40.7,2410000000,2013,'Technology','Advertising',103,0,0,'CRTO'],
-            ['GRPN','Groupon, Inc.',7.97,5350000000,2011,'Technology','Advertising',104,0,0,'GRPN'],
-            ['ISIG','Insignia Systems, Inc.',3.19,39220000,1991,'Consumer Services','Advertising',105,0,0,'ISIG'],
-            ['NCMI','National CineMedia, Inc.',14.92,908190000,2007,'Consumer Services','Advertising',106,0,0,'NCMI'],
-            ['RLOC','ReachLocal, Inc.',3.58,104410000,2010,'Technology','Advertising',107,0,0,'RLOC'],
-            ['SALE','RetailMeNot, Inc.',16.41,887230000,2013,'Consumer Services','Advertising',108,0,0,'SALE'],
-            ['VISN','VisionChina Media, Inc.',12.9,65510000,2007,'Technology','Advertising',109,0,0,'VISN']
+            ['AMCN','AirMedia Group Inc',2.28,135810000,'2007','Technology','Advertising',100,0,0,'AMCN'],
+            ['ANGI','Angie&#39;s List, Inc.',5.02,293750000,'2011','Consumer Services','Advertising',101,0,0,'ANGI'],
+            ['CTCT','Constant Contact, Inc.',42.48,1350000000,'2007','Technology','Advertising',102,0,0,'CTCT'],
+            ['CRTO','Criteo S.A.',40.7,2410000000,'2013','Technology','Advertising',103,0,0,'CRTO'],
+            ['GRPN','Groupon, Inc.',7.97,5350000000,'2011','Technology','Advertising',104,0,0,'GRPN'],
+            ['ISIG','Insignia Systems, Inc.',3.19,39220000,'1991','Consumer Services','Advertising',105,0,0,'ISIG'],
+            ['NCMI','National CineMedia, Inc.',14.92,908190000,'2007','Consumer Services','Advertising',106,0,0,'NCMI'],
+            ['RLOC','ReachLocal, Inc.',3.58,104410000,'2010','Technology','Advertising',107,0,0,'RLOC'],
+            ['SALE','RetailMeNot, Inc.',16.41,887230000,'2013','Consumer Services','Advertising',108,0,0,'SALE'],
+            ['VISN','VisionChina Media, Inc.',12.9,65510000,'2007','Technology','Advertising',109,0,0,'VISN']
         ])
 
     });

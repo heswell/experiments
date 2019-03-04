@@ -49,7 +49,6 @@ describe('groupUtils', () => {
       const sortSet = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
       const groupBy = [[1,'asc']]
       const groups= groupRows(rows, sortSet, columns, columnMap, groupBy)
-      console.log(join(groups))
   
       expect(groups).toEqual([
         [null,'G1',null,null,null,null, 0, -1, 8, 'G1', null, 0, undefined, undefined],
@@ -59,13 +58,12 @@ describe('groupUtils', () => {
 
     })
 
-    test.only('', () => {
+    test('', () => {
 
       const sortSet = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
       const groupBy = [[1,'asc'],[2, 'asc']]
 
       const groups= groupRows(rows, sortSet, columns, columnMap, groupBy)
-      console.log(join(groups))
 
       const nulls = Array(12).fill(null);
       const undef = Array(12).fill(undefined);

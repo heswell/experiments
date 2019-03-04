@@ -5,10 +5,11 @@ export const LESS_THAN = 'LT';
 export const LESS_EQ = 'LE';
 export const AND = 'AND';
 export const STARTS_WITH = 'SW';
+export const SET = 'set';
 export const INCLUDE = 'include';
 export const EXCLUDE = 'exclude';
-export const INCLUDE_SEARCH = 'include-search-results';
-export const EXCLUDE_SEARCH = 'exclude-search-results';
+// export const INCLUDE_SEARCH = 'include-search-results';
+// export const EXCLUDE_SEARCH = 'exclude-search-results';
 
 export default function filterRows(rows, columns, filter) {
     return applyFilter(rows, functor(columns, filter));
@@ -17,8 +18,9 @@ export default function filterRows(rows, columns, filter) {
 export function functor(columns, filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
     switch (filter.type) {
-    case INCLUDE: return testInclude(columns, filter);
-    case EXCLUDE: return testExclude(columns, filter);
+    case SET: return filter.mode === EXCLUDE
+        ? testExclude(columns, filter)
+        : testInclude(columns, filter);
     case EQUALS: return testEQ(columns, filter);
     case GREATER_THAN: return testGT(columns, filter);
     case GREATER_EQ: return testGE(columns, filter);
@@ -50,7 +52,9 @@ function testAND(cols, f) {
 
 function testSW(cols, f) {
     const value = f.value.toLowerCase();
-    return row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0;
+    return f.mode === EXCLUDE
+        ? row => row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
+        : row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0
 }
 
 function testGT(cols, f) {

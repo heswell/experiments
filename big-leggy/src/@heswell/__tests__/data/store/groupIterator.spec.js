@@ -1,4 +1,4 @@
-import GroupRowSet from '../../../data/store/groupRowSet';
+import {GroupRowSet} from '../../../data/store/rowset';
 import { 
   _getTestRowset,
   _getInstrumentRowset,

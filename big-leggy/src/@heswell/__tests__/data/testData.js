@@ -1,7 +1,7 @@
 import Table from '../../data/store/table'
 import { toColumn } from '../../data/store/columnUtils';
 
-import Rowset from '../../data/store/rowSet';
+import {RowSet} from '../../data/store/rowset';
 import {Instruments} from '../../viewserver/dataTables';
 import instrumentData from '../../viewserver/dataTables/instruments/dataset.js';
 const { performance } = require('perf_hooks');
@@ -86,18 +86,18 @@ export function _getTestTable(data){
 
 export function _getTestRowset(){
     const table = _getTestTable();
-    return new Rowset(table, _rowset_columns, DEFAULT_OFFSET)
+    return new RowSet(table, _rowset_columns, DEFAULT_OFFSET)
 }
 
 export function getTestTableAndRowset(){
     const table = _getTestTable();
-    const rowSet = new Rowset(table, _rowset_columns, DEFAULT_OFFSET);
+    const rowSet = new RowSet(table, _rowset_columns, DEFAULT_OFFSET);
     return [table, rowSet]
 }
 
 export function getEmptyTestTableAndRowset(){
     const table = _getTestTable([]);
-    const rowSet = new Rowset(table, _rowset_columns, DEFAULT_OFFSET);
+    const rowSet = new RowSet(table, _rowset_columns, DEFAULT_OFFSET);
     return [table, rowSet]
 }
 
@@ -119,7 +119,7 @@ export const pluck = (list, ...idx) => {
     return list.map(row => {
         const out = [];
         idx.forEach((idx,i) => out[i] = row[idx]);
-        return out.join('\t');
+        return out;
     })
 }
 
@@ -152,5 +152,5 @@ export const _getInstrumentTable = () => new Table({
 
 export function _getInstrumentRowset(){
     const table = _getInstrumentTable();
-    return new Rowset(table, InstrumentColumns, 100)
+    return new RowSet(table, InstrumentColumns, 100)
 }

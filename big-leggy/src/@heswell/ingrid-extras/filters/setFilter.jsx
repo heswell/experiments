@@ -10,7 +10,7 @@ import './setFilter.css';
 
 const NO_STYLE = {}
 
-const {INCLUDE, EXCLUDE_SEARCH, INCLUDE_SEARCH} = filterConstants
+const {INCLUDE, EXCLUDE} = filterConstants
 export class SetFilter extends React.Component {
     static defaultProps = {
         onSelectionChange: (selected, filterMode) => {
@@ -24,7 +24,7 @@ export class SetFilter extends React.Component {
     constructor(props){
         super(props);
         const {filter} = props;
-        const selectionDefault = filter && filter.type === 'include' ? false : true;
+        const selectionDefault = filter && filter.mode !== EXCLUDE ? false : true;
         console.log(`SetFilter.constructor create a new filterView`)
         const filterView = new FilterView(props.dataView, props.column);
         this.state = {
@@ -54,7 +54,7 @@ export class SetFilter extends React.Component {
         const borderStyle = {borderWidth: 1, borderStyle: 'solid', borderColor: '#d4d4d4'};
 
         return (
-            <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width,height,visibility: style.visibility}}>
+            <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width: 300,height,visibility: style.visibility}}>
                 {suppressHeader !== true &&
                 <div className='col-header HeaderCell' style={{height: 25}}>
                     <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>
@@ -107,7 +107,7 @@ export class SetFilter extends React.Component {
                 selected: filterView.selectAll(),
                 selectedValues: Array.from(new Set(selectedValues.concat(values)))
             }, () => {
-                this.props.onSelectionChange(null, EXCLUDE_SEARCH);
+                this.props.onSelectionChange(null, EXCLUDE, this.searchText);
             });
 
         } else {
@@ -135,7 +135,7 @@ export class SetFilter extends React.Component {
                 selected: filterView.selectAll(),
                 selectedValues: Array.from(new Set(selectedValues.concat(values)))
             }, () => {
-                this.props.onSelectionChange(null, INCLUDE_SEARCH);
+                this.props.onSelectionChange(null, INCLUDE, this.searchText);
             });
         } else {
             this.setState({
@@ -143,9 +143,8 @@ export class SetFilter extends React.Component {
                 selectedValues: [],
                 selectionDefault: true
             }, () => {
-                this.props.onSelectionChange([], 'exclude');
+                this.props.onSelectionChange([], EXCLUDE);
             });
-
         }
     }
 
@@ -153,8 +152,8 @@ export class SetFilter extends React.Component {
         const {selectionDefault, selectedValues: previousSelection, filterView} = this.state;
         const deselected = selectedIndices.indexOf(idx) === -1;
         const filterMode = selectionDefault === true
-            ? 'exclude'
-            : 'include';
+            ? EXCLUDE
+            : INCLUDE;
 
         const {KEY} = filterView.meta;
         const value = filterView.itemAtIdx(idx)[KEY];

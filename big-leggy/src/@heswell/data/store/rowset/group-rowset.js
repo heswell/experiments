@@ -1,6 +1,4 @@
 import BaseRowSet from './baseRowSet';
-import {FilterRowSet} from './rowSet';
-import Table from './table';
 import {
     groupRows,
     findSortedCol, findDoomedColumnDepths, getGroupStateChanges,
@@ -15,19 +13,18 @@ import {
     adjustGroupIndices,
     adjustLeafIdxPointers,
     allGroupsExpanded
-} from './groupUtils';
-import { sortBy, sortPosition } from './sort';
-import { extendsFilter, includesColumn as filterIncludesColumn, removeFilterForColumn } from './filterUtils';
-import { metaData, mapSortCriteria } from './columnUtils';
-import { functor as filterPredicate } from './filter';
-import {FILTER_DATA_COLUMNS} from './filterUtils';
-import GroupIterator from './groupIterator';
-import { ASC } from './types'
-import { NULL_RANGE } from './rangeUtils';
+} from '../groupUtils';
+import { sortBy, sortPosition } from '../sort';
+import { extendsFilter } from '../filterUtils';
+import { mapSortCriteria } from '../columnUtils';
+import { functor as filterPredicate } from '../filter';
+import GroupIterator from '../groupIterator';
+import { ASC } from '../types'
+import { NULL_RANGE } from '../rangeUtils';
 
 const EMPTY_ARRAY = [];
 
-export default class GroupRowSet extends BaseRowSet {
+export class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
         super(columns, rowSet.baseOffset);
@@ -41,7 +38,6 @@ export default class GroupRowSet extends BaseRowSet {
 
         this.collapseChildGroups = this.collapseChildGroups.bind(this);
         this.countChildGroups = this.countChildGroups.bind(this);
-        this.meta = metaData(columns);
 
         columns.forEach(column => {
             if (column.aggregate) {
@@ -380,74 +376,6 @@ export default class GroupRowSet extends BaseRowSet {
         this.currentLength = this.countVisibleRows(this.groupRows, true);
 
         this.iter.setNavSet(this.selectNavigationSet(true))
-
-    }
-
-    // very similar to rowSet implementation
-    getDistinctValuesForColumn(column) {
-        const { data: rows, groupRows: groups, currentFilter, columnMap } = this;
-        const colIdx = columnMap[column.name]
-        const { DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = this.meta;
-        const results = {};
-
-        if (this.currentFilter === null) {
-            for (let i = 0, len = rows.length; i < len; i++) {
-                const val = rows[i][colIdx]
-                if (results[val]) {
-                    results[val] += 1;
-                } else {
-                    results[val] = 1;
-                }
-            }
-        } else if (filterIncludesColumn(currentFilter, column)) {
-            const reducedFilter = removeFilterForColumn(currentFilter, column);
-            const fn = reducedFilter !== null
-                ? filterPredicate(columnMap, reducedFilter)
-                : null;
-
-            for (let i = 0, len = rows.length; i < len; i++) {
-                if (fn === null || fn(rows[i])){
-                    const val = rows[i][colIdx]
-                    if (results[val]) {
-                        results[val] += 1;
-                    } else {
-                        results[val] = 1;
-                    }
-                }
-            }
-        } else {
-            // TODO maybe extend iterator ?
-            const {filterSet: navSet} = this;
-            for (let i=0;i<groups.length; i++){
-                if (Math.abs(groups[i][DEPTH]) === 1){
-                    const filterIdx = groups[i][NEXT_FILTER_IDX];
-                    const count = groups[i][FILTER_COUNT];
-                    for (let j=0;j<count;j++){
-                        const rowIdx = navSet[filterIdx+j];
-                        const row = rows[rowIdx];
-                        const val = row[colIdx]
-                        if (results[val]) {
-                            results[val] += 1;
-                        } else {
-                            results[val] = 1;
-                        }
-                    }
-                }
-            }
-        }
-
-        // IDENTICAL WITH rowset Version
-        const keys = Object.keys(results).sort();
-        const filterSet = Array(keys.length);
-        for (let i=0,len=keys.length;i<len;i++){
-            filterSet[i] = [keys[i],results[keys[i]]]
-        }
-
-        const table = new Table({data: filterSet, primaryKey: 'value', columns: FILTER_DATA_COLUMNS});
-        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS, column.name);
-        filterRowset.setSelectedIndices(currentFilter);
-
-        return filterRowset;
 
     }
 

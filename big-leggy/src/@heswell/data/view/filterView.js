@@ -41,7 +41,11 @@ export default class FilterView extends EventEmitter {
     }
 
     get columns (){
-        return [{name: 'name', key: 0},{name:'count',width: 60, type:'number', key: 1}];
+        return [
+            {name: 'name', key: 0},
+            {name:'count',width: 40, type:'number', key: 1},
+            {name:'totalCount',width: 40, type:'number', key: 2}
+        ];
     }
 
     setRange(lo, hi, sendDelta){

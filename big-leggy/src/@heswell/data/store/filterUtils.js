@@ -1,9 +1,14 @@
 import * as d3 from 'd3-array';
 // import { stringCollector } from './dataCollector';
-import {INCLUDE, EXCLUDE, STARTS_WITH} from './filter';
+import {SET, EXCLUDE, STARTS_WITH} from './filter';
 import {metaData} from './columnUtils';
 
-export const FILTER_DATA_COLUMNS = [{name: 'value'}, {name: 'count'}];
+export const FILTER_DATA_COLUMNS = [
+    {name: 'value'}, 
+    {name: 'count'}, 
+    {name: 'totalCount'}
+];
+
 export const filterColumnMeta = metaData(FILTER_DATA_COLUMNS)
 
 export function getFilterColumn(column) {
@@ -23,7 +28,7 @@ export function includesNoValues(filter) {
     // TODO make sure we catch all cases...
     if (!filter){
         return false;
-    } else if (filter.type === 'include' && filter.values.length === 0) {
+    } else if (filter.type === SET && filter.mode !== EXCLUDE && filter.values.length === 0) {
         return true;
     } else if (filter.type === 'AND' && filter.filters.some(f => includesNoValues(f))){
         return true;
@@ -44,8 +49,10 @@ export function extendsFilter(f1=null, f2=null) {
     if (f1.colName && f1.colName === f2.colName) {
         if (f1.type === f2.type) {
             switch (f1.type) {
-            case EXCLUDE: return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
-            case INCLUDE: return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
+            case SET:
+                return f1.mode === EXCLUDE
+                    ? f2.values.length > f1.values.length && containsAll(f2.values, f1.values)
+                    : f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
             case STARTS_WITH: return f2.value.length > f1.value.length && f2.value.indexOf(f1.value) === 0;
                 // more cases here such as GT,LT
             default:
@@ -119,7 +126,7 @@ export function addFilter(existingFilter, filter) {
 }
 
 function replaceOrInsert(filters, filter) {
-    if (filter.type === 'include' || filter.type === 'exclude') {
+    if (filter.type === SET) {
         const idx = filters.findIndex(f => f.type === filter.type && f.colName === filter.colName);
         if (idx !== -1) {
             return filters.map((f, i) => i === idx ? filter : f);
@@ -219,9 +226,9 @@ export function filterEquals(f1, f2, strict = false) {
 
 // does f2 extend f1 ?
 function filterExtends(f1, f2) {
-    if (f1.type === 'include' && f2.type === 'include') {
+    if (f1.type === SET && f1.mode !== EXCLUDE && f2.type === SET && f2.mode !== EXCLUDE) {
         return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
-    } else if (f1.type === 'exclude' && f2.type === 'exclude') {
+    } else if (f1.type === SET && f1.mode === EXCLUDE && f2.type === SET && f2.mode === EXCLUDE) {
         return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
     } else {
         return false;
