@@ -19,12 +19,12 @@ export default class FilterView extends EventEmitter {
     }
 
     onFilterData = (msgType, rows, rowCount, selected) => {
-        console.log(`FilterView<${this.column.name}> emit 
-            selected ${JSON.stringify(selected)} ` +
-            (rows.length
-                ? ` rowData ${rows[0][this.meta.IDX]}(${rows[0][this.meta.KEY]}) - ${rows[rows.length-1][this.meta.IDX]} (${rows[rows.length-1][this.meta.KEY]})`
-                : ` no data`)
-        );
+        // console.log(`FilterView<${this.column.name}> emit 
+        //     selected ${JSON.stringify(selected)} ` +
+        //     (rows.length
+        //         ? ` rowData ${JSON.stringify(rows)}`
+        //         : ` no data`)
+        // );
         this.emit(DataTypes.ROW_DATA,rows, rowCount, selected);
     }
 

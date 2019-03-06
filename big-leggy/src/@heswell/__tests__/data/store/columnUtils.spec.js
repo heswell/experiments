@@ -71,24 +71,31 @@ describe('columnUtils', () => {
     ]
 
     test('project all columns', () => {
-      const project = projectColumns(map, [{name:'Col 1'}, {name:'Col 2'}, {name:'Col 3'}])
+
+      const columns = [{name:'Col 1'}, {name:'Col 2'}, {name:'Col 3'}];
+      const meta = metaData(columns)
+
+      const project = projectColumns(map, columns, meta)
       const results = rows.map(project(100))
       expect(results).toEqual([
-        ['100', '200', '300', 100, 0, 0, '100'],
-        ['101', '201', '301', 101, 0, 0, '101'],
-        ['102', '202', '302', 102, 0, 0, '102'],
-        ['103', '203', '303', 103, 0, 0, '103']
+        ['100', '200', '300', 100, 0, 0, '100', 0],
+        ['101', '201', '301', 101, 0, 0, '101', 0],
+        ['102', '202', '302', 102, 0, 0, '102', 0],
+        ['103', '203', '303', 103, 0, 0, '103', 0]
       ])
     })
 
     test('project just one column', () => {
-      const project = projectColumns(map, [{name:'Col 3'}])
+      const columns = [{name:'Col 3'}];
+      const meta = metaData(columns)
+
+      const project = projectColumns(map, columns, meta)
       const results = rows.map(project(100))
       expect(results).toEqual([
-        ['300', 100, 0, 0, '100'],
-        ['301', 101, 0, 0, '101'],
-        ['302', 102, 0, 0, '102'],
-        ['303', 103, 0, 0, '103']
+        ['300', 100, 0, 0, '100', 0],
+        ['301', 101, 0, 0, '101', 0],
+        ['302', 102, 0, 0, '102', 0],
+        ['303', 103, 0, 0, '103', 0]
       ])
     })
   });
@@ -131,10 +138,12 @@ describe('columnUtils', () => {
         DEPTH: 3,
         COUNT: 4,
         KEY: 5,
-        PARENT_IDX: 6,
-        IDX_POINTER: 7,
-        FILTER_COUNT: 8,
-        NEXT_FILTER_IDX: 9
+        SELECTED: 6,
+        PARENT_IDX: 7,
+        IDX_POINTER: 8,
+        FILTER_COUNT: 9,
+        NEXT_FILTER_IDX: 10,
+        count: 11
       })
 
     })

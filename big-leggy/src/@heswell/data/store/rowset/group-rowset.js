@@ -27,7 +27,7 @@ const EMPTY_ARRAY = [];
 export class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
-        super(columns, rowSet.baseOffset);
+        super(rowSet.table, columns, rowSet.baseOffset);
         this.columnMap = rowSet.columnMap;
         this.groupby = groupby;
         this.groupState = groupState;
@@ -51,8 +51,6 @@ export class GroupRowSet extends BaseRowSet {
             ? sortCriteria
             : null;
 
-        this.table = rowSet.table;
-        this.data = rowSet.data;
         // can we lazily build the sortSet as we fetch data for the first time ?
         this.sortSet = rowSet.data.map((d,i) => i);
         // we will store an array of pointers to parent Groups.mirroring sequence of leaf rows

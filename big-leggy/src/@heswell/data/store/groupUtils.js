@@ -534,6 +534,7 @@ export const expandRow = (groupCols, row, meta) => {
     r[meta.DEPTH] = 0; 
     r[meta.COUNT] = 0;
     r[meta.KEY] = buildGroupKey(groupCols, row);
+    r[meta.SELECTED] = 0;
     return r;
 }
 
@@ -545,7 +546,7 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const { IDX, DEPTH, COUNT, KEY, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const { IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
     const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
@@ -579,6 +580,7 @@ export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns,
     group[DEPTH] = -depth;
     group[COUNT] = 0;
     group[KEY] = baseKey + groupKey;
+    group[SELECTED] = 0;
     group[IDX_POINTER] = childIdx;
     group[PARENT_IDX] = parentIdx;
 

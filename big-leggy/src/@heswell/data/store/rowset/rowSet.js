@@ -22,10 +22,8 @@ export class RowSet extends BaseRowSet {
     }
     //TODO consolidate API of rowSet, groupRowset
     constructor(table, columns, offset=0, {filter=null}=NO_OPTIONS) {
-        super(columns, offset);
-        this.table = table;
-        this.project = projectColumns(table.columnMap, columns);
-        this.data = table.rows;
+        super(table, columns, offset);
+        this.project = projectColumns(table.columnMap, columns, this.meta);
         this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
@@ -36,6 +34,7 @@ export class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
+
     }
 
     buildSortSet(){

@@ -66,27 +66,32 @@ export default class Grid extends React.Component {
 
     }
 
-    onRowset = (msgType, rows, rowCount=null, selected=null) => {
+    onRowset = (msgType, rows, rowCount=null) => {
         // maybe we should be setting rows and length in state
+        const {model} = this.state;
+        const {IDX, SELECTED} = model.meta;
         const state = {};
 
         if (rows){
             state.rows = rows;
+            // TODO this takes selected from the new metadata field. We can remove this later
+            // if we allow rows ro read selected state directly from the row data
+            state.selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         }
 
-        if (selected){
-            state.selected = selected;
-        }
+        // if (selected){
+        //     state.selected = selected;
+        // }
 
         if (this.state.groupToggled && rowCount !== 0){
-            const [group] = this.state.model._groups;
+            const [group] = model._groups;
             const [column] = group.columns;
             const width = getColumnWidth(column);
             state.model = this.reducer.dispatch({ type: Action.GROUP_COLUMN_WIDTH, column, width });
             state.groupToggled = false;
         }
 
-        if (rowCount !== null && rowCount !== this.state.model.rowCount) {
+        if (rowCount !== null && rowCount !== model.rowCount) {
             state.model = this.reducer.dispatch({ type: Action.ROWCOUNT, rowCount });
         }
         this.setState(state);

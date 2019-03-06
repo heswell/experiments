@@ -157,6 +157,7 @@ export default class InMemoryView {
                 }
             } else {
                 result.forEach(rowUpdate => {
+                    //TODO pretty sure we've already checked the range within the rowset itself
                     if (withinRange(rowSet.range, rowUpdate[0], rowSet.offset)) {
                         _update_queue.update(rowUpdate);
                     }
@@ -212,7 +213,7 @@ export default class InMemoryView {
         }
 
         if (filterRowSet) {
-            filterRowSet.setSelectedIndices(filter);
+            filterRowSet.setSelected(filter);
         }
 
         return this.rowSet.setRange(resetRange(range), false);
@@ -291,12 +292,11 @@ export default class InMemoryView {
         } else if (filter && filter.colName === column.name){
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
-            // filterRowSet.setSelectedIndices(filter);
             filterRowSet.setRange({lo: 0,hi: 0});
         } 
 
         if (filter){
-            this.filterRowSet.setSelectedIndices(filter);
+            this.filterRowSet.setSelected(filter);
         }
 
         // do we need to returtn searchText ?

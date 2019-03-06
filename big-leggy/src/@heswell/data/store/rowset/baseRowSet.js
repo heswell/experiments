@@ -8,7 +8,7 @@ import { metaData } from '../columnUtils';
 
 export default class BaseRowSet {
 
-    constructor(columns, offset=0){
+    constructor(table, columns, offset=0){
         this.offset = offset;
         this.baseOffset = offset;
         this.range = NULL_RANGE;
@@ -16,10 +16,14 @@ export default class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
+        this.table = table;
+        this.data = table.rows;
         this.meta = metaData(columns);
+
     }
 
     setRange(range, useDelta=true){
+
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
         const resultset = this.slice(lo,hi);
         this.range = range;

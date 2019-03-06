@@ -1,3 +1,4 @@
+import {functor} from './filter';
 
 const SORT_ASC = 'asc';
 
@@ -32,8 +33,9 @@ export function buildColumnMap(columns){
     }
 }
 
-export function projectColumns(map, columns){
+export function projectColumns(map, columns, meta){
     const length = columns.length;
+    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -41,7 +43,36 @@ export function projectColumns(map, columns){
             out[i] = row[colIdx];
         }
         // assume row[0] is key for now
-        out.push(startIdx+i, 0, 0, row[0]);
+        // out.push(startIdx+i, 0, 0, row[0]);
+        out[IDX] = startIdx+i;
+        out[DEPTH] = 0;
+        out[COUNT] = 0;
+        out[KEY] = row[0];
+        out[SELECTED] = 0;
+        return out;
+    }
+}
+
+export function projectColumnsFilter(map, columns, meta, filter){
+    const length = columns.length;
+    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+
+    // this is filterset specific where first col is always value
+    const fn = functor(map, {...filter, colName: 'value'});
+
+    return startIdx => (row,i) => {
+        const out = [];
+        for (let i=0;i<length;i++){
+            const colIdx = map[columns[i].name];
+            out[i] = row[colIdx];
+        }
+        // assume row[0] is key for now
+        // out.push(startIdx+i, 0, 0, row[0]);
+        out[IDX] = startIdx+i;
+        out[DEPTH] = 0;
+        out[COUNT] = 0;
+        out[KEY] = row[0];
+        out[SELECTED] = fn(row) ? 1 : 0;
         return out;
     }
 }
@@ -76,6 +107,7 @@ export function metaData(columns){
         DEPTH: next(),
         COUNT: next(),
         KEY: next(),
+        SELECTED: next(),
         PARENT_IDX: next(),
         IDX_POINTER: next(),
         FILTER_COUNT: next(),

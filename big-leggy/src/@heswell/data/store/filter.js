@@ -11,28 +11,27 @@ export const EXCLUDE = 'exclude';
 // export const INCLUDE_SEARCH = 'include-search-results';
 // export const EXCLUDE_SEARCH = 'exclude-search-results';
 
-export default function filterRows(rows, columns, filter) {
-    return applyFilter(rows, functor(columns, filter));
+export default function filterRows(rows, columnMap, filter) {
+    return applyFilter(rows, functor(columnMap, filter));
 }
 
-export function functor(columns, filter) {
+export function functor(columnMap, filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
     switch (filter.type) {
     case SET: return filter.mode === EXCLUDE
-        ? testExclude(columns, filter)
-        : testInclude(columns, filter);
-    case EQUALS: return testEQ(columns, filter);
-    case GREATER_THAN: return testGT(columns, filter);
-    case GREATER_EQ: return testGE(columns, filter);
-    case LESS_THAN: return testLT(columns, filter);
-    case LESS_EQ: return testLE(columns, filter);
-    case STARTS_WITH: return testSW(columns, filter);
-    case AND: return testAND(columns, filter);
+        ? testExclude(columnMap, filter)
+        : testInclude(columnMap, filter);
+    case EQUALS: return testEQ(columnMap, filter);
+    case GREATER_THAN: return testGT(columnMap, filter);
+    case GREATER_EQ: return testGE(columnMap, filter);
+    case LESS_THAN: return testLT(columnMap, filter);
+    case LESS_EQ: return testLE(columnMap, filter);
+    case STARTS_WITH: return testSW(columnMap, filter);
+    case AND: return testAND(columnMap, filter);
     default:
         console.log(`unrecognized filter type ${filter.type}`);
         return () => true;
     }
-
 }
 
 function applyFilter(rows, filter) {

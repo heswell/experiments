@@ -1,7 +1,7 @@
 /*global describe test expect */
 import InMemoryView from '../../../data/store/InMemoryView';
 import { DataTypes } from '../../../data/store/types'
-import { SET, INCLUDE, EXCLUDE, STARTS_WITH } from '../../../data/store/filter'
+import { SET, EXCLUDE, STARTS_WITH } from '../../../data/store/filter'
 
 import { _getTestTable, _rowset_columns, _getInstrumentTable, InstrumentColumns as columns, join,pluck } from '../testData'
 
@@ -133,16 +133,16 @@ describe('getFilterData', () => {
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
         expect(results).toEqual({
             rows: [
-                ['1972', 4, 4, 0, 0, 0, '1972'],
-                ['1973', 1, 1, 1, 0, 0, '1973'],
-                ['1980', 2, 2, 2, 0, 0, '1980'],
-                ['1981', 7, 7, 3, 0, 0, '1981'],
-                ['1982', 4, 4, 4, 0, 0, '1982'],
-                ['1983', 13, 13, 5, 0, 0, '1983'],
-                ['1984', 7, 7, 6, 0, 0, '1984'],
-                ['1985', 6, 6, 7, 0, 0, '1985'],
-                ['1986', 24, 24, 8, 0, 0, '1986'],
-                ['1987', 14, 14, 9, 0, 0, '1987']
+                ['1972', 4, 4, 0, 0, 0, '1972', 0],
+                ['1973', 1, 1, 1, 0, 0, '1973', 0],
+                ['1980', 2, 2, 2, 0, 0, '1980', 0],
+                ['1981', 7, 7, 3, 0, 0, '1981', 0],
+                ['1982', 4, 4, 4, 0, 0, '1982', 0],
+                ['1983', 13, 13, 5, 0, 0, '1983', 0],
+                ['1984', 7, 7, 6, 0, 0, '1984', 0],
+                ['1985', 6, 6, 7, 0, 0, '1985', 0],
+                ['1986', 24, 24, 8, 0, 0, '1986', 0],
+                ['1987', 14, 14, 9, 0, 0, '1987', 0]
             ],
             range: { lo: 0, hi: 10 },
             size: 38,
@@ -158,6 +158,9 @@ describe('getFilterData', () => {
         let {size,selectedIndices} = view.getFilterData({ name: 'Sector' });
         expect(size).toEqual(12)
         expect(selectedIndices).toEqual([0]);
+        const {rows} = view.setRange({lo:0,  hi:10}, true, DataTypes.FILTER_DATA);
+        const {SELECTED} = view.filterRowSet.meta;
+        expect(rows[0][SELECTED]).toEqual(1);
     });
 
     test('no groupBy, getFilterData, with search', () => {
@@ -176,16 +179,16 @@ describe('getFilterData', () => {
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
         expect(results).toEqual({
             rows: [
-                ['1980', 2, 2, 0, 0, 0, '1980'],
-                ['1981', 7, 7, 1, 0, 0, '1981'],
-                ['1982', 4, 4, 2, 0, 0, '1982'],
-                ['1983', 13, 13, 3, 0, 0, '1983'],
-                ['1984', 7, 7, 4, 0, 0, '1984'],
-                ['1985', 6, 6, 5, 0, 0, '1985'],
-                ['1986', 24, 24, 6, 0, 0, '1986'],
-                ['1987', 14, 14, 7, 0, 0, '1987'],
-                ['1988', 4, 4, 8, 0, 0, '1988'],
-                ['1989', 10, 10, 9, 0, 0, '1989']
+                ['1980', 2, 2, 0, 0, 0, '1980', 0],
+                ['1981', 7, 7, 1, 0, 0, '1981', 0],
+                ['1982', 4, 4, 2, 0, 0, '1982', 0],
+                ['1983', 13, 13, 3, 0, 0, '1983', 0],
+                ['1984', 7, 7, 4, 0, 0, '1984', 0],
+                ['1985', 6, 6, 5, 0, 0, '1985', 0],
+                ['1986', 24, 24, 6, 0, 0, '1986', 0],
+                ['1987', 14, 14, 7, 0, 0, '1987', 0],
+                ['1988', 4, 4, 8, 0, 0, '1988', 0],
+                ['1989', 10, 10, 9, 0, 0, '1989', 0]
             ],
             range: { lo: 0, hi: 10 },
             size: 10,
@@ -204,16 +207,16 @@ describe('getFilterData', () => {
 
         expect(results).toEqual({
             rows:
-                [['Basic Industries', 27, 27, 0, 0, 0, 'Basic Industries'],
-                ['Capital Goods', 79, 79, 1, 0, 0, 'Capital Goods'],
-                ['Consumer Durables', 35, 35, 2, 0, 0, 'Consumer Durables'],
-                ['Consumer Non-Durables', 40, 40, 3, 0, 0, 'Consumer Non-Durables'],
-                ['Consumer Services', 167, 167, 4, 0, 0, 'Consumer Services'],
-                ['Energy', 29, 29, 5, 0, 0, 'Energy'],
-                ['Finance', 142, 142, 6, 0, 0, 'Finance'],
-                ['Health Care', 324, 324, 7, 0, 0, 'Health Care'],
-                ['Miscellaneous', 50, 50, 8, 0, 0, 'Miscellaneous'],
-                ['Public Utilities', 24, 24, 9, 0, 0, 'Public Utilities']],
+                [['Basic Industries', 27, 27, 0, 0, 0, 'Basic Industries', 0],
+                ['Capital Goods', 79, 79, 1, 0, 0, 'Capital Goods', 0],
+                ['Consumer Durables', 35, 35, 2, 0, 0, 'Consumer Durables', 0],
+                ['Consumer Non-Durables', 40, 40, 3, 0, 0, 'Consumer Non-Durables', 0],
+                ['Consumer Services', 167, 167, 4, 0, 0, 'Consumer Services', 0],
+                ['Energy', 29, 29, 5, 0, 0, 'Energy', 0],
+                ['Finance', 142, 142, 6, 0, 0, 'Finance', 0],
+                ['Health Care', 324, 324, 7, 0, 0, 'Health Care', 0],
+                ['Miscellaneous', 50, 50, 8, 0, 0, 'Miscellaneous', 0],
+                ['Public Utilities', 24, 24, 9, 0, 0, 'Public Utilities', 0]],
             range: { lo: 0, hi: 10 },
             size: 12,
             offset: 0,
@@ -227,14 +230,13 @@ describe('getFilterData', () => {
 
         view.filter({type: SET, colName: 'Sector', values: ['Basic Industries']});
         view.setRange({lo: 0,hi: 30}, false);
-
         view.getFilterData({ name: 'Industry' });
         let {size, rows} = view.setRange({ lo: 0, hi: 3 }, true, DataTypes.FILTER_DATA);
         expect(size).toEqual(109);
         expect(rows).toEqual([
-            ['Advertising',0, 10, 0,0,0,'Advertising'],
-            ['Aerospace',0, 3, 1,0,0,'Aerospace'],
-            ['Agricultural Chemicals',2, 2, 2,0,0,'Agricultural Chemicals']
+            ['Advertising',0, 10, 0,0,0,'Advertising', 0],
+            ['Aerospace',0, 3, 1,0,0,'Aerospace', 0],
+            ['Agricultural Chemicals',2, 2, 2,0,0,'Agricultural Chemicals', 0]
         ])
 
         view.filter(null);
@@ -243,9 +245,9 @@ describe('getFilterData', () => {
         ({size, rows} = view.setRange({ lo: 0, hi: 3 }, true, DataTypes.FILTER_DATA));
         expect(size).toEqual(109);
         expect(rows).toEqual([
-            ['Advertising',10, 10, 0,0,0,'Advertising'],
-            ['Aerospace',3, 3, 1,0,0,'Aerospace'],
-            ['Agricultural Chemicals', 2, 2, 2,0,0,'Agricultural Chemicals'],
+            ['Advertising',10, 10, 0,0,0,'Advertising', 0],
+            ['Aerospace',3, 3, 1,0,0,'Aerospace', 0],
+            ['Agricultural Chemicals', 2, 2, 2,0,0,'Agricultural Chemicals', 0],
         ])
     
     })
@@ -258,15 +260,15 @@ describe('getFilterData', () => {
         let results = view.getFilterData({ name: 'Industry' });
         results = view.setRange({ lo: 0, hi: 9 }, true, DataTypes.FILTER_DATA);
         expect(results.rows).toEqual([
-            ['Advertising', 10, 10, 0, 0, 0, 'Advertising'],
-            ['Aerospace', 3, 3, 1, 0, 0, 'Aerospace'],
-            ['Agricultural Chemicals', 2, 2, 2, 0, 0, 'Agricultural Chemicals'],
-            ['Air Freight/Delivery Services', 7, 7, 3, 0, 0, 'Air Freight/Delivery Services'],
-            ['Aluminum', 1, 1, 4, 0, 0, 'Aluminum'],
-            ['Apparel', 9, 9, 5, 0, 0, 'Apparel'],
-            ['Auto Manufacturing', 1, 1, 6, 0, 0, 'Auto Manufacturing'],
-            ['Auto Parts:O.E.M.', 1, 1, 7, 0, 0, 'Auto Parts:O.E.M.'],
-            ['Automotive Aftermarket', 5, 5, 8, 0, 0, 'Automotive Aftermarket']
+            ['Advertising', 10, 10, 0, 0, 0, 'Advertising', 0],
+            ['Aerospace', 3, 3, 1, 0, 0, 'Aerospace', 0],
+            ['Agricultural Chemicals', 2, 2, 2, 0, 0, 'Agricultural Chemicals', 0],
+            ['Air Freight/Delivery Services', 7, 7, 3, 0, 0, 'Air Freight/Delivery Services', 0],
+            ['Aluminum', 1, 1, 4, 0, 0, 'Aluminum', 0],
+            ['Apparel', 9, 9, 5, 0, 0, 'Apparel', 0],
+            ['Auto Manufacturing', 1, 1, 6, 0, 0, 'Auto Manufacturing', 0],
+            ['Auto Parts:O.E.M.', 1, 1, 7, 0, 0, 'Auto Parts:O.E.M.', 0],
+            ['Automotive Aftermarket', 5, 5, 8, 0, 0, 'Automotive Aftermarket', 0]
         ])
 
         const values = [];
@@ -334,17 +336,17 @@ describe('getFilterData + Search', () => {
         expect(selectedIndices).toEqual([3]);
 
         expect(rows).toEqual([
-            ['GoPro, Inc.', 1, 1, 0, 0, 0, 'GoPro, Inc.'],
-            ['Gogo Inc.', 1, 1, 1, 0, 0, 'Gogo Inc.'],
-            ['Golar LNG Partners LP', 1, 1, 2, 0, 0, 'Golar LNG Partners LP'],
-            ['Google Inc.', 1, 1, 3, 0, 0, 'Google Inc.'],
-            ['Gordmans Stores, Inc.', 1, 1, 4, 0, 0, 'Gordmans Stores, Inc.']
+            ['GoPro, Inc.', 1, 1, 0, 0, 0, 'GoPro, Inc.', 0],
+            ['Gogo Inc.', 1, 1, 1, 0, 0, 'Gogo Inc.', 0],
+            ['Golar LNG Partners LP', 1, 1, 2, 0, 0, 'Golar LNG Partners LP', 0],
+            ['Google Inc.', 1, 1, 3, 0, 0, 'Google Inc.', 1],
+            ['Gordmans Stores, Inc.', 1, 1, 4, 0, 0, 'Gordmans Stores, Inc.', 0]
         ]);
 
         view.getFilterData({ name: 'Name' }, 'Goo');
         ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
         expect(rows).toEqual([
-            ['Google Inc.', 1, 1, 0, 0, 0, 'Google Inc.']
+            ['Google Inc.', 1, 1, 0, 0, 0, 'Google Inc.', 1]
         ]);
 
     });
@@ -538,24 +540,24 @@ describe('combined features', () => {
 });
 
 // select removed replaced with STARTS_WITH filtering
-describe.only('filter', () => {
+describe('filter', () => {
     test('exclude starts_with, no existing filter', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
 
         view.getFilterData({ name: 'Name' });
         view.getFilterData({ name: 'Name' }, 'ab');
-        let { size } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        let { size, rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
 
         view.filter({type: STARTS_WITH, mode: EXCLUDE, colName: 'Name', value: 'ab'});
         ({ size } = view.setRange({ lo: 0, hi: 10 }, true));
 
         expect(size).toBe(1244);
-        expect(view.filterRowSet.selectedIndices).toEqual([0, 1, 2]);
-        // view.getFilterData({ name: 'Name' });
-        // ({ size, selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
-        // expect(size).toBe(1241)
-        // expect(selectedIndices).toEqual([7, 23, 24])
+        view.getFilterData({ name: 'Name' });
+        ({ size, rows } = view.setRange({ lo: 0, hi: 30 }, true, DataTypes.FILTER_DATA));
+        expect(size).toBe(1241)
+        const {SELECTED} = view.filterRowSet.meta;
+        expect(rows.map(row => row[SELECTED]).filter(selected => selected === 0).length).toEqual(3)
 
     });
 

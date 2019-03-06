@@ -37,7 +37,7 @@ describe('groupUtils', () => {
       const [row] = rows;
       const groupBy = [[0, 'asc']]
       const groupRow = GroupRow(row, 0, 0, 0, 0, groupBy, columns, columnMap)
-      expect(groupRow).toEqual(['key01',null,null,null,null,null, 0, -0, 0, 'key01', 0, 0, undefined, undefined])
+      expect(groupRow).toEqual(['key01',null,null,null,null,null, 0, -0, 0, 'key01', 0, 0, 0, undefined, undefined])
       
     })
 
@@ -51,14 +51,14 @@ describe('groupUtils', () => {
       const groups= groupRows(rows, sortSet, columns, columnMap, groupBy)
   
       expect(groups).toEqual([
-        [null,'G1',null,null,null,null, 0, -1, 8, 'G1', null, 0, undefined, undefined],
-        [null,'G2',null,null,null,null, 1, -1, 8, 'G2', null, 8, undefined, undefined],
-        [null,'G3',null,null,null,null, 2, -1, 8, 'G3', null, 16, undefined, undefined]
+        [null,'G1',null,null,null,null, 0, -1, 8, 'G1', 0, null, 0, undefined, undefined],
+        [null,'G2',null,null,null,null, 1, -1, 8, 'G2', 0, null, 8, undefined, undefined],
+        [null,'G3',null,null,null,null, 2, -1, 8, 'G3', 0, null, 16, undefined, undefined]
       ]);
 
     })
 
-    test('', () => {
+    test('test 27', () => {
 
       const sortSet = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
       const groupBy = [[1,'asc'],[2, 'asc']]
@@ -85,12 +85,12 @@ describe('groupUtils', () => {
       // key
       expect(extract(groups,9)).toEqual(['G1','G1/I2','G1/U2','G2','G2/I2','G2/O2','G2/U2','G3','G3/A2','G3/E2','G3/I2','G3/O2'])
       // parent
-      expect(extract(groups,10)).toEqual([null,0,0,null,3,3,3,null,7,7,7,7])
+      expect(extract(groups,11)).toEqual([null,0,0,null,3,3,3,null,7,7,7,7])
       // row pointer (note the child row indices point to the sort set, not the underlying row indices)
-      expect(extract(groups,11)).toEqual([1,0,4,4,8,10,14,8,16,18,22,23])
+      expect(extract(groups,12)).toEqual([1,0,4,4,8,10,14,8,16,18,22,23])
       // filter cols
-      expect(extract(groups,12)).toEqual(undef)
       expect(extract(groups,13)).toEqual(undef)
+      expect(extract(groups,14)).toEqual(undef)
 
 
     })
