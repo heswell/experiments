@@ -29,6 +29,12 @@ export default class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
+        console.log(`Table 
+            columns = ${JSON.stringify(columns,null,2)}
+            columnMap = ${JSON.stringify(this.columnMap,null,2)}    
+            `)
+
+
         if (data){
             this.parseData(data);
         } else if (dataPath){

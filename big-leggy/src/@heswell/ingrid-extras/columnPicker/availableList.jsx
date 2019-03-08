@@ -54,7 +54,7 @@ export default class List extends Component {
             let mouseDownHandler = item.inUse ? null : this.handleMouseDown.bind(this, item.column);
 
             return (
-                <div
+                <div key={item.column.name}
                     onMouseDown={mouseDownHandler}
                     className="ListItem demo8-item"
                     style={{

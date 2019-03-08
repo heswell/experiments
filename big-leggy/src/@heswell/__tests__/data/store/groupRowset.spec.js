@@ -917,6 +917,34 @@ describe('setGroupState', () => {
     */
 });
 
+describe('toggleAll', () => {
+    test('single col grouping, expand all', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1]);
+        rowSet.toggleAll(true);
+        const {DEPTH} = rowSet.meta;
+        let depth = rowSet.groupRows.map(row => row[DEPTH]);
+        expect(depth).toEqual([1,1,1])
+
+        rowSet.toggleAll(false);
+        depth = rowSet.groupRows.map(row => row[DEPTH]);
+        expect(depth).toEqual([-1,-1,-1])
+
+    })
+
+    test('two col grouping, expand all', () => {
+        const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_2]);
+        rowSet.toggleAll(true);
+        const {DEPTH} = rowSet.meta;
+        let depth = rowSet.groupRows.map(row => row[DEPTH]);
+        expect(depth).toEqual([2,1,1,2,1,1,1,2,1,1,1,1]);
+
+        rowSet.toggleAll(false);
+        depth = rowSet.groupRows.map(row => row[DEPTH]);
+        expect(depth).toEqual([-2,-1,-1,-2,-1,-1,-1,-2,-1,-1,-1,-1]);
+
+    });
+})
+
 describe('sort', () => {
     test('sort on non-groupby column', () => {
         const rowSet = new GroupRowSet(_getTestRowset(), _rowset_columns, [GROUP_COL_1, GROUP_COL_3]);
@@ -1951,57 +1979,9 @@ describe('setRange', () => {
             [N, N, 35.0023825, 76043890000, N, 'Consumer Non-Durables', N, 116, -2, 40, 'Consumer Non-Durables', 0, N, 49, U, U]
         ]);
 
-        // rowSet.setGroupState({'Basic Industries': true});
         rowSet.setGroupState({ 'Capital Goods': true });
 
         ({ rows } = rowSet.setRange({ lo: 0, hi: 17 }, false));
-        // console.log(`0: 17    -----------------
-        //  ${rowSet.iter.rangePositionLo}
-        //  ${rowSet.iter.rangePositions}
-        //  ${rowSet.iter.rangePositionHi}`);
-
-        // ({rows} = rowSet.setRange({lo: 0, hi: 40},false));
-        // expect(rows.map(d => d.slice(0, 4))).toEqual([
-        //     [100,1,27,'Basic Industries'],
-        //     [101,0,0,'SHLM'],
-        //     [102,0,0,'AMWD'],
-        //     [103,0,0,'AMRS'],
-        //     [104,0,0,'CENX'],
-        //     [105,0,0,'CDXS'],
-        //     [106,0,0,'CTIB'],
-        //     [107,0,0,'GEVO'],
-        //     [108,0,0,'HCCI'],
-        //     [109,0,0,'LNDC'],
-        //     [110,0,0,'LAYN'],
-        //     [111,0,0,'MBII'],
-        //     [112,0,0,'MTRX'],
-        //     [113,0,0,'MBLX'],
-        //     [114,0,0,'MEIL'],
-        //     [115,0,0,'NWPX'],
-        //     [116,0,0,'ZEUS'],
-        //     [117,0,0,'OSN'],
-        //     [118,0,0,'REGI'],
-        //     [119,0,0,'RTK'],
-        //     [120,0,0,'SCTY'],
-        //     [121,0,0,'SZYM'],
-        //     [122,0,0,'STLD'],
-        //     [123,0,0,'SRCL'],
-        //     [124,0,0,'TORM'],
-        //     [125,0,0,'UFPI'],
-        //     [126,0,0,'USAP'],
-        //     [127,0,0,'WDFC'],
-        //     [128,-1,79,'Capital Goods'],
-        //     [129,-1,35,'Consumer Durables'],
-        //     [130,-1,40,'Consumer Non-Durables'],
-        //     [131,-1,167,'Consumer Services'],
-        //     [132,-1,29,'Energy'],
-        //     [133,-1,142,'Finance'],
-        //     [134,-1,324,'Health Care'],
-        //     [135,-1,50,'Miscellaneous'],
-        //     [136,-1,24,'Public Utilities'],
-        //     [137,-1,303,'Technology'],
-        //     [138,-1,27,'Transportation']
-        // ]);
 
     })
 

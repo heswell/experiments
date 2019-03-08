@@ -147,13 +147,14 @@ export class GroupRowSet extends BaseRowSet {
     // User interaction will never produce more than one change, but programatic change might !
     //TODO if we have sortCriteria, apply to leaf rows as we expand
     setGroupState(groupState) {
-        // console.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
+        // onsole.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
         const changes = getGroupStateChanges(groupState, this.groupState);
         changes.forEach(([key, ,isExpanded]) => {
+            const {groupRows} = this;
             if (key === '*') {
-                this.expandAll();
+                this.toggleAll(isExpanded);
+                this.currentLength = this.countVisibleRows(groupRows, false);
             } else {
-                const {groupRows} = this;
                 const groupIdx= this.findGroupIdx(key);
                 if (groupIdx !== -1){
                     if (isExpanded){
@@ -440,7 +441,7 @@ export class GroupRowSet extends BaseRowSet {
         }
         const rangeIdx = this.iter.getRangeIndexOfRow(rowIdx);
         if (rangeIdx !== -1){
-            // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
+            // onsole.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
             outgoingUpdates.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
         
@@ -548,17 +549,18 @@ export class GroupRowSet extends BaseRowSet {
     }
 
     //TODO simple implementation first
-    expandAll() {
+    toggleAll(isExpanded) {
+        const sign = isExpanded ? 1 : -1;
         // iterate groupedRows and make every group row depth positive,
         // Then visible rows is not going to be different from grouped rows
         const {DEPTH} = this.meta;
-        const { groupedRows } = this;
-        this.expandedByDefault = true;
-        for (let i = 0, len = groupedRows.length; i < len; i++) {
-            const depth = groupedRows[i][DEPTH];
-            if (depth !== 0) {
-                groupedRows[i][DEPTH] = Math.abs(depth);
-            }
+        const { groupRows: groups } = this;
+        this.expandedByDefault = isExpanded;
+        for (let i = 0, len = groups.length; i < len; i++) {
+            const depth = groups[i][DEPTH];
+            // if (depth !== 0) {
+            groups[i][DEPTH] = Math.abs(depth) * sign;
+            // }
         }
     }
 

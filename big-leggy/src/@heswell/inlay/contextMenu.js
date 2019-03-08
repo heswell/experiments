@@ -33,9 +33,9 @@ export class MenuItem extends React.Component {
 
         return (
             <li className={className}>
-                <a href="#" tabIndex="-1"
+                <button tabIndex="-1"
                     onClick={this.handleClick}
-                    onMouseOver={this.handleMouseOver}>{this.props.label}</a>
+                    onMouseOver={this.handleMouseOver}>{this.props.label}</button>
                 {nestedMenu}
             </li>
         );

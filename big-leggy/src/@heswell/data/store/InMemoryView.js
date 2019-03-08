@@ -238,12 +238,12 @@ export default class InMemoryView {
     }
 
     setGroupState(groupState) {
-        //onsole.log(`setGroupState ${JSON.stringify(groupState,null,2)}`)
         this._groupState = groupState;
         const {rowSet} = this;
         rowSet.setGroupState(groupState);
         // TODO should we have setRange return the following directly, so IMV doesn't have to decide how to call setRange ?
-        return this.rowSet.setRange(rowSet.range, false);
+        // should we reset the range ?
+        return rowSet.setRange(rowSet.range, false);
     }
 
     get updates() {

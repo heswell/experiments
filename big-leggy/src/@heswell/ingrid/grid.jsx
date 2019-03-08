@@ -13,9 +13,6 @@ import {getScrollbarSize, getColumnWidth} from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
 import {DataTypes, filterUtils, groupHelpers} from '../data';
-import {LocalView} from '../data/view';
-// TODO load this on demand
-import RemoteView from '../server-api/remote-view';
 
 import './grid.css';
 
@@ -41,20 +38,16 @@ export default class Grid extends React.Component {
 
     constructor(props) {
         super(props);
-        let { data = null, dataView = null, tablename, showFilters, groupBy } = props;
-        if (dataView === null) {
-            if (data !== null) {
-                dataView = LocalView.from(data, { columns: props.columns, groupBy });
-            } else if (tablename) {
-                dataView = new RemoteView({ tablename, columns: props.columns });
-            }
-        }
-
+        let { dataView, showFilters, columns } = props;
         const scrollbarSize = getScrollbarSize();
-        const { columns, columnMap } = dataView;
+
+        // NO, the columnMap must be owned by the grid
+        const { columnMap } = dataView;
         // we know height and rowheight, can can make an accurate estimation of range
         // const [rows, rowCount] = dataView.getRows(); // should pass any sort,group criteria
         const headerHeight = props.showHeaders === false ? 0 : props.headerHeight;
+
+        //TODO useReducer
         this.reducer = new GridReducer({ ...props, columns, columnMap, scrollbarSize, headerHeight });
 
         const model = this.reducer.state;
@@ -62,40 +55,34 @@ export default class Grid extends React.Component {
         // we need to store rows in state so we can identify when they change. Everything else on dataView should be write only   
         this.state = { model, dataView, rows: [], showFilters, selected, groupToggled: false };
 
-        dataView.on(DataTypes.ROW_DATA, this.onRowset);
+        dataView.subscribe(columns, (msgType, rows, rowCount=null) => {
+            // maybe we should be setting rows and length in state
+            const {model} = this.state;
+            const {IDX, SELECTED} = model.meta;
+            const state = {};
 
+            if (rows){
+                state.rows = rows;
+                // TODO this takes selected from the new metadata field. We can remove this later
+                // if we allow rows ro read selected state directly from the row data
+                state.selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+            }
+
+            if (this.state.groupToggled && rowCount !== 0){
+                const [group] = model._groups;
+                const [column] = group.columns;
+                const width = getColumnWidth(column);
+                state.model = this.reducer.dispatch({ type: Action.GROUP_COLUMN_WIDTH, column, width });
+                state.groupToggled = false;
+            }
+
+            if (rowCount !== null && rowCount !== model.rowCount) {
+                state.model = this.reducer.dispatch({ type: Action.ROWCOUNT, rowCount });
+            }
+            this.setState(state);
+        });
     }
 
-    onRowset = (msgType, rows, rowCount=null) => {
-        // maybe we should be setting rows and length in state
-        const {model} = this.state;
-        const {IDX, SELECTED} = model.meta;
-        const state = {};
-
-        if (rows){
-            state.rows = rows;
-            // TODO this takes selected from the new metadata field. We can remove this later
-            // if we allow rows ro read selected state directly from the row data
-            state.selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-        }
-
-        // if (selected){
-        //     state.selected = selected;
-        // }
-
-        if (this.state.groupToggled && rowCount !== 0){
-            const [group] = model._groups;
-            const [column] = group.columns;
-            const width = getColumnWidth(column);
-            state.model = this.reducer.dispatch({ type: Action.GROUP_COLUMN_WIDTH, column, width });
-            state.groupToggled = false;
-        }
-
-        if (rowCount !== null && rowCount !== model.rowCount) {
-            state.model = this.reducer.dispatch({ type: Action.ROWCOUNT, rowCount });
-        }
-        this.setState(state);
-    }
 
     render() {
         const { model, rows, showFilters, dataView, selected } = this.state;
@@ -185,7 +172,8 @@ export default class Grid extends React.Component {
         this._scrollLeft = undefined;
         this.header = null;
         this.inlineFilter = null;
-        this.state.dataView.removeListener(DataTypes.ROW_DATA, this.onRowset)
+        this.state.dataView.unsubscribe();        
+        // this.state.dataView.removeListener(DataTypes.ROW_DATA, this.onRowset)
         // don't destroy a  Data View that we don't sown
         if (!this.props.dataView){
             this.state.dataView.destroy();
@@ -341,6 +329,7 @@ export default class Grid extends React.Component {
     }
 
     toggleGroupAll = (column, expanded) => {
+        console.log(`toggleGroupAll ${column.name}`)
         const groupState = expanded === 1
             ? {'*': true}
             : {};

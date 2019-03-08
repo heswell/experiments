@@ -16,26 +16,24 @@ const AND = 'AND';
 const STARTS_WITH = 'SW';
 const SET = 'set';
 const EXCLUDE = 'exclude';
-const EXCLUDE_SEARCH = 'exclude-search-results';
 
-function functor(columns, filter) {
+function functor(columnMap, filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
     switch (filter.type) {
     case SET: return filter.mode === EXCLUDE
-        ? testExclude(columns, filter)
-        : testInclude(columns, filter);
-    case EQUALS: return testEQ(columns, filter);
-    case GREATER_THAN: return testGT(columns, filter);
-    case GREATER_EQ: return testGE(columns, filter);
-    case LESS_THAN: return testLT(columns, filter);
-    case LESS_EQ: return testLE(columns, filter);
-    case STARTS_WITH: return testSW(columns, filter);
-    case AND: return testAND(columns, filter);
+        ? testExclude(columnMap, filter)
+        : testInclude(columnMap, filter);
+    case EQUALS: return testEQ(columnMap, filter);
+    case GREATER_THAN: return testGT(columnMap, filter);
+    case GREATER_EQ: return testGE(columnMap, filter);
+    case LESS_THAN: return testLT(columnMap, filter);
+    case LESS_EQ: return testLE(columnMap, filter);
+    case STARTS_WITH: return testSW(columnMap, filter);
+    case AND: return testAND(columnMap, filter);
     default:
         console.log(`unrecognized filter type ${filter.type}`);
         return () => true;
     }
-
 }
 
 function testAND(cols, f) {
@@ -45,7 +43,9 @@ function testAND(cols, f) {
 
 function testSW(cols, f) {
     const value = f.value.toLowerCase();
-    return row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0;
+    return f.mode === EXCLUDE
+        ? row => row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
+        : row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0
 }
 
 function testGT(cols, f) {
@@ -112,8 +112,9 @@ function buildColumnMap(columns){
     }
 }
 
-function projectColumns(map, columns){
+function projectColumns(map, columns, meta){
     const length = columns.length;
+    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -121,7 +122,36 @@ function projectColumns(map, columns){
             out[i] = row[colIdx];
         }
         // assume row[0] is key for now
-        out.push(startIdx+i, 0, 0, row[0]);
+        // out.push(startIdx+i, 0, 0, row[0]);
+        out[IDX] = startIdx+i;
+        out[DEPTH] = 0;
+        out[COUNT] = 0;
+        out[KEY] = row[0];
+        out[SELECTED] = 0;
+        return out;
+    }
+}
+
+function projectColumnsFilter(map, columns, meta, filter){
+    const length = columns.length;
+    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+
+    // this is filterset specific where first col is always value
+    const fn = functor(map, {...filter, colName: 'value'});
+
+    return startIdx => (row,i) => {
+        const out = [];
+        for (let i=0;i<length;i++){
+            const colIdx = map[columns[i].name];
+            out[i] = row[colIdx];
+        }
+        // assume row[0] is key for now
+        // out.push(startIdx+i, 0, 0, row[0]);
+        out[IDX] = startIdx+i;
+        out[DEPTH] = 0;
+        out[COUNT] = 0;
+        out[KEY] = row[0];
+        out[SELECTED] = fn(row) ? 1 : 0;
         return out;
     }
 }
@@ -156,6 +186,7 @@ function metaData(columns){
         DEPTH: next(),
         COUNT: next(),
         KEY: next(),
+        SELECTED: next(),
         PARENT_IDX: next(),
         IDX_POINTER: next(),
         FILTER_COUNT: next(),
@@ -623,54 +654,6 @@ function includesColumn(filter, column) {
     case 'AND': return filters.some(f => includesColumn(f, column));
     default: return colName === column.name;
     }
-}
-
-function addFilter(existingFilter, filter) {
-    if (!existingFilter) {
-        return filter;
-    } else if (!filter) {
-        return existingFilter;
-    } else if (existingFilter.type === 'AND' && filter.type === 'AND') {
-        return { type: 'AND', filters: combine(existingFilter.filters, filter.filters) };
-    } else if (existingFilter.type === 'AND') {
-        return { type: 'AND', filters: replaceOrInsert(existingFilter.filters, filter) };
-    } else if (filter.type === 'AND') {
-        return { type: 'AND', filters: filter.filters.concat(existingFilter) };
-    } else if (filterEquals(existingFilter, filter)) {
-        return filter;
-    } else {
-        return { type: 'AND', filters: [existingFilter, filter] };
-    }
-}
-
-function replaceOrInsert(filters, filter) {
-    if (filter.type === SET) {
-        const idx = filters.findIndex(f => f.type === filter.type && f.colName === filter.colName);
-        if (idx !== -1) {
-            return filters.map((f, i) => i === idx ? filter : f);
-        }
-    }
-
-    return filters.concat(filter);
-}
-
-// TODO merge sets
-function combine(existingFilters, replacementFilters) {
-
-    // TODO need a safer REGEX here
-    function equivalentType({ type: t1 }, { type: t2 }) {
-        return (t1 === t2) || (t1[0] === t2[0]);
-    }
-
-    const replaces = (existingFilter, replacementFilter) => {
-        return existingFilter.colName === replacementFilter.colName &&
-            equivalentType(existingFilter, replacementFilter);
-    };
-
-    const stillApplicable = existingFilter => replacementFilters.some(
-        replacementFilter => replaces(existingFilter, replacementFilter)) === false;
-
-    return existingFilters.filter(stillApplicable).concat(replacementFilters);
 }
 
 function extractFilterForColumn(filter, columnName) {
@@ -1312,6 +1295,7 @@ const expandRow = (groupCols, row, meta) => {
     r[meta.DEPTH] = 0; 
     r[meta.COUNT] = 0;
     r[meta.KEY] = buildGroupKey(groupCols, row);
+    r[meta.SELECTED] = 0;
     return r;
 };
 
@@ -1323,7 +1307,7 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const { IDX, DEPTH, COUNT, KEY, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const { IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
     const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
@@ -1357,6 +1341,7 @@ function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, column
     group[DEPTH] = -depth;
     group[COUNT] = 0;
     group[KEY] = baseKey + groupKey;
+    group[SELECTED] = 0;
     group[IDX_POINTER] = childIdx;
     group[PARENT_IDX] = parentIdx;
 
@@ -1969,18 +1954,21 @@ function byKey$1(col1, col2){
 
 class BaseRowSet {
 
-    constructor(columns, offset=0){
+    constructor(table, columns, offset=0){
         this.offset = offset;
         this.baseOffset = offset;
         this.range = NULL_RANGE;
-        this.selectedIndices = [];
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
+        this.table = table;
+        this.data = table.rows;
         this.meta = metaData(columns);
+
     }
 
     setRange(range, useDelta=true){
+
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
         const resultset = this.slice(lo,hi);
         this.range = range;
@@ -1988,8 +1976,7 @@ class BaseRowSet {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset,
-            selectedIndices: this.selectedIndices
+            offset: this.offset
         };
     }
 
@@ -2000,8 +1987,7 @@ class BaseRowSet {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset,
-            selectedIndices: this.selectedIndices
+            offset: this.offset
         };
     }
 
@@ -2083,10 +2069,8 @@ class RowSet extends BaseRowSet {
     }
     //TODO consolidate API of rowSet, groupRowset
     constructor(table, columns, offset=0, {filter=null}=NO_OPTIONS) {
-        super(columns, offset);
-        this.table = table;
-        this.project = projectColumns(table.columnMap, columns);
-        this.data = table.rows;
+        super(table, columns, offset);
+        this.project = projectColumns(table.columnMap, columns, this.meta);
         this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
@@ -2097,6 +2081,7 @@ class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
+
     }
 
     buildSortSet(){
@@ -2377,32 +2362,24 @@ class FilterRowSet extends RowSet {
       return this.filterSet.map(idx => this.data[idx][KEY])
   }
 
-  setSelectedIndices(filter){
-      const columnFilter = extractFilterForColumn(filter, this.columnName);
-      const filterType = columnFilter && columnFilter.type;
-      if (filterType === SET){ // what about numeric GE etc
-          this.selectedIndices = this.indexOfKeys(columnFilter.values);
+  setSelected(filter){
+
+    const columnFilter = extractFilterForColumn(filter, this.columnName);
+      if (columnFilter){
+
+        this.project = projectColumnsFilter(
+          this.table.columnMap,
+          this.columns,
+          this.meta,
+          columnFilter);
+          
+        // make sure next scroll operation sends a full rowset otw client-side selection changes may
+        // be lost ac changes will not exist in cached rows.  
+        this.setRange({lo: 0,hi: 0});
 
       }
-  }
 
-  indexOfKeys(values){
-      // Note: filterset is a collection of rowIdx values, nor sortSet idx values 
-      const {sortSet, sortCols, filterSet, table} = this;
-      const index = table.index;
-      return values.map(value => {
-          const rowIdx = index[value];
-          if (filterSet !== null){
-              const filterIdx = filterSet.indexOf(rowIdx);
-                return filterIdx === -1 ? null : filterIdx;
-          } else if (sortCols !== null){
-              // horrible inefficient, need an index into the sortSet
-              return sortSet.findIndex(([ind]) => ind === rowIdx);
-          } else {
-              return rowIdx;
-          }
-      }).filter(value => value !== null);
-  }
+}
 
 }
 
@@ -2783,7 +2760,7 @@ const EMPTY_ARRAY = [];
 class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
-        super(columns, rowSet.baseOffset);
+        super(rowSet.table, columns, rowSet.baseOffset);
         this.columnMap = rowSet.columnMap;
         this.groupby = groupby;
         this.groupState = groupState;
@@ -2807,8 +2784,6 @@ class GroupRowSet extends BaseRowSet {
             ? sortCriteria
             : null;
 
-        this.table = rowSet.table;
-        this.data = rowSet.data;
         // can we lazily build the sortSet as we fetch data for the first time ?
         this.sortSet = rowSet.data.map((d,i) => i);
         // we will store an array of pointers to parent Groups.mirroring sequence of leaf rows
@@ -3818,6 +3793,7 @@ class InMemoryView {
                 }
             } else {
                 result.forEach(rowUpdate => {
+                    //TODO pretty sure we've already checked the range within the rowset itself
                     if (withinRange(rowSet.range, rowUpdate[0], rowSet.offset)) {
                         _update_queue.update(rowUpdate);
                     }
@@ -3843,37 +3819,6 @@ class InMemoryView {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);
         return this.setRange(resetRange(this.rowSet.range), false);
-    }
-
-    select(dataType, colName, filterMode) {
-        if (dataType === DataTypes.FILTER_DATA){
-            const {filterRowSet, _filter: existingFilter} = this;
-            const searchValues = filterRowSet.values;
-            if (existingFilter === null){
-                if (filterMode === EXCLUDE_SEARCH){
-                    return this.filter({
-                        type: SET,
-                        mode: EXCLUDE,
-                        colName,
-                        values: searchValues
-                    })
-                } else {
-                    console.error(`we don't expect to encounter filterMode ${filterMode} when there is no filter in place`);
-                }
-            } else {
-                let filter = extractFilterForColumn(existingFilter, colName);
-                if (filter === null){
-                    filter = addFilter(existingFilter, {
-                        colName,
-                        type: SET,
-                        values: searchValues
-                    });
-                } else if (filter.type === SET){
-                    filter.values = Array.from(new Set(filter.values.concat(searchValues)));
-                }
-                return this.filter(filter);
-            }
-        }
     }
 
     filter(filter) {
@@ -3904,7 +3849,7 @@ class InMemoryView {
         }
 
         if (filterRowSet) {
-            filterRowSet.setSelectedIndices(filter);
+            filterRowSet.setSelected(filter);
         }
 
         return this.rowSet.setRange(resetRange(range$$1), false);
@@ -3983,12 +3928,11 @@ class InMemoryView {
         } else if (filter && filter.colName === column.name){
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
-            // filterRowSet.setSelectedIndices(filter);
             filterRowSet.setRange({lo: 0,hi: 0});
         } 
 
         if (filter){
-            this.filterRowSet.setSelectedIndices(filter);
+            this.filterRowSet.setSelected(filter);
         }
 
         // do we need to returtn searchText ?

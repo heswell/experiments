@@ -29,8 +29,8 @@ export class MenuItem extends React.Component {
 
         return (
             <li className={className}>
-                <a href='#' tabIndex={-1} onClick={this.handleClick}
-                    onMouseOver={this.handleMouseOver}>{this.props.label}</a>
+                <button tabIndex={-1} onClick={this.handleClick}
+                    onMouseOver={this.handleMouseOver}>{this.props.label}</button>
                 {nestedMenu}
             </li>
         );
@@ -90,13 +90,6 @@ export class ContextMenu extends React.Component {
 
     }
 
-    // componentWillMount() {
-    //     this.setState({
-    //         submenuShowing: false,
-    //         submenuIdx: null
-    //     });
-    // }
-
     componentWillReceiveProps(nextProps) {
 
         if (nextProps.left !== '100%' && nextProps.top !== 0) {
@@ -110,7 +103,6 @@ export class ContextMenu extends React.Component {
                     submenuIdx: null
                 });
 
-                // PopupService.keepWithinThePage(nextProps.left, nextProps.top);
             }
         }
     }
@@ -124,7 +116,7 @@ export class ContextMenu extends React.Component {
         this.close();
     }
 
-    handleMenuItemMouseOver = (idx, hasChildMenuItems, submenuShowing) => {
+    handleMenuItemMouseOver = (idx, hasChildMenuItems) => {
 
         if (subMenuTimeout) {
             clearTimeout(subMenuTimeout);

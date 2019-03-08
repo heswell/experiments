@@ -64,9 +64,6 @@ export default class RemoteView extends EventEmitter {
 
         this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
 
-        if (tablename) {
-            this.subscribe();
-        }
     }
 
     getData(dataType) {
@@ -77,7 +74,7 @@ export default class RemoteView extends EventEmitter {
                 : null;
     }
 
-    subscribe() {
+    subscribe(columns, callback) {
         this._subscription = subscribe({
             viewport: this._id,
             tablename: this._table,
@@ -88,6 +85,9 @@ export default class RemoteView extends EventEmitter {
             groupBy: this._dataOptions.groupBy,
             groupState: this._dataOptions.groupState
         });
+
+        // TODO how will this unteract with filterdata
+        this.on(DataTypes.ROW_DATA, callback)
 
         this._subscription.onData = message => {
             console.log(`RemoteView.subscription.receive message:${message.type}`);
@@ -110,15 +110,14 @@ export default class RemoteView extends EventEmitter {
                 case DataTypes.ROW_DATA:
                 case DataTypes.FILTER_DATA:
                     const targetData = this.getData(type);
-                    const { data, size, selectedIndices, offset = targetData.offset } = message[type];  // fix the type, no need to vary
+                    const { data, size, offset = targetData.offset } = message[type];  // fix the type, no need to vary
                     console.table(data)
 
                     targetData.size = size;
                     targetData.offset = offset;
-                    targetData.selectedIndices = selectedIndices;
                     targetData.rows = rowUtils.mergeAndPurge(targetData, data, size, this.meta);
 
-                    this.emit(type, targetData.rows, size, selectedIndices);
+                    this.emit(type, targetData.rows, size);
 
                     break;
 
@@ -145,6 +144,11 @@ export default class RemoteView extends EventEmitter {
             }
         };
 
+    }
+
+    unsubscribe(){
+        this.removeAllListeners();
+        // wat else
     }
 
     set table(name) {
@@ -258,12 +262,12 @@ export default class RemoteView extends EventEmitter {
             searchText,
             rows: [],
             range,
-            size: 0,
-            selectedIndices: undefined
+            size: 0
         };
     }
 
     getFilterDataSelected() {
+        
         return this._filterData.selectedIndices;
     }
 

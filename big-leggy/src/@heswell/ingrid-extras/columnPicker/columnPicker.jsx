@@ -1,17 +1,25 @@
 import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
-import cx from 'classnames2';
-import {FlexBox} from '@heswell/finlay';
+import cx from 'classnames';
 import AvailableList from './availableList'; 
 import List from './list'; 
 
+// don't like this ...
+import FlexBox from '../../inlay/flexBox';
+import {followPath} from '../../inlay/util/pathUtils';
+import {handleLayout} from '../../inlay/model/layoutModel';
+
 const uuid = require('uuid');
 
-export default class ColumnPicker extends Component {
+export class ColumnPicker extends Component {
 
     static defaultProps = {
         style: {},
-        selectedColumns: []
+        selectedColumns: [],
+        onChange: config => {
+            console.log(`[ColumnPicker] onChange ${JSON.stringify(config,null,2)}`)
+        },
+        onCommit: config => console.log(`[ColumnPicker] onCommit ${JSON.stringify(config,null,2)}`),
+        onCancel: () => console.log(`[ColumnPicker] onCancel`)
     };
 
     constructor(props){
@@ -20,6 +28,8 @@ export default class ColumnPicker extends Component {
             layoutModel: this.getLayoutModel(),
             selectedColumns: this.props.columns
         };
+
+        this.handleLayout = this.handleLayout.bind(this);
     }
 
     render(){
@@ -37,10 +47,8 @@ export default class ColumnPicker extends Component {
             'ColumnPicker'
         );
 
-        //onsole.log(`ColumnPicker dragged=${dragged} dragging=${dragging} pageX=${pageX} pageY=${pageY} mouseX=${mouseMoveX} mouseMoveY=${mouseMoveY}`);
-
         return (
-            <FlexBox className={className} layoutModel={this.state.layoutModel} onLayout={this.handleLayout}>
+            <FlexBox className={className} style={this.props.style} XXlayoutModel={this.state.layoutModel} xxonLayout={this.handleLayout}>
                 <FlexBox style={{flex: 1, flexDirection: 'row', paddingLeft: 12,paddingRight: 12, paddingTop: 15, paddingBottom: 9}}>
                     <AvailableList style={{flex: 1}} items={availableItems} 
                         onItemAdded={this.handleItemAdded}
@@ -62,19 +70,13 @@ export default class ColumnPicker extends Component {
         );
     }
 
-	// experimental... because we are hosting a top-level layoutModel, we need to supply intial layout state
     getLayoutModel(){
         
-        //onsole.log(`ColumnPicker.getLayoutModel...`);
-
         if (this.state){
-            //onsole.log(`   ... already in state`);
             return this.state.layoutModel;
         }
         else {
-
-            var {top=0,left=0,width, height} = this.props.style;
-
+            var {top=0,left=0, width, height} = this.props.style;
             return {
                 type: 'FlexBox',
                 $id: this.props.id || uuid.v1(),
@@ -85,24 +87,19 @@ export default class ColumnPicker extends Component {
                 children: []
             };
         }
-
     }
 
     submit = () => {
-        this.props.dispatch({type: 'SAVE_CONFIG', componentId: this.props.targetId, config: {columns: this.state.selectedColumns}});
-        this.destroy();
+        this.props.onCommit(this.state.selectedColumns);
     };
 
     cancel = () => {
-        this.destroy();
+        this.props.onCancel();
     };
 
-    destroy(){
-        this.props.onLayout('remove');
-    }
 
 	//TODO how do we re-use this functionality
-    handleLayout = (command, options) => {
+    handleLayout(command, options){
 
         var layoutModel = this.state.layoutModel;
 
@@ -133,19 +130,20 @@ export default class ColumnPicker extends Component {
             columns[i] = selectedColumns[idx];
         });
 
-        this.props.dispatch({type:'SAVE_CONFIG', config:{columns}});
+        this.props.onChange({columns});
     };
 
     handleItemAdded = item => {
         var selectedColumns = this.state.selectedColumns.concat(item.column);
-        this.setState({selectedColumns});		
-        this.props.dispatch({type:'SAVE_CONFIG', config:{columns:selectedColumns}});
+        this.setState({selectedColumns});	
+
+        this.props.onChange({columns:selectedColumns});
     };
 
     handleItemRemoved = item => {
         var selectedColumns = this.state.selectedColumns.filter(col => col !== item);
         this.setState({selectedColumns})
-        this.props.dispatch({type:'SAVE_CONFIG', config:{columns:selectedColumns}});
+        this.props.onChange({columns:selectedColumns});
     };
 
 	// layout BpxModel contains an identical function
@@ -227,8 +225,7 @@ export default class ColumnPicker extends Component {
 
         this.setState({dragging: false});
 
-        this.props.dispatch({type: 'SAVE_CONFIG', config: {columns: this.state.selectedColumns}});	    
-
+        this.props.onChange({columns: this.state.selectedColumns});
     }
 
 }

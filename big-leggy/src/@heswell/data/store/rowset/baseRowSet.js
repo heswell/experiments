@@ -12,7 +12,6 @@ export default class BaseRowSet {
         this.offset = offset;
         this.baseOffset = offset;
         this.range = NULL_RANGE;
-        this.selectedIndices = [];
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
@@ -31,8 +30,7 @@ export default class BaseRowSet {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset,
-            selectedIndices: this.selectedIndices
+            offset: this.offset
         };
     }
 
@@ -43,8 +41,7 @@ export default class BaseRowSet {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset,
-            selectedIndices: this.selectedIndices
+            offset: this.offset
         };
     }
 

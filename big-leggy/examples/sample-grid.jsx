@@ -1,12 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Table from '../src/@heswell/data/store/table';
+import {LocalView} from '../src/@heswell/data/view';
+import RemoteView from '../src/@heswell/server-api/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
+import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
-// import { connect/*, subscribe2 */} from '../src/@heswell/server-api/serverApi2';
+import { connect } from '../src/@heswell/server-api/serverApi2';
 
 
 // const locked = true;
 
+const tablename = 'Instruments'
 const columns = [
   { name: 'Symbol', width: 120} ,
   { name: 'Name', width: 200} ,
@@ -24,6 +29,17 @@ const columns = [
   { name: 'Industry'}
 ];
 
+let view;
+
+if (data){
+  const table = new Table({data, columns});
+  // note, we can also pass groupBy, sortCriteria etc etc
+  view = new LocalView({table});
+} else {
+  view = new RemoteView({tablename, columns});
+  connect('127.0.0.1:9090');
+}
+
 class SampleGrid extends React.Component {
   render(){
     return (
@@ -31,16 +47,22 @@ class SampleGrid extends React.Component {
         <Grid
           height={600}
           width={800}
-          data={data} 
-          // tablename="Instruments" 
+          dataView={view} 
           columns={columns}/>
       </div>
     )
   }
 }
 
-ReactDOM.render(
-  <SampleGrid />,
-  document.getElementById('root'));
+const colPickerStyle = {
+  width: 400,
+  height: 300,
+  backgroundColor: 'white'
+}  
 
-// connect('127.0.0.1:9090');
+ReactDOM.render(
+  <>
+    <SampleGrid />
+    {/* <ColumnPicker availableColumns={columns} columns={columns} style={colPickerStyle}/> */}
+  </>,
+  document.getElementById('root'));

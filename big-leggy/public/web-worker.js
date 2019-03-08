@@ -285,6 +285,7 @@ function metaData(columns){
         DEPTH: next(),
         COUNT: next(),
         KEY: next(),
+        SELECTED: next(),
         PARENT_IDX: next(),
         IDX_POINTER: next(),
         FILTER_COUNT: next(),

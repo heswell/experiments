@@ -1,4 +1,5 @@
 import LocalView from '../../../data/view/localView';
+import Table from '../../../data/store/table';
 import {DataTypes} from '../../../data/store/types';
 import data from '../../../viewserver/dataTables/instruments/dataset';
 
@@ -20,13 +21,14 @@ describe('LocalView', () => {
   });
 
   test('create localView with data, check size is correct', () => {
-    const view = LocalView.from(data, { columns });
+    const view = new LocalView({table: new Table({data, columns })});
     expect(view.size).toBe(1247)
   });
 
   test('register for data changes', done => {
-    const view = LocalView.from(data, { columns });
-    view.on(DataTypes.ROW_DATA, (msgType, rows, rowCount/*, selected*/) => {
+    const view = new LocalView({table: new Table({data, columns })});
+
+    view.subscribe(columns, (msgType, rows, rowCount) => {
       expect(msgType).toBe(DataTypes.ROW_DATA);
       expect(rowCount).toBe(1247);
       expect(rows.length).toBe(15)

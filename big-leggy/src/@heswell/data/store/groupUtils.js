@@ -284,7 +284,9 @@ function byKey([key1], [key2]) {
 const EMPTY = {};
 export function getGroupStateChanges(groupState, existingGroupState = null, baseKey = '', groupIdx = 0) {
     const results = [];
-    Object.entries(groupState).forEach(([key, value]) => {
+    const entries = Object.entries(groupState);
+
+    entries.forEach(([key, value]) => {
         if (value && (existingGroupState === null || !existingGroupState[key])) {
             results.push([baseKey + key, groupIdx, true]);
             if (value !== null && typeof value === 'object' && Object.keys(value).length > 0) {

@@ -13,6 +13,15 @@ export default class FilterView extends EventEmitter {
         dataView.on(DataTypes.FILTER_DATA, this.onFilterData);
     }
 
+    subscribe(columns, callback){
+        console.log(`FilterView subscribe to ${JSON.stringify(columns)}`)
+        this.on(DataTypes.ROW_DATA, callback);
+    }
+
+    unsubscribe(){
+        this.removeAllListeners();
+    }
+
     destroy(){
         console.log(`filterView remove listener`)
         this._dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterData);

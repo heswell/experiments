@@ -1,6 +1,5 @@
 import {EventEmitter} from '@heswell/utils';
 import {DataTypes} from '../store/types';
-import Table from '../store/table';
 import InMemoryView from '../store/InMemoryView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
@@ -18,15 +17,6 @@ const NULL_DATARANGE = {
 const emptyConfig = {}
 
 export default class LocalView extends EventEmitter {
-
-
-    static from(data, dataOptions={}){
-        const {columns, sortBy: sortCriteria,...options} = dataOptions;
-        const table = new Table({data, columns});
-        window.TABLE = table;
-        return new LocalView({table, ...options, sortCriteria});
-
-    }
 
     constructor(config=emptyConfig){
         super();
@@ -87,6 +77,15 @@ export default class LocalView extends EventEmitter {
         this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
         this.meta = columnUtils.metaData(this._dataOptions.columns)
         //TODO need separate meta for filterData
+    }
+
+    subscribe(columns, callback){
+        console.log(`LocalVide subscribe to ${JSON.stringify(columns)}`)
+        this.on(DataTypes.ROW_DATA, callback);
+    }
+
+    unsubscribe(){
+        this.removeAllListeners();
     }
 
     processRowData(evtName, rows, size){

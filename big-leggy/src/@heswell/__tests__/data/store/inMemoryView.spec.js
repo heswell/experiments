@@ -20,10 +20,10 @@ describe('groupBy', () => {
     test('group by single col', () => {
 
         const view = new InMemoryView(_getInstrumentTable(), { columns });
-        let { rows, size } = view.setRange({ lo: 0, hi: 17 });
+        let { rows } = view.setRange({ lo: 0, hi: 17 });
         // onsole.log(`${join(rows)}`);
 
-        ({ rows, size } = view.groupBy([['Sector', 'asc']]));
+        ({ rows } = view.groupBy([['Sector', 'asc']]));
 
         expect(rows.map(d => d.slice(7, 11))).toEqual([
             [100, -1, 27, 'Basic Industries'],
@@ -39,9 +39,29 @@ describe('groupBy', () => {
             [110, -1, 303, 'Technology'],
             [111, -1, 27, 'Transportation']
         ]);
-
     });
+
 });
+
+
+describe('setGroupState', () => {
+    
+    test('single col groupby, expandAll', () => {
+        const view = new InMemoryView(_getInstrumentTable(), { columns });
+
+        view.groupBy([['Sector', 'asc']]);
+        let {size} = view.setRange({ lo: 0, hi: 25 });
+        expect(size).toEqual(12);
+
+        ({size} = view.setGroupState({'*': true}));
+        expect(size).toEqual(1259);
+
+        ({size} = view.setGroupState({}));
+        expect(size).toEqual(12);
+        
+    })
+
+})
 
 describe('updateRow', () => {
     const table = _getTestTable();
@@ -126,8 +146,7 @@ describe('getFilterData', () => {
             rows: [],
             range: { lo: 0, hi: 0 },
             size: 38,
-            offset: 0,
-            selectedIndices: []
+            offset: 0
         })
 
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
@@ -146,8 +165,7 @@ describe('getFilterData', () => {
             ],
             range: { lo: 0, hi: 10 },
             size: 38,
-            offset: 0,
-            selectedIndices: []
+            offset: 0
         })
     });
 
@@ -155,9 +173,8 @@ describe('getFilterData', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
         view.filter({type: SET, colName: 'Sector', values:['Basic Industries']});
-        let {size,selectedIndices} = view.getFilterData({ name: 'Sector' });
-        expect(size).toEqual(12)
-        expect(selectedIndices).toEqual([0]);
+        let {size} = view.getFilterData({ name: 'Sector' });
+        expect(size).toEqual(12)        
         const {rows} = view.setRange({lo:0,  hi:10}, true, DataTypes.FILTER_DATA);
         const {SELECTED} = view.filterRowSet.meta;
         expect(rows[0][SELECTED]).toEqual(1);
@@ -172,8 +189,7 @@ describe('getFilterData', () => {
             rows: [],
             range: { lo: 0, hi: 0 },
             size: 10,
-            offset: 0,
-            selectedIndices: []
+            offset: 0
         })
 
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
@@ -192,8 +208,7 @@ describe('getFilterData', () => {
             ],
             range: { lo: 0, hi: 10 },
             size: 10,
-            offset: 0,
-            selectedIndices: []
+            offset: 0
         })
     });
 
@@ -219,8 +234,7 @@ describe('getFilterData', () => {
                 ['Public Utilities', 24, 24, 9, 0, 0, 'Public Utilities', 0]],
             range: { lo: 0, hi: 10 },
             size: 12,
-            offset: 0,
-            selectedIndices: []
+            offset: 0
         })
 
     });
@@ -292,9 +306,11 @@ describe('getFilterData', () => {
         expect(addCounts(rows)).toBe(25);
 
         results = view.getFilterData({ name: 'Industry' });
-        results = view.setRange({ lo: 0, hi: 9 }, true, DataTypes.FILTER_DATA);
+        results = view.setRange({ lo: 0, hi: 9 }, true, DataTypes.FILTER_DATA); 
 
-        expect(results.selectedIndices).toEqual([0, 5, 6, 8])
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+        const selectedIndices = results.rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+        expect(selectedIndices).toEqual([0, 5, 6, 8])
 
     });
 
@@ -319,7 +335,9 @@ describe('getFilterData', () => {
 
         results = view.getFilterData({ name: 'Industry' });
         results = view.setRange({ lo: 0, hi: 9 }, true, DataTypes.FILTER_DATA);
-        expect(results.selectedIndices).toEqual([0, 5, 6, 8])
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+        const selectedIndices = results.rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+        expect(selectedIndices).toEqual([0, 5, 6, 8])
 
     });
 });
@@ -331,8 +349,10 @@ describe('getFilterData + Search', () => {
         view.getFilterData({ name: 'Name' });
         view.filter({ type: SET, colName: 'Name', values: ['Google Inc.'] });
         view.getFilterData({ name: 'Name' }, 'Go');
-        let { rows, selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
 
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+        const selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([3]);
 
         expect(rows).toEqual([
@@ -359,16 +379,20 @@ describe('getFilterData + Search', () => {
         view.getFilterData({ name: 'Name' }, 'Goo');
 
         view.getFilterData({ name: 'Name' }, 'F');
-        let { selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
 
         view.filter({ type: SET, colName: 'Name', values: ['Google Inc.', 'Facebook, Inc.'] });
 
         view.getFilterData({ name: 'Name' }, 'Fa');
-        ({ selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+        let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([1]);
 
         view.getFilterData({ name: 'Name' }, 'F');
-        ({ selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([5]);
 
     });
@@ -379,10 +403,12 @@ describe('getFilterData + Search', () => {
         view.getFilterData({ name: 'Name' });
         view.filter({ type: SET, colName: 'Name', values: ['Google Inc.'] });
         view.getFilterData({ name: 'Name' }, 'F');
-        let { size, selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        let { size, rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
         expect(size).toBe(46);
         view.getFilterData({ name: 'Name' });
-        ({ size, selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        ({ size, rows } = view.setRange({ lo: 0, hi: 500 }, true, DataTypes.FILTER_DATA));
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+        let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(size).toBe(1241);
         expect(selectedIndices).toEqual([492]);
 
@@ -478,19 +504,28 @@ describe('combined features', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
         view.getFilterData({ name: 'IPO' });
-        let { selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        const {IDX, SELECTED} = view.filterRowSet.meta;
+
+        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([]);
 
         view.filter({ type: SET, colName: 'IPO', values: [1973] });
 
-        ({ selectedIndices } = view.setRange({ lo: 10, hi: 20 }, true, DataTypes.FILTER_DATA));
-        expect(selectedIndices).toEqual([1]);
+        ({ rows } = view.setRange({ lo: 10, hi: 20 }, true, DataTypes.FILTER_DATA));
+        selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+        // the selected row is not in range here
+        expect(selectedIndices).toEqual([]);
 
-        ({ selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+        // but it is here...
         expect(selectedIndices).toEqual([1]);
 
         view.getFilterData({ name: 'IPO' });
-        ({ selectedIndices } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+
         expect(selectedIndices).toEqual([1]);
 
     });

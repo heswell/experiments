@@ -578,7 +578,11 @@ describe('getDistinctValuesForColumn', () => {
         const rowSet = _getTestRowset();
         rowSet.filter({type: SET, mode: EXCLUDE, colName: 'Group 2',values: ['I2']})
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
-        const {rows, selectedIndices} = filterRowset.setRange({lo: 0,hi: 25});
+        const {rows} = filterRowset.setRange({lo: 0,hi: 25});
+
+        const {IDX, SELECTED} = filterRowset.meta;
+        let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+
         expect(selectedIndices).toEqual([]);
         expect(rows).toEqual([
             ['T3', 15, 20,  0,0,0, 'T3', 0],
