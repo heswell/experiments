@@ -86,6 +86,9 @@ export default class Viewport extends React.Component {
                         {/* this.renderGutters(model, commonSpec)*/}
 
                         {
+                            // ideally, we want to give each Canvas a 'view' of the gridModel
+                            // that only allows it to see its own group - like a lens
+                            
                             model._groups.map((columnGroup, idx) =>
                                 <Canvas
                                     key={idx}

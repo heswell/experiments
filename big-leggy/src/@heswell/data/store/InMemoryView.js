@@ -198,9 +198,9 @@ export default class InMemoryView {
         } else if (includesNoValues(filter)) {
             // this accommodates where user has chosen de-select all from filter set - 
             // TODO couldn't we handle that entirely on the client ?
-            if (filterRowSet) {
-                filterRowSet.selectedIndices = [];
-            }
+            // if (filterRowSet) {
+            //     filterRowSet.selectedIndices = [];
+            // }
             return {
                 range,
                 rows: [],
@@ -270,11 +270,13 @@ export default class InMemoryView {
         const key = _columnMap[columnName];
 
         if (type === 'number'){
-            const rows = rowSet.filteredData;
-            const numbers = rows.map(row => row[key]);
+            // we need a notification from server to tell us when this is closed.
+            // TODO support for groupRowset
+            const {data, filteredData} = rowSet;
+            const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
             const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
             return {
-                type: 'numeric-bins', values
+                type: DataTypes.FILTER_BINS, values
             };
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){

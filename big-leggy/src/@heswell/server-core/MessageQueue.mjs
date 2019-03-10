@@ -1,5 +1,5 @@
 
-import { rangeUtils } from '../data';
+import { rangeUtils, DataTypes } from '../data';
 
 const EMPTY_ARRAY = [];
 const ROWSET = 'rowset';
@@ -33,7 +33,7 @@ export default class MessageQueue {
             }
             mergeAndPurgeRowset(this._queue, message, meta);
 
-        } else if (type === FILTER_DATA && data.type !== 'numeric-bins') {
+        } else if (type === FILTER_DATA && data.type !== DataTypes.FILTER_BINS) {
             mergeAndPurgeFilterData(this._queue, message, meta);
         } else {
             //onsole.log(`MessageQueue ${type} `);

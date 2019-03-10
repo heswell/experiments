@@ -404,13 +404,8 @@ export class ServerProxy {
 
                 if (subscription = this.subscriptions[viewport]) {
                     const { filterData } = message;
-                    // console.log(`selectedIndices from server ${JSON.stringify(filterData.selectedIndices)} 
-                    //     subscription filterSelected: ${JSON.stringify(subscription.filterSelected)}
-                    //     subscription searchSelected: ${JSON.stringify(subscription.searchSelected)}
-                    //     `);
 
                     const { rowset: data } = subscription.putData(type, filterData);
-                    const selectedIndices = filterData.selectedIndices || subscription.getData(type).selected;
                     if (data.length || filterData.size === 0) {
                         this.postMessage({
                             data: {
@@ -418,7 +413,6 @@ export class ServerProxy {
                                 viewport,
                                 [type]: {
                                     ...filterData,
-                                    selectedIndices,
                                     data
                                 }
                             }

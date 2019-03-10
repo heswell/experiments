@@ -1,6 +1,7 @@
 
 import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
+import {filterColumnMeta} from '../data/store/filterUtils';
 import {EventEmitter} from '@heswell/utils';
 // import {
 //     subscribe,
@@ -68,10 +69,10 @@ export default class RemoteView extends EventEmitter {
 
     getData(dataType) {
         return dataType === DataTypes.ROW_DATA
-            ? this._rowData
+            ? [this._rowData, this.meta]
             : dataType === DataTypes.FILTER_DATA
-                ? this._filterData
-                : null;
+                ? [this._filterData, filterColumnMeta]
+                : [null];
     }
 
     subscribe(columns, callback) {
@@ -109,13 +110,13 @@ export default class RemoteView extends EventEmitter {
 
                 case DataTypes.ROW_DATA:
                 case DataTypes.FILTER_DATA:
-                    const targetData = this.getData(type);
+                    const [targetData, meta] = this.getData(type);
                     const { data, size, offset = targetData.offset } = message[type];  // fix the type, no need to vary
                     console.table(data)
 
                     targetData.size = size;
                     targetData.offset = offset;
-                    targetData.rows = rowUtils.mergeAndPurge(targetData, data, size, this.meta);
+                    targetData.rows = rowUtils.mergeAndPurge(targetData, data, size, meta);
 
                     this.emit(type, targetData.rows, size);
 
@@ -170,7 +171,7 @@ export default class RemoteView extends EventEmitter {
 
     //TODO first bring server-api setViewRange & setFilterRange into line, then merge followig methods
     setRange(lo, hi, useDelta=true, dataType = DataTypes.ROW_DATA) {
-        const targetData = this.getData(dataType);
+        const [targetData, meta] = this.getData(dataType);
         //onsole.log(`%cRemoteView.setRange<${dataType}> ${lo} - ${hi}`,'color:blue;font-weight:bold;');
         const { range: { lo: lo_, hi: hi_ }, rows } = targetData;
         if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
@@ -186,12 +187,12 @@ export default class RemoteView extends EventEmitter {
                 } else {
                     if (lo >= hi_ || hi < lo_) {
                         // no overlap, send back the full range requested
-                        targetData.rows = rowUtils.purgeAndFill(targetData, this.meta);
+                        targetData.rows = rowUtils.purgeAndFill(targetData, meta);
                     } else {
                         lo = lo < lo_ ? lo_ : lo;
                         hi = hi > hi_ ? hi_ : hi;
 
-                        targetData.rows = rowUtils.purgeAndFill(targetData, this.meta);
+                        targetData.rows = rowUtils.purgeAndFill(targetData, meta);
                     }
                     // we should immediately postData with empty rows for the new data here
                     this.emit(dataType, targetData.rows, targetData.size /* selected ? */);
@@ -264,11 +265,6 @@ export default class RemoteView extends EventEmitter {
             range,
             size: 0
         };
-    }
-
-    getFilterDataSelected() {
-        
-        return this._filterData.selectedIndices;
     }
 
     getFilterDataCount = () => this._filterData.size;

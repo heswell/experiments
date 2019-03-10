@@ -1,19 +1,10 @@
 import React from 'react';
 import {Grid, Selection} from '../../ingrid';
 import {filter} from '../../data';
-const Count = {name: 'count',width: 80, type: 'number'};
 
 const {INCLUDE, EXCLUDE} = filter;
 
 export default class CheckList extends React.Component {
-
-    constructor(props){
-        super(props);
-        const columns = [{name: 'name', type: props.column.type, width: 150}, Count];
-        this.state = {
-            columns
-        };
-    }
 
     render(){
         return <Grid className='checkbox-list'
@@ -21,7 +12,7 @@ export default class CheckList extends React.Component {
             showHeaders={false}
             rowHeight={22}
             minColumnWidth={80}
-            columns={this.state.columns}
+            columns={this.props.columns}
             selectionModel={Selection.Checkbox}
             selectionDefault={this.props.selectionDefault}
             defaultSelected={this.props.defaultSelected}

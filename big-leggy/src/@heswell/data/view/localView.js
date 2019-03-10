@@ -80,7 +80,6 @@ export default class LocalView extends EventEmitter {
     }
 
     subscribe(columns, callback){
-        console.log(`LocalVide subscribe to ${JSON.stringify(columns)}`)
         this.on(DataTypes.ROW_DATA, callback);
     }
 
@@ -138,14 +137,16 @@ export default class LocalView extends EventEmitter {
 
     setRange(lo, hi, useDelta=true, dataType=DataTypes.ROW_DATA){
         const [targetData, meta] = this.getData(dataType);
-        const { range: { lo: lo_, hi: hi_ }} = targetData;
-        if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
-            targetData.range = { lo, hi };
-            if (this._dataView){
-                const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
-                targetData.rows = rowset;
-                this.emit(dataType, rowset, size, selectedIndices);
+        if (targetData.type !== DataTypes.FILTER_BINS){
+            const { range: { lo: lo_, hi: hi_ }} = targetData;
+            if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
+                targetData.range = { lo, hi };
+                if (this._dataView){
+                    const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
+                    const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
+                    targetData.rows = rowset;
+                    this.emit(dataType, rowset, size, selectedIndices);
+                }
             }
         }
     }
@@ -159,7 +160,6 @@ export default class LocalView extends EventEmitter {
     }
 
     filter(filter){
-        console.log(`LocalView filter ${JSON.stringify(filter)}`)
         const {rows, size} = this._dataView.filter(filter);
         const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
         const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
@@ -218,16 +218,12 @@ export default class LocalView extends EventEmitter {
         this._filterData.searchText = searchText;
 
         // emit data if range specified
-        if (this._filterData.type === 'numeric-bins'){
-            this.emit('filterBins', this._filterData.values);
+        if (this._filterData.type === DataTypes.FILTER_BINS){
+            this.emit(DataTypes.FILTER_BINS, this._filterData.values);
         } else if (range !== NULL_RANGE){
             const {rows, size, selectedIndices} = this._filterData;
             this.emit(DataTypes.FILTER_DATA, rows, size, selectedIndices);
         }
-    }
-
-    getFilterDataSelected() {
-        return this._filterData.selectedIndices;
     }
 
     setFilterDataRange(range){
@@ -248,7 +244,7 @@ export default class LocalView extends EventEmitter {
         this._filterData.rows = rowUtils.mergeAndPurge(this._filterData, data, size, this.meta);
 
         // we might have more data in cache than required, only emit rows specified in range
-        this.emit(DataTypes.FILTER_DATA, this._filterData.rows, size, this.getFilterDataSelected());
+        this.emit(DataTypes.FILTER_DATA, this._filterData.rows, size);
     }
 
     getFilterDataCount = () => this._filterData.size;

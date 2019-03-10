@@ -1,6 +1,9 @@
 import {EventEmitter} from '@heswell/utils';
 import {DataTypes} from '../store/types';
 
+//TODO how much of the stuff in here actually makes sense for binned views ?
+// TODO fins a better approach than extending EventEMitter
+
 export default class BinView extends EventEmitter {
     _dataView;
     constructor(dataView){
@@ -13,8 +16,8 @@ export default class BinView extends EventEmitter {
         this._dataView.removeListener(DataTypes.FILTER_BINS, this.onFilterBins);
     }
 
-    onFilterBins = (bins) => {
-        console.log(`got some filter Bins here ${JSON.stringify(bins)}`);
+    onFilterBins = (_, bins) => {
+        this.emit(DataTypes.FILTER_BINS, bins);
     }
 
     get size() { 

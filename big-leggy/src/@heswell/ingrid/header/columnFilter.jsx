@@ -78,9 +78,7 @@ export default class ColumnFilter extends React.Component {
         // Be careful not to reopen the popup when the filter is nulled. 
         const filterChanged = keepShowing && filter && filter !== this.props.filter;
         if (showPopup || filterChanged) {
-            const searchResults = [];
-            const values = [];
-            const component = this.getFilter(column, filter, values, searchResults, dataView);
+            const component = this.getFilter(column, filter, dataView);
             const el = ReactDOM.findDOMNode(this);
             const { left, top } = el.getBoundingClientRect();
             PopupService.showPopup({ left, top: top - 26, component });
@@ -88,8 +86,8 @@ export default class ColumnFilter extends React.Component {
 
     }
 
-    getFilter(column, filter, values, searchResults, dataView) {
-
+    getFilter(column, filter, dataView) {
+        console.log(`COlumnFilter, extractFilterFromColumn ${column.name} ${JSON.stringify(filter)}`)
         const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
 
         if (!column.isGroup || column.columns.length === 1) {

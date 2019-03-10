@@ -7,7 +7,7 @@ import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
 import { connect } from '../src/@heswell/server-api/serverApi2';
-
+// const data= null;
 
 // const locked = true;
 

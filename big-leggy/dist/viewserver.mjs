@@ -149,7 +149,7 @@ class MessageQueue {
             }
             mergeAndPurgeRowset(this._queue, message);
 
-        } else if (type === FILTER_DATA && data.type !== 'numeric-bins') {
+        } else if (type === FILTER_DATA && data.type !== 'numericBins') {
             mergeAndPurgeFilterData(this._queue, message);
         }
 

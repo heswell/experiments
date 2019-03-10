@@ -29,6 +29,7 @@ export class RowSet extends BaseRowSet {
         this.filteredCount = null;
         this.sortReverse= false;
         this.sortSet = this.buildSortSet();
+        this.filterSet = null;
         this.sortRequired = false;
         if (filter){
             this.currentFilter = filter;
@@ -85,9 +86,6 @@ export class RowSet extends BaseRowSet {
         return this.data[this.data.length - 1];
     }
     get rawData(){
-        return this.data;
-    }
-    get filteredData(){
         return this.data;
     }
 

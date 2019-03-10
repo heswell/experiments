@@ -30,7 +30,7 @@ export class SetFilter extends React.Component {
         this.state = {
             filterView,
             selectionDefault,
-            selected: filterView.getSelectedIndices(),
+            selected: [],
             selectedValues: filter ? filter.values : []
         };
         this.searchText = ''
@@ -71,6 +71,7 @@ export class SetFilter extends React.Component {
                         column={column}
                         selectionDefault={this.state.selectionDefault}
                         defaultSelected={this.state.selected}
+                        columns={filterView.columns}
                         dataView={filterView}
                         onSelectionChange={this.handleSelectionChange}/>
                     {suppressFooter !== true &&

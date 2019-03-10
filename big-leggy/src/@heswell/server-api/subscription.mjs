@@ -1,6 +1,8 @@
 import { replace, indexOf } from './utils/arrayUtils.mjs';
 import {rangeUtils, DataTypes} from '../data/index';
 import { metaData } from '../data/store/columnUtils';
+import {filterColumnMeta} from '../data/store/filterUtils';
+
 
 const {NULL_RANGE} = rangeUtils;
 
@@ -51,7 +53,7 @@ export default class Subscription {
 
     reset(dataType, range = NULL_RANGE) {
         console.log(`reset ${dataType} ${JSON.stringify(range)}`);
-        const targetData = this.getData(dataType);
+        const [targetData] = this.getData(dataType);
         targetData.data = [];
         targetData.size = 0;
         targetData.range = range;
@@ -72,8 +74,8 @@ export default class Subscription {
     // return any rows that we already have in the buffer and that now come into range.
     putRange({ lo, hi }, dataType = DataTypes.ROW_DATA) {
         console.log(`[Subscription.putRange] range=${lo} - ${hi}`);
-        const targetData = this.getData(dataType);
-        const [out, rowsInRange] = this._putRange(targetData, lo, hi);
+        const [targetData, meta] = this.getData(dataType);
+        const [out, rowsInRange] = this._putRange(targetData, lo, hi, meta);
         targetData.range = { lo, hi };
         targetData.data = out;
         return rowsInRange;
@@ -83,8 +85,8 @@ export default class Subscription {
     // we need to be passed in the INDEX_OFFSET so we can detect change
     putRows(rows, offset = 0) {
 
-        const targetData = this._data;
-        const results = this._putRows(targetData, rows, offset);
+        const [targetData, meta] = this.getData();
+        const results = this._putRows(targetData, rows, meta, offset);
 
         if (offset !== targetData.offset) {
             targetData.offset = offset;
@@ -94,18 +96,15 @@ export default class Subscription {
         return results;
     }
 
-    putData(dataType, { rows: data, size, selectedIndices = null }) {
+    putData(dataType, { rows: data, size }) {
         //onsole.groupCollapsed(`Subscription.putData<${dataType}> [${data.length ? data[0][0]: null} - ${data.length ? data[data.length-1][0]: null}]`);
 
-        const targetData = this.getData(dataType);
+        const [targetData, meta] = this.getData(dataType);
         // console.log(JSON.stringify(targetData.data));
 
         targetData.size = size;
-        if (selectedIndices !== null) {
-            targetData.selected = selectedIndices;
-        }
 
-        const results = this._putRows(targetData, data);
+        const results = this._putRows(targetData, data, meta);
         // if (results.rowset.length){
         //     console.log(`results
         //         ${results.rowset[0][0]} (${results.rowset[0][0]}) - ${results.rowset[results.rowset.length-1][4]} (${results.rowset[results.rowset.length-1][0]})`);
@@ -120,17 +119,16 @@ export default class Subscription {
     get filterData() { return this._filterData; }
     get filterSize() { return this._filterData.size; }
     set filterSize(val) { this._filterData.size = val; }
-    get filterSelected() { return this._filterData.selected; }
 
-    getData(dataType) {
-        return dataType === DataTypes.ROW_DATA ? this._data :
-            dataType === DataTypes.FILTER_DATA ? this._filterData :
-                null;
+    getData(dataType = DataTypes.ROW_DATA) {
+        return dataType === DataTypes.ROW_DATA ? [this._data, this.meta] :
+            dataType === DataTypes.FILTER_DATA ? [this._filterData, filterColumnMeta] :
+                [null];
     }
 
-    _putRange(targetData, lo, hi) {
+    _putRange(targetData, lo, hi, meta) {
         const { data, range, offset } = targetData;
-        const {IDX} = this.meta;
+        const {IDX} = meta;
 
         const low = lo + offset;
         const high = hi + offset;
@@ -188,9 +186,9 @@ export default class Subscription {
 
     }
 
-    _putRows(targetData, rows, newOffset = 0) {
+    _putRows(targetData, rows, meta, newOffset = 0) {
         const { data, range, offset } = targetData;
-        const {IDX} = this.meta;
+        const {IDX} = meta;
         const { lo, hi } = range;
         const low = lo + offset;
         const high = hi + offset;

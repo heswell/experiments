@@ -77,7 +77,12 @@ export function projectColumnsFilter(map, columns, meta, filter){
     }
 }
 
-export const toColumn = column =>
+export const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : {...column, key};
+
+        export const toColumn = column =>
     typeof column === 'string'
         ? { name: column }
         : column;
@@ -86,14 +91,22 @@ export function getFilterType(column){
     return column.filter || getDataType(column);
 }
 
+// {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
+// {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
+
 export function getDataType({type=null}){
-    return type === null
-        ? 'set'
-        : typeof type === 'string'
-            ? type
-            : typeof type === 'object'
-                ? type.name
-                : 'set';
+    if (type === null){
+        return 'set';
+    } else if (typeof type === 'string'){
+        return type;
+    } else {
+        switch(type.name){
+            case 'price':
+                return 'number';
+            default:
+                return type.name;
+        }
+    }
 
 }
 

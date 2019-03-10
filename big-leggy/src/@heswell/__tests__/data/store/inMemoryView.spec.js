@@ -266,6 +266,15 @@ describe('getFilterData', () => {
     
     })
 
+    test('no groupBy, no filters, getFilterData for numeric column', () => {
+        const view = new InMemoryView(_getInstrumentTable(), { columns });
+        view.setRange({ lo: 0, hi: 17 });
+        let {values} = view.getFilterData({ name: 'Price' });
+        const counts = values.map(v => v[1]);
+        expect(counts.reduce((a,b) => a+b)).toEqual(1247);
+
+    });
+
 
     test('groupedRowset, single col grouping, apply filter to col then re-request filter data', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });

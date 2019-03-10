@@ -12,7 +12,7 @@ import Viewport from './core/viewport';
 import {getScrollbarSize, getColumnWidth} from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
-import {DataTypes, filterUtils, groupHelpers} from '../data';
+import {DataTypes, filterUtils, groupHelpers, columnUtils} from '../data';
 
 import './grid.css';
 
@@ -48,7 +48,13 @@ export default class Grid extends React.Component {
         const headerHeight = props.showHeaders === false ? 0 : props.headerHeight;
 
         //TODO useReducer
-        this.reducer = new GridReducer({ ...props, columns, columnMap, scrollbarSize, headerHeight });
+        this.reducer = new GridReducer({ 
+            ...props,
+            columns: columns.map(columnUtils.toKeyedColumn),
+            columnMap,
+            scrollbarSize,
+            headerHeight
+        });
 
         const model = this.reducer.state;
         const selected = props.defaultSelected || props.selected || [];
@@ -185,9 +191,8 @@ export default class Grid extends React.Component {
         this.onHorizontalScroll();
     }
 
-    shouldComponenetUpdate() {
-        // false if the only update was to store scrollLeft in state
-        return true;
+    componentDidUpdate() {
+        this.onHorizontalScroll();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -235,10 +240,6 @@ export default class Grid extends React.Component {
 
     }
 
-    componentDidUpdate() {
-        this.onHorizontalScroll();
-    }
-
     setViewRange = (firstVisibleRow, lastVisibleRow, initialRange=false) => {
         const sendDelta = initialRange === false
         this.state.dataView.setRange(firstVisibleRow, lastVisibleRow, sendDelta);
@@ -261,14 +262,18 @@ export default class Grid extends React.Component {
         }
     }
 
-    // Note: when we update a set filter, this may leave us with other set filters containing entries which are no longer valid.
-    // These won't do nay harm as long as UI guards against trying to select them.
     handleFilter = (column, newFilter) => {
         const filter = filterUtils.addFilter(this.state.model.filter,newFilter);
         this.state.dataView.filter(filter);
         this.setState({
             model: this.reducer.dispatch({ type: Action.FILTER, column, filter })
         });
+
+        if (newFilter.isNumeric){
+            // re-request the filterData, this will re-create bins on the filtered data
+            const {key, name} = column.isGroup ? column.columns[0] : column;
+            this.state.dataView.getFilterData({ key, name });
+        }
     }
 
     handleClearFilter = column => {

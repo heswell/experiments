@@ -63,6 +63,12 @@ function metaData(columns){
     }
 }
 
+const DataTypes = {
+    ROW_DATA: 'rowData',
+    FILTER_DATA: 'filterData',
+    FILTER_BINS: 'filterBins'
+};
+
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
@@ -145,6 +151,8 @@ const rangeUtils = {
   resetRange
 };
 
+const DataTypes$1 = DataTypes;
+
 const EMPTY_ARRAY$1 = [];
 const ROWSET = 'rowset';
 const UPDATE = 'update';
@@ -177,7 +185,7 @@ class MessageQueue {
             }
             mergeAndPurgeRowset(this._queue, message, meta);
 
-        } else if (type === FILTER_DATA && data.type !== 'numeric-bins') {
+        } else if (type === FILTER_DATA && data.type !== DataTypes$1.FILTER_BINS) {
             mergeAndPurgeFilterData(this._queue, message, meta);
         }
 
@@ -586,7 +594,7 @@ const config = {
         interval: 100,
         fields: ['Price'],
         applyInserts: false,
-        applyUpdates: true
+        applyUpdates: false
     }
 };
 

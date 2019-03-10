@@ -21,20 +21,25 @@ export class NumberFilter extends React.Component {
     constructor(props) {
         super(props);
 
+        this.graph = null;
+
         const { filter } = this.props;
-        const filterView = new BinView(props.dataView);
+        this.filterView = new BinView(props.dataView);
         
         this.state = {
-            ...this.extractStateFromFilter(filter),
-            filterView,
-            values: filterView.getBins()
+            ...this.extractStateFromFilter(filter)
         };
 
-        filterView.on('filterBins', this.onFilterBins);
+        this.filterView.on('filterBins', this.onFilterBins);
     }
 
-    onFilterBins = (bins) => {
-        console.log(`numberFilter onFilterBins`,bins);
+    onFilterBins = (_, values) => {
+        console.log(`onFilterBins`, values, this.graph)
+        this.graph.destroy()
+        this.createGraph();
+        this.graph.updateOptions({
+            file: values.map(([x, y]) => [x, y]),
+        })
     }
 
     extractStateFromFilter(filter) {
@@ -87,14 +92,20 @@ export class NumberFilter extends React.Component {
             value: parseFloat(val2)
         };
 
-        return { type: 'AND', filters: [filter1, filter2] };
+        return { type: 'AND', filters: [filter1, filter2], isNumeric: true };
 
+    }
+
+    componentWillReceiveProps(nextProps){
+        if (nextProps.filter !== this.props.filter){
+            console.log(`[NumberFilter] got new filter ${JSON.stringify(nextProps.filter)}`)
+        }
     }
 
     selectRange(min, max) {
 
-        console.log(`select range ${min} - ${max}`,this.state.values);
-        const { values } = this.state;
+        console.log(`select range ${min} - ${max}`);
+        const values = this.filterView.getBins();
         const loIdx = Math.ceil(min);
         const hiIdx = Math.floor(max);
         const lo = values[loIdx - 1][2];
@@ -177,14 +188,22 @@ export class NumberFilter extends React.Component {
         );
     }
 
+    // note this range, if not [0,0] will cause selection to be highlighted in graph
     getRangeFromState(){
-        const {val1, val2, filterView} = this.state;
-        const values = filterView.getBins();
+        const {val1, val2} = this.state;
+        const values = this.filterView.getBins();
+        console.log(`getRange from state ${val1} ${val2}`,values)        
 
         if (val1 && val2){
-            return [indexOf(val1,values) - 0.5, indexOf(val2,values) + 0.5];
+            const idx1 = indexOf(val1,values);
+            const idx2 = indexOf(val2,values); 
+            if (idx1 === -1 || idx2 === -1){
+                return [0,0]
+            } else {
+                return [idx1, idx2]
+            }
         } else {
-            return [];
+            return [0,0];
         }
     }
 
@@ -197,13 +216,14 @@ export class NumberFilter extends React.Component {
     }
 
     createGraph(){
-        const values = this.state.filterView.getBins();
+        const values = this.filterView.getBins();
+        console.log(values)
         let [_minX = 0, _maxX = 0] = this.getRangeFromState();
         console.log(`cdm (${_minX}) (${_maxX})`);
         const _maxRange = values.length + 1;
         const _values = values.map(([x, y]) => [x, y]);
 
-        const graph = new Dygraph(
+        const graph = window.graph = this.graph = new Dygraph(
             this._filterChart,
             _values,
             {
@@ -216,6 +236,7 @@ export class NumberFilter extends React.Component {
                 xRangePad: 3,
                 animatedZooms: false,
                 zoomCallback: (minDate, maxDate/*, yRanges*/) => {
+                    console.log(`zoomCallback (${minDate}) (${maxDate})`);
                     _minX = minDate;
                     _maxX = maxDate;
                     graph.updateOptions({
@@ -226,7 +247,7 @@ export class NumberFilter extends React.Component {
                     this.selectRange(minDate, maxDate);
                 },
                 underlayCallback: function (canvas, area, g) {
-                    //onsole.log(`underlayCallback (${_minX}) (${_maxX})`);
+                    console.log(`underlayCallback (${_minX}) (${_maxX})`);
                     const bottom_left = g.toDomCoords(_minX, -20);
                     const top_right = g.toDomCoords(_maxX, +20);
                     const left = bottom_left[0];
@@ -252,4 +273,5 @@ function indexOf(val, values){
             return i+1;
         }
     }
+    return -1;
 }

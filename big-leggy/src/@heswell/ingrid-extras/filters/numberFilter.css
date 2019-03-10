@@ -4,6 +4,7 @@
     height: 60px;
     margin: 8px 0;
     border: solid 1px #ccc;
+    background-color: white;
 }
 
 .NumberFilter .filter-inner {

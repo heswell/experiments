@@ -127,6 +127,7 @@ function sort(state, {column, direction, preserveExistingSort}) {
         ? newSortCriteria
         : state.sortBy.concat(newSortCriteria);
 
+    // be careful - re-assigns keys to columns
     return init(state, {gridState: {sortBy}});
 }
 
@@ -601,25 +602,21 @@ function getColumnPositions(groups, keys) {
 
 
 // TODO missing presenter/formatter etc details
-function toColumn(column, idx) {
+function toColumn(column) {
     //TODO roll cellCSS into className
 
     // >>>>> Don't like rolling functions into model, think about this
-    if (typeof column === 'string') {
-        return { key: idx, name: column, formatter: DEFAULT_PRESENTER.formatter};
-    } else {
-        // type is not sufficient, need to look at formatting metadata
-        const presenter = getFormatter(column.type);
-        return { 
-            ...column, 
-            key: idx,
-            label: column.heading 
-                ? Array.isArray(column.heading) ? column.heading[0] : column.heading
-                : column.name,
-            formatter: presenter.formatter, 
-            cellCSS: presenter.cellCSS(column.type)            
-        };
-    }
+    // we should keep the model clean here and enrich it beofre passing into render tree
+    // type is not sufficient, need to look at formatting metadata
+    const presenter = getFormatter(column.type);
+    return { 
+        ...column, 
+        label: column.heading 
+            ? Array.isArray(column.heading) ? column.heading[0] : column.heading
+            : column.name,
+        formatter: presenter.formatter, 
+        cellCSS: presenter.cellCSS(column.type)            
+    };
 }
 
 const getWidth = minWidth => column => Math.max(column.width || 0, minWidth);

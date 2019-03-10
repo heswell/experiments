@@ -79,10 +79,6 @@ export class GroupRowSet extends BaseRowSet {
         return this.data[this.data.length - 1];
     }
 
-    get filteredData() {
-        return this.groupedRows.filter(row => row[this.meta.DEPTH] === 0);
-    }
-
     currentRange(){
         return this.setRange(this.range, false);
     }

@@ -21,6 +21,15 @@ export default class BaseRowSet {
 
     }
 
+    get filteredData(){
+        if (this.filterSet){
+            return this.filterSet;
+        } else {
+            const {IDX} = this.meta;
+            return this.data.map(row => row[IDX])
+        }
+    }
+
     setRange(range, useDelta=true){
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);

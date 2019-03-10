@@ -156,7 +156,12 @@ function projectColumnsFilter(map, columns, meta, filter){
     }
 }
 
-const toColumn = column =>
+const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : {...column, key};
+
+        const toColumn = column =>
     typeof column === 'string'
         ? { name: column }
         : column;
@@ -165,14 +170,22 @@ function getFilterType(column){
     return column.filter || getDataType(column);
 }
 
+// {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
+// {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
+
 function getDataType({type=null}){
-    return type === null
-        ? 'set'
-        : typeof type === 'string'
-            ? type
-            : typeof type === 'object'
-                ? type.name
-                : 'set';
+    if (type === null){
+        return 'set';
+    } else if (typeof type === 'string'){
+        return type;
+    } else {
+        switch(type.name){
+            case 'price':
+                return 'number';
+            default:
+                return type.name;
+        }
+    }
 
 }
 
@@ -579,7 +592,7 @@ function includesNoValues(filter) {
         return false;
     } else if (filter.type === SET && filter.mode !== EXCLUDE && filter.values.length === 0) {
         return true;
-    } else if (filter.type === 'AND' && filter.filters.some(f => includesNoValues(f))){
+    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
         return true;
     } else {
         return false;
@@ -611,7 +624,7 @@ function extendsFilter(f1=null, f2=null) {
     } else if (f1.colname && f2.colName) {
         // different columns,always false
         return false;
-    } else if (f2.type === 'AND' && extendsFilters(f1, f2)) {
+    } else if (f2.type === AND && extendsFilters(f1, f2)) {
         return true;
     }
 
@@ -660,10 +673,28 @@ function extractFilterForColumn(filter, columnName) {
     if (!filter) {
         return null;
     }
-    const { type, colName, filters } = filter;
+    const { type, colName } = filter;
     switch (type) {
-    case 'AND': return filters.find(f => extractFilterForColumn(f, columnName)) || null;
+    case 'AND': return collectFiltersForColumn(filter.filters, columnName);
     default: return colName === columnName ? filter : null;
+    }
+}
+
+function collectFiltersForColumn(filters, columName){
+    const results = [];
+    filters.forEach(filter => {
+        const ffc = extractFilterForColumn(filter, columName);
+        if (ffc !== null){
+            results.push(ffc);
+        }
+    });
+    if (results.length === 1){
+        return results[0];
+    } else {
+        return {
+            type: AND,
+            filters: results
+        }
     }
 }
 
@@ -1120,7 +1151,9 @@ function byKey([key1], [key2]) {
 const EMPTY = {};
 function getGroupStateChanges(groupState, existingGroupState = null, baseKey = '', groupIdx = 0) {
     const results = [];
-    Object.entries(groupState).forEach(([key, value]) => {
+    const entries = Object.entries(groupState);
+
+    entries.forEach(([key, value]) => {
         if (value && (existingGroupState === null || !existingGroupState[key])) {
             results.push([baseKey + key, groupIdx, true]);
             if (value !== null && typeof value === 'object' && Object.keys(value).length > 0) {
@@ -1748,6 +1781,12 @@ class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
+        // console.log(`Table 
+        //     columns = ${JSON.stringify(columns,null,2)}
+        //     columnMap = ${JSON.stringify(this.columnMap,null,2)}    
+        //     `)
+
+
         if (data){
             this.parseData(data);
         } else if (dataPath){
@@ -2076,6 +2115,7 @@ class RowSet extends BaseRowSet {
         this.filteredCount = null;
         this.sortReverse= false;
         this.sortSet = this.buildSortSet();
+        this.filterSet = null;
         this.sortRequired = false;
         if (filter){
             this.currentFilter = filter;
@@ -2134,8 +2174,16 @@ class RowSet extends BaseRowSet {
     get rawData(){
         return this.data;
     }
+    // get filteredData(){
+    //     return this.data;
+    // }
     get filteredData(){
-        return this.data;
+        if (this.filterSet){
+            return this.filterSet;
+        } else {
+            const {IDX} = this.meta;
+            return this.data.map(row => row[IDX])
+        }
     }
 
     setStatus(status){
@@ -2813,6 +2861,7 @@ class GroupRowSet extends BaseRowSet {
     }
 
     get filteredData() {
+        // TODO
         return this.groupedRows.filter(row => row[this.meta.DEPTH] === 0);
     }
 
@@ -2880,13 +2929,14 @@ class GroupRowSet extends BaseRowSet {
     // User interaction will never produce more than one change, but programatic change might !
     //TODO if we have sortCriteria, apply to leaf rows as we expand
     setGroupState(groupState) {
-        // console.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
+        // onsole.log(`[groupRowSet.setGroupState] ${JSON.stringify(groupState,null,2)}`)
         const changes = getGroupStateChanges(groupState, this.groupState);
         changes.forEach(([key, ,isExpanded]) => {
+            const {groupRows: groupRows$$1} = this;
             if (key === '*') {
-                this.expandAll();
+                this.toggleAll(isExpanded);
+                this.currentLength = this.countVisibleRows(groupRows$$1, false);
             } else {
-                const {groupRows: groupRows$$1} = this;
                 const groupIdx= this.findGroupIdx(key);
                 if (groupIdx !== -1){
                     if (isExpanded){
@@ -3173,7 +3223,7 @@ class GroupRowSet extends BaseRowSet {
         }
         const rangeIdx = this.iter.getRangeIndexOfRow(rowIdx);
         if (rangeIdx !== -1){
-            // console.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
+            // onsole.log(`[GroupRowSet.update] updates for row idx ${idx} ${rangeIdx+offset} ${JSON.stringify(rowUpdates)}`)
             outgoingUpdates.push([lo+rangeIdx+offset, ...rowUpdates]);
         }
         
@@ -3281,17 +3331,18 @@ class GroupRowSet extends BaseRowSet {
     }
 
     //TODO simple implementation first
-    expandAll() {
+    toggleAll(isExpanded) {
+        const sign = isExpanded ? 1 : -1;
         // iterate groupedRows and make every group row depth positive,
         // Then visible rows is not going to be different from grouped rows
         const {DEPTH} = this.meta;
-        const { groupedRows } = this;
-        this.expandedByDefault = true;
-        for (let i = 0, len = groupedRows.length; i < len; i++) {
-            const depth = groupedRows[i][DEPTH];
-            if (depth !== 0) {
-                groupedRows[i][DEPTH] = Math.abs(depth);
-            }
+        const { groupRows: groups } = this;
+        this.expandedByDefault = isExpanded;
+        for (let i = 0, len = groups.length; i < len; i++) {
+            const depth = groups[i][DEPTH];
+            // if (depth !== 0) {
+            groups[i][DEPTH] = Math.abs(depth) * sign;
+            // }
         }
     }
 
@@ -3834,9 +3885,9 @@ class InMemoryView {
         } else if (includesNoValues(filter)) {
             // this accommodates where user has chosen de-select all from filter set - 
             // TODO couldn't we handle that entirely on the client ?
-            if (filterRowSet) {
-                filterRowSet.selectedIndices = [];
-            }
+            // if (filterRowSet) {
+            //     filterRowSet.selectedIndices = [];
+            // }
             return {
                 range: range$$1,
                 rows: [],
@@ -3874,12 +3925,12 @@ class InMemoryView {
     }
 
     setGroupState(groupState) {
-        //onsole.log(`setGroupState ${JSON.stringify(groupState,null,2)}`)
         this._groupState = groupState;
         const {rowSet} = this;
         rowSet.setGroupState(groupState);
         // TODO should we have setRange return the following directly, so IMV doesn't have to decide how to call setRange ?
-        return this.rowSet.setRange(rowSet.range, false);
+        // should we reset the range ?
+        return rowSet.setRange(rowSet.range, false);
     }
 
     get updates() {
@@ -3906,11 +3957,12 @@ class InMemoryView {
         const key = _columnMap[columnName];
 
         if (type === 'number'){
-            const rows = rowSet.filteredData;
-            const numbers = rows.map(row => row[key]);
+            // we need a notification from server to tell us when this is closed.
+            const {data, filteredData} = rowSet;
+            const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
             const values = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
             return {
-                type: 'numeric-bins', values
+                type: DataTypes.FILTER_BINS, values
             };
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){
@@ -3946,6 +3998,7 @@ const columnUtils = {
   buildColumnMap,
   getFilterType,
   toColumn,
+  toKeyedColumn,
   metaData
 };
 

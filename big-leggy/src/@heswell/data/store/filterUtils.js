@@ -1,6 +1,6 @@
 import * as d3 from 'd3-array';
 // import { stringCollector } from './dataCollector';
-import {SET, EXCLUDE, STARTS_WITH} from './filter';
+import {SET, EXCLUDE, STARTS_WITH, AND} from './filter';
 import {metaData} from './columnUtils';
 
 export const FILTER_DATA_COLUMNS = [
@@ -30,7 +30,7 @@ export function includesNoValues(filter) {
         return false;
     } else if (filter.type === SET && filter.mode !== EXCLUDE && filter.values.length === 0) {
         return true;
-    } else if (filter.type === 'AND' && filter.filters.some(f => includesNoValues(f))){
+    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
         return true;
     } else {
         return false;
@@ -62,7 +62,7 @@ export function extendsFilter(f1=null, f2=null) {
     } else if (f1.colname && f2.colName) {
         // different columns,always false
         return false;
-    } else if (f2.type === 'AND' && extendsFilters(f1, f2)) {
+    } else if (f2.type === AND && extendsFilters(f1, f2)) {
         return true;
     }
 
@@ -185,10 +185,28 @@ export function extractFilterForColumn(filter, columnName) {
     if (!filter) {
         return null;
     }
-    const { type, colName, filters } = filter;
+    const { type, colName } = filter;
     switch (type) {
-    case 'AND': return filters.find(f => extractFilterForColumn(f, columnName)) || null;
+    case 'AND': return collectFiltersForColumn(filter.filters, columnName);
     default: return colName === columnName ? filter : null;
+    }
+}
+
+function collectFiltersForColumn(filters, columName){
+    const results = [];
+    filters.forEach(filter => {
+        const ffc = extractFilterForColumn(filter, columName);
+        if (ffc !== null){
+            results.push(ffc);
+        }
+    })
+    if (results.length === 1){
+        return results[0];
+    } else {
+        return {
+            type: AND,
+            filters: results
+        }
     }
 }
 
