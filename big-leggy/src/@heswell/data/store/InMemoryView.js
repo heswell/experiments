@@ -267,15 +267,9 @@ export default class InMemoryView {
         const type = getFilterType(colDef);
 
         if (type === 'number'){
-            return rowSet.getBinnedValuesForColumn(column);
             // // we need a notification from server to tell us when this is closed.
-            // // TODO support for groupRowset
-            // const {data, filteredData} = rowSet;
-            // const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
-            // const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-            // return {
-            //     type: DataTypes.FILTER_BINS, values
-            // };
+            // we should assign to filterRowset
+            return rowSet.getBinnedValuesForColumn(column);
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){
         

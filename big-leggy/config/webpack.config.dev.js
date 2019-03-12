@@ -73,7 +73,11 @@ module.exports = {
     grid: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.gridJs,
-    ]
+    ],
+    veryLargeList: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.veryLargeList,
+    ],
   },
   output: {
     // Add /* filename */ comments to generated require()s in the output.
@@ -304,6 +308,12 @@ module.exports = {
       chunks: ['grid'],
       template: paths.appHtml,
       filename: 'grid.html'
+    }),
+    new HtmlWebpackPlugin({
+      inject: true,
+      chunks: ['veryLargeList'],
+      template: paths.appHtml,
+      filename: 'very-large-list.html'
     }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
