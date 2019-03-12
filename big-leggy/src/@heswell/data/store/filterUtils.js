@@ -3,13 +3,20 @@ import * as d3 from 'd3-array';
 import {SET, EXCLUDE, STARTS_WITH, AND} from './filter';
 import {metaData} from './columnUtils';
 
-export const FILTER_DATA_COLUMNS = [
+export const SET_FILTER_DATA_COLUMNS = [
     {name: 'value'}, 
     {name: 'count'}, 
     {name: 'totalCount'}
 ];
 
-export const filterColumnMeta = metaData(FILTER_DATA_COLUMNS)
+export const BIN_FILTER_DATA_COLUMNS = [
+    {name: 'bin'}, 
+    {name: 'count'}, 
+    {name: 'bin-lo'},
+    {name: 'bin-hi'}
+];
+
+export const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;

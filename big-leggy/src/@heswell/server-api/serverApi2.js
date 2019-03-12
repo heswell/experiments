@@ -162,6 +162,7 @@ function messageFromTheWorker({data: message}){
         case Message.RowData:
         case 'update':
         case Message.FilterData:
+        case 'filterBins':
         case Message.Size:
             console.log(`[ServerAPI2.messageFromTheWorker]   Subscription<${message.viewport}>.onData  <==   ${message.type}`)
             return subscriptions[message.viewport].onData(message);

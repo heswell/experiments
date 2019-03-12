@@ -217,6 +217,9 @@ export class NumberFilter extends React.Component {
 
     createGraph(){
         const values = this.filterView.getBins();
+        if (!values || values.length === 0){
+            return;
+        }
         console.log(values)
         let [_minX = 0, _maxX = 0] = this.getRangeFromState();
         console.log(`cdm (${_minX}) (${_maxX})`);

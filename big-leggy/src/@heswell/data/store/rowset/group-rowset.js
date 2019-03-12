@@ -28,7 +28,6 @@ export class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
         super(rowSet.table, columns, rowSet.baseOffset);
-        this.columnMap = rowSet.columnMap;
         this.groupby = groupby;
         this.groupState = groupState;
         this.aggregations = [];

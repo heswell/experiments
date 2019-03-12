@@ -1,7 +1,10 @@
+import * as d3 from 'd3-array';
+
 import Table from '../table';
-import {includesColumn as filterIncludesColumn, removeFilterForColumn, FILTER_DATA_COLUMNS} from '../filterUtils';
+import {includesColumn as filterIncludesColumn, removeFilterForColumn, SET_FILTER_DATA_COLUMNS} from '../filterUtils';
 import {FilterRowSet} from './filter-rowset'
 import {functor as filterPredicate} from '../filter';
+import { DataTypes } from '../types';
 
 import {getDeltaRange, getFullRange, NULL_RANGE} from '../rangeUtils';
 import { metaData } from '../columnUtils';
@@ -17,6 +20,7 @@ export default class BaseRowSet {
         this.filterSet = null;
         this.table = table;
         this.data = table.rows;
+        this.columnMap = table.columnMap;
         this.meta = metaData(columns);
 
     }
@@ -61,6 +65,19 @@ export default class BaseRowSet {
             : [this.sortSet, IDX_POINTER, COUNT];
     }
     
+    //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
+    getBinnedValuesForColumn(column){
+        const key = this.columnMap[column.name];
+
+        const {data, filteredData} = this;
+        const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
+        const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+        return {
+            type: DataTypes.FILTER_BINS, values
+        };
+
+    }
+
     //TODO will need to make this more performant. We shouldn't need to actually test every row against the 
     // filter - we've already done that to filter the rows
     getDistinctValuesForColumn(column){
@@ -107,8 +124,8 @@ export default class BaseRowSet {
             }
         }
 
-        const table = new Table({data, primaryKey: 'value', columns: FILTER_DATA_COLUMNS});
-        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS, column.name);
+        const table = new Table({data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS});
+        const filterRowset = new FilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name);
 
         return filterRowset;
 

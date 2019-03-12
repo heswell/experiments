@@ -24,7 +24,6 @@ export class RowSet extends BaseRowSet {
     constructor(table, columns, offset=0, {filter=null}=NO_OPTIONS) {
         super(table, columns, offset);
         this.project = projectColumns(table.columnMap, columns, this.meta);
-        this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
         this.sortReverse= false;

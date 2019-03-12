@@ -578,13 +578,13 @@ function histogram() {
   return histogram;
 }
 
-const FILTER_DATA_COLUMNS = [
+const SET_FILTER_DATA_COLUMNS = [
     {name: 'value'}, 
     {name: 'count'}, 
     {name: 'totalCount'}
 ];
 
-const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
+const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 
 function includesNoValues(filter) {
     // TODO make sure we catch all cases...
@@ -2002,18 +2002,28 @@ class BaseRowSet {
         this.filterSet = null;
         this.table = table;
         this.data = table.rows;
+        this.columnMap = table.columnMap;
         this.meta = metaData(columns);
 
     }
 
-    setRange(range, useDelta=true){
+    get filteredData(){
+        if (this.filterSet){
+            return this.filterSet;
+        } else {
+            const {IDX} = this.meta;
+            return this.data.map(row => row[IDX])
+        }
+    }
 
-        const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
+    setRange(range$$1, useDelta=true){
+
+        const { lo, hi } = useDelta ? getDeltaRange(this.range, range$$1) : getFullRange(range$$1);
         const resultset = this.slice(lo,hi);
-        this.range = range;
+        this.range = range$$1;
         return {
             rows: resultset,
-            range,
+            range: range$$1,
             size: this.size,
             offset: this.offset
         };
@@ -2037,6 +2047,19 @@ class BaseRowSet {
             : [this.sortSet, IDX_POINTER, COUNT];
     }
     
+    //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
+    getBinnedValuesForColumn(column){
+        const key = this.columnMap[column.name];
+
+        const {data, filteredData} = this;
+        const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
+        const values = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+        return {
+            type: DataTypes.FILTER_BINS, values
+        };
+
+    }
+
     //TODO will need to make this more performant. We shouldn't need to actually test every row against the 
     // filter - we've already done that to filter the rows
     getDistinctValuesForColumn(column){
@@ -2083,8 +2106,8 @@ class BaseRowSet {
             }
         }
 
-        const table = new Table({data, primaryKey: 'value', columns: FILTER_DATA_COLUMNS});
-        const filterRowset = new FilterRowSet(table, FILTER_DATA_COLUMNS, column.name);
+        const table = new Table({data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS});
+        const filterRowset = new FilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name);
 
         return filterRowset;
 
@@ -2110,7 +2133,6 @@ class RowSet extends BaseRowSet {
     constructor(table, columns, offset=0, {filter=null}=NO_OPTIONS) {
         super(table, columns, offset);
         this.project = projectColumns(table.columnMap, columns, this.meta);
-        this.columnMap = table.columnMap;
         this.sortCols = null;
         this.filteredCount = null;
         this.sortReverse= false;
@@ -2173,17 +2195,6 @@ class RowSet extends BaseRowSet {
     }
     get rawData(){
         return this.data;
-    }
-    // get filteredData(){
-    //     return this.data;
-    // }
-    get filteredData(){
-        if (this.filterSet){
-            return this.filterSet;
-        } else {
-            const {IDX} = this.meta;
-            return this.data.map(row => row[IDX])
-        }
     }
 
     setStatus(status){
@@ -2809,7 +2820,6 @@ class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
         super(rowSet.table, columns, rowSet.baseOffset);
-        this.columnMap = rowSet.columnMap;
         this.groupby = groupby;
         this.groupState = groupState;
         this.aggregations = [];
@@ -2858,11 +2868,6 @@ class GroupRowSet extends BaseRowSet {
     }
     get last(){
         return this.data[this.data.length - 1];
-    }
-
-    get filteredData() {
-        // TODO
-        return this.groupedRows.filter(row => row[this.meta.DEPTH] === 0);
     }
 
     currentRange(){
@@ -3862,8 +3867,8 @@ class InMemoryView {
     }
 
     //TODO we seem to get a setRange when we reverse sort order, is that correct ?
-    setRange(range$$1, useDelta=true, dataType=DataTypes.ROW_DATA) {
-        return this.getData(dataType).setRange(range$$1, useDelta);
+    setRange(range, useDelta=true, dataType=DataTypes.ROW_DATA) {
+        return this.getData(dataType).setRange(range, useDelta);
     }
 
     sort(sortCriteria) {
@@ -3874,7 +3879,7 @@ class InMemoryView {
 
     filter(filter) {
         const { rowSet, _filter, filterRowSet } = this;
-        const {range: range$$1} = rowSet;
+        const {range} = rowSet;
         this._filter = filter;
         if (filter === null) {
             if (_filter) {
@@ -3889,7 +3894,7 @@ class InMemoryView {
             //     filterRowSet.selectedIndices = [];
             // }
             return {
-                range: range$$1,
+                range,
                 rows: [],
                 size: 0,
                 offset: rowSet.offset
@@ -3903,7 +3908,7 @@ class InMemoryView {
             filterRowSet.setSelected(filter);
         }
 
-        return this.rowSet.setRange(resetRange(range$$1), false);
+        return this.rowSet.setRange(resetRange(range), false);
 
     }
 
@@ -3934,18 +3939,18 @@ class InMemoryView {
     }
 
     get updates() {
-        const {_update_queue, rowSet: {range: range$$1}} = this;
+        const {_update_queue, rowSet: {range}} = this;
         let results={
             updates: _update_queue.popAll(),
             range: {
-                lo: range$$1.lo,
-                hi: range$$1.hi
+                lo: range.lo,
+                hi: range.hi
             }
         };
         return results;
     }
 
-    getFilterData(column, searchText=null, range$$1=NULL_RANGE) {
+    getFilterData(column, searchText=null, range=NULL_RANGE) {
 
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
@@ -3954,16 +3959,17 @@ class InMemoryView {
         const colDef = this._columns.find(col => col.name === columnName);
         // No this should be decided beforehand (on client) 
         const type = getFilterType(colDef);
-        const key = _columnMap[columnName];
 
         if (type === 'number'){
-            // we need a notification from server to tell us when this is closed.
-            const {data, filteredData} = rowSet;
-            const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
-            const values = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-            return {
-                type: DataTypes.FILTER_BINS, values
-            };
+            return rowSet.getBinnedValuesForColumn(column);
+            // // we need a notification from server to tell us when this is closed.
+            // // TODO support for groupRowset
+            // const {data, filteredData} = rowSet;
+            // const numbers = filteredData.map(rowIdx => data[rowIdx][key]);
+            // const values = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+            // return {
+            //     type: DataTypes.FILTER_BINS, values
+            // };
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){
         
@@ -3988,7 +3994,7 @@ class InMemoryView {
         }
 
         // do we need to returtn searchText ?
-        return this.filterRowSet.setRange(range$$1, false);
+        return this.filterRowSet.setRange(range, false);
 
     }
 

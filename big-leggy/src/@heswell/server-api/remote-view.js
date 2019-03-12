@@ -108,6 +108,11 @@ export default class RemoteView extends EventEmitter {
                     }
                     break;
 
+                case DataTypes.FILTER_BINS:
+                    this._filterData = message.filterBins;
+                    this.emit(DataTypes.FILTER_BINS, message.filterBins.values);
+                    break;
+
                 case DataTypes.ROW_DATA:
                 case DataTypes.FILTER_DATA:
                     const [targetData, meta] = this.getData(type);
@@ -172,32 +177,35 @@ export default class RemoteView extends EventEmitter {
     //TODO first bring server-api setViewRange & setFilterRange into line, then merge followig methods
     setRange(lo, hi, useDelta=true, dataType = DataTypes.ROW_DATA) {
         const [targetData, meta] = this.getData(dataType);
-        //onsole.log(`%cRemoteView.setRange<${dataType}> ${lo} - ${hi}`,'color:blue;font-weight:bold;');
-        const { range: { lo: lo_, hi: hi_ }, rows } = targetData;
-        if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
-            targetData.range = { lo, hi };
+        if (targetData.type !== DataTypes.FILTER_BINS){
+            //onsole.log(`%cRemoteView.setRange<${dataType}> ${lo} - ${hi}`,'color:blue;font-weight:bold;');
+            const { range: { lo: lo_, hi: hi_ }, rows } = targetData;
+            if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
+                targetData.range = { lo, hi };
 
-            if (this._subscription) {
-                // this call might be synchronously fulfilled by cache layer in serverproxy...
-                this._subscription.setRange(lo, hi, dataType);
+                if (this._subscription) {
+                    // this call might be synchronously fulfilled by cache layer in serverproxy...
+                    this._subscription.setRange(lo, hi, dataType);
 
-                // ... in which case these will be different
-                if (targetData.rows !== rows) {
-                    // still need to check if we have enought to fill the viewport
-                } else {
-                    if (lo >= hi_ || hi < lo_) {
-                        // no overlap, send back the full range requested
-                        targetData.rows = rowUtils.purgeAndFill(targetData, meta);
+                    // ... in which case these will be different
+                    if (targetData.rows !== rows) {
+                        // still need to check if we have enought to fill the viewport
                     } else {
-                        lo = lo < lo_ ? lo_ : lo;
-                        hi = hi > hi_ ? hi_ : hi;
+                        if (lo >= hi_ || hi < lo_) {
+                            // no overlap, send back the full range requested
+                            targetData.rows = rowUtils.purgeAndFill(targetData, meta);
+                        } else {
+                            lo = lo < lo_ ? lo_ : lo;
+                            hi = hi > hi_ ? hi_ : hi;
 
-                        targetData.rows = rowUtils.purgeAndFill(targetData, meta);
+                            targetData.rows = rowUtils.purgeAndFill(targetData, meta);
+                        }
+                        // we should immediately postData with empty rows for the new data here
+                        this.emit(dataType, targetData.rows, targetData.size /* selected ? */);
                     }
-                    // we should immediately postData with empty rows for the new data here
-                    this.emit(dataType, targetData.rows, targetData.size /* selected ? */);
                 }
             }
+
         }
     }
 
@@ -244,9 +252,9 @@ export default class RemoteView extends EventEmitter {
 
     // }
 
-    get filterRows() {
+    get filterRows () {
         return this._filterData
-            ? this._filterData.rows
+            ? this._filterData.rows || this._filterData.values
             : [];
     }
 

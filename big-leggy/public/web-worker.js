@@ -338,13 +338,13 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending);
 
-const FILTER_DATA_COLUMNS = [
+const SET_FILTER_DATA_COLUMNS = [
     {name: 'value'}, 
     {name: 'count'}, 
     {name: 'totalCount'}
 ];
 
-const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
+const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 
 const NULL_RANGE = {lo: 0,hi: 0};
 
@@ -478,23 +478,17 @@ class Subscription {
         return results;
     }
 
-    putData(dataType, { rows: data, size }) {
+    putData(dataType, { type, values, rows: data, size }) {
         //onsole.groupCollapsed(`Subscription.putData<${dataType}> [${data.length ? data[0][0]: null} - ${data.length ? data[data.length-1][0]: null}]`);
 
-        const [targetData, meta] = this.getData(dataType);
-        // console.log(JSON.stringify(targetData.data));
-
-        targetData.size = size;
-
-        const results = this._putRows(targetData, data, meta);
-        // if (results.rowset.length){
-        //     console.log(`results
-        //         ${results.rowset[0][0]} (${results.rowset[0][0]}) - ${results.rowset[results.rowset.length-1][4]} (${results.rowset[results.rowset.length-1][0]})`);
-        // } else {
-        //     console.log(`no results output from putData`);
-        // }
-        //onsole.groupEnd();
-        return results;
+        if (type === DataTypes$1.FILTER_BINS){
+            return {type, values};
+        } else {
+            const [targetData, meta] = this.getData(dataType);
+            targetData.size = size;
+            const results = this._putRows(targetData, data, meta);
+            return results;
+        }
     }
 
     get rowData() { return this._data; }
@@ -1085,8 +1079,18 @@ class ServerProxy {
                 if (subscription = this.subscriptions[viewport]) {
                     const { filterData } = message;
 
-                    const { rowset: data } = subscription.putData(type, filterData);
-                    if (data.length || filterData.size === 0) {
+                    const { type: dataType, rowset: data } = subscription.putData(type, filterData);
+
+                    if (dataType === DataTypes.FILTER_BINS){
+                        this.postMessage( {
+                            data: {
+                                type: DataTypes.FILTER_BINS,
+                                viewport,
+                                [dataType]: filterData
+                            }
+                        } );
+
+                    } else if (data.length || filterData.size === 0) {
                         this.postMessage({
                             data: {
                                 type,

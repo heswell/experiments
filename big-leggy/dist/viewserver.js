@@ -107,13 +107,13 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending);
 
-const FILTER_DATA_COLUMNS = [
+const SET_FILTER_DATA_COLUMNS = [
     {name: 'value'}, 
     {name: 'count'}, 
     {name: 'totalCount'}
 ];
 
-const filterColumnMeta = metaData(FILTER_DATA_COLUMNS);
+const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 
 function resetRange({lo,hi,bufferSize=0}){
     return {
