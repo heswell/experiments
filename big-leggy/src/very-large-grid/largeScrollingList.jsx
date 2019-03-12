@@ -1,6 +1,31 @@
-import React from 'react'
+import React, {useRef} from 'react'
 
 import './index.css'
+
+const Canvas = ({height}) => {
+
+  return (
+    <div className='content' style={{height}}></div>
+  )
+}
+
+const ViewPort = ({height, actualContentHeight}) => {
+
+  const viewportEl = useRef(null);
+
+  // useEffect to maipulate scrollTop onNearScroll
+
+  const onScroll = () => {
+
+  }
+
+  return (
+    <div ref={viewportEl} className='viewport' style={{height}} onSroll={onScroll}>
+      <Canvas height={actualContentHeight}/>
+    </div>
+  )
+}
+
 
 export default class LargeScrollingList extends React.Component {
 
@@ -45,27 +70,35 @@ export default class LargeScrollingList extends React.Component {
     }
   
     onScroll = () =>{
-      var scrollTop = this.viewport.scrollTop;
-      
-      if (Math.abs(scrollTop-this.prevScrollTop) > this.viewportHeight) 
-          this.onJump();
+      const scrollTop = this.viewport.scrollTop;
+      const distanceScrolled = Math.abs(scrollTop-this.prevScrollTop);
+
+      if (distanceScrolled > this.viewportHeight) 
+          this.onJump(scrollTop);
       else
-          this.onNearScroll();
+          this.onNearScroll(scrollTop);
       
-      this.renderViewport();
+      this.renderViewport(scrollTop);
       
       this.logDebugInfo();
   
     }
   
-  
-    onNearScroll = () =>{
-      var scrollTop = this.viewport.scrollTop;
+    onJump = (scrollTop) =>{
+      this.pageIdx = Math.floor(scrollTop * ((this.virtualContentHeight-this.viewportHeight) / (this.actualContentHeight-this.viewportHeight)) * (1/this.pageHeight));
+      this.pageOffset = Math.round(this.pageIdx * this.cj);
+      this.prevScrollTop = scrollTop;
+      
+      this.removeAllRows();
+    }
+
+    onNearScroll = (scrollTop) =>{
       
       // next pageIdx
       if (scrollTop + this.pageOffset > (this.pageIdx+1)*this.pageHeight) {
           this.pageIdx++;
           this.pageOffset = Math.round(this.pageIdx * this.cj);
+          // ===> Manipulate the scrollTop directly
           this.viewport.scrollTop = this.prevScrollTop = scrollTop - this.cj;
           this.removeAllRows();
       }
@@ -73,6 +106,7 @@ export default class LargeScrollingList extends React.Component {
       else if (scrollTop + this.pageOffset < this.pageIdx*this.pageHeight) {
           this.pageIdx--;
           this.pageOffset = Math.round(this.pageIdx * this.cj);
+          // ===> Manipulate the scrollTop directly
           this.viewport.scrollTop = this.prevScrollTop = scrollTop + this.cj;
           this.removeAllRows();
       }
@@ -80,16 +114,7 @@ export default class LargeScrollingList extends React.Component {
           this.prevScrollTop = scrollTop;
       
     }
-  
-    onJump = () =>{
-      var scrollTop = this.viewport.scrollTop;
-      this.pageIdx = Math.floor(scrollTop * ((this.virtualContentHeight-this.viewportHeight) / (this.actualContentHeight-this.viewportHeight)) * (1/this.pageHeight));
-      this.pageOffset = Math.round(this.pageIdx * this.cj);
-      this.prevScrollTop = scrollTop;
-      
-      this.removeAllRows();
-    }
-  
+    
     removeAllRows = () => {
       for (var i in this.rows) {
         this.content.removeChild(this.rows[i]);
@@ -97,9 +122,9 @@ export default class LargeScrollingList extends React.Component {
     }
   }
   
-    renderViewport = () =>{
+    renderViewport = (scrollTop) =>{
       // calculate the viewport + buffer
-      var y = this.viewport.scrollTop + this.pageOffset,
+      let y = scrollTop + this.pageOffset,
           buffer = this.viewportHeight,
           top = Math.floor((y-buffer)/this.rowHeight),
           bottom = Math.ceil((y+this.viewportHeight+buffer)/this.rowHeight);
@@ -116,12 +141,21 @@ export default class LargeScrollingList extends React.Component {
       }
       
       // add new rows
-      for (var i=top; i<=bottom; i++) {
+      for (let i=top; i<=bottom; i++) {
           if (!this.rows[i])
               this.rows[i] = this.renderRow(i);
       }
     }
-  
+
+    renderRow = (row) => {
+      const div = document.createElement('div');
+      div.className = 'row';
+      div.style.cssText = `top:${row*this.rowHeight-this.pageOffset}px;height:${this.rowHeight}px`;
+      div.innerText = `row ${row+1}`;
+      this.content.appendChild(div);
+      return div;
+    }
+
     logDebugInfo = () =>{
       this.debug.innerHTML = `
         pageCount = ${this.pageCount} (no of pages)<br>
@@ -136,14 +170,6 @@ export default class LargeScrollingList extends React.Component {
       `;
     }
   
-    renderRow = (row) => {
-      const div = document.createElement('div');
-      div.className = 'row';
-      div.style.cssText = `top:${row*this.rowHeight-this.pageOffset}px;height:${this.rowHeight}px`;
-      div.innerText = `row ${row+1}`;
-      this.content.appendChild(div);
-      return div;
-    }
   
   }
   
