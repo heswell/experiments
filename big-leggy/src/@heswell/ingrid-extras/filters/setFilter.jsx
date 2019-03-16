@@ -5,7 +5,7 @@ import {FilterView} from '../../data/view';
 import FlexBox from '../../inlay/flexBox';
 import {filter as filterConstants} from '../../data';
 import CheckList from './checkList';
-import SearchBar from './searchBar'
+import SearchBar from './filter-toolbar'
 import './setFilter.css';
 
 const NO_STYLE = {}
@@ -51,7 +51,6 @@ export class SetFilter extends React.Component {
         const {filterView, searchText=''} = this.state;
         const clickHandler = this.state.selectionDefault ? this.handleDeselectAll : this.handleSelectAll;
         const selectionText = this.state.selectionDefault ? 'DESELECT ALL' : 'SELECT ALL';
-        const borderStyle = {borderWidth: 1, borderStyle: 'solid', borderColor: '#d4d4d4'};
 
         return (
             <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width: 300,height,visibility: style.visibility}}>
@@ -59,15 +58,16 @@ export class SetFilter extends React.Component {
                 <div className='col-header HeaderCell' style={{height: 25}}>
                     <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>
                 </div>}
-                <FlexBox className='set-filter-inner' style={{flex: 1, ...borderStyle}}>
+                <FlexBox className='filter-inner' style={{flex: 1}}>
                     {suppressSearch !== true &&
                     <SearchBar style={{height: 25}}
-                        inputWidth={column.width-25}
+                        inputWidth={column.width-16}
                         searchText={searchText}
                         onSearchText={this.handleSearchText}
                         selectionText={selectionText}
-                        onClickSelectionText={clickHandler}/>}
-                    <CheckList style={{flex: 1, margin: 3, border: '1px solid red'}} debug_title={this.props.title}
+                        onClickSelectionText={clickHandler}
+                        onHide={this.props.onClose}/>}
+                    <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}} debug_title={this.props.title}
                         column={column}
                         selectionDefault={this.state.selectionDefault}
                         defaultSelected={this.state.selected}
@@ -75,7 +75,7 @@ export class SetFilter extends React.Component {
                         dataView={filterView}
                         onSelectionChange={this.handleSelectionChange}/>
                     {suppressFooter !== true &&
-                    <div key='footer' className='footer' style={{height: 24}}>
+                    <div key='footer' className='footer' style={{height: 26}}>
                         <button className='filter-done-button' onClick={this.props.onClose}>Done</button>
                     </div>}
                 </FlexBox>

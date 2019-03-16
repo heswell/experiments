@@ -4,7 +4,9 @@ import cx from 'classnames';
 
 import FlexBox from '../../inlay/flexBox';
 import { BinView } from '../../data/view';
-import SearchBar from './searchBar'
+import {DataTypes} from '../../data/store/types';
+
+import SearchBar from './filter-toolbar'
 
 import Dygraph from 'dygraphs';
 import barChartPlotter from '../dygraphs/barchartPlotter';
@@ -30,16 +32,26 @@ export class NumberFilter extends React.Component {
             ...this.extractStateFromFilter(filter)
         };
 
-        this.filterView.on('filterBins', this.onFilterBins);
+        this.filterView.on(DataTypes.FILTER_DATA, this.onFilterBins);
+    }
+
+    componentWillUnmount(){
+        this.filterView.removeListener(DataTypes.FILTER_DATA, this.onFilterBins);
+        this.filterView.destroy();
+        this.graph.destroy();
+        this.props.onHide();
+
     }
 
     onFilterBins = (_, values) => {
         console.log(`onFilterBins`, values, this.graph)
         this.graph.destroy()
-        this.createGraph();
-        this.graph.updateOptions({
-            file: values.map(([x, y]) => [x, y]),
-        })
+        if (values.length){
+            this.createGraph();
+            this.graph.updateOptions({
+                file: values.map(([x, y]) => [x, y]),
+            })
+        }
     }
 
     extractStateFromFilter(filter) {
@@ -137,7 +149,6 @@ export class NumberFilter extends React.Component {
         } = this.props;
         const { op1, val1, op2, val2 } = this.state;
         // const width = column.width + 100;
-        const borderStyle = {borderWidth: 1, borderStyle: 'solid', borderColor: '#d4d4d4'};
 
         return (
             <FlexBox className={cx('NumberFilter','ColumnFilter', className)} style={{width,height,visibility: style.visibility}}>
@@ -145,41 +156,52 @@ export class NumberFilter extends React.Component {
                 <div className='col-header HeaderCell' style={{height: 25}}>
                     <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>
                 </div>}
-                <FlexBox className='filter-inner' style={{flex: 1, ...borderStyle}}>
+                <FlexBox className='filter-inner' style={{flex: 1}}>
                 {suppressSearch !== true &&
                     <SearchBar style={{height: 25}}
-                        inputWidth={column.width-25}
+                        inputWidth={column.width-16}
                         searchText={''}
                         onSearchText={this.handleSearchText}
                     />}
                     <div className='filter-chart'
                         ref={c => this._filterChart = ReactDOM.findDOMNode(c)}
                         style={{width, height: 60}} />
-                    <div className='filter-row' style={{height: 40}}>
-                        <select name='op1' value={op1} onChange={this.onChange}>
-                            <option value='GE'>GE</option>
-                            <option value='GT'>GT</option>
-                            <option value='LE'>LE</option>
-                            <option value='LT'>LT</option>
-                            <option value='EQ'>EQ</option>
-                            <option value='NE'>NE</option>
-                        </select>
-                        <input name='val1' type='text' value={val1} onChange={this.onChange} />
+                    
+                    <div className="filter-control-row" style={{height: 24}}>
+                        <div className="input-wrapper">
+                            <input name='val1' type='text' value={val1} onChange={this.onChange} />
+                        </div>
+                        <div className="input-wrapper">
+                            <input name='val2' type='text' value={val2} onChange={this.onChange} />
+                        </div>
+                    </div>    
+                    
+                    <div className='filter-control-row filter-select' style={{height: 20}}>
+                        <div className="input-wrapper">
+                            <select name='op1' value={op1} onChange={this.onChange}>
+                                <option value='GE'>GE</option>
+                                <option value='GT'>GT</option>
+                                <option value='LE'>LE</option>
+                                <option value='LT'>LT</option>
+                                <option value='EQ'>EQ</option>
+                                <option value='NE'>NE</option>
+                            </select>
+                        </div>
+                        <div className="input-wrapper">
+                            <select name='op2' value={op2} onChange={this.onChange}>
+                                <option value='LE'>LE</option>
+                                <option value='LT'>LT</option>
+                                <option value='GE'>GE</option>
+                                <option value='GT'>GT</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className='filter-row' style={{height: 40}}>
-                        <select name='op2' value={op2} onChange={this.onChange}>
-                            <option value='LE'>LE</option>
-                            <option value='LT'>LT</option>
-                            <option value='GE'>GE</option>
-                            <option value='GT'>GT</option>
-                        </select>
-                        <input name='val2' type='text' value={val2} onChange={this.onChange} />
-                    </div>
-                    <div className='filter-row' style={{height: 40}}>
+
+                    <div className='filter-row' style={{flex: 1}}>
                         <span>Save filter ...</span>
                     </div>
                     {suppressFooter !== true &&
-                    <div key='footer' className='footer' style={{height: 24}}>
+                    <div key='footer' className='footer' style={{height: 26}}>
                         <button className='filter-done-button' onClick={this.props.onClose}>Done</button>
                     </div>}
                 </FlexBox>
@@ -209,10 +231,6 @@ export class NumberFilter extends React.Component {
 
     componentDidMount() {
         this.createGraph();
-    }
-
-    componentWillUnmount() {
-        this.props.onHide();
     }
 
     createGraph(){

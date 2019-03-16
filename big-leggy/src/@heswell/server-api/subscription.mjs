@@ -1,7 +1,7 @@
 import { replace, indexOf } from './utils/arrayUtils.mjs';
 import {rangeUtils, DataTypes} from '../data/index';
 import { metaData } from '../data/store/columnUtils';
-import {filterColumnMeta} from '../data/store/filterUtils';
+import {setFilterColumnMeta} from '../data/store/filterUtils';
 
 
 const {NULL_RANGE} = rangeUtils;
@@ -96,11 +96,10 @@ export default class Subscription {
         return results;
     }
 
-    putData(dataType, { type, values, rows: data, size }) {
+    putData(dataType, { type, rows: data, size }) {
         //onsole.groupCollapsed(`Subscription.putData<${dataType}> [${data.length ? data[0][0]: null} - ${data.length ? data[data.length-1][0]: null}]`);
-
         if (type === DataTypes.FILTER_BINS){
-            return {type, values};
+            return {rowset: data};
         } else {
             const [targetData, meta] = this.getData(dataType);
             targetData.size = size;
@@ -116,7 +115,7 @@ export default class Subscription {
 
     getData(dataType = DataTypes.ROW_DATA) {
         return dataType === DataTypes.ROW_DATA ? [this._data, this.meta] :
-            dataType === DataTypes.FILTER_DATA ? [this._filterData, filterColumnMeta] :
+            dataType === DataTypes.FILTER_DATA ? [this._filterData, setFilterColumnMeta] :
                 [null];
     }
 

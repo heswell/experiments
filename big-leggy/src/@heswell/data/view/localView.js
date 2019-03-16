@@ -3,7 +3,7 @@ import {DataTypes} from '../store/types';
 import InMemoryView from '../store/InMemoryView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
-import {filterColumnMeta} from '../store/filterUtils';
+import {setFilterColumnMeta} from '../store/filterUtils';
 import * as columnUtils from '../store/columnUtils';
 import * as rowUtils from '../store/rowUtils';
 
@@ -121,7 +121,7 @@ export default class LocalView extends EventEmitter {
         return dataType === DataTypes.ROW_DATA
             ? [this._rowData, this.meta]
             : dataType === DataTypes.FILTER_DATA
-                ? [this._filterData, filterColumnMeta]
+                ? [this._filterData, setFilterColumnMeta]
                 : [null];
     }
 
@@ -202,7 +202,7 @@ export default class LocalView extends EventEmitter {
 
     get filterRows () {
         return this._filterData
-            ? this._filterData.rows || this._filterData.values
+            ? this._filterData.rows
             : [];
     }
 
@@ -214,15 +214,16 @@ export default class LocalView extends EventEmitter {
         // when we have set data, need to save meta someghow
 
         this._filterData = this._dataView.getFilterData(column, searchText, range);
+        
         // shoulf getFilterData return this ?
         this._filterData.searchText = searchText;
 
-        // emit data if range specified
-        if (this._filterData.type === DataTypes.FILTER_BINS){
-            this.emit(DataTypes.FILTER_BINS, this._filterData.values);
-        } else if (range !== NULL_RANGE){
-            const {rows, size, selectedIndices} = this._filterData;
-            this.emit(DataTypes.FILTER_DATA, rows, size, selectedIndices);
+        // emit data if range specified or not required
+        if (this._filterData.type === DataTypes.FILTER_BINS || range !== NULL_RANGE){
+            const {rows, size} = this._filterData;
+            // there is no listener for this when we emit binned Filter data (no range required)
+            // but that's ok, the BinView will ask for them when it's ready
+            this.emit(DataTypes.FILTER_DATA, rows, size);
         }
     }
 

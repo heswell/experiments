@@ -9,15 +9,15 @@ export default class BinView extends EventEmitter {
     constructor(dataView){
         super();
         this._dataView = dataView;
-        dataView.on(DataTypes.FILTER_BINS, this.onFilterBins);
+        dataView.on(DataTypes.FILTER_DATA, this.onFilterBins);
     }
 
     destroy(){
-        this._dataView.removeListener(DataTypes.FILTER_BINS, this.onFilterBins);
+        this._dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterBins);
     }
 
     onFilterBins = (_, bins) => {
-        this.emit(DataTypes.FILTER_BINS, bins);
+        this.emit(DataTypes.FILTER_DATA, bins);
     }
 
     get size() { 
@@ -29,6 +29,7 @@ export default class BinView extends EventEmitter {
     }
 
     setRange(lo, hi, sendDelta){
+        debugger;
         this._dataView.setRange(lo,hi, sendDelta, DataTypes.FILTER_DATA);
     }
 

@@ -27,14 +27,8 @@ export default class FilterView extends EventEmitter {
         this._dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterData);
     }
 
-    onFilterData = (msgType, rows, rowCount, selected) => {
-        // console.log(`FilterView<${this.column.name}> emit 
-        //     selected ${JSON.stringify(selected)} ` +
-        //     (rows.length
-        //         ? ` rowData ${JSON.stringify(rows)}`
-        //         : ` no data`)
-        // );
-        this.emit(DataTypes.ROW_DATA,rows, rowCount, selected);
+    onFilterData = (msgType, rows, rowCount) => {
+        this.emit(DataTypes.ROW_DATA, rows, rowCount);
     }
 
     selectAll(){

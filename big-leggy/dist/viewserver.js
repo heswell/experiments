@@ -113,7 +113,7 @@ const SET_FILTER_DATA_COLUMNS = [
     {name: 'totalCount'}
 ];
 
-const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 
 function resetRange({lo,hi,bufferSize=0}){
     return {
@@ -131,6 +131,10 @@ function getFullRange({lo,hi,bufferSize=0}){
 }
 
 /*global fetch */
+
+/**
+ * Keep all except for groupRowset in this file to avoid circular reference warnings
+ */
 
 // Note, these must be exported in this order and must be consumed from this file.
 

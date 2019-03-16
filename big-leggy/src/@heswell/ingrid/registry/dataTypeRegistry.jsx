@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Cell from '../cells/cell';
-import CheckboxRenderer from '../cells/rendering/renderers/checkboxCell';
+import CheckboxRenderer from '../cells/rendering/renderers/checkbox-cell';
 import BackgroundCellRenderer from '../cells/rendering/renderers/background-cell';
 import StringFormatter from '../cells/formatting/formatters/stringFormatter';
 import NumberFormatter from '../cells/formatting/formatters/numberFormatter';

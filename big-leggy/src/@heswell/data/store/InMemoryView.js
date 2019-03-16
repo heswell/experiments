@@ -269,10 +269,10 @@ export default class InMemoryView {
         if (type === 'number'){
             // // we need a notification from server to tell us when this is closed.
             // we should assign to filterRowset
-            return rowSet.getBinnedValuesForColumn(column);
+            this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){
-        
+            
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
         
         } else if (searchText){
@@ -293,7 +293,8 @@ export default class InMemoryView {
             this.filterRowSet.setSelected(filter);
         }
 
-        // do we need to returtn searchText ?
+        // do we need to returtn searchText ? If so, it should
+        // be returned by the rowSet
         return this.filterRowSet.setRange(range, false);
 
     }

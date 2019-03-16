@@ -16,7 +16,8 @@ export const BIN_FILTER_DATA_COLUMNS = [
     {name: 'bin-hi'}
 ];
 
-export const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
+export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
+export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS)
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;

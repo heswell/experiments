@@ -1,26 +1,9 @@
 @import './filterPanel.css';
 
-.SetFilter .toolbar {
-    cursor:pointer;
-    background-color: white;
-    border-bottom: solid #ccc 1px;
-    box-sizing: border-box;
-}
 
-.SetFilter .toolbar .search-text {
-    position: relative;
-    height: 100%;
-    box-sizing: border-box;
-    border: none;
-}
-
-.SetFilter .toolbar .mass-select {
+.SetFilter .filter-toolbar .mass-select {
     flex: 0 1 100px;  
-    text-align: right;  
+    text-align: center;  
     line-height: 25px;
-    border-left: solid 1px #ccc;    
-}
-
-.SetFilter .footer .filter-done-button {
-    margin: 0 0 0 auto;
+    border-left: solid 1px #ccc;
 }

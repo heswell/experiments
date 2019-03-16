@@ -21,7 +21,7 @@ export default class Grid extends React.Component {
     static defaultProps = {
         style: {},
         selected: [],
-        headerHeight: 25,
+        headerHeight: 24,
         rowHeight: 23,
         minColumnWidth: 80,
         onContextMenu: () => { },
@@ -440,7 +440,7 @@ export default class Grid extends React.Component {
             }}
             doAction={this.handleContextMenuAction} />;
 
-        PopupService.showPopup({ left, top, component: contextMenu });
+        PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component: contextMenu });
 
     }
 

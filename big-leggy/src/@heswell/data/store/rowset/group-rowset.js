@@ -1,4 +1,4 @@
-import BaseRowSet from './baseRowSet';
+import BaseRowSet from './rowSet';
 import {
     groupRows,
     findSortedCol, findDoomedColumnDepths, getGroupStateChanges,

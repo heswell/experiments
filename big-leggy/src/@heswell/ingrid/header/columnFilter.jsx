@@ -81,7 +81,7 @@ export default class ColumnFilter extends React.Component {
             const component = this.getFilter(column, filter, dataView);
             const el = ReactDOM.findDOMNode(this);
             const { left, top } = el.getBoundingClientRect();
-            PopupService.showPopup({ left, top: top - 26, component });
+            PopupService.showPopup({ left: Math.round(left)-1, top: top - 26, component });
         }
 
     }

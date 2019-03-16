@@ -1,8 +1,9 @@
 .ColumnFilter .col-header-inner {
     height: 100%;
-    line-height: 23px;
-    padding-left: 14px;
+    line-height: 24px;
+    padding-left: 12px;
     box-sizing: border-box;
+    border-left: solid 1px black;
     border-bottom: solid 1px black;
     position: relative;
     background-color: #eaeaea;
@@ -17,23 +18,27 @@
     font-size: 11px;
 }
 
-.FilterPanel .set-filter-inner {
-    background-color: yellow;
-    box-shadow: 1px 2px 5px -1px rgba(0,0,0,0.52);
+.FilterPanel .filter-inner {
+    background-color: white;
+    box-shadow: 2px 2px 5px -1px rgba(0,0,0,0.52);
 }
 
-.FilterPanel .toolbar,
 .FilterPanel .footer {
     display: flex;
     align-items: center;
 }
 
-.FilterPanel .toolbar {
-    align-items: stretch;
+.FilterPanel .footer {
+    align-items: flex-end;
 }
 
 .FilterPanel .footer {
-    align-items: flex-end;
+    display: flex;
+    align-items: center;
+}
+
+.FilterPanel .footer .filter-done-button {
+    margin: 0 3px 0 auto;
 }
 
 .FilterPanel .filter-row {

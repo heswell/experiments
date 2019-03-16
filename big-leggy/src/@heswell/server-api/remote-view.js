@@ -1,7 +1,7 @@
 
 import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
-import {filterColumnMeta} from '../data/store/filterUtils';
+import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/filterUtils';
 import {EventEmitter} from '@heswell/utils';
 // import {
 //     subscribe,
@@ -67,11 +67,14 @@ export default class RemoteView extends EventEmitter {
 
     }
 
-    getData(dataType) {
+    getData(dataType, filterType) {
         return dataType === DataTypes.ROW_DATA
             ? [this._rowData, this.meta]
             : dataType === DataTypes.FILTER_DATA
-                ? [this._filterData, filterColumnMeta]
+                ? [
+                    this._filterData,
+                    filterType === DataTypes.FILTER_BINS ? binFilterColumnMeta : setFilterColumnMeta
+                ]
                 : [null];
     }
 
@@ -108,20 +111,20 @@ export default class RemoteView extends EventEmitter {
                     }
                     break;
 
-                case DataTypes.FILTER_BINS:
-                    this._filterData = message.filterBins;
-                    this.emit(DataTypes.FILTER_BINS, message.filterBins.values);
-                    break;
-
-                case DataTypes.ROW_DATA:
                 case DataTypes.FILTER_DATA:
-                    const [targetData, meta] = this.getData(type);
-                    const { data, size, offset = targetData.offset } = message[type];  // fix the type, no need to vary
+                case DataTypes.ROW_DATA:
+
+                    const rowSet = message[type];
+                    const [targetData, meta] = this.getData(type, rowSet.type);
+                    const { data, size, offset = targetData.offset } = rowSet;
                     console.table(data)
 
                     targetData.size = size;
                     targetData.offset = offset;
-                    targetData.rows = rowUtils.mergeAndPurge(targetData, data, size, meta);
+                    // we don't currently use a range with binData, so merge and purge won't work
+                    targetData.rows = rowSet.type === DataTypes.FILTER_BINS
+                        ? rowSet.data
+                        : rowUtils.mergeAndPurge(targetData, data, size, meta);
 
                     this.emit(type, targetData.rows, size);
 

@@ -405,18 +405,18 @@ export class ServerProxy {
                 if (subscription = this.subscriptions[viewport]) {
                     const { filterData } = message;
 
-                    const { type: dataType, rowset: data } = subscription.putData(type, filterData);
+                    const { rowset: data } = subscription.putData(type, filterData);
 
-                    if (dataType === DataTypes.FILTER_BINS){
-                        this.postMessage( {
-                            data: {
-                                type: DataTypes.FILTER_BINS,
-                                viewport,
-                                [dataType]: filterData
-                            }
-                        } );
+                    // if (dataType === DataTypes.FILTER_BINS){
+                    //     this.postMessage( {
+                    //         data: {
+                    //             type: DataTypes.FILTER_BINS,
+                    //             viewport,
+                    //             [dataType]: filterData
+                    //         }
+                    //     } );
 
-                    } else if (data.length || filterData.size === 0) {
+                    /*} else */ if (data.length || filterData.size === 0) {
                         this.postMessage({
                             data: {
                                 type,

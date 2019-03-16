@@ -1,4 +1,5 @@
 import React from 'react';
+import './filter-toolbar.css';
 
 export default class SearchBar extends React.Component {
 
@@ -6,10 +7,10 @@ export default class SearchBar extends React.Component {
         searchText: ''
     }
     render() {
-        const {style: {height}, inputWidth, selectionText, onClickSelectionText} = this.props
+        const {style: {height}, inputWidth, selectionText, onClickSelectionText, onHide} = this.props
         return (
-            <div className='toolbar' style={{height}}>
-                <div className='filter-button' onClick={this.showFilter}>
+            <div className='filter-toolbar' style={{height}}>
+                <div className='filter-button' onClick={onHide}>
                     <i className="material-icons">filter_list</i>
                 </div>
                 <input className='search-text' style={{width: inputWidth}} type='text' value={this.state.searchText} onChange={this.handleSearchTextChange} />

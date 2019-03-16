@@ -344,7 +344,15 @@ const SET_FILTER_DATA_COLUMNS = [
     {name: 'totalCount'}
 ];
 
-const filterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const BIN_FILTER_DATA_COLUMNS = [
+    {name: 'bin'}, 
+    {name: 'count'}, 
+    {name: 'bin-lo'},
+    {name: 'bin-hi'}
+];
+
+const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
 const NULL_RANGE = {lo: 0,hi: 0};
 
@@ -364,6 +372,10 @@ function getFullRange({lo,hi,bufferSize=0}){
 }
 
 /*global fetch */
+
+/**
+ * Keep all except for groupRowset in this file to avoid circular reference warnings
+ */
 
 // Note, these must be exported in this order and must be consumed from this file.
 
@@ -478,11 +490,10 @@ class Subscription {
         return results;
     }
 
-    putData(dataType, { type, values, rows: data, size }) {
+    putData(dataType, { type, rows: data, size }) {
         //onsole.groupCollapsed(`Subscription.putData<${dataType}> [${data.length ? data[0][0]: null} - ${data.length ? data[data.length-1][0]: null}]`);
-
         if (type === DataTypes$1.FILTER_BINS){
-            return {type, values};
+            return {rowset: data};
         } else {
             const [targetData, meta] = this.getData(dataType);
             targetData.size = size;
@@ -498,7 +509,7 @@ class Subscription {
 
     getData(dataType = DataTypes$1.ROW_DATA) {
         return dataType === DataTypes$1.ROW_DATA ? [this._data, this.meta] :
-            dataType === DataTypes$1.FILTER_DATA ? [this._filterData, filterColumnMeta] :
+            dataType === DataTypes$1.FILTER_DATA ? [this._filterData, setFilterColumnMeta] :
                 [null];
     }
 
@@ -1079,18 +1090,18 @@ class ServerProxy {
                 if (subscription = this.subscriptions[viewport]) {
                     const { filterData } = message;
 
-                    const { type: dataType, rowset: data } = subscription.putData(type, filterData);
+                    const { rowset: data } = subscription.putData(type, filterData);
 
-                    if (dataType === DataTypes.FILTER_BINS){
-                        this.postMessage( {
-                            data: {
-                                type: DataTypes.FILTER_BINS,
-                                viewport,
-                                [dataType]: filterData
-                            }
-                        } );
+                    // if (dataType === DataTypes.FILTER_BINS){
+                    //     this.postMessage( {
+                    //         data: {
+                    //             type: DataTypes.FILTER_BINS,
+                    //             viewport,
+                    //             [dataType]: filterData
+                    //         }
+                    //     } );
 
-                    } else if (data.length || filterData.size === 0) {
+                    /*} else */ if (data.length || filterData.size === 0) {
                         this.postMessage({
                             data: {
                                 type,
