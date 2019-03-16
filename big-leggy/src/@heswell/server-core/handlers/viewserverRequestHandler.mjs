@@ -1,4 +1,4 @@
-import MessageQueue from '../MessageQueue';
+import MessageQueue from '../message-queue';
 import { findHandler as handlerFor, killSubscriptions } from '../requestHandlers';
 import { updateLoop } from '../updateLoop';
 
@@ -36,7 +36,6 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
         const handler = handlerFor(msgType);
 
         if (handler) {
-            console.log(`JSON.stringify(message,null,2)`)
             handler(server_clientId, message, _update_queue);
         } else {
             console.log('server: dont know how to handle ' + msg);
@@ -66,7 +65,7 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
             const msg = JSON.stringify(queue);
-            //logger.output1(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;
@@ -75,7 +74,9 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
 
     function queueReader() {
         if (_update_queue.length > 0) {
-            return JSON.stringify(_update_queue.queue);
+            const msg = JSON.stringify(_update_queue.queue);
+            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            return msg;
         } else {
             return null;
         }

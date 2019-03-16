@@ -113,7 +113,15 @@ const SET_FILTER_DATA_COLUMNS = [
     {name: 'totalCount'}
 ];
 
+const BIN_FILTER_DATA_COLUMNS = [
+    {name: 'bin'}, 
+    {name: 'count'}, 
+    {name: 'bin-lo'},
+    {name: 'bin-hi'}
+];
+
 const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
 function resetRange({lo,hi,bufferSize=0}){
     return {
@@ -177,8 +185,7 @@ class MessageQueue {
     }
 
     push(message, meta) {
-        console.log(`MessageQueue. push<${message.type}|${message.dataType || ''}> ${JSON.stringify(message.range || (message.data && message.data.range))}`);
-
+        // onsole.log(`MessageQueue. push<${message.type}}> ${JSON.stringify(message.range || (message.data && message.data.range))}`);
         const { type, data } = message;
         if (type === UPDATE) {
             //onsole.log(`MessageQueue. UPDATE pushed ${JSON.stringify(message)}`);
@@ -216,9 +223,8 @@ class MessageQueue {
 // message is added at the back of the queue - INVESTIGATE.
 function mergeAndPurgeFilterData(queue, message, meta) {
     const {IDX} = meta;
-    //onsole.log(`mergeAndPurgeFiltreData new message with range ${JSON.stringify(message.data.range)}`);
     const { viewport, data: filterData } = message;
-    const { range, size } = filterData;
+    const { range } = filterData;
     const { lo, hi } = rangeUtils.getFullRange(range);
 
     for (var i = queue.length - 1; i >= 0; i--) {
@@ -229,18 +235,16 @@ function mergeAndPurgeFilterData(queue, message, meta) {
 
             var { lo: lo1, hi: hi1 } = rangeUtils.getFullRange(queue[i].data.range);
 
-            if ((lo1 === 0 && hi1 === 0 && lo === 0) ||
+            /*if ((lo1 === 0 && hi1 === 0 && lo === 0) ||
                 (lo1 >= hi || hi1 < lo)) {
-                message.data = {
-                    ...message.data,
-                    selectedIndices: data.selectedIndices
-                };
-            }
+                    // nothing to do
+                }
             else {
+*/
                 var overlaps = data.rows.filter(
                     row => row[IDX] >= lo && row[IDX] < hi);
 
-                // TODO selectedIndices    
+
                 if (lo < lo1) {
                     message.data = {
                         ...message.data,
@@ -254,7 +258,7 @@ function mergeAndPurgeFilterData(queue, message, meta) {
                     };
                 }
 
-            }
+            // }
             queue.splice(i, 1);
         }
     }
@@ -439,7 +443,6 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
         const handler = findHandler(msgType);
 
         if (handler) {
-            console.log(`JSON.stringify(message,null,2)`);
             handler(server_clientId, message, _update_queue);
         } else {
             console.log('server: dont know how to handle ' + msg);
@@ -469,7 +472,7 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
             const msg = JSON.stringify(queue);
-            //logger.output1(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;
@@ -478,7 +481,9 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
 
     function queueReader() {
         if (_update_queue.length > 0) {
-            return JSON.stringify(_update_queue.queue);
+            const msg = JSON.stringify(_update_queue.queue);
+            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            return msg;
         } else {
             return null;
         }

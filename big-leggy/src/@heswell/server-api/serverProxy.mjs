@@ -8,6 +8,7 @@ const serverModule = process.env.SERVER_MODULE || '/server-api/dist/viewserver.j
 console.log(`[ServerProxy] serverModule = ${serverModule}`)
 const PLAIN = 'color: black; font-weight: normal';
 const BLUE = 'color: blue; font-weight: bold';
+const BROWN = 'color: brown; font-weight: bold';
 const MSG_FROM_CLIENT = '<== C';
 const MSG_TO_CLIENT = '==> C';
 const MSG_TO_SERVER = '==> S';
@@ -67,7 +68,6 @@ export class ServerProxy {
         const { type, viewport } = message;
         const isReady = this.connectionStatus === 'ready';
         let subscription;
-        console.log(JSON.stringify(message))
         print(message, MSG_FROM_CLIENT);
 
         switch (type) {
@@ -83,7 +83,6 @@ export class ServerProxy {
             case Message.SET_VIEWPORT_RANGE:
                 //TODO drop buffering if we are scrolling faster than buffer can keep up
                 if (subscription = this.subscriptions[viewport]) {
-                    console.log(`%c setViewRange, we have a subscription`,'background-color: brown;color: cyan')
                     const { bufferSize } = subscription;
                     const { range, dataType } = message;
                     const { size, offset } = subscription[dataType];
@@ -480,15 +479,16 @@ export class ServerProxy {
 
 }
 
-function print(message, direction, method=null, color=BLUE){
-    console.log(`%c[ServerProxy${method === null ? '' : '.' + method}] %c${direction}  ${message.type} %c${messageToString(message)}`, PLAIN, color, PLAIN);
+function print(message, direction, method=null){
+    const color = direction === MSG_FROM_SERVER || direction === MSG_TO_CLIENT ? BLUE : BROWN;
+    console.log(`%c[ServerProxy${method === null ? '' : '.' + method}] %c${direction}  ${message.type} %c${messageToString(message, direction)}`, PLAIN, color, PLAIN, color, PLAIN);
 }
 
-function messageToString(message){
+function messageToString(message, direction){
     const {requestId='', viewport=''} = message;
     switch (message.type){
         case Message.SET_VIEWPORT_RANGE:
-            return `${requestId} viewport ${viewport} range: ${message.range.lo} - ${message.range.hi}`;
+            return `${requestId} range: %c${message.range.lo} - ${message.range.hi} %cvp ${viewport}`;
         case Message.SUBSCRIBE:
         case Message.SUBSCRIBED:
             return `${requestId} vp:${message.viewport}`;
@@ -497,6 +497,11 @@ function messageToString(message){
             return `${message.data.rows.length} of ${message.data.size} rows`;
         case Message.RowData:
             return `${message.rowData.data.length} of ${message.rowData.size} rows`;
+        case Message.FILTER_DATA:
+            if (message.data){
+                console.table(message.data.rows)
+            }
+            return `${(message.data || message.filterData).rows.length} of %c${(message.data || message.filterData).size} rows`;
         default:
             return '';
     }

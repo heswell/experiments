@@ -1,4 +1,6 @@
 import {InMemoryView as View, columnUtils} from '../../data';
+import { DataTypes } from '../../data/store/types';
+import {setFilterColumnMeta} from '../../data/store/filterUtils';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
@@ -9,7 +11,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
     let view = new View(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
 
-    const meta = columnUtils.metaData(columns);
+    const tableMeta = columnUtils.metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)}`)
 
@@ -36,7 +38,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
     function collectUpdates(){
         let {updates, range} = view.updates;
-
+        // TODO will we ever get updates for FilterData ? If se we will need correct mats
         // depending on the batch type there will be one of 
         // updates, rows or size. The others will be 
         // undefined and therefore not survive json serialization.
@@ -52,7 +54,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                 size,
                 offset,
                 range
-            }, meta);
+            }, tableMeta);
         });
 
 
@@ -66,6 +68,9 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
         invoke: {
             value: (method, queue, type, ...params) => {
                 const data = view[method](...params);
+                const meta = type === DataTypes.FILTER_DATA
+                    ? setFilterColumnMeta
+                    : tableMeta 
 
                 if (data){
                     queue.push({

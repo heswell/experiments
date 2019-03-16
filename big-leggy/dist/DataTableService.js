@@ -592,6 +592,7 @@ const BIN_FILTER_DATA_COLUMNS = [
 ];
 
 const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
 function includesNoValues(filter) {
     // TODO make sure we catch all cases...
@@ -4003,7 +4004,7 @@ class InMemoryView {
             this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
         
         } else if (!filterRowSet || filterRowSet.columnName !== column.name){
-        
+            
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
         
         } else if (searchText){
@@ -4071,7 +4072,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
     let view = new InMemoryView(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
 
-    const meta = columnUtils.metaData(columns);
+    const tableMeta = columnUtils.metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)}`);
 
@@ -4098,7 +4099,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
 
     function collectUpdates(){
         let {updates, range} = view.updates;
-
+        // TODO will we ever get updates for FilterData ? If se we will need correct mats
         // depending on the batch type there will be one of 
         // updates, rows or size. The others will be 
         // undefined and therefore not survive json serialization.
@@ -4114,7 +4115,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
                 size,
                 offset,
                 range
-            }, meta);
+            }, tableMeta);
         });
 
 
@@ -4128,6 +4129,9 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
         invoke: {
             value: (method, queue, type, ...params) => {
                 const data = view[method](...params);
+                const meta = type === DataTypes.FILTER_DATA
+                    ? setFilterColumnMeta
+                    : tableMeta; 
 
                 if (data){
                     queue.push({

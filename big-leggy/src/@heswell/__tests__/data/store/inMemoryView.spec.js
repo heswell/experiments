@@ -269,8 +269,8 @@ describe('getFilterData', () => {
     test('no groupBy, no filters, getFilterData for numeric column', () => {
         const view = new InMemoryView(_getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
-        let {values} = view.getFilterData({ name: 'Price' });
-        const counts = values.map(v => v[1]);
+        let {rows} = view.getFilterData({ name: 'Price' });
+        const counts = rows.map(v => v[1]);
         expect(counts.reduce((a,b) => a+b)).toEqual(1247);
 
     });

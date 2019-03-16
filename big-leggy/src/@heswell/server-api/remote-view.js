@@ -117,7 +117,6 @@ export default class RemoteView extends EventEmitter {
                     const rowSet = message[type];
                     const [targetData, meta] = this.getData(type, rowSet.type);
                     const { data, size, offset = targetData.offset } = rowSet;
-                    console.table(data)
 
                     targetData.size = size;
                     targetData.offset = offset;

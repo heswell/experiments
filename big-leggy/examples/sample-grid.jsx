@@ -5,9 +5,9 @@ import {LocalView} from '../src/@heswell/data/view';
 import RemoteView from '../src/@heswell/server-api/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
-import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
+//import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
 import { connect } from '../src/@heswell/server-api/serverApi2';
-//const data= null;
+const data= null;
 
 // const locked = true;
 

@@ -1,4 +1,4 @@
-import MessageQueue from './MessageQueue';
+import MessageQueue from './message-queue';
 import {
 	findHandler as handlerFor} from './requestHandlers';
 
