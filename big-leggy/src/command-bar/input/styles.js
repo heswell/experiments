@@ -9,3 +9,4 @@ export const speedbarErrorIcon = 'speedbar-error-icon';
 export const speedbarCommandHint = 'speedbar-command-hint';
 export const speedbarSuccess = 'speedbar-success';
 export const speedbarSuccessIcon = 'speedbar-success-icon';
+export const speedbarInputTokenHover = 'speedbar-input-token-hover';

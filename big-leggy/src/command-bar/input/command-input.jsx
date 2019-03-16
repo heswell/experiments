@@ -34,19 +34,54 @@ export default class CommandInput extends React.Component {
     this.tokenMeasurements = null
 
     this.state = {
-      containerWidth: undefined
+      containerWidth: undefined,
+      hilightedTokenIdx: -1
     }
 
+    this.handleClick = this.handleClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
   }
 
   componentDidMount() {
     if (this.inputElement.current) {
       this.inputElement.current.focus();
     }
+  }
+
+  handleMouseLeave(){
+    if (this.state.hilightedTokenIdx !== -1){
+      this.setState({hilightedTokenIdx: -1});
+    }
+  }
+
+  handleMouseMove(e){
+    const {highlightTokensOnHover: higlightable = []} = this.props;
+    const {hilightedTokenIdx} = this.state;
+
+    if (higlightable.length > 0){
+      const tokenMirror = this.tokenMirror.current;
+      const tokenIdx = tokenMirror.getTokenIdxAtPosition(e.clientX);
+      const shouldHighlightToken = higlightable.includes(tokenIdx);
+      if (shouldHighlightToken){
+        if (hilightedTokenIdx !== tokenIdx){
+          this.setState({hilightedTokenIdx: tokenIdx});
+        }
+      } else if (hilightedTokenIdx !== -1){
+        this.setState({hilightedTokenIdx: -1})
+      }
+
+    } else if (hilightedTokenIdx !== -1){
+      this.setState({hilightedTokenIdx: -1})
+    }
+  }
+
+  handleClick(){
+    this.props.onClick(this.state.highlightedTokenIdx);
   }
 
   handlePaste(e) {
@@ -61,8 +96,6 @@ export default class CommandInput extends React.Component {
 
   async handleChange(e) {
     const value = e.target.value;
-    console.log(`handle cjange '${value}'`)
-    this.cursorPosition = this.getCursorPosition();
     this.props.onChange(value);
   };
 
@@ -114,19 +147,18 @@ export default class CommandInput extends React.Component {
           )
           // Navigation handling has first dibs on Down key, but if we’re not in a navigation
           // situation, let the input use it
-        } else if (e.keyCode === Key.DOWN || e.key === Key.END) {
+        } /*else if (e.keyCode === Key.DOWN || e.key === Key.END) {
           e.preventDefault();
           this.scrollToEnd();
-        }
+        }*/
     }
   };
 
   canClearCommand() {
-    const { commandState, selectedSuggestionIdx } = this.props;
-    const prefixAcceptedCommandEmpty =
-      commandState.commandStatus === CommandStatus.PrefixValid && commandState.commandText === '';
-    const prefixSelected =
-      commandState.commandStatus === CommandStatus.Empty && selectedSuggestionIdx >= 0;
+    const { commandState: {commandStatus, commandText}, selectedSuggestionIdx } = this.props;
+    const commandPresent = commandStatus === CommandStatus.PrefixValid || commandStatus === CommandStatus.CommandComplete;
+    const prefixAcceptedCommandEmpty = commandPresent && commandText === '';
+    const prefixSelected = commandStatus === CommandStatus.Empty && selectedSuggestionIdx >= 0;
     return prefixAcceptedCommandEmpty || prefixSelected;
   }
 
@@ -150,10 +182,12 @@ export default class CommandInput extends React.Component {
       if (scroller && tokenMirror && scroller.canScroll()) {
         const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
         if (tokenPosition) {
+          const inputLength = this.props.inputText.length;
           const { offsetLeft: tokenLeft, left, right } = tokenPosition;
-          scroller.scrollIntoView({ left: tokenLeft, width: Math.round(right - left) })
+          scroller.setCurrentInputPosition(cursorPosition, inputLength, {left: tokenLeft, width: Math.round(right - left)});
         }
       }
+      this.cursorPosition = cursorPosition;
     }
 
     // experiments
@@ -203,7 +237,7 @@ export default class CommandInput extends React.Component {
     } = this.props;
     if (keyCode === Key.DOWN && length > 0 && selectedSuggestionIdx < length - 1) {
       return true;
-    } else if (keyCode === Key.UP && length > 9 && selectedSuggestionIdx > 0) {
+    } else if (keyCode === Key.UP && length && selectedSuggestionIdx > 0) {
       return true;
     } else {
       return false;
@@ -213,8 +247,9 @@ export default class CommandInput extends React.Component {
     const { suggestions } = this.props;
     return suggestions.length === 1 && suggestions[0].value !== '';
   }
+
   canAcceptSuggestion() {
-    return this.props.suggestions.length > 0 && this.props.selectedSuggestionIdx > -1
+    return this.props.suggestions.length > 0 && this.props.selectedSuggestionIdx > -1;
   }
   hasAcceptedSuggestion(searchId) {
     return searchId in this.props.tokenList.searchTokens;
@@ -293,7 +328,8 @@ export default class CommandInput extends React.Component {
       commandStatus === CommandStatus.PrefixValid ||
       commandStatus === CommandStatus.CommandComplete ||
       commandStatus === CommandStatus.Executing ||
-      commandStatus === CommandStatus.Succeeded
+      commandStatus === CommandStatus.Succeeded ||
+      commandStatus === CommandStatus.Failed
     );
   }
   // we should show the command prefix if user has selected or typed a valid command prefix
@@ -318,14 +354,21 @@ export default class CommandInput extends React.Component {
     }
   }
   componentDidUpdate(prevProps) {
-    const cursorPosition = this.getCursorPosition();
-    if (
-      this.cursorPosition !== cursorPosition &&
-      prevProps.inputText !== this.props.inputText &&
-      this.cursorPosition < prevProps.inputText.length
-    ) {
-      this.setCursorPosition(this.cursorPosition);
+    const { commandStatus: prevStatus} = prevProps.commandState;
+    const { commandStatus } = this.props.commandState;
+
+    if (commandStatus === CommandStatus.Empty && commandStatus !== prevStatus){
+      this.scrollable.current.reset();
     }
+    // do we still need this
+    // const cursorPosition = this.getCursorPosition();
+    // if (
+    //   this.cursorPosition !== cursorPosition &&
+    //   prevProps.inputText !== this.props.inputText &&
+    //   this.cursorPosition < prevProps.inputText.length
+    // ) {
+    //   this.setCursorPosition(this.cursorPosition);
+    // }
   }
 
   // we don't need to store these, we can ask the tokenMirror for them when we need them
@@ -348,9 +391,11 @@ export default class CommandInput extends React.Component {
       tokenList,
       commandState: { commandText }
     } = this.props;
+    const {highlightedTokenIdx} = this.state;
     const showCommand = this.shouldShowCommandPrefix();
     const displayPrefix = this.getCommandPrefix();
     const displayText = showCommand ? commandText : inputText;
+
     return (
       <div ref={this.containerElement} className={styles.speedbar}>
         <div className={styles.speedbarOuterContainer}>
@@ -363,11 +408,17 @@ export default class CommandInput extends React.Component {
           )}
           <Scrollable ref={this.scrollable} className={styles.speedbarInnerContainer}>
             {showCommand && (
-              <TokenMirror ref={this.tokenMirror} tokenList={tokenList} monitorContentSize />
+              <TokenMirror
+                ref={this.tokenMirror}
+                tokenList={tokenList}
+                highlightedTokenIdx={highlightedTokenIdx}
+                monitorContentSize />
             )}
             <input
               type="text"
-              className={styles.speedbarInput}
+              className={cx(styles.speedbarInput, {
+                [styles.speedbarInputTokenHover]: highlightedTokenIdx !== -1
+              })}
               style={{ width: this.state.inputWidth }}
               value={displayText}
               onFocus={this.props.onFocus}
@@ -376,6 +427,8 @@ export default class CommandInput extends React.Component {
               onPaste={this.handlePaste}
               onKeyDown={this.handleKeyDown}
               onSelect={this.handleSelectionChange}
+              onMouseMove={this.handleMouseMove}
+              onMouseLeave={this.handleMouseLeave}
               ref={this.inputElement}
               spellCheck={false}
               autoCorrect="off"

@@ -66,7 +66,8 @@ export const VENUE = {
   description: 'Venue',
   formatHelp: 'otc, listed',
   valuesHelp: [
-    { value: 'otc', description: 'Venue' }
+    { value: 'otc', description: 'Venue' },
+    { value: 'listed', description: 'Venue' },
   ],
   pattern: /^(otc|listed)$/i,
   required: false
@@ -89,6 +90,9 @@ export const MID = {
   name: 'mid',
   description: '12307mid Mid (OTC only)',
   formatHelp: '1023074mid',
+  valuesHelp: [
+    {value: '<value>mid', description: 'Mid (OTC only)', pattern: /^\d+(m|mi|mid)?$/}
+  ],
   pattern: /^(\d)+mid$/i,
   required: false
 }
@@ -97,6 +101,9 @@ export const MULTIPLIER = {
   name: 'multiplier',
   description: '100x Multiplier',
   formatHelp: '100x',
+  valuesHelp: [
+    {value: '<value>x', description: 'Multiplier', pattern: /^\d+x?$/}
+  ],
   pattern: /^\d+x$/i,
   required: false
 }
@@ -115,6 +122,9 @@ export const LEI = {
   name: 'lei',
   description: 'xyzLE LEI',
   formatHelp: 'xyzLE',
+  valuesHelp: [
+    {value: '<entity>le', description: 'LEI', pattern: /^[a-z\d]+(l|le)?$/}
+  ],
   pattern: /^[a-z0-9]+le$/i,
   required: false
 }

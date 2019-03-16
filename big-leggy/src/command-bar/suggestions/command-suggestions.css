@@ -29,3 +29,7 @@
   font-size: 16px;
   margin-right: 6px;
 }
+
+.command-suggestions-unresolved-search {
+  font-size: 13px;
+}

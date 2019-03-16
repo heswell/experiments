@@ -10,5 +10,9 @@
   right: 0;
   top:0;
   bottom:0;
-  transition: right .5s;
+  transition: left .5s, right .5s;
+}
+
+.scrollable .scrolling-container-static {
+  transition: none;
 }

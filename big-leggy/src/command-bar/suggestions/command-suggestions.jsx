@@ -11,7 +11,9 @@ const styles = {
   speedbarSuggestions: 'command-suggestions',
   speedbarSuggestionsMessage: 'command-suggestions-message',
   speedbarSuggestionsErrorMessage: 'command-suggestions-error-message',
-  speedbarSuggestionsErrorIcon: 'command-suggestions-error-icon'
+  speedbarSuggestionsErrorIcon: 'command-suggestions-error-icon',
+  speedbarSuggestionsUnresolvedSearch: 'command-suggestions-unresolved-search',
+
 }
 
 export default class CommandSuggestions extends React.Component {
@@ -45,17 +47,20 @@ export default class CommandSuggestions extends React.Component {
       defaultSuggestions,
       selectedSuggestionIdx,
       onSelectSuggestion,
-      commandState
+      commandState,
+      unresolvedSearchResults=[]
     } = this.props;
 
+    const searchIsUnresolved = unresolvedSearchResults.length > 0;
     const isComplete = commandState.commandStatus === CommandStatus.CommandComplete;
     const showSuggestions = suggestions.length > 0;
     const showCommandCue = isComplete || (!showSuggestions && tokenDescriptors.length > 0);
-    const showTooltip = !showCommandCue && !showSuggestions;
+    const showTooltip = !searchIsUnresolved && !showCommandCue && !showSuggestions;
 
     return <>
       {showCommandCue && (
         <CommandCue
+          searchIsUnresolved={searchIsUnresolved}
           commandState={commandState}
           tokenDescriptors={tokenDescriptors}
         />)}

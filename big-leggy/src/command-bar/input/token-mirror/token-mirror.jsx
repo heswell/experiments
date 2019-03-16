@@ -21,7 +21,8 @@ const TextToken = ({ idx, isComplete, token, className }) => {
   const wrapperClassName = cx('token-wrapper',{
     complete: isComplete,
     'search-token': token.searchId !== undefined,
-    'search-resolved': token.searchResolved === true
+    'search-resolved': token.searchResolved === true,
+    'multiple-results': token.multipleResults
   });
 
   return (
@@ -44,6 +45,7 @@ export class TokenMirror extends React.Component {
     super(props);
     this.el = React.createRef();
     this.currentWidth = -1;
+    this.currentLeft = -1;
     this.tokenPositions = [];
   }
 
@@ -51,14 +53,15 @@ export class TokenMirror extends React.Component {
     const { tokenList } = this.props;
     if (this.el.current && prevProps.tokenList !== tokenList) {
       const count = tokenList.tokens.length;
-      let width;
+      let left, width;
       if (count > 0) {
         const lastChild = this.el.current.querySelector(`:nth-child(${count})`)
         const { offsetLeft, offsetWidth } = lastChild;
         width = offsetLeft + offsetWidth;
         this.tokenPositions = this.measureTerms();
       } else {
-        ({ width } = this.el.current.getBoundingClientRect());
+        ({ left, width } = this.el.current.getBoundingClientRect());
+        this.currentLeft = left;
       }
       const newWidth = Math.ceil(width);
       if (newWidth !== this.currentWidth) {
@@ -66,6 +69,15 @@ export class TokenMirror extends React.Component {
         this.props.onContentResize(newWidth);
       }
     }
+  }
+
+  getTokenIdxAtPosition(x){
+    for (const {idx, left, right} of this.tokenPositions){
+      if (x >= left && x <= right){
+        return idx;
+      }
+    }
+    return -1;
   }
 
   getPositionOfTokenAtOffset(offset) {
@@ -105,7 +117,7 @@ export class TokenMirror extends React.Component {
   }
 
   render() {
-    const { tokenList = EmptyTokenList } = this.props;
+    const { tokenList = EmptyTokenList, highlightedTokenIdx } = this.props;
     const tokens = tokenList ? tokenList.tokens : [];
     let tokenCount = 0;
     const childTokens = tokens.map((token, idx, terms) => {
@@ -116,7 +128,12 @@ export class TokenMirror extends React.Component {
         const beyondRequiredTokens = tokenDescriptor === undefined;
         const isComplete = idx < terms.length - 1 || beyondRequiredTokens;
         // console.log(`${token.text} isComplete ${isComplete} invalid ${token.invalid}`)
-        const className = tokenDescriptor ? tokenDescriptor.tokenStyle : undefined;
+        const className = cx(tokenDescriptor
+          ? tokenDescriptor.tokenStyle
+          : undefined, {
+            highlighted: idx === highlightedTokenIdx
+          });
+          
         result = (
           <TextToken
             key={`term-${idx}`}

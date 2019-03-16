@@ -60,6 +60,10 @@
   caret-color: black;
 }
 
+.speedbar-input-token-hover {
+  cursor: pointer;
+}
+
 .speedbar-message-container {
   flex: 0 0 22px;
   color: red;
@@ -79,7 +83,7 @@
     color: green;
     display: flex;
     align-items: center;
-    font-size: llpx;
+    font-size: 11px;
   }
 .speedbar-command-hint {
     color: #888;
