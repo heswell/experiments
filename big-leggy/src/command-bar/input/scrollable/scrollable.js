@@ -6,7 +6,7 @@ import * as styles from './scrollable.styles';
 const defaultState = {
   contentWidth: auto,
   scrollRight: 0,
-  scrollLeft: 0,
+  scrollLeft: auto,
   animateScroll: false
 }
 

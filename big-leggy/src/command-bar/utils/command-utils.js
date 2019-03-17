@@ -129,12 +129,39 @@ export const buildPrefixList = (commands) => {
   return Array.from(set);
 }
 
+function buildPartialMatchPattern(text){
+  const matches = [];
+  let str = '';
+  for (let idx in text){
+    matches.push(str = str + text[idx]);
+  }
+  return new RegExp(`(${matches.join('|')})?$`);
+}
+
+function getSuggestionSuffix(suggestionText = ''){
+  if (suggestionText.length > 3 && suggestionText[0] === '<'){
+    const idx = suggestionText.lastIndexOf('>');
+    return suggestionText.slice(idx+1).trim();
+  } else {
+    return '';
+  }
+}
+
 export function replaceTextAtOffset(
   text,
   replacementText,
   offset = text.length
 ) {
+  const suffix = getSuggestionSuffix(replacementText);
   const term = getWordFromOffset(text, offset);
+
+  if (suffix && term.length){
+    const replacementPattern = buildPartialMatchPattern(suffix);
+    replacementText = term.replace(replacementPattern, suffix) + ' ';
+  } else if (suffix){
+    return text;
+  }
+
   return (
     text.slice(0, offset) +
     replacementText +
@@ -177,7 +204,7 @@ function countTokens(text = '') {
   •*/
 export function getWordFromOffset(text, offset) {
   const endPos = findNextSpace(text, offset);
-  const term = text.slice(offset, endPos);
+  const term = text.slice(offset, endPos > -1 ? endPos : undefined);
   return term;
 }
 

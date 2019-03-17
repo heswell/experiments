@@ -79,6 +79,10 @@ export default class TokenList {
     return false;
   }
 
+  shouldApplyValidation(){
+    return this._requiredDescriptors.length > 0 && this._optionalDescriptors.length > 0;
+  }
+
   /**
     * this will return a new tokenList
     */
@@ -206,6 +210,9 @@ export default class TokenList {
 
   createToken(startOffset, text, tokenDescriptor, idx, isFinalToken) {
     const { searchId = '', required } = tokenDescriptor;
+    const {_searchTokens} = this;
+    const applyValidation = this.shouldApplyValidation();
+
     return {
       name: tokenDescriptor.name,
       idx,
@@ -215,8 +222,9 @@ export default class TokenList {
       searchId: tokenDescriptor.searchId,
       resolved: searchId === ''
         ? undefined
-        : searchId in this._searchTokens,
-      invalid: !this.isTokenTextValid(text, tokenDescriptor, isFinalToken),
+        : searchId in _searchTokens,
+        multipleResults: searchTokenResolvedMultipleResults(_searchTokens,searchId),
+      invalid: applyValidation && !this.isTokenTextValid(text, tokenDescriptor, isFinalToken),
       required
     };
   }
@@ -257,3 +265,10 @@ export default class TokenList {
 }
 
 export const EmptyTokenList = new TokenList();
+
+const searchTokenResolvedMultipleResults = (_searchTokens, searchId) => {
+  const searchToken = _searchTokens[searchId];
+  return searchToken && searchToken.matchingSuggestions && searchToken.matchingSuggestions.length;
+}
+
+export const EmtyTokenList = new TokenList();

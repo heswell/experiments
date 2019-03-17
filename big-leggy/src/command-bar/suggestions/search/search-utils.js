@@ -51,7 +51,7 @@ export const getSuggestionsForOptionalTokens = tokenList => (searchId, searchTer
           searchResult.searchResults.push(suggestion);
         }
       } else {
-        const [value] = suggestions.suggestionText;
+        const [value] = suggestion.suggestionText;
         if (searchPatterns.every(pattern => pattern.test(value))) {
           searchResult.searchResults.push(suggestion);
         }
