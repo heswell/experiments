@@ -179,12 +179,13 @@ export default class CommandInput extends React.Component {
     const cursorPosition = this.getCursorPosition();
 
     if (cursorPosition !== this.cursorPosition) {
-      if (scroller && tokenMirror && scroller.canScroll()) {
+      if (scroller && scroller.canScroll()) {
         const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
         if (tokenPosition) {
-          const inputLength = this.props.inputText.length;
-          const { offsetLeft: tokenLeft, left, right } = tokenPosition;
-          scroller.setCurrentInputPosition(cursorPosition, inputLength, {left: tokenLeft, width: Math.round(right - left)});
+          const { offsetLeft, left, right } = tokenPosition;
+          console.log(`[CommandInput] selectionCHanged to token ${offsetLeft}`)
+          // only if cursor is at end ...
+          scroller.scrollIntoView({tokenLeft: offsetLeft, tokenWidth: Math.round(right - left)});
         }
       }
       this.cursorPosition = cursorPosition;
@@ -360,15 +361,6 @@ export default class CommandInput extends React.Component {
     if (commandStatus === CommandStatus.Empty && commandStatus !== prevStatus){
       this.scrollable.current.reset();
     }
-    // do we still need this
-    // const cursorPosition = this.getCursorPosition();
-    // if (
-    //   this.cursorPosition !== cursorPosition &&
-    //   prevProps.inputText !== this.props.inputText &&
-    //   this.cursorPosition < prevProps.inputText.length
-    // ) {
-    //   this.setCursorPosition(this.cursorPosition);
-    // }
   }
 
   // we don't need to store these, we can ask the tokenMirror for them when we need them

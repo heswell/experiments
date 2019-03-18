@@ -81,8 +81,9 @@ export class TokenMirror extends React.Component {
   }
 
   getPositionOfTokenAtOffset(offset) {
-    const token = this.props.tokenList.getTokenAtOffset(offset)
+    const token = this.props.tokenList.getTokenAtOffset(offset);
     if (token && token.idx !== undefined) {
+      console.log(`[TokenMirror] getPositionOfTokenAtOffset token = ${token.text}`);
       return this.tokenPositions[token.idx]
     }
   }

@@ -4,8 +4,8 @@ export const auto = 'auto';
 *	calculate the scrollOffset to bring token fully into view.
 *	ScrollOffset is returned as an offsetRight rather than offsetLeft value
 */
-export function calculateScrollOffsetRight(
-  scrollRight,
+export function calculateScrollOffset(
+  scrollLeft,
   width,
   contentWidth,
   tokenLeft,
@@ -14,16 +14,14 @@ export function calculateScrollOffsetRight(
   if (contentWidth === auto) {
     return 0;
   } else if (width) {
-    const visibleLeft = contentWidth - width + scrollRight;
+    const visibleLeft = Math.abs(scrollLeft);
     const visibleRight = visibleLeft + width;
     const tokenRight = tokenLeft + tokenWidth;
     if (tokenLeft < visibleLeft) {
-      const right = -(Math.abs(scrollRight) + (visibleLeft - tokenLeft));
-      return right;
+      return  -tokenLeft;
     } else if (tokenRight > visibleRight) {
-      const right = -(Math.abs(scrollRight) - (tokenRight - visibleRight))
-      return right;
+      return scrollLeft - (tokenRight - visibleRight);
     }
   }
-  return scrollRight;
+  return scrollLeft;
 }

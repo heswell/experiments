@@ -7,7 +7,7 @@
   min-width: calc(100% - 3px);
   display: inline-block;
   position: absolute;
-  right: 0;
+  left: 0;
   top:0;
   bottom:0;
   transition: left .5s, right .5s;

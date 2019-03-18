@@ -1,11 +1,11 @@
 import React from 'react';
 import cx from 'classnames';
-import { auto, calculateScrollOffsetRight } from './scroll-utils';
+import { auto, calculateScrollOffset } from './scroll-utils';
 import * as styles from './scrollable.styles';
 
 const defaultState = {
   contentWidth: auto,
-  scrollRight: 0,
+  // scrollRight: 0,
   scrollLeft: auto,
   animateScroll: false
 }
@@ -28,8 +28,8 @@ export default class Scrollable extends React.Component {
   }
 
   reset(){
-    const {contentWidth, scrollRight} = this.state;
-    if (contentWidth !== auto || scrollRight === 0){
+    const {contentWidth, scrollLeft} = this.state;
+    if (contentWidth !== auto){
       this.setState(defaultState);
     }
   }
@@ -47,78 +47,44 @@ export default class Scrollable extends React.Component {
   }
 
   scrollToEnd() {
-    if (this.canScroll()) {
-      if (this.state.scrollRight !== 0) {
-        this.setState({
-          scrollRight: 0
-        });
+    const {contentWidth} = this.state;
+    if (contentWidth !== auto){
+      const width = this.getWidth();
+      const scrollLeft = width - contentWidth;
+      if (this.state.scrollLeft !== scrollLeft){
+        this.setState({scrollLeft})
+
       }
     }
-  }
+}
 
-  setCurrentInputPosition(cursorPosition, inputLength, tokenPosition){
-    const {scrollLeft, scrollRight} = this.state;
-    const {left: tokenLeft, width: tokenWidth} = tokenPosition;
-
-    if (cursorPosition === 0 && scrollLeft === auto){
-      // flip scrollCOntrol from right to left, then animate to start
-      const {contentWidth} = this.state;
-      const containerWidth = this.getWidth();
-      this.setState({
-        scrollLeft: containerWidth - contentWidth,
-        scrollRight: auto
-      });
-
-    } else if (cursorPosition === inputLength && scrollRight === auto){
-      // flip scrollControl from left to right, then animate to start
-      const {contentWidth} = this.state;
-      const containerWidth = this.getWidth();
-      this.setState({
-        scrollLeft: auto,
-        scrollRIght: containerWidth - contentWidth
-      });
-    } else {
-      this.scrollIntoView(tokenPosition)
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState){
-    if (prevState.scrollRight !== auto && this.state.scrollRight === auto){
-      requestAnimationFrame(() => {
-        this.scrollingElement.current.style.left = '0px';
-      });
-    } else if (prevState.scrollLeft !== auto && this.state.scrollLeft === auto){
-      requestAnimationFrame(() => {
-        this.scrollingElement.current.style.right = '0px';
-      });
-    }
-  }
-
-
- scrollIntoView({ left: tokenLeft, width: tokenWidth }) {
-    const scrollRight = calculateScrollOffsetRight(
-      this.state.scrollRight,
+ scrollIntoView({ tokenLeft, tokenWidth }) {
+   console.log(`[Scrollable] scrollIntoView ${tokenLeft} ${tokenWidth}`)
+    const scrollLeft = calculateScrollOffset(
+      this.state.scrollLeft,
       this.getWidth(),
       this.state.contentWidth,
       tokenLeft - 3,
       tokenWidth + 6);
 
-    if (scrollRight !== this.state.scrollRight) {
-      this.setState({ scrollRight })
+    if (scrollLeft !== this.state.scrollLeft) {
+      this.setState({ scrollLeft })
     }
   }
 
   onContentResize(width) {
     const containerWidth = this.getWidth();
-    let { contentWidth } = this.state;
     if (containerWidth) {
-      if (width > containerWidth) {
-        contentWidth = width;
-      } else {
-        contentWidth = auto;
-      }
+      const contentWidth = width > containerWidth
+        ? width
+        : auto;
+
       if (contentWidth !== this.state.contentWidth) {
+        // assuming cursor ar end ...
+        const scrollLeft = containerWidth - contentWidth;
+        console.log(`set contentWidth ${contentWidth} left ${scrollLeft}`)
         this.setState({
+          scrollLeft,
           contentWidth,
           animateScroll: true
         });
@@ -132,14 +98,14 @@ export default class Scrollable extends React.Component {
 
   render() {
     const { children, className } = this.props;
-    const { contentWidth: width, scrollRight: right, scrollLeft: left, animateScroll } = this.state;
+    const { contentWidth: width, scrollLeft: left, animateScroll } = this.state;
     const components = Array.isArray(children)
       ? children : [children];
 
     return (
       <div ref={this.el} className={cx(styles.scrollable, className)} onScroll={this.handleScroll}>
         <div ref={this.scrollingElement}
-          style={{ width, left, right }}
+          style={{ width, left }}
           className={cx(styles.scrollingContainer, {
             [styles.scrollingContainerStatic]: animateScroll === false
           })}>
