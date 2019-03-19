@@ -35,7 +35,6 @@ export default class Canvas extends React.Component {
           keyMap,
           gridModel,
           selectedRows,
-          selectionDefault,
           selectedCells,
           columnGroup,
           cellRenderer
@@ -59,10 +58,7 @@ export default class Canvas extends React.Component {
 
         // with multiple canvases, this all has to be repeated for each canvas
             const isFocused = this.props.focusedRow === abs_idx;
-            const isSelected = selectionDefault !== true
-                ? contains(selectedRows,abs_idx)
-                : !contains(selectedRows,abs_idx);
-
+            const isSelected = contains(selectedRows,abs_idx);
             const isCellFocused = focusCellRow === abs_idx;
             const isCellEdited = isCellFocused && focusCellActive;
             const isLastSelected = isSelected && (abs_idx === rows.length-1 || !contains(selectedRows, abs_idx+1));

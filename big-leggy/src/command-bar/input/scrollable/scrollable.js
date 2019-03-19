@@ -28,7 +28,7 @@ export default class Scrollable extends React.Component {
   }
 
   reset(){
-    const {contentWidth, scrollLeft} = this.state;
+    const {contentWidth} = this.state;
     if (contentWidth !== auto){
       this.setState(defaultState);
     }
@@ -92,7 +92,7 @@ export default class Scrollable extends React.Component {
     }
   };
 
-  handleScroll = (e) => {
+  handleScroll = () => {
     this.el.current.scrollLeft = 0;
   }
 

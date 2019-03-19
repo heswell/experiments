@@ -1,6 +1,7 @@
 import Connection from './connection.mjs';
 import Subscription from './subscription.mjs';
 import * as Message from './messages.js';
+import {ServerApiMessageTypes as API} from './messages.js';
 import {DataTypes} from '../data/store/types.js';
 import {NULL_RANGE} from '../data/store/rangeUtils.js';
 
@@ -76,7 +77,7 @@ export class ServerProxy {
                 this.connect(message);
                 break;
 
-            case Message.SUBSCRIBE:
+            case API.addSubscription:
                 this.subscribe(message)
                 break;
 
@@ -318,7 +319,7 @@ export class ServerProxy {
         // messages which have no dependency on previous subscription
         console.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`,'background-color: brown;color: cyan')
 
-        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === Message.SUBSCRIBE;
+        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === API.addSubscription;
         const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
@@ -489,7 +490,7 @@ function messageToString(message, direction){
     switch (message.type){
         case Message.SET_VIEWPORT_RANGE:
             return `${requestId} range: %c${message.range.lo} - ${message.range.hi} %cvp ${viewport}`;
-        case Message.SUBSCRIBE:
+        case API.addSubscription:
         case Message.SUBSCRIBED:
             return `${requestId} vp:${message.viewport}`;
         case 'rowset':

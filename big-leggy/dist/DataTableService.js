@@ -2462,7 +2462,7 @@ class BinFilterRowSet extends RowSet {
     }
 
     setSelected(filter){
-        console.log(`need to apply filter to selected BinRowset`);
+        console.log(`need to apply filter to selected BinRowset`, filter);
     }
     // we don't currently have a concept of range here, but it will
     // be used in the future
@@ -3747,9 +3747,12 @@ class InMemoryView {
         this._filter = filter;
         this._groupState = null;
         this._sortCriteria = sortCriteria;
-        // DO we need this line ?
-        this._columns = columns.map(toColumn);
-        this._columnMap = buildColumnMap(this._columns);
+
+        this._columns = null;
+        this._columnMap = null;
+        // column defs come from client, this is where we assign column keys
+        this.columns = columns;
+
         this._groupby = groupBy;
         this._update_queue = updateQueue;
         // TODO we should pass columns into the rowset as it will be needed for computed columns
@@ -3772,10 +3775,11 @@ class InMemoryView {
 
     }
 
-    // this is ugly - need to think
-    cloneChanges(){
-        this._cloneChanges = true;
-        return this;
+    // Set the columns from client
+    set columns(columns){
+        console.log(`set client columns ${JSON.stringify(columns,null,2)}`);
+        this._columns = columns.map(toColumn);
+        this._columnMap = buildColumnMap(this._columns);
     }
 
     destroy(){
@@ -3790,72 +3794,6 @@ class InMemoryView {
     get status() {
         return this._table.status;
     }
-
-    get columns() {
-        return this._columns;
-    }
-
-    get size() {
-        return this.rowSet.size;
-    }
-
-
-    // rowInsertedDeprecated = (event, idx, row) => {
-    //     const { rowSet, _update_queue } = this;
-    //     const {range: _range} = rowSet;
-    //     // const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
-    //     // to a window-only range. 
-    //     const newRow = this._tableHelper.projectColumns(this._columns, row, idx);
-    //     const { insertedRow, updates, replace, append } = rowSet.insert(newRow);
-    //     const { size, offset, data } = rowSet;
-    //     const low = _range.lo + offset;
-    //     const high = _range.hi + offset;
-
-    //     if (insertedRow) { // non-grouping RowSet
-
-    //         const index = insertedRow[System.INDEX_FIELD];
-    //         //onsole.log(`row inserted @ [${index}] new length ${size} range: ${JSON.stringify(_range)} fullRange ${JSON.stringify(fullRange)}`);
-
-    //         _update_queue.resize(size);
-
-    //         // what if the index is before low - won't all index values have changed ? YES
-    //         // not only that, but we must adjust our range
-    //         if (index > rowSet.first[System.INDEX_FIELD] && index < rowSet.last[System.INDEX_FIELD]) {
-    //             if (index < low) {
-    //                 // should be ok to mutate. This change needs to be reported back to client
-    //                 // Need a separate operation = reindex to capture this
-    //                 _range.lo += 1;
-    //                 _range.hi += 1;
-    //             }
-    //             _update_queue.replace(data.slice(_range.lo, _range.hi), size, offset);
-
-    //         } else if (index >= low && index < high) {
-    //             // we need to send updates for rows that are within buffered range not just window range
-    //             _update_queue.append(insertedRow, offset);
-    //         } else {
-    //             console.log(`don't send inserted row to client as it is outside range`)
-    //         }
-    //     } else { // GroupRowSet
-
-    //         if (replace) {
-    //             _update_queue.replace(rowSet.setRange(_range, false), size, offset);
-    //         } else {
-
-    //             if (updates) {
-    //                 updates.forEach(update => {
-    //                     const [index] = update;
-    //                     if (index >= low && index < high) {
-    //                         _update_queue.update(update);
-    //                     }
-    //                 });
-    //             }
-    //             if (append) {
-    //                 _update_queue.resize(size);
-    //                 _update_queue.append(append, offset);
-    //             }
-    //         }
-    //     }
-    // }
 
     rowInserted(event, idx, row){
         const { _update_queue, rowSet } = this;
@@ -4181,13 +4119,18 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
 
 const data_path = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
 
+// TODO unify these with server-api/messages
+const ServerApiMessageTypes = {
+    addSubscription: 'AddSubscription'
+  };
+  
 const ServiceDefinition = {
     name: 'DataTableService',
     module: `${data_path}/DataTableService`,
     API: [
         'GetTableList',
         'GetTableMeta',
-        'AddSubscription',
+        ServerApiMessageTypes.addSubscription,
         'TerminateSubscription',
         'setViewRange',
         'GetFilterData',
@@ -4209,6 +4152,7 @@ const _tables = {};
 var _subscriptions = {};
 var _client_subscriptions = {};
 
+// TODO unify these with DataTypes
 const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',

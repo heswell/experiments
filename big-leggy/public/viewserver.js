@@ -1,4 +1,7 @@
-const SUBSCRIBE = 'AddSubscription';
+const ServerApiMessageTypes = {
+  addSubscription: 'AddSubscription',
+  setColumns: 'setColumns'
+};
 const COLUMN_LIST = 'ColumnList';
 const DATA = 'data';
 const TABLE_LIST = 'TableList';
@@ -8,6 +11,8 @@ const SET_VIEWPORT_RANGE = 'setViewRange';
 const VIEWPORT_RANGE_CHANGED = 'ViewRangeChanged';
 const EXPAND_GROUP = 'ExpandGroup';
 const COLLAPSE_GROUP = 'CollapseGroup';
+
+//const HEART = String.fromCharCode(9829);
 
 const WELCOME = 'Welcome';
 const NOT_WELCOME = 'Not Welcome';
@@ -67,7 +72,7 @@ class ViewServer {
             case COLUMN_LIST: return { requestId, type: GET_TABLE_META, table: message.params.table };
 
             case MODIFY_SUBSCRIPTION:
-            case SUBSCRIBE:
+            case ServerApiMessageTypes.addSubscription:
                 //onsole.log(`subscribe ${JSON.stringify(message)}`);
                 // there is no need to require the tablename
                 const { tablename, columns, sortBy, filter, groupBy, groupState, range } = message;

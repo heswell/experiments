@@ -15,7 +15,7 @@ export default function filterRows(rows, columnMap, filter) {
     return applyFilter(rows, functor(columnMap, filter));
 }
 
-export function functor(columnMap, filter) {
+export function functor(columnMap, filter, inversed) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
     switch (filter.type) {
     case SET: return filter.mode === EXCLUDE
@@ -26,7 +26,7 @@ export function functor(columnMap, filter) {
     case GREATER_EQ: return testGE(columnMap, filter);
     case LESS_THAN: return testLT(columnMap, filter);
     case LESS_EQ: return testLE(columnMap, filter);
-    case STARTS_WITH: return testSW(columnMap, filter);
+    case STARTS_WITH: return testSW(columnMap, filter, inversed);
     case AND: return testAND(columnMap, filter);
     default:
         console.log(`unrecognized filter type ${filter.type}`);
@@ -49,11 +49,16 @@ function testAND(cols, f) {
     return row => filters.every(fn => fn(row));
 }
 
-function testSW(cols, f) {
+function testSW(cols, f, inversed = false) {
     const value = f.value.toLowerCase();
     return f.mode === EXCLUDE
-        ? row => row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
-        : row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0
+        ? row => inversed
+            ? row[cols[f.colName]].toLowerCase().indexOf(value) === 0
+            : row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
+        : row => inversed 
+            ? row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
+            : row[cols[f.colName]].toLowerCase().indexOf(value) === 0;
+    
 }
 
 function testGT(cols, f) {

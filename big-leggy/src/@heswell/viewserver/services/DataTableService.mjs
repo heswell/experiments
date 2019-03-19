@@ -6,13 +6,18 @@ import Subscription from './Subscription';
 
 const data_path = path.dirname(new url.URL(import.meta.url).pathname);
 
+// TODO unify these with server-api/messages
+const ServerApiMessageTypes = {
+    addSubscription: 'AddSubscription'
+  }
+  
 const ServiceDefinition = {
     name: 'DataTableService',
     module: `${data_path}/DataTableService`,
     API: [
         'GetTableList',
         'GetTableMeta',
-        'AddSubscription',
+        ServerApiMessageTypes.addSubscription,
         'TerminateSubscription',
         'setViewRange',
         'GetFilterData',
@@ -36,6 +41,7 @@ const _tables = {};
 var _subscriptions = {};
 var _client_subscriptions = {};
 
+// TODO unify these with DataTypes
 const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',

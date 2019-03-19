@@ -31,13 +31,13 @@ export default class FilterView extends EventEmitter {
         this.emit(DataTypes.ROW_DATA, rows, rowCount);
     }
 
-    selectAll(){
-        const {IDX} = this.meta;
-        const selected = this.getSelectedIndices();
-        const dataIndices = this._dataView.filterRows.map(row => row[IDX]);
-        const set = new Set(selected.concat(dataIndices));
-        return Array.from(set).sort();
-    }
+    // selectAll(){
+    //     const {IDX} = this.meta;
+    //     const selected = this.getSelectedIndices();
+    //     const dataIndices = this._dataView.filterRows.map(row => row[IDX]);
+    //     const set = new Set(selected.concat(dataIndices));
+    //     return Array.from(set).sort();
+    // }
 
     get size(){
         return this._dataView.getFilterDataCount();

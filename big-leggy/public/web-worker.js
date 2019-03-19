@@ -666,8 +666,12 @@ class Subscription {
     }
 }
 
+const ServerApiMessageTypes = {
+  addSubscription: 'AddSubscription',
+  setColumns: 'setColumns'
+};
+
 const CONNECT = 'connect';
-const SUBSCRIBE = 'AddSubscription';
 const COLUMN_LIST = 'ColumnList';
 const DATA = 'data';
 const FILTER_DATA = 'filterData';
@@ -761,7 +765,7 @@ class ServerProxy {
                 this.connect(message);
                 break;
 
-            case SUBSCRIBE:
+            case ServerApiMessageTypes.addSubscription:
                 this.subscribe(message);
                 break;
 
@@ -1003,7 +1007,7 @@ class ServerProxy {
         // messages which have no dependency on previous subscription
         console.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`,'background-color: brown;color: cyan');
 
-        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === SUBSCRIBE;
+        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === ServerApiMessageTypes.addSubscription;
         const [readyToSend, remainingMessages] = partition$1(this.queuedRequests, byReadyToSendStatus);
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
@@ -1174,7 +1178,7 @@ function messageToString(message, direction){
     switch (message.type){
         case SET_VIEWPORT_RANGE:
             return `${requestId} range: %c${message.range.lo} - ${message.range.hi} %cvp ${viewport}`;
-        case SUBSCRIBE:
+        case ServerApiMessageTypes.addSubscription:
         case SUBSCRIBED:
             return `${requestId} vp:${message.viewport}`;
         case 'rowset':

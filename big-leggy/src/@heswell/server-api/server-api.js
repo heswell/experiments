@@ -1,20 +1,29 @@
-// import Worker from './webWorker.mjs';
 import * as Message from './messages.js';
-import { DataTypes } from '../data/store/types';
+import {ServerApiMessageTypes as API} from './messages.js';
+import ClientSubscription from './client-subscription';
 import uuid from '../server-core/uuid';
+
+import { getWorker } from './worker';
+
 const clientId = uuid();
+
+// first call to getWorker triggers the module load and sets the callback
+getWorker(messageFromTheWorker)
 
 const workerModule = process.env.WORKER_MODULE || '/web-worker.js';
 console.log(`[ServerApi] workerModule = ${workerModule}`)
-const asyncWorkerModule = import(/* webpackIgnore: true */ workerModule)
-    .catch(err => console.log(`failed to load worker ${err}`));
+// const asyncWorkerModule = import(/* webpackIgnore: true */ workerModule)
+//     .catch(err => console.log(`failed to load worker ${err}`));
 
-let worker;
+
+// let worker;
 let defaultConnection = {status: 'pending'};
 let pendingConnection = new Promise((resolve, reject) => {
     defaultConnection.resolve = resolve;
     defaultConnection.reject = reject;
 });
+
+
 
 const getDefaultConnection = () => pendingConnection;
 
@@ -24,24 +33,25 @@ const pendingPromises = {};
 let _requestId = 1;
 let _subscriptionId = 1;
 
-async function getWorker(){
-    return asyncWorkerModule.then(workerModule => {
-        const Worker = workerModule.default;
+// async function getWorker(callback){
+//     return asyncWorkerModule.then(workerModule => {
+//         const Worker = workerModule.default;
 
-        return worker || (worker = new Promise((resolve, reject) => {
-            const w = new Worker();
-            w.onmessage = ({data: message}) => {
-                if (message.type === 'identify'){
-                    w.onmessage = messageFromTheWorker;
-                    resolve(w);
-                } else {
-                    reject(new Error('Worker failed to identify'));
-                }
-            };
-        }))
+//         return worker || (worker = new Promise((resolve, reject) => {
+//             const w = new Worker();
+//             w.onmessage = ({data: message}) => {
+//                 if (message.type === 'identify'){
+//                     // w.onmessage = messageFromTheWorker;
+//                     w.onmessage = callback;
+//                     resolve(w);
+//                 } else {
+//                     reject(new Error('Worker failed to identify'));
+//                 }
+//             };
+//         }))
 
-    });
-}
+//     });
+// }
 
 function postMessage(message){
     getWorker().then(worker => worker.postMessage(message));
@@ -119,11 +129,11 @@ class ServerAPI {
     subscribe(message, viewport=`viewport-${_subscriptionId++}`){
         // From here, the serverProxy will maintain the association between connection
         // and viewport, we only have to supply viewport
-        console.log(`[ServerApi.subscribe]   ${Message.SUBSCRIBE}  ===>  SW   vp: ${viewport}`)
+        console.log(`[ServerApi.subscribe]   ${API.addSubscription}  ===>  SW   vp: ${viewport} ${JSON.stringify(message,null,2)}`)
         postMessage({
             connectionId: this.connectionId,
             viewport,
-            type: Message.SUBSCRIBE,
+            type: API.addSubscription,
             ...message
         })
         if (subscriptions[viewport]){
@@ -205,77 +215,3 @@ function connectionMessage(message){
     }
 }
 
-class ClientSubscription {
-    constructor(connectionId, subscriptionId){
-        this.connectionId = connectionId;
-        this.id = subscriptionId;
-    }
-
-    _onData(message){
-        console.log(`Subscription ${this.id} received ${message.type} but no client listening`);
-    }
-
-    set onData(callback){
-        this._onData = callback;
-    }
-
-    get onData(){
-        return this._onData;
-    }
-
-    setRange(lo, hi, dataType=DataTypes.ROW_DATA){
-        postMessage({
-            clientId,
-            viewport: this.id,
-            type: Message.SET_VIEWPORT_RANGE,
-            range: {lo,hi},
-            dataType
-        })
-    }
-
-    groupBy(columns){
-        postMessage({
-            viewport: this.id,
-            type: Message.GROUP_BY,
-            groupBy: columns
-        })
-    }
-
-    setGroupState(groupState){
-        postMessage({
-            viewport: this.id,
-            type: Message.SET_GROUP_STATE,
-            groupState
-        })
-    }
-
-    sort(columns){
-        postMessage({
-            viewport: this.id,
-            type: Message.SORT,
-            sortCriteria: columns
-        })
-    }
-
-    filter(filter){
-        postMessage({
-            viewport: this.id,
-            type: Message.FILTER,
-            filter
-        })
-    }
-
-    getFilterData(column, searchText, range){
-        postMessage({
-            viewport: this.id,
-            type: Message.GET_FILTER_DATA,
-            column,
-            searchText,
-            range
-        })
-    }
-
-    toString(){
-        return `I'm a subscription  #${this.id} on #${this.connectionId}`;
-    }
-}

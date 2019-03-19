@@ -625,13 +625,18 @@ const path$3 = fs.realpathSync(process.cwd());
 
 const data_path$1 = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
 
+// TODO unify these with server-api/messages
+const ServerApiMessageTypes = {
+    addSubscription: 'AddSubscription'
+  };
+  
 const ServiceDefinition = {
     name: 'DataTableService',
     module: `${data_path$1}/DataTableService`,
     API: [
         'GetTableList',
         'GetTableMeta',
-        'AddSubscription',
+        ServerApiMessageTypes.addSubscription,
         'TerminateSubscription',
         'setViewRange',
         'GetFilterData',

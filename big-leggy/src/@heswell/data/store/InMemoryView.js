@@ -1,7 +1,7 @@
 import { NULL_RANGE, resetRange, withinRange } from './rangeUtils';
-import {RowSet, GroupRowSet} from './rowset';
-import {buildColumnMap, toColumn ,getFilterType} from './columnUtils';
-import {includesNoValues} from './filterUtils';
+import { RowSet, GroupRowSet } from './rowset';
+import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
+import { includesNoValues } from './filterUtils';
 import UpdateQueue from './updateQueue';
 import { DataTypes } from './types';
 
@@ -9,15 +9,18 @@ const DEFAULT_INDEX_OFFSET = 100;
 
 export default class InMemoryView {
 
-    constructor(table, {columns = [], sortCriteria = null, groupBy = null, filter=null}, updateQueue=new UpdateQueue()) {
+    constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;
         this._index_offset = DEFAULT_INDEX_OFFSET;
         this._filter = filter;
         this._groupState = null;
         this._sortCriteria = sortCriteria;
-        // DO we need this line ?
-        this._columns = columns.map(toColumn);
-        this._columnMap = buildColumnMap(this._columns);
+
+        this._columns = null;
+        this._columnMap = null;
+        // column defs come from client, this is where we assign column keys
+        this.columns = columns;
+
         this._groupby = groupBy;
         this._update_queue = updateQueue;
         // TODO we should pass columns into the rowset as it will be needed for computed columns
@@ -40,13 +43,14 @@ export default class InMemoryView {
 
     }
 
-    // this is ugly - need to think
-    cloneChanges(){
-        this._cloneChanges = true;
-        return this;
+    // Set the columns from client
+    set columns(columns) {
+        console.log(`set client columns ${JSON.stringify(columns, null, 2)}`)
+        this._columns = columns.map(toColumn);
+        this._columnMap = buildColumnMap(this._columns);
     }
 
-    destroy(){
+    destroy() {
         this._table.removeListener('rowUpdated', this.rowUpdated);
         this._table.removeListener('rowUpdated', this.rowInserted);
         this._table = null;
@@ -59,82 +63,16 @@ export default class InMemoryView {
         return this._table.status;
     }
 
-    get columns() {
-        return this._columns;
-    }
-
-    get size() {
-        return this.rowSet.size;
-    }
-
-
-    // rowInsertedDeprecated = (event, idx, row) => {
-    //     const { rowSet, _update_queue } = this;
-    //     const {range: _range} = rowSet;
-    //     // const fullRange = getFullRange(_range); //TODO  after setRange operation, the range on row_data has changed from a fullRange
-    //     // to a window-only range. 
-    //     const newRow = this._tableHelper.projectColumns(this._columns, row, idx);
-    //     const { insertedRow, updates, replace, append } = rowSet.insert(newRow);
-    //     const { size, offset, data } = rowSet;
-    //     const low = _range.lo + offset;
-    //     const high = _range.hi + offset;
-
-    //     if (insertedRow) { // non-grouping RowSet
-
-    //         const index = insertedRow[System.INDEX_FIELD];
-    //         //onsole.log(`row inserted @ [${index}] new length ${size} range: ${JSON.stringify(_range)} fullRange ${JSON.stringify(fullRange)}`);
-
-    //         _update_queue.resize(size);
-
-    //         // what if the index is before low - won't all index values have changed ? YES
-    //         // not only that, but we must adjust our range
-    //         if (index > rowSet.first[System.INDEX_FIELD] && index < rowSet.last[System.INDEX_FIELD]) {
-    //             if (index < low) {
-    //                 // should be ok to mutate. This change needs to be reported back to client
-    //                 // Need a separate operation = reindex to capture this
-    //                 _range.lo += 1;
-    //                 _range.hi += 1;
-    //             }
-    //             _update_queue.replace(data.slice(_range.lo, _range.hi), size, offset);
-
-    //         } else if (index >= low && index < high) {
-    //             // we need to send updates for rows that are within buffered range not just window range
-    //             _update_queue.append(insertedRow, offset);
-    //         } else {
-    //             console.log(`don't send inserted row to client as it is outside range`)
-    //         }
-    //     } else { // GroupRowSet
-
-    //         if (replace) {
-    //             _update_queue.replace(rowSet.setRange(_range, false), size, offset);
-    //         } else {
-
-    //             if (updates) {
-    //                 updates.forEach(update => {
-    //                     const [index] = update;
-    //                     if (index >= low && index < high) {
-    //                         _update_queue.update(update);
-    //                     }
-    //                 });
-    //             }
-    //             if (append) {
-    //                 _update_queue.resize(size);
-    //                 _update_queue.append(append, offset);
-    //             }
-    //         }
-    //     }
-    // }
-
-    rowInserted(event, idx, row){
+    rowInserted(event, idx, row) {
         const { _update_queue, rowSet } = this;
-        const {size=null, replace, updates} = rowSet.insert(idx, row);
-        if (size !== null){
+        const { size = null, replace, updates } = rowSet.insert(idx, row);
+        if (size !== null) {
             _update_queue.resize(size);
         }
-        if (replace){
-            const {rows,size,offset} = rowSet.currentRange()
+        if (replace) {
+            const { rows, size, offset } = rowSet.currentRange()
             _update_queue.replace(rows, size, offset);
-        } else if (updates){
+        } else if (updates) {
             updates.forEach(update => {
                 _update_queue.update(update);
             });
@@ -143,11 +81,11 @@ export default class InMemoryView {
         // what about offset change only ?
     }
 
-    rowUpdated(event, idx, updates){
+    rowUpdated(event, idx, updates) {
         const { rowSet, _update_queue } = this;
         // const {range, rowSet} = _row_data;
         const result = rowSet.update(idx, updates);
-        if (result){
+        if (result) {
             if (rowSet instanceof RowSet) {
                 // we wouldn't have got the update back if it wasn't in range
                 if (withinRange(rowSet.range, result[0], rowSet.offset)) {
@@ -164,7 +102,7 @@ export default class InMemoryView {
         }
     }
 
-    getData(dataType){
+    getData(dataType) {
         return dataType === DataTypes.ROW_DATA
             ? this.rowSet
             : dataType === DataTypes.FILTER_DATA
@@ -173,7 +111,7 @@ export default class InMemoryView {
     }
 
     //TODO we seem to get a setRange when we reverse sort order, is that correct ?
-    setRange(range, useDelta=true, dataType=DataTypes.ROW_DATA) {
+    setRange(range, useDelta = true, dataType = DataTypes.ROW_DATA) {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
@@ -185,7 +123,7 @@ export default class InMemoryView {
 
     filter(filter) {
         const { rowSet, _filter, filterRowSet } = this;
-        const {range} = rowSet;
+        const { range } = rowSet;
         this._filter = filter;
         if (filter === null) {
             if (_filter) {
@@ -211,6 +149,7 @@ export default class InMemoryView {
         }
 
         if (filterRowSet) {
+            //TODO we may need to send updates with changed SELECTED state 
             filterRowSet.setSelected(filter);
         }
 
@@ -220,10 +159,10 @@ export default class InMemoryView {
 
     groupBy(groupby) {
         const { rowSet, _columns, _groupState, _sortCriteria, _groupby } = this;
-        const {range: _range} = rowSet;
+        const { range: _range } = rowSet;
         this._groupby = groupby;
 
-        if (groupby === null){
+        if (groupby === null) {
             this.rowSet = RowSet.fromGroupRowSet(this.rowSet);
         } else {
             if (_groupby === null) {
@@ -237,7 +176,7 @@ export default class InMemoryView {
 
     setGroupState(groupState) {
         this._groupState = groupState;
-        const {rowSet} = this;
+        const { rowSet } = this;
         rowSet.setGroupState(groupState);
         // TODO should we have setRange return the following directly, so IMV doesn't have to decide how to call setRange ?
         // should we reset the range ?
@@ -245,8 +184,8 @@ export default class InMemoryView {
     }
 
     get updates() {
-        const {_update_queue, rowSet: {range}} = this;
-        let results={
+        const { _update_queue, rowSet: { range } } = this;
+        let results = {
             updates: _update_queue.popAll(),
             range: {
                 lo: range.lo,
@@ -256,7 +195,7 @@ export default class InMemoryView {
         return results;
     }
 
-    getFilterData(column, searchText=null, range=NULL_RANGE) {
+    getFilterData(column, searchText = null, range = NULL_RANGE) {
 
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
@@ -266,30 +205,30 @@ export default class InMemoryView {
         // No this should be decided beforehand (on client) 
         const type = getFilterType(colDef);
 
-        if (type === 'number'){
+        if (type === 'number') {
             // // we need a notification from server to tell us when this is closed.
             // we should assign to filterRowset
             this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
-        
-        } else if (!filterRowSet || filterRowSet.columnName !== column.name){
-            
+
+        } else if (!filterRowSet || filterRowSet.columnName !== column.name) {
+
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
-        
-        } else if (searchText){
+
+        } else if (searchText) {
 
             filterRowSet.searchText = searchText;
-       
-        } else if (filterRowSet && filterRowSet.searchText){
+
+        } else if (filterRowSet && filterRowSet.searchText) {
             // reset the filter
             filterRowSet.clearFilter();
 
-        } else if (filter && filter.colName === column.name){
+        } else if (filter && filter.colName === column.name) {
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
-            filterRowSet.setRange({lo: 0,hi: 0});
-        } 
+            filterRowSet.setRange({ lo: 0, hi: 0 });
+        }
 
-        if (filter){
+        if (filter) {
             this.filterRowSet.setSelected(filter);
         }
 

@@ -41,7 +41,6 @@ export class SetFilter extends React.Component {
             column,
             className, 
             height, 
-            width,
             style=NO_STYLE,
             suppressHeader=false,
             suppressSearch=false,
@@ -69,7 +68,7 @@ export class SetFilter extends React.Component {
                         onHide={this.props.onClose}/>}
                     <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}} debug_title={this.props.title}
                         column={column}
-                        selectionDefault={this.state.selectionDefault}
+                        selectionDefault={true}
                         defaultSelected={this.state.selected}
                         columns={filterView.columns}
                         dataView={filterView}
@@ -97,16 +96,14 @@ export class SetFilter extends React.Component {
     handleSearchText = searchText => {
         this.searchText = searchText;
         this.props.onSearchText(this.props.column, searchText);
+        // if we're removing searchtext to widen the search, we need to reevaluate the selectionDefault
+
     }
 
     handleDeselectAll= () => {
         if (this.searchText){
-            const {filterView, selectedValues} = this.state;
-            const {KEY} = filterView.meta;
-            const values = this.props.dataView.filterRows.map(row => row[KEY]);
             this.setState({
-                selected: filterView.selectAll(),
-                selectedValues: Array.from(new Set(selectedValues.concat(values)))
+                selected: [],
             }, () => {
                 this.props.onSelectionChange(null, EXCLUDE, this.searchText);
             });
@@ -124,7 +121,6 @@ export class SetFilter extends React.Component {
     }
 
     handleSelectAll= () => {
-        // we don't want to list individually the selected items, we need to use a starts with filter
         if (this.searchText){
             const {filterView, selectedValues} = this.state;
             const {KEY} = filterView.meta;

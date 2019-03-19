@@ -433,6 +433,7 @@ export class SetFilterRowSet extends RowSet {
         this.columnName = columnName;
         this._searchText = null;
         this.sort([['value', 'asc']]);
+        this.setSelected(null);
     }
 
     get searchText() {
@@ -450,21 +451,21 @@ export class SetFilterRowSet extends RowSet {
     }
 
     setSelected(filter) {
-
+        const SELECT_BY_DEFAULT = true;
         const columnFilter = extractFilterForColumn(filter, this.columnName);
-        if (columnFilter) {
 
-            this.project = projectColumnsFilter(
-                this.table.columnMap,
-                this.columns,
-                this.meta,
-                columnFilter);
+        this.project = projectColumnsFilter(
+            this.table.columnMap,
+            this.columns,
+            this.meta,
+            columnFilter,
+            SELECT_BY_DEFAULT
+        );
 
-            // make sure next scroll operation sends a full rowset otw client-side selection changes may
-            // be lost ac changes will not exist in cached rows.  
-            this.setRange({ lo: 0, hi: 0 });
+        // make sure next scroll operation sends a full rowset otw client-side selection changes may
+        // be lost ac changes will not exist in cached rows.  
+        this.setRange({ lo: 0, hi: 0 });
 
-        }
 
     }
 
@@ -478,7 +479,7 @@ export class BinFilterRowSet extends RowSet {
     }
 
     setSelected(filter){
-        console.log(`need to apply filter to selected BinRowset`)
+        console.log(`need to apply filter to selected BinRowset`, filter)
     }
     // we don't currently have a concept of range here, but it will
     // be used in the future

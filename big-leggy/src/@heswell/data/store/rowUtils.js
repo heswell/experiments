@@ -1,6 +1,6 @@
 
 export function isEmptyRow(row){
-    return row.length === 4;
+    return row[0] === undefined;
 }
 
 // export function assignRowIndices(rows, offset) {

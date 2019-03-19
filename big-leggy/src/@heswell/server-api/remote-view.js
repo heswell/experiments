@@ -3,19 +3,7 @@ import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
 import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/filterUtils';
 import {EventEmitter} from '@heswell/utils';
-// import {
-//     subscribe,
-//     setViewRange,
-//     groupBy as groupByAPI,
-//     sort as sortAPI,
-//     filter as filterAPI,
-//     select as selectAPI,
-//     setGroupState,
-//     getFilterData
-//     // expandGroup,
-//     // collapseGroup
-// } from '@heswell/server-api';
-import {subscribe} from './serverApi2';
+import {subscribe} from './server-api';
 const uuid = require('uuid');
 
 export default class RemoteView extends EventEmitter {
@@ -62,7 +50,6 @@ export default class RemoteView extends EventEmitter {
         };
 
         this.meta = metaData(this._dataOptions.columns);
-
         this.columnMap = columnUtils.buildColumnMap(this._dataOptions.columns);
 
     }
@@ -162,6 +149,13 @@ export default class RemoteView extends EventEmitter {
     set table(name) {
         this._table = name;
         this.subscribe();
+    }
+
+    set columns(columns){
+        console.log(`[RemoteView] set columns ${JSON.stringify(columns)}`)
+        if (this._subscription){
+            this._subscription.setColumns(columns);
+        }
     }
 
     get columns() {

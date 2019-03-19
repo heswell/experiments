@@ -43,7 +43,7 @@ export default class LocalView extends EventEmitter {
         if (table !== null){
             const viewColumns = columns || table.columns;
             this.updateQueue = new LocalUpdateQueue();
-            this._dataView = new InMemoryView(table, {columns: viewColumns, sortCriteria, groupBy}, this.updateQueue).cloneChanges();
+            this._dataView = new InMemoryView(table, {columns: viewColumns, sortCriteria, groupBy}, this.updateQueue);
 
             if (this._dataView.status === 'ready'){
                 this._rowData = this._dataView.setRange(range) || NULL_DATARANGE;

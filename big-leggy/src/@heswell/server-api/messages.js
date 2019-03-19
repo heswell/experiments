@@ -1,5 +1,9 @@
+export const ServerApiMessageTypes = {
+  addSubscription: 'AddSubscription',
+  setColumns: 'setColumns'
+}
+
 export const CONNECT = 'connect';
-export const SUBSCRIBE = 'AddSubscription';
 export const COLUMN_LIST = 'ColumnList';
 export const DATA = 'data';
 export const FILTER_DATA = 'filterData';

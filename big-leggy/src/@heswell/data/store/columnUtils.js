@@ -53,13 +53,12 @@ export function projectColumns(map, columns, meta){
     }
 }
 
-export function projectColumnsFilter(map, columns, meta, filter){
+export function projectColumnsFilter(map, columns, meta, filter, defaultToSelected){
     const length = columns.length;
     const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = functor(map, {...filter, colName: 'value'});
-
+    const fn = filter ? functor(map, {...filter, colName: 'value'}, true)  : () => !defaultToSelected;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -72,7 +71,10 @@ export function projectColumnsFilter(map, columns, meta, filter){
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
-        out[SELECTED] = fn(row) ? 1 : 0;
+        out[SELECTED] = fn(row) 
+            ? (defaultToSelected ? 0 : 1)
+            : (defaultToSelected ? 1 : 0);
+
         return out;
     }
 }

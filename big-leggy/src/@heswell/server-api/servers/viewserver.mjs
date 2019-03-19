@@ -1,7 +1,6 @@
 import {
     TABLE_LIST,
     COLUMN_LIST,
-    SUBSCRIBE,
     SUBSCRIBED,
     MODIFY_SUBSCRIPTION,
     // UNSUBSCRIBE,
@@ -9,10 +8,12 @@ import {
     VIEWPORT_RANGE_CHANGED,
     EXPAND_GROUP,
     COLLAPSE_GROUP,
-    DATA
+    DATA,
+    ServerApiMessageTypes as API
 } from '../messages';
 
-const HEART = String.fromCharCode(9829);
+
+//const HEART = String.fromCharCode(9829);
 
 const WELCOME = 'Welcome';
 const NOT_WELCOME = 'Not Welcome';
@@ -72,7 +73,7 @@ export default class ViewServer {
             case COLUMN_LIST: return { requestId, type: GET_TABLE_META, table: message.params.table };
 
             case MODIFY_SUBSCRIPTION:
-            case SUBSCRIBE:
+            case API.addSubscription:
                 //onsole.log(`subscribe ${JSON.stringify(message)}`);
                 // there is no need to require the tablename
                 const { tablename, columns, sortBy, filter, groupBy, groupState, range } = message;
