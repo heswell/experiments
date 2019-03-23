@@ -41,9 +41,6 @@ export default class ColumnFilter extends React.Component {
         if (filterMode === EXCLUDE && selected !== null && selected.length === 0) {
             this.props.onClearFilter(column);
         } else if (searchText) {
-            // This will create an EXCLUDE filter on dataView, but we don't have  corresponding filter
-            // here so there is no way to remove it.
-            //this.props.onSelect(DataTypes.FILTER_DATA, column.name, filterMode);
             onFilter(column, {
                 type: STARTS_WITH,
                 mode: filterMode,
@@ -55,7 +52,7 @@ export default class ColumnFilter extends React.Component {
                 type: SET,
                 mode: filterMode,
                 colName: column.name,
-                values: selected
+                values: [selected]
             });
         }
     }

@@ -29,9 +29,7 @@ export class SetFilter extends React.Component {
         const filterView = new FilterView(props.dataView, props.column);
         this.state = {
             filterView,
-            selectionDefault,
-            selected: [],
-            selectedValues: filter ? filter.values : []
+            selectionDefault
         };
         this.searchText = ''
     }
@@ -69,7 +67,6 @@ export class SetFilter extends React.Component {
                     <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}} debug_title={this.props.title}
                         column={column}
                         selectionDefault={true}
-                        defaultSelected={this.state.selected}
                         columns={filterView.columns}
                         dataView={filterView}
                         onSelectionChange={this.handleSelectionChange}/>
@@ -111,7 +108,6 @@ export class SetFilter extends React.Component {
         } else {
             this.setState({
                 selected: [],
-                selectedValues: [],
                 selectionDefault: false
             }, () => {
                 this.props.onSelectionChange([], INCLUDE);
@@ -122,22 +118,17 @@ export class SetFilter extends React.Component {
 
     handleSelectAll= () => {
         if (this.searchText){
-            const {filterView, selectedValues} = this.state;
-            const {KEY} = filterView.meta;
+            const {filterView} = this.state;
             // we do want to select all the items currently in the grid
             // add everything in the current viewport to selected, emit an event which will create a
             // new filter which included all values matching starts with filter
-            const values = this.props.dataView.filterRows.map(row => row[KEY]);
             this.setState({
-                selected: filterView.selectAll(),
-                selectedValues: Array.from(new Set(selectedValues.concat(values)))
+                selected: filterView.selectAll()
             }, () => {
                 this.props.onSelectionChange(null, INCLUDE, this.searchText);
             });
         } else {
             this.setState({
-                selected: [],
-                selectedValues: [],
                 selectionDefault: true
             }, () => {
                 this.props.onSelectionChange([], EXCLUDE);
@@ -146,20 +137,16 @@ export class SetFilter extends React.Component {
     }
 
     handleSelectionChange = (selectedIndices, idx) => {
-        const {selectionDefault, selectedValues: previousSelection, filterView} = this.state;
-        const deselected = selectedIndices.indexOf(idx) === -1;
+        // what about range selections ?
+        const selectionExtended = selectedIndices.includes(idx);
+
+        const {selectionDefault, filterView} = this.state;
         const filterMode = selectionDefault === true
-            ? EXCLUDE
-            : INCLUDE;
+            ? (selectionExtended ? INCLUDE : EXCLUDE)
+            : (selectionExtended ? EXCLUDE : INCLUDE);
 
         const {KEY} = filterView.meta;
-        const value = filterView.itemAtIdx(idx)[KEY];
-
-        const selectedValues = deselected
-            ? previousSelection.filter(v => v !== value)
-            : previousSelection.concat(value);
-        this.setState({selectedValues}, () => {
-            this.props.onSelectionChange(selectedValues, filterMode);
-        });
+        const value =  filterView.itemAtIdx(idx)[KEY];       
+        this.props.onSelectionChange(value, filterMode);
     }
 }

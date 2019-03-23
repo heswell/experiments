@@ -264,6 +264,7 @@ export default class Grid extends React.Component {
 
     handleFilter = (column, newFilter) => {
         const filter = filterUtils.addFilter(this.state.model.filter,newFilter);
+        console.log(`new filter = ${JSON.stringify(filter)}`)
         this.state.dataView.filter(filter);
         this.setState({
             model: this.reducer.dispatch({ type: Action.FILTER, column, filter })

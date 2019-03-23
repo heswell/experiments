@@ -1,6 +1,6 @@
 import * as d3 from 'd3-array';
 // import { stringCollector } from './dataCollector';
-import {SET, EXCLUDE, STARTS_WITH, AND} from './filter';
+import {SET, EXCLUDE, STARTS_WITH, AND, INCLUDE} from './filter';
 import {metaData} from './columnUtils';
 
 export const SET_FILTER_DATA_COLUMNS = [
@@ -116,6 +116,7 @@ export function includesColumn(filter, column) {
 }
 
 export function addFilter(existingFilter, filter) {
+    console.log(`add filter ${JSON.stringify(filter)} to filter ${JSON.stringify(existingFilter)}`)
     if (!existingFilter) {
         return filter;
     } else if (!filter) {
@@ -126,8 +127,10 @@ export function addFilter(existingFilter, filter) {
         return { type: 'AND', filters: replaceOrInsert(existingFilter.filters, filter) };
     } else if (filter.type === 'AND') {
         return { type: 'AND', filters: filter.filters.concat(existingFilter) };
-    } else if (filterEquals(existingFilter, filter)) {
+    } else if (filterEquals(existingFilter, filter, true)) {
         return filter;
+    } else if (sameColumn(existingFilter, filter)){
+        return merge(existingFilter, filter);
     } else {
         return { type: 'AND', filters: [existingFilter, filter] };
     }
@@ -144,7 +147,37 @@ function replaceOrInsert(filters, filter) {
     return filters.concat(filter);
 }
 
-// TODO merge sets
+function merge(f1, f2){
+    const {type: t1, mode: m1} = f1;
+    const {type: t2, mode: m2} = f2;      
+    const sameType = t1 === t2 ? t1 : '';
+    const sameMode = m1 === m2 ? m1 : '';
+    console.log(`merge filters ${JSON.stringify(f1,null,2)} ${JSON.stringify(f2,null,2)}`)
+    
+    if (sameType === SET && !sameMode){
+        // do the two sets cancel each other out ?
+        if (f1.values.length === f2.values.length && f1.values.every(v => f2.values.includes(v))){  
+            return null;
+        } else if (m1 === EXCLUDE && m2 === INCLUDE){
+            // do we have the same values in two modes ?
+            if (f2.values.every(v => f1.values.includes(v))){
+                return {
+                    ...f1,
+                    values: f1.values.filter(v => !f2.values.includes(v))
+                }
+            }
+        }
+    } else if (sameType === SET){
+        return {
+            ...f1,
+            values: f1.values.concat(f2.values.filter(v => !f1.values.includes(v)))
+        }
+    }
+
+    return f2;
+
+}
+
 function combine(existingFilters, replacementFilters) {
 
     // TODO need a safer REGEX here
@@ -234,14 +267,17 @@ export function removeFilterForColumn(sourceFilter, column) {
     }
 }
 
+const sameColumn = (f1, f2) => f1.colName === f2.colName;
+
 export function filterEquals(f1, f2, strict = false) {
     if (f1 && f1){
-        const sameColumn = f1.colName === f2.colName;
+        const isSameColumn = sameColumn(f1,f2);
         if (!strict) {
-            return sameColumn;
+            return isSameColumn;
         } else {
-            return sameColumn &&
-                f1.type === f2.type &&
+            return isSameColumn &&
+                f1.type === f2.type && 
+                f1.mode === f2.mode &&
                 f1.value === f2.value &&
                 sameValues(f1.values, f2.values);
         }

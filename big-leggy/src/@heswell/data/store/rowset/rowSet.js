@@ -40,14 +40,14 @@ export default class BaseRowSet {
         this.meta = metaData(columns);
     }
 
-    get filteredData() {
-        if (this.filterSet) {
-            return this.filterSet;
-        } else {
-            const { IDX } = this.meta;
-            return this.data.map(row => row[IDX])
-        }
-    }
+    // get filteredData() {
+    //     if (this.filterSet) {
+    //         return this.filterSet;
+    //     } else {
+    //         const { IDX } = this.meta;
+    //         return this.data.map(row => row[IDX])
+    //     }
+    // }
 
     setRange(range, useDelta = true) {
 
