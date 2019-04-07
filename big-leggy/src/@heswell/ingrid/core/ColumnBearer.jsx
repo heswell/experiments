@@ -1,5 +1,5 @@
 import React from 'react';
-import HeaderCell from '../header/headerCell';
+import HeaderCell from '../header/header-cell';
 import {getCellRenderer} from '../registry/dataTypeRegistry';
 
 const NULL_FORMATTER = () => {};

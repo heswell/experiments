@@ -15,7 +15,6 @@ export default class CheckList extends React.Component {
             columns={this.props.columns}
             selectionModel={Selection.Checkbox}
             selectionDefault={this.props.selectionDefault}
-            defaultSelected={this.props.defaultSelected}
             height={this.props.height}
             width={this.props.width}
             style={this.props.style}

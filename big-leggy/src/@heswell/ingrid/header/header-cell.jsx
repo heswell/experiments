@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import Draggable from '../draggable/draggable';
 
+import './header-cell.css';
+
 const NOOP = () => { };
 
 const defaultRenderer = ({ column }) =>

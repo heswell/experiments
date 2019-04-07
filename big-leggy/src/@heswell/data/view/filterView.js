@@ -27,17 +27,9 @@ export default class FilterView extends EventEmitter {
         this._dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterData);
     }
 
-    onFilterData = (msgType, rows, rowCount) => {
-        this.emit(DataTypes.ROW_DATA, rows, rowCount);
+    onFilterData = (_, rows, rowCount, totalCount, filterCount, appliedFilterCount, selectedCount) => {
+        this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, filterCount, appliedFilterCount, selectedCount);
     }
-
-    // selectAll(){
-    //     const {IDX} = this.meta;
-    //     const selected = this.getSelectedIndices();
-    //     const dataIndices = this._dataView.filterRows.map(row => row[IDX]);
-    //     const set = new Set(selected.concat(dataIndices));
-    //     return Array.from(set).sort();
-    // }
 
     get size(){
         return this._dataView.getFilterDataCount();
@@ -50,6 +42,15 @@ export default class FilterView extends EventEmitter {
             {name:'totalCount',width: 40, type:'number', key: 2}
         ];
     }
+
+    addFilter(filter){
+        this._dataView.filter(filter, DataTypes.FILTER_DATA);
+    }
+
+    removeFilter(){
+        this._dataView.filter(null, DataTypes.FILTER_DATA);
+    }
+    // TODO we need a filter method to filter results to omit zero value filterCount - call getFilterData on view, passing filter
 
     setRange(lo, hi, sendDelta){
         this._dataView.setRange(lo,hi, sendDelta, DataTypes.FILTER_DATA);
@@ -66,9 +67,5 @@ export default class FilterView extends EventEmitter {
         return item ? item[IDX] : -1;
     }
   
-    getSelectedIndices(){
-        return this._dataView.getFilterDataSelected();
-    }
-
 }
 

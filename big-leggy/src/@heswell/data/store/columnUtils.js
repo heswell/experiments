@@ -1,4 +1,4 @@
-import {functor} from './filter';
+import {functor, overrideColName} from './filter';
 
 const SORT_ASC = 'asc';
 
@@ -53,12 +53,12 @@ export function projectColumns(map, columns, meta){
     }
 }
 
-export function projectColumnsFilter(map, columns, meta, filter, defaultToSelected){
+export function projectColumnsFilter(map, columns, meta, filter){
     const length = columns.length;
     const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = filter ? functor(map, {...filter, colName: 'value'}, true)  : () => !defaultToSelected;
+    const fn = filter ? functor(map, overrideColName(filter, 'value'), true)  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -71,9 +71,7 @@ export function projectColumnsFilter(map, columns, meta, filter, defaultToSelect
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
-        out[SELECTED] = fn(row) 
-            ? (defaultToSelected ? 0 : 1)
-            : (defaultToSelected ? 1 : 0);
+        out[SELECTED] = fn(row) ? 1 : 0;
 
         return out;
     }
@@ -82,9 +80,11 @@ export function projectColumnsFilter(map, columns, meta, filter, defaultToSelect
 export const toKeyedColumn = (column, key) =>
     typeof column === 'string'
         ? { key, name: column }
-        : {...column, key};
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
 
-        export const toColumn = column =>
+export const toColumn = column =>
     typeof column === 'string'
         ? { name: column }
         : column;
@@ -114,19 +114,17 @@ export function getDataType({type=null}){
 
 //TODO cache result by length
 export function metaData(columns){
-    const len = columns.length;
-    let metaStart = 0;
-    const next = () => len + metaStart++;
+    const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
-        IDX: next(),
-        DEPTH: next(),
-        COUNT: next(),
-        KEY: next(),
-        SELECTED: next(),
-        PARENT_IDX: next(),
-        IDX_POINTER: next(),
-        FILTER_COUNT: next(),
-        NEXT_FILTER_IDX: next(),
-        count: columns.length + metaStart
+        IDX: start + 1,
+        DEPTH: start + 2,
+        COUNT: start + 3,
+        KEY: start + 4,
+        SELECTED: start + 5,
+        PARENT_IDX: start + 6,
+        IDX_POINTER: start + 7,
+        FILTER_COUNT: start + 8,
+        NEXT_FILTER_IDX: start + 9,
+        count: start + 10
     }
 }

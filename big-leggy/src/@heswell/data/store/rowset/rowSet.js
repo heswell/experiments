@@ -4,20 +4,22 @@
 import * as d3 from 'd3-array';
 import Table from '../table';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
-import { functor as filterPredicate } from '../filter';
+import { 
+    BIN_FILTER_DATA_COLUMNS,
+    SET_FILTER_DATA_COLUMNS,
+    extendsFilter,
+    extractFilterForColumn,
+    functor as filterPredicate,
+    includesColumn as filterIncludesColumn,
+    overrideColName,
+    removeFilterForColumn,
+} from '../filter';
 import { addRowsToIndex } from '../rowUtils';
 import { groupbyExtendsExistingGroupby } from '../groupUtils';
 import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
-import {
-    extendsFilter,
-    extractFilterForColumn,
-    includesColumn as filterIncludesColumn,
-    removeFilterForColumn,
-    BIN_FILTER_DATA_COLUMNS,
-    SET_FILTER_DATA_COLUMNS
-} from '../filterUtils';
 import { DataTypes } from '../types';
 import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const SINGLE_COLUMN = 1;
 
@@ -35,41 +37,59 @@ export default class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
-        this.data = table.rows;
+        this.selectedSet = [];
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
+        this.data = table.rows;
+        const {length} = this.data;
+        this.totalCount = length;
+        this.filterCount = length;
+        // not applicable to rowSet, only used by sub types
+        this.appliedFilterCount = null;
+        this.selectedCount = 0;
     }
 
-    // get filteredData() {
-    //     if (this.filterSet) {
-    //         return this.filterSet;
-    //     } else {
-    //         const { IDX } = this.meta;
-    //         return this.data.map(row => row[IDX])
-    //     }
-    // }
+    // used by binned rowset
+    get filteredData() {
+        if (this.filterSet) {
+            return this.filterSet;
+        } else {
+            const { IDX } = this.meta;
+            return this.data.map(row => row[IDX])
+        }
+    }
 
     setRange(range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
+        const {totalCount, filterCount, appliedFilterCount, selectedCount} = this;
         const resultset = this.slice(lo, hi);
         this.range = range;
         return {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            totalCount,
+            filterCount,
+            appliedFilterCount,
+            selectedCount
         };
     }
 
     currentRange() {
         const { lo, hi } = this.range;
+        const {totalCount, filterCount, appliedFilterCount, selectedCount} = this;
         const resultset = this.slice(lo, hi);
         return {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            totalCount,
+            filterCount,
+            appliedFilterCount,
+            selectedCount
         };
     }
 
@@ -83,7 +103,6 @@ export default class BaseRowSet {
     //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
     getBinnedValuesForColumn(column) {
         const key = this.columnMap[column.name];
-
         const { data: rows, filteredData } = this;
         const numbers = filteredData.map(rowIdx => rows[rowIdx][key]);
         const data = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
@@ -93,23 +112,23 @@ export default class BaseRowSet {
         return filterRowset;
     }
 
-    //TODO will need to make this more performant. We shouldn't need to actually test every row against the 
-    // filter - we've already done that to filter the rows
     getDistinctValuesForColumn(column) {
-
         const { data: rows, columnMap, currentFilter } = this;
         const colIdx = columnMap[column.name]
         const resultMap = {};
         const data = [];
+        const dataRowCount = rows.length;
         const filter = currentFilter === null
             ? null
             : filterIncludesColumn(currentFilter, column)
                 ? removeFilterForColumn(currentFilter, column)
                 : currentFilter;
+        // this filter for column that we remove will provide our selected values        
+        let filterCount = 0;
 
         if (filter === null) {
             let result;
-            for (let i = 0, len = rows.length; i < len; i++) {
+            for (let i = 0; i < dataRowCount; i++) {
                 const val = rows[i][colIdx];
                 if (result = resultMap[val]) {
                     result[2] = ++result[1];
@@ -119,12 +138,13 @@ export default class BaseRowSet {
                     data.push(result)
                 }
             }
+            filterCount = dataRowCount;
         } else {
 
             const fn = filterPredicate(columnMap, filter);
             let result;
 
-            for (let i = 0, len = rows.length; i < len; i++) {
+            for (let i = 0; i < dataRowCount; i++) {
                 const row = rows[i];
                 const val = row[colIdx];
                 const isIncluded = fn(row) ? 1 : 0;
@@ -136,13 +156,13 @@ export default class BaseRowSet {
                     resultMap[val] = result;
                     data.push(result)
                 }
+                filterCount += isIncluded;
             }
         }
 
+        //TODO primary key should be indicated in columns
         const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
-        const filterRowset = new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name);
-
-        return filterRowset;
+        return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, filterCount, dataRowCount);
 
     }
 
@@ -163,7 +183,6 @@ export class RowSet extends BaseRowSet {
         super(table, columns, offset);
         this.project = projectColumns(table.columnMap, columns, this.meta);
         this.sortCols = null;
-        this.filteredCount = null;
         this.sortReverse = false;
         this.sortSet = this.buildSortSet();
         this.filterSet = null;
@@ -211,9 +230,9 @@ export class RowSet extends BaseRowSet {
     }
 
     get size() {
-        return this.filteredCount === null
+        return this.filterSet === null
             ? this.data.length
-            : this.filteredCount
+            : this.filterSet.length
     }
 
     get first() {
@@ -260,7 +279,7 @@ export class RowSet extends BaseRowSet {
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        this.filteredCount = null;
+        this.filterCount = this.totalCount;
         if (this.sortRequired) {
             this.sort(this.sortCols);
         }
@@ -283,13 +302,13 @@ export class RowSet extends BaseRowSet {
         }
         this.filterSet = newFilterSet;
         this.currentFilter = filter;
-        this.filteredCount = newFilterSet.length;
-
+        this.filterCount = newFilterSet.length;
         if (!extendsCurrentFilter && this.sortRequired) {
             // TODO this might be very expensive for large dataset
             // WHEN DO WE DO THIS - IS THIS CORRECT !!!!!
             this.sort(this.sortCols)
         }
+        return this.filterCount;
 
     }
 
@@ -364,7 +383,7 @@ export class RowSet extends BaseRowSet {
             // filter only
             const fn = filterPredicate(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filteredCount += 1;
+                this.filterCount += 1;
                 const navIdx = this.filterSet.length;
                 this.filterSet.push(idx);
                 if (navIdx >= this.range.hi) {
@@ -392,7 +411,8 @@ export class RowSet extends BaseRowSet {
             // sort AND filter
             const fn = filterPredicate(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filteredCount += 1;
+                this.filterCount += 1;
+                // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
                 const [[colIdx]] = sortCols; // TODO multi-colun sort
@@ -427,13 +447,18 @@ export class RowSet extends BaseRowSet {
     }
 }
 
+// TODO need to retain and return any searchText
 export class SetFilterRowSet extends RowSet {
-    constructor(table, columns, columnName) {
+    constructor(table, columns, columnName, filterCount, totalCount) {
         super(table, columns);
         this.columnName = columnName;
         this._searchText = null;
         this.sort([['value', 'asc']]);
         this.setSelected(null);
+        this.filterCount = filterCount;
+        this.totalCount = totalCount;
+        // all selected is default
+        this.selectedCount = this.data.length;
     }
 
     get searchText() {
@@ -441,31 +466,61 @@ export class SetFilterRowSet extends RowSet {
     }
 
     set searchText(text) {
-        this.filter({ type: 'SW', colName: 'value', value: text });
+        this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
+        // recalculate totalCount
+        const {filterSet, data: rows} = this;
+        let totalCount = 0;
+        const colIdx = this.columnMap.totalCount;
+        for (let i=0;i<filterSet.length;i++){
+            const row = rows[filterSet[i]];
+            totalCount += row[colIdx];
+        }
+        this.totalCount = totalCount;
         this._searchText = text;
     }
+
+    clearFilter() {
+        this.currentFilter = null;
+        this.filterSet = null;
+        const {data: rows} = this;
+        let totalCount = 0;
+        const colIdx = this.columnMap.totalCount;
+        for (let i=0;i<rows.length;i++){
+            const row = rows[i];
+            totalCount += row[colIdx];
+        }
+        this.filterCount = this.totalCount = totalCount;
+        this._searchText = '';
+
+    }
+
 
     get values() {
         const key = this.columnMap['value'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
-    setSelected(filter) {
-        const SELECT_BY_DEFAULT = true;
+    setSelected(filter, appliedFilterCount) {
+
+        this.appliedFilterCount = appliedFilterCount;
         const columnFilter = extractFilterForColumn(filter, this.columnName);
+        const columnMap = this.table.columnMap;
+        
+        if (columnFilter){
+            const fn = filter ? filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true)  : () => true;
+            this.selectedCount = this.data.reduce((count, row) => count + (fn(row) ? 1 : 0),0) 
+        } else {
+            this.selectedCount = this.data.length;
+        }
 
         this.project = projectColumnsFilter(
-            this.table.columnMap,
+            columnMap,
             this.columns,
             this.meta,
-            columnFilter,
-            SELECT_BY_DEFAULT
+            columnFilter
         );
 
-        // make sure next scroll operation sends a full rowset otw client-side selection changes may
-        // be lost ac changes will not exist in cached rows.  
-        this.setRange({ lo: 0, hi: 0 });
-
+        return this.currentRange();
 
     }
 

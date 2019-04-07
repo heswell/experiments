@@ -7,3 +7,26 @@
     line-height: 25px;
     border-left: solid 1px #ccc;
 }
+
+.filter-count-section {
+    display: flex;
+    align-items: center;
+    line-height: 25px;
+    color: #666;
+}
+
+.filter-count-section span {
+    margin-right : 3px;
+}
+
+.filter-count-section .row-counts {
+    flex: 1 1 auto;
+    padding-left: 6px;
+
+}
+.filter-count-section .filter-counts {
+    flex: 1 1 auto;
+    margin-left: auto;
+    text-align: right; 
+    padding-right: 27px;
+}

@@ -15,9 +15,8 @@ import {
     allGroupsExpanded
 } from '../groupUtils';
 import { sortBy, sortPosition } from '../sort';
-import { extendsFilter } from '../filterUtils';
+import { extendsFilter, functor as filterPredicate } from '../filter';
 import { mapSortCriteria } from '../columnUtils';
-import { functor as filterPredicate } from '../filter';
 import GroupIterator from '../groupIterator';
 import { ASC } from '../types'
 import { NULL_RANGE } from '../rangeUtils';

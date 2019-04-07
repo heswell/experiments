@@ -12,7 +12,7 @@ import Viewport from './core/viewport';
 import {getScrollbarSize, getColumnWidth} from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
-import {DataTypes, filterUtils, groupHelpers, columnUtils} from '../data';
+import {DataTypes, filter as filterUtils, groupHelpers, columnUtils} from '../data';
 
 import './grid.css';
 
@@ -28,7 +28,6 @@ export default class Grid extends React.Component {
         showFilters: false
     };
 
-    inlineFilter;
     header;
     viewport;
     // can this be replaced with value from model ?
@@ -40,6 +39,8 @@ export default class Grid extends React.Component {
         super(props);
         let { dataView, showFilters, columns } = props;
         const scrollbarSize = getScrollbarSize();
+
+        this.inlineFilter = React.createRef();
 
         // NO, the columnMap must be owned by the grid
         const { columnMap } = dataView;
@@ -61,8 +62,9 @@ export default class Grid extends React.Component {
         // we need to store rows in state so we can identify when they change. Everything else on dataView should be write only   
         this.state = { model, dataView, rows: [], showFilters, selected, groupToggled: false };
 
-        dataView.subscribe(columns, (msgType, rows, rowCount=null) => {
+        dataView.subscribe(columns, (msgType, rows, rowCount=null, totalCount=rowCount, filterCount=totalCount, appliedFilterCount=null) => {
             // maybe we should be setting rows and length in state
+            console.log(`[Grid]<${msgType}> rowCount=${rowCount} totalCount=${totalCount} filterCount=${filterCount} appliedFilterCount=${appliedFilterCount}`);
             const {model} = this.state;
             const {IDX, SELECTED} = model.meta;
             const state = {};
@@ -108,7 +110,6 @@ export default class Grid extends React.Component {
         const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
         const totalHeaderHeight = headingHeight + filterHeight;
 
-        this.inlineFilter = null;
 
         return (
             <div style={{ ...style, position: 'relative', height, width }} className={className}>
@@ -128,7 +129,7 @@ export default class Grid extends React.Component {
                         onContextMenu={this.showContextMenu} />}
 
                 {showFilters &&
-                    <InlineFilter ref={filter => this.inlineFilter = filter}
+                    <InlineFilter ref={this.inlineFilter}
                         onFilter={this.handleFilter}
                         onSelect={this.handleSelection}
                         onClearFilter={this.handleClearFilter}
@@ -177,7 +178,6 @@ export default class Grid extends React.Component {
     componentWillUnmount() {
         this._scrollLeft = undefined;
         this.header = null;
-        this.inlineFilter = null;
         this.state.dataView.unsubscribe();        
         // this.state.dataView.removeListener(DataTypes.ROW_DATA, this.onRowset)
         // don't destroy a  Data View that we don't sown
@@ -264,7 +264,13 @@ export default class Grid extends React.Component {
 
     handleFilter = (column, newFilter) => {
         const filter = filterUtils.addFilter(this.state.model.filter,newFilter);
-        console.log(`new filter = ${JSON.stringify(filter)}`)
+        console.log(`
+            add filter ${JSON.stringify(newFilter,null,2)}
+            to filter ${JSON.stringify(this.state.model.filter,null,2)}
+            
+            creates new filter = ${JSON.stringify(filter,null,2)}
+        `)
+        
         this.state.dataView.filter(filter);
         this.setState({
             model: this.reducer.dispatch({ type: Action.FILTER, column, filter })
@@ -517,8 +523,8 @@ export default class Grid extends React.Component {
         if (this.header) {
             this.header.setScrollLeft(scrollLeft);
         }
-        if (this.inlineFilter) {
-            this.inlineFilter.setScrollLeft(scrollLeft);
+        if (this.inlineFilter.current) {
+            this.inlineFilter.current.setScrollLeft(scrollLeft);
         }
     }
 

@@ -1,14 +1,19 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import cx from 'classnames';
-import { SetFilter, NumberFilter, MultiColumnFilter } from '../../ingrid-extras';
-import { filterUtils, columnUtils, filter } from '../../data';
+
+import { SetFilter, NumberFilter, MultiColumnFilter, INCLUDE, EXCLUDE } from '../../ingrid-extras';
+import { columnUtils, filter as filterUtils } from '../../data';
 import { PopupService } from '../services';
 
-const {SET, STARTS_WITH, EXCLUDE} = filter;
+const {IN, NOT_IN, STARTS_WITH, NOT_STARTS_WITH} = filterUtils;
 
 //TODO how do we determine if filter is active sans filterData
 export default class ColumnFilter extends React.Component {
+
+    constructor(props){
+        super(props);
+        this.rootEl = React.createRef();
+    }
 
     keyDown = e => this.props.onKeyDown(this.props.column, e);
 
@@ -38,19 +43,30 @@ export default class ColumnFilter extends React.Component {
     handleSetSelectionChange = (selected, filterMode, searchText) => {
         const {column, onFilter} = this.props;
         // same for an include filter that includes every value, but we don't normally represent it that way
-        if (filterMode === EXCLUDE && selected !== null && selected.length === 0) {
-            this.props.onClearFilter(column);
-        } else if (searchText) {
-            onFilter(column, {
-                type: STARTS_WITH,
-                mode: filterMode,
-                colName: column.name,
-                value: searchText
-            });
+        if (selected === null) {
+            if (searchText){
+                onFilter(column, {
+                    colName: column.name,
+                    type: filterMode === INCLUDE ? STARTS_WITH : NOT_STARTS_WITH,
+                    value: searchText
+                });
+    
+            } else {
+                if (filterMode === INCLUDE){
+                    this.props.onClearFilter(column);
+                } else {
+                    onFilter(column, {
+                        colName: column.name,
+                        type: IN,
+                        values: []
+                    });
+                }
+   
+            }
+
         } else {
             onFilter(column, {
-                type: SET,
-                mode: filterMode,
+                type: filterMode === EXCLUDE ? NOT_IN : IN,
                 colName: column.name,
                 values: [selected]
             });
@@ -76,7 +92,7 @@ export default class ColumnFilter extends React.Component {
         const filterChanged = keepShowing && filter && filter !== this.props.filter;
         if (showPopup || filterChanged) {
             const component = this.getFilter(column, filter, dataView);
-            const el = ReactDOM.findDOMNode(this);
+            const el = this.rootEl.current;
             const { left, top } = el.getBoundingClientRect();
             PopupService.showPopup({ left: Math.round(left)-1, top: top - 26, component });
         }
@@ -84,8 +100,7 @@ export default class ColumnFilter extends React.Component {
     }
 
     getFilter(column, filter, dataView) {
-        console.log(`COlumnFilter, extractFilterFromColumn ${column.name} ${JSON.stringify(filter)}`)
-        const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
+        console.log(`ColumnFilter, extractFilterFromColumn ${column.name} ${JSON.stringify(filter)}`)
 
         if (!column.isGroup || column.columns.length === 1) {
             switch (columnUtils.getFilterType(column)) {
@@ -94,7 +109,7 @@ export default class ColumnFilter extends React.Component {
                         <NumberFilter column={column} height={250}
                             className='FilterPanel'
                             dataView={dataView}
-                            filter={columnFilter}
+                            filter={filter}
                             onHide={this.hideFilter}
                             onClose={this.closeFilter}
                             onApplyFilter={this.handleNumberFilterChange} />
@@ -103,10 +118,10 @@ export default class ColumnFilter extends React.Component {
                     return (
                         <SetFilter className='FilterPanel'
                             column={column}
-                            height={300}
+                            filter={filter}
+                            height={325}
                             width={column.width + 120}
                             dataView={dataView}
-                            filter={columnFilter}
                             onHide={this.hideFilter}
                             onClose={this.closeFilter}
                             onSelectionChange={this.handleSetSelectionChange}
@@ -133,10 +148,10 @@ export default class ColumnFilter extends React.Component {
         const { column, showFilter, filter } = this.props;
         const isActive = filterUtils.includesColumn(filter, column);
         const className = cx('HeaderCell', { 'filter-active': isActive, 'filter-showing': showFilter });
-        // const width = column.width - (18 + (isActive ? 17 : 0));
+
         return (
-            // we only need care about opening the filter - the Popop service will close if for us.
-            <div className={className} style={{ padding: 0, width: column.width }}>
+            // we only need care about opening the filter - the Popup service will close if for us.
+            <div ref={this.rootEl} className={className} style={{ padding: 0, width: column.width }}>
                 <div className='filter-button' onClick={this.showFilter}>
                     <i className="material-icons">filter_list</i>
                 </div>

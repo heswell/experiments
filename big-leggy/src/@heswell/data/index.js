@@ -1,15 +1,21 @@
 
-import {AND, SET, INCLUDE, EXCLUDE, STARTS_WITH} from './store/filter'
 import { getFilterType, toColumn, toKeyedColumn, buildColumnMap, metaData } from './store/columnUtils'
 import { sortByToMap } from './store/sort'
-import { 
+import {
+  AND,
+  OR,
+  IN,
+  NOT_IN,
+  STARTS_WITH,
+  NOT_STARTS_WITH,
   addFilter,
-  removeFilterForColumn,
   extractFilterForColumn,
   getFilterColumn,
   includesColumn,
-  shouldShowFilter } from './store/filterUtils';
-import {
+  removeFilterForColumn,
+  shouldShowFilter } from './store/filter';
+
+  import {
   getFullRange,
   resetRange,
   NULL_RANGE as NULL } from './store/rangeUtils';
@@ -56,13 +62,11 @@ export const rowUtils = {
 
 export const filter = {
   AND,
-  SET,
-  INCLUDE,
-  EXCLUDE,
-  STARTS_WITH
-}
-
-export const filterUtils = {
+  OR,
+  IN,
+  NOT_IN,
+  STARTS_WITH,
+  NOT_STARTS_WITH,
   shouldShowFilter,
   addFilter,
   extractFilterForColumn,

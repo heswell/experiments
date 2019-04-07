@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import HeaderCell from './headerCell';
+import HeaderCell from './header-cell';
 import GroupbyHeaderCell from './groupbyHeaderCell';
 import '../style/grid';
 

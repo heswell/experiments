@@ -14,7 +14,7 @@ import {
     _getInstrumentPricesTable
 } from '../instrumentPrices';
 
-import {SET, EXCLUDE, LESS_THAN, GREATER_EQ} from '../../../data/store/filter';
+import {IN, NOT_IN, LESS_THAN, GREATER_EQ} from '../../../data/store/filter';
 
 const DEFAULT_OFFSET =100;
 
@@ -287,7 +287,7 @@ describe('filter', () => {
 
     test('filter exclude all', () => {
         const rowSet = _getTestRowset();
-        rowSet.filter({type: SET,colName: 'Group 1', values: []});
+        rowSet.filter({type: IN, colName: 'Group 1', values: []});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(0);
         expect(rows).toEqual([])
@@ -556,38 +556,38 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20, 0, 0, 0, 'T3', 0],
-            ['T4', 3, 3, 1, 0, 0, 'T4', 0],
-            ['T5', 1, 1, 2, 0, 0, 'T5', 0]
+            ['T3', 20, 20, 0, 0, 0, 'T3', 1],
+            ['T4', 3, 3, 1, 0, 0, 'T4', 1],
+            ['T5', 1, 1, 2, 0, 0, 'T5', 1]
         ])
     });
 
     test('with filter on current column', () => {
         const rowSet = _getTestRowset();
-        rowSet.filter({type: SET, colName: 'Group 3',values: ['T3']})
+        rowSet.filter({type: IN, colName: 'Group 3',values: ['T3']})
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20,  0,0,0, 'T3', 0],
-            ['T4', 3 ,3,  1,0,0, 'T4', 0],
-            ['T5', 1 ,1,  2,0,0, 'T5', 0]
+            ['T3', 20, 20,  0,0,0, 'T3', 1],
+            ['T4', 3 ,3,  1,0,0, 'T4', 1],
+            ['T5', 1 ,1,  2,0,0, 'T5', 1]
         ])
     });
 
     test('with filter on another column', () => {
         const rowSet = _getTestRowset();
-        rowSet.filter({type: SET, mode: EXCLUDE, colName: 'Group 2',values: ['I2']})
+        rowSet.filter({type: NOT_IN, colName: 'Group 2',values: ['I2']})
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
 
         const {IDX, SELECTED} = filterRowset.meta;
         let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
 
-        expect(selectedIndices).toEqual([]);
+        expect(selectedIndices).toEqual([0,1,2]);
         expect(rows).toEqual([
-            ['T3', 15, 20,  0,0,0, 'T3', 0],
-            ['T4', 2 ,3,    1,0,0, 'T4', 0],
-            ['T5', 0 ,1,    2,0,0, 'T5', 0]
+            ['T3', 15, 20,  0,0,0, 'T3', 1],
+            ['T4', 2 ,3,    1,0,0, 'T4', 1],
+            ['T5', 0 ,1,    2,0,0, 'T5', 1]
         ])
     });
 
@@ -597,16 +597,16 @@ describe('getDistinctValuesForColumn', () => {
             type: 'AND',
             filters: [
                 {type: 'eq', colName: 'Group 1', value: 'G1'},
-                {type: SET, mode: EXCLUDE, colName: 'Group 2',values: ['I2']}
+                {type: NOT_IN, colName: 'Group 2',values: ['I2']}
             ]}
         );
 
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 1'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['G1', 4, 8,   0, 0, 0, 'G1', 0],
-            ['G2', 6, 8,   1, 0, 0, 'G2', 0],
-            ['G3', 7, 8,   2, 0, 0, 'G3', 0]
+            ['G1', 4, 8,   0, 0, 0, 'G1', 1],
+            ['G2', 6, 8,   1, 0, 0, 'G2', 1],
+            ['G3', 7, 8,   2, 0, 0, 'G3', 1]
         ])
     });
 
@@ -617,12 +617,12 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'});
         ({rows} = filterRowset.setRange({lo: 0,hi: 25}));
 
-        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,'Advertising', 0])
+        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,'Advertising', 1])
 
-        rowSet.filter({type: SET, colName: 'Industry', values: []});
+        rowSet.filter({type: IN, colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
 
-        rowSet.filter({type: SET, colName: 'Industry', values: ['Advertising']});
+        rowSet.filter({type: IN, colName: 'Industry', values: ['Advertising']});
         ({rows} = rowSet.setRange({lo: 0,hi: 17},false));
 
         expect(rows).toEqual([

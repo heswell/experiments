@@ -5,6 +5,7 @@ import cx from 'classnames';
 import FlexBox from '../../inlay/flexBox';
 import { BinView } from '../../data/view';
 import {DataTypes} from '../../data/store/types';
+import {filter as filterUtils} from '../../data';
 
 import SearchBar from './filter-toolbar'
 
@@ -25,11 +26,13 @@ export class NumberFilter extends React.Component {
 
         this.graph = null;
 
-        const { filter } = this.props;
-        this.filterView = new BinView(props.dataView);
+        const { column, filter, dataView } = this.props;
+        const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
+
+        this.filterView = new BinView(dataView);
         
         this.state = {
-            ...this.extractStateFromFilter(filter)
+            ...this.extractStateFromFilter(columnFilter)
         };
 
         this.filterView.on(DataTypes.FILTER_DATA, this.onFilterBins);

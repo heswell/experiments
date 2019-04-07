@@ -15,16 +15,6 @@ describe('LocalView', () => {
     { name: 'Industry'}
   ];
 
-  test('create empty localView', () => {
-    const localView = new LocalView();
-    expect(localView.size).toBe(0)
-  });
-
-  test('create localView with data, check size is correct', () => {
-    const view = new LocalView({table: new Table({data, columns })});
-    expect(view.size).toBe(1247)
-  });
-
   test('register for data changes', done => {
     const view = new LocalView({table: new Table({data, columns })});
 

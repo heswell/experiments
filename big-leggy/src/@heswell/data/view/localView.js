@@ -3,7 +3,7 @@ import {DataTypes} from '../store/types';
 import InMemoryView from '../store/InMemoryView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
-import {setFilterColumnMeta} from '../store/filterUtils';
+import {setFilterColumnMeta} from '../store/filter';
 import * as columnUtils from '../store/columnUtils';
 import * as rowUtils from '../store/rowUtils';
 
@@ -27,7 +27,7 @@ export default class LocalView extends EventEmitter {
         this._rowData = null;
         this._filterData = null;
 
-        this.processRowData = this.processRowData.bind(this);
+        this.processIncomingRows = this.processIncomingRows.bind(this);
         this.processUpdate = this.processUpdate.bind(this);
 
         const {
@@ -49,7 +49,7 @@ export default class LocalView extends EventEmitter {
                 this._rowData = this._dataView.setRange(range) || NULL_DATARANGE;
             }
 
-            this.updateQueue.on(DataTypes.ROW_DATA,this.processRowData)
+            this.updateQueue.on(DataTypes.ROW_DATA,this.processIncomingRows)
             this.updateQueue.on('update',this.processUpdate)
             this.updateQueue.on('insert', (evtName, message) => this.emit('insert', message))
 
@@ -87,9 +87,11 @@ export default class LocalView extends EventEmitter {
         this.removeAllListeners();
     }
 
-    processRowData(evtName, rows, size){
-        this._rowData.rows = rowUtils.mergeAndPurge(this._rowData, rows, size, this.meta);
-        this.emit(evtName, this._rowData.rows, size);
+    processIncomingRows(dataType, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount){
+console.log('[LocalView] processIncomingRows size=${size} totalCOunt=${totalCount} filterCount=${filterCount} appliedFilterCount=${appliedFilterCount} selectedCount=${selectedCount}' )
+        const [targetData, meta] = this.getData(dataType);
+        const rowset = targetData.rows = rowUtils.mergeAndPurge(targetData, rows, size, meta);
+        this.emit(dataType, rowset, size, totalCount, filterCount, appliedFilterCount, selectedCount);
     }
 
     processUpdate(evtName, updates){
@@ -106,11 +108,11 @@ export default class LocalView extends EventEmitter {
         this._dataOptions.columns = columns.map(columnUtils.toColumn);
     }
 
-    get size(){ 
-        return this._dataView === null
-            ? 0
-            : this._dataView.size;
-    }
+    // get size(){ 
+    //     return this._dataView === null
+    //         ? 0
+    //         : this._dataView.size;
+    // }
 
     get columns (){
         return this._dataOptions.columns;
@@ -125,65 +127,56 @@ export default class LocalView extends EventEmitter {
                 : [null];
     }
 
-    // setData(data){
-    //     const {columns, sortBy: sortCriteria, groupBy} = this._dataOptions;
-    //     const table = new Table({data, columns});
-    //     const tableHelper = new TableHelper(table);
-    //     this._dataView = new InMemoryView(tableHelper, {columns, sortCriteria, groupBy});
-    //     const {rows, size} = this._dataView.setRange(this._rowData.range);
-    //     this._rowData.rows = rows;
-    //     return [rows, size];
-    // }
-
     setRange(lo, hi, useDelta=true, dataType=DataTypes.ROW_DATA){
-        const [targetData, meta] = this.getData(dataType);
+        const [targetData] = this.getData(dataType);
         if (targetData.type !== DataTypes.FILTER_BINS){
             const { range: { lo: lo_, hi: hi_ }} = targetData;
             if (useDelta === false || (lo !== lo_ || hi !== hi_)) {
                 targetData.range = { lo, hi };
                 if (this._dataView){
-                    const {rows, size,selectedIndices} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                    const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
-                    targetData.rows = rowset;
-                    this.emit(dataType, rowset, size, selectedIndices);
+                    // TODO the counts will never change during a setRange operation
+                    const {rows, size, totalCount, filterCount, appliedFilterCount, selectedCount} = this._dataView.setRange({lo, hi}, useDelta, dataType);
+                    this.processIncomingRows(dataType, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount)
                 }
             }
         }
     }
 
     sort(sortCriteria){
-        const targetData = this._rowData;
-        const {rows, size, selectedIndices} = this._dataView.sort(sortCriteria);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
-        targetData.rows = rowset;
-        this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
+        const {rows, size} = this._dataView.sort(sortCriteria);
+        this.processIncomingRows(DataTypes.ROW_DATA, rows,size)
     }
 
-    filter(filter){
-        const {rows, size} = this._dataView.filter(filter);
-        const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
-        const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta);
-        targetData.rows = rowset;
-        this.emit(DataTypes.ROW_DATA, rowset, size);
+    filter(filter, dataType=DataTypes.ROW_DATA){
+        if (dataType === DataTypes.FILTER_DATA){
+            const {rows, size, totalCount, filterCount,appliedFilterCount, selectedCount} = this._dataView.filter(filter, dataType);
+            this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+        } else {
+            const [{rows, size, totalCount, filterCount}, ...filterResultsets] = this._dataView.filter(filter);
+            filterResultsets.forEach(({rows, size, totalCount, filterCount, appliedFilterCount, selectedCount}) => {
+                this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+            })
+            this.processIncomingRows(DataTypes.ROW_DATA, rows, size, totalCount, filterCount)
+        }
     }
 
     select(dataType, colName, selectMode){
-        const {rows, size, selectedIndices} = this._dataView.select(dataType, colName, selectMode);
+        const {rows, size} = this._dataView.select(dataType, colName, selectMode);
         if (dataType === DataTypes.FILTER_DATA){
             const [targetData, meta] = this.getData(DataTypes.ROW_DATA);
             const rowset = rowUtils.mergeAndPurge(targetData, rows, size, meta); // NEEDED ?
             targetData.rows = rowset;
-            this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
+            this.emit(DataTypes.ROW_DATA, rowset, size);
         }
 
     }
 
     groupBy(groupBy){
         const targetData = this._rowData;
-        const {rows, size, selectedIndices} = this._dataView.groupBy(groupBy);
+        const {rows, size} = this._dataView.groupBy(groupBy);
         const rowset = rowUtils.mergeAndPurge(targetData, rows, size, this.meta); // NEEDED ?
         targetData.rows = rowset;
-        this.emit(DataTypes.ROW_DATA, rowset, size, selectedIndices);
+        this.emit(DataTypes.ROW_DATA, rowset, size);
     }
 
     setGroupState(groupState){
@@ -206,7 +199,8 @@ export default class LocalView extends EventEmitter {
             : [];
     }
 
-    getFilterData(column, searchText=null){
+    // TODO add support for filter, so we can filter out zero-value filterCount
+    getFilterData(column, searchText=null, filter=null){
         const range = this._filterData /* && (searchText || this._filterData.searchText) */
             ? this._filterData.range
             : NULL_RANGE;
@@ -215,15 +209,16 @@ export default class LocalView extends EventEmitter {
 
         this._filterData = this._dataView.getFilterData(column, searchText, range);
         
-        // shoulf getFilterData return this ?
+        // should getFilterData return this ? YES
         this._filterData.searchText = searchText;
 
         // emit data if range specified or not required
         if (this._filterData.type === DataTypes.FILTER_BINS || range !== NULL_RANGE){
-            const {rows, size} = this._filterData;
+            const {rows, size, filterCount, totalCount, appliedFilterCount, selectedCount} = this._filterData;
             // there is no listener for this when we emit binned Filter data (no range required)
             // but that's ok, the BinView will ask for them when it's ready
-            this.emit(DataTypes.FILTER_DATA, rows, size);
+            console.log(`[LocalView emit FILTERDATA filterCount=${filterCount} / ${totalCount}]`)
+            this.emit(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
         }
     }
 

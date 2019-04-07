@@ -1,7 +1,6 @@
 import { NULL_RANGE, resetRange, withinRange } from './rangeUtils';
 import { RowSet, GroupRowSet } from './rowset';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
-import { includesNoValues } from './filterUtils';
 import UpdateQueue from './updateQueue';
 import { DataTypes } from './types';
 
@@ -45,7 +44,6 @@ export default class InMemoryView {
 
     // Set the columns from client
     set columns(columns) {
-        console.log(`set client columns ${JSON.stringify(columns, null, 2)}`)
         this._columns = columns.map(toColumn);
         this._columnMap = buildColumnMap(this._columns);
     }
@@ -121,39 +119,43 @@ export default class InMemoryView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter) {
-        const { rowSet, _filter, filterRowSet } = this;
-        const { range } = rowSet;
-        this._filter = filter;
-        if (filter === null) {
-            if (_filter) {
-                rowSet.clearFilter();
-            }
-            // Note this is not strictly necessary. If filter in only on one column and filterRowSet is for same column, it can be kept
-            this.filterRowSet = null;
-        } else if (includesNoValues(filter)) {
-            // this accommodates where user has chosen de-select all from filter set - 
-            // TODO couldn't we handle that entirely on the client ?
-            // if (filterRowSet) {
-            //     filterRowSet.selectedIndices = [];
-            // }
-            return {
-                range,
-                rows: [],
-                size: 0,
-                offset: rowSet.offset
-            };
+    filter(filter, dataType=DataTypes.ROW_DATA) {
+        if (dataType === DataTypes.FILTER_DATA){
 
+            return this.filterFilterData(filter);
+        
         } else {
-            this.rowSet.filter(filter);
+            const { rowSet, _filter, filterRowSet } = this;
+            const { range } = rowSet;
+            this._filter = filter;
+            let filterResultset;
+            let filterCount = rowSet.totalCount;
+    
+            if (filter === null && _filter) {
+                rowSet.clearFilter();
+            } else if (filter){
+                filterCount = this.rowSet.filter(filter);
+            } else {
+                throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
+            }
+    
+            if (filterRowSet) {
+                if (filter){
+                    filterResultset = filterRowSet.setSelected(filter, filterCount);
+                } else {
+                    // TODO examine this. Must be a more efficient way to reset counts in filterSet
+                    const {columnName, range} = filterRowSet;
+                    this.filterRowSet = rowSet.getDistinctValuesForColumn({name:columnName});
+                    filterResultset = this.filterRowSet.setRange(range, false)
+                }
+            }
+    
+            const resultSet = this.rowSet.setRange(resetRange(range), false);
+    
+            return filterResultset
+                ? [resultSet, filterResultset]
+                : [resultSet];
         }
-
-        if (filterRowSet) {
-            //TODO we may need to send updates with changed SELECTED state 
-            filterRowSet.setSelected(filter);
-        }
-
-        return this.rowSet.setRange(resetRange(range), false);
 
     }
 
@@ -229,12 +231,31 @@ export default class InMemoryView {
         }
 
         if (filter) {
-            this.filterRowSet.setSelected(filter);
+            this.filterRowSet.setSelected(filter, this.rowSet.filterCount);
         }
 
         // do we need to returtn searchText ? If so, it should
         // be returned by the rowSet
         return this.filterRowSet.setRange(range, false);
+
+    }
+
+    filterFilterData(filter){
+        const {filterRowSet} = this;
+        if (filterRowSet){
+            let filterCount;
+
+            if (filter === null) {
+                filterRowSet.clearFilter();
+            } else if (filter){
+                filterCount = filterRowSet.filter(filter);
+            }
+            console.log(`filterCount = ${filterCount}`);
+            return filterRowSet.setRange(resetRange(filterRowSet.range), false);
+    
+        } else {
+            console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`)
+        }
 
     }
 

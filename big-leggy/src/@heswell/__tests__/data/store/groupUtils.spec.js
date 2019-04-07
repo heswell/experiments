@@ -44,7 +44,7 @@ describe('groupUtils', () => {
   })
 
   describe('groupRows', () => {
-    test('', () => {
+    test('basic grouping', () => {
 
       const sortSet = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
       const groupBy = [[1,'asc']]
@@ -52,7 +52,7 @@ describe('groupUtils', () => {
   
       expect(groups).toEqual([
         [null,'G1',null,null,null,null, 0, -1, 8, 'G1', 0, null, 0, undefined, undefined],
-        [null,'G2',null,null,null,null, 1, -1, 8, 'G2', 0, null, 8, undefined, undefined],
+        [null,'G2',null,null,null,null, 1, -1, 8, 'G2', 0, null, 8, undefined, undefined ],
         [null,'G3',null,null,null,null, 2, -1, 8, 'G3', 0, null, 16, undefined, undefined]
       ]);
 

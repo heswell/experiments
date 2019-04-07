@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import HeaderCell from './headerCell';
+import HeaderCell from './header-cell';
 import Draggable from '../draggable/draggable';
 import {expandStatesfromGroupState} from '../model/utils';
 import css from '../style/grid';

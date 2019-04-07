@@ -1,7 +1,7 @@
 
 import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
-import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/filterUtils';
+import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/filter';
 import {EventEmitter} from '@heswell/utils';
 import {subscribe} from './server-api';
 const uuid = require('uuid');
@@ -166,9 +166,9 @@ export default class RemoteView extends EventEmitter {
         return this._rowData.rows;
     }
 
-    get size() {
-        return this._rowData.size || 0;
-    }
+    // get size() {
+    //     return this._rowData.size || 0;
+    // }
 
     //TODO first bring server-api setViewRange & setFilterRange into line, then merge followig methods
     setRange(lo, hi, useDelta=true, dataType = DataTypes.ROW_DATA) {
