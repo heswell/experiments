@@ -1,7 +1,7 @@
 
 import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
-import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/filter';
+import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/columnUtils';
 import {EventEmitter} from '@heswell/utils';
 import {subscribe} from './server-api';
 const uuid = require('uuid');
@@ -103,7 +103,7 @@ export default class RemoteView extends EventEmitter {
 
                     const rowSet = message[type];
                     const [targetData, meta] = this.getData(type, rowSet.type);
-                    const { data, size, offset = targetData.offset } = rowSet;
+                    const { data, size, offset = targetData.offset, dataCounts } = rowSet;
 
                     targetData.size = size;
                     targetData.offset = offset;
@@ -112,7 +112,7 @@ export default class RemoteView extends EventEmitter {
                         ? rowSet.data
                         : rowUtils.mergeAndPurge(targetData, data, size, meta);
 
-                    this.emit(type, targetData.rows, size);
+                    this.emit(type, targetData.rows, size, undefined, dataCounts);
 
                     break;
 
@@ -232,21 +232,6 @@ export default class RemoteView extends EventEmitter {
     filter(filter) {
         this._subscription.filter(filter);
     }
-
-    // select = (dataType, colName, filterMode) => selectAPI({viewport: this._id, dataType, colName, filterMode});
-
-    // getRows(dataOptions: IDataOptions): [any[], number] {
-    //     console.log(`remoteView getRows`);
-    //     if (dataOptions) {
-    //         // what if not ?
-    //         if (this._subscription) {
-    //             modifySubscription({ viewport: this._id, ...dataOptions });
-    //         }
-    //     }
-
-    //     return [this._rowData.rows, this._rowData.size];
-
-    // }
 
     get filterRows () {
         return this._filterData

@@ -243,14 +243,12 @@ export default class InMemoryView {
     filterFilterData(filter){
         const {filterRowSet} = this;
         if (filterRowSet){
-            let filterCount;
 
             if (filter === null) {
                 filterRowSet.clearFilter();
             } else if (filter){
-                filterCount = filterRowSet.filter(filter);
+                filterRowSet.filter(filter);
             }
-            console.log(`filterCount = ${filterCount}`);
             return filterRowSet.setRange(resetRange(filterRowSet.range), false);
     
         } else {

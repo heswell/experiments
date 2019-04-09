@@ -25,25 +25,46 @@ const ZeroRowFilter = {
     values: [0]
 }
 
-const FilterCounts = ({count=NO_COUNT, searchText}) => {
-    const {rows, selectedRows, total, filter, filterRows} = count;
-    console.log(`FilterCount ${JSON.stringify(count,null,2)}`)
+const FilterCounts = ({column, dataCounts=NO_COUNT, searchText}) => {
+    const {dataRowTotal, dataRowAllFilters, filterRowTotal, filterRowSelected} = dataCounts;
+    console.log(`FilterCount ${JSON.stringify(dataCounts,null,2)}`)
     return (
         <div className="filter-count-section">
-            <div className="row-counts">
-                <span>{`${selectedRows}/${rows} selected`}</span>
-                <span>{selectedRows > 0 && selectedRows < rows ? ` = ${filterRows}` : ''}</span>
+            <div className="filter-row-counts">
+                <div>{`Distinct values for ${column.name}`}</div>
+                <div className="filter-row-table">
+                    <div>
+                        <span>Selected</span>
+                        <span>{filterRowSelected}</span>
+                    </div>
+                    <div>
+                        <span>Total</span>
+                        <span>{filterRowTotal}</span>
+                    </div>
+                </div>
             </div>
-            {searchText ? (
-                <div className="filter-counts">
-                    <span>{total}</span>
+            <div className="data-row-counts">
+            <div>{`Data records`}</div>
+                <div className="filter-row-table">
+                    {dataRowAllFilters < dataRowTotal ? (
+                    <div>
+                        <span>Filtered</span>
+                        <span>{dataRowAllFilters}</span>
+                    </div>
+
+                    )  : (
+                    <div>
+                        <span>&nbsp;</span>
+                        <span>&nbsp;</span>
+                    </div>
+                    )}
+                    <div>
+                        <span>Total</span>
+                        <span>{dataRowTotal}</span>
+                    </div>
                 </div>
-            ): (
-                <div className="filter-counts">
-                    {filter < total && <span>{`${filter} /`}</span>}
-                    <span>{total}</span>
-                </div>
-            )}
+
+            </div>
         </div>
     )
 } 
@@ -74,7 +95,7 @@ export class SetFilter extends React.Component {
             filterView,
             selectionDefault,
             otherFilters,
-            count: undefined
+            dataCounts: undefined
         };
 
         this.searchText = ''
@@ -86,22 +107,8 @@ export class SetFilter extends React.Component {
 
     }
 
-    handleFilterViewUpdate(_, rows, rowCount=null, totalCount=rowCount, filterCount=totalCount, appliedFilterCount=null, selectedCount){
-        console.log(`SetFilter filterViewUpdate
-        rowCount=${rowCount} 
-        selectedCount=${selectedCount}
-        totalCount=${totalCount} 
-        filterCount=${filterCount} 
-        appliedFilterCount=${appliedFilterCount}`)
-        const count = {
-            rows: rowCount,
-            selectedRows: selectedCount,
-            filterRows: appliedFilterCount,
-            total: totalCount,
-            filter: filterCount
-        }
-
-        this.setState({count})
+    handleFilterViewUpdate(_, rows, rowCount=null, totalCount=rowCount, dataCounts){
+        this.setState({dataCounts})
     }
 
     toggleZeroRows(){
@@ -129,7 +136,7 @@ export class SetFilter extends React.Component {
             suppressFooter=false
         } = this.props;
 
-        const {filterView, selectionDefault, otherFilters, count, showZeroRows} = this.state;
+        const {filterView, selectionDefault, otherFilters, dataCounts, showZeroRows} = this.state;
         const allSelected = selectionDefault === SELECT_ALL;
         const clickHandler = allSelected ? this.handleDeselectAll : this.handleSelectAll;
         const selectionText = allSelected ? 'DESELECT ALL' : 'SELECT ALL';
@@ -157,7 +164,7 @@ export class SetFilter extends React.Component {
                         columns={columns}
                         dataView={filterView}
                         onSelectionChange={this.handleSelectionChange}/>
-                    <FilterCounts style={{height: 25}} count={count} searchText={this.searchText}/>  
+                    <FilterCounts style={{height: 50}} column={column} dataCounts={dataCounts} searchText={this.searchText}/>  
                     {suppressFooter !== true &&
                     <div key='footer' className='footer' style={{height: 26}}>
                         <button

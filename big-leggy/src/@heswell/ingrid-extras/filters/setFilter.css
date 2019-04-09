@@ -11,21 +11,30 @@
 .filter-count-section {
     display: flex;
     align-items: center;
-    line-height: 25px;
+    line-height: 16px;
     color: #666;
 }
 
-.filter-count-section span {
-    margin-right : 3px;
-}
-
-.filter-count-section .row-counts {
-    flex: 1 1 auto;
+.filter-count-section .filter-row-counts {
+    flex: 1 1 0;
     padding-left: 6px;
+}
+
+.filter-row-table {
+    display: table;
+    width: 100%;
+}
+.filter-row-table > div  {
+    display: table-row;
+}
+
+.filter-row-table > div > span  {
+    display: table-cell;
 
 }
-.filter-count-section .filter-counts {
-    flex: 1 1 auto;
+
+.filter-count-section .data-row-counts {
+    flex: 1 1 0;
     margin-left: auto;
     text-align: right; 
     padding-right: 27px;

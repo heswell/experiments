@@ -3,7 +3,7 @@ import {DataTypes} from '../store/types';
 import InMemoryView from '../store/InMemoryView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
-import {setFilterColumnMeta} from '../store/filter';
+import {setFilterColumnMeta} from '../store/columnUtils';
 import * as columnUtils from '../store/columnUtils';
 import * as rowUtils from '../store/rowUtils';
 
@@ -87,11 +87,10 @@ export default class LocalView extends EventEmitter {
         this.removeAllListeners();
     }
 
-    processIncomingRows(dataType, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount){
-console.log('[LocalView] processIncomingRows size=${size} totalCOunt=${totalCount} filterCount=${filterCount} appliedFilterCount=${appliedFilterCount} selectedCount=${selectedCount}' )
+    processIncomingRows(dataType, rows, size, totalCount, dataCounts){
         const [targetData, meta] = this.getData(dataType);
         const rowset = targetData.rows = rowUtils.mergeAndPurge(targetData, rows, size, meta);
-        this.emit(dataType, rowset, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+        this.emit(dataType, rowset, size, totalCount, dataCounts);
     }
 
     processUpdate(evtName, updates){
@@ -135,8 +134,8 @@ console.log('[LocalView] processIncomingRows size=${size} totalCOunt=${totalCoun
                 targetData.range = { lo, hi };
                 if (this._dataView){
                     // TODO the counts will never change during a setRange operation
-                    const {rows, size, totalCount, filterCount, appliedFilterCount, selectedCount} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                    this.processIncomingRows(dataType, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount)
+                    const {rows, size, totalCount, dataCounts} = this._dataView.setRange({lo, hi}, useDelta, dataType);
+                    this.processIncomingRows(dataType, rows, size, totalCount, dataCounts)
                 }
             }
         }
@@ -144,19 +143,19 @@ console.log('[LocalView] processIncomingRows size=${size} totalCOunt=${totalCoun
 
     sort(sortCriteria){
         const {rows, size} = this._dataView.sort(sortCriteria);
-        this.processIncomingRows(DataTypes.ROW_DATA, rows,size)
+        this.processIncomingRows(DataTypes.ROW_DATA, rows, size)
     }
 
     filter(filter, dataType=DataTypes.ROW_DATA){
         if (dataType === DataTypes.FILTER_DATA){
-            const {rows, size, totalCount, filterCount,appliedFilterCount, selectedCount} = this._dataView.filter(filter, dataType);
-            this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+            const {rows, size, totalCount, dataCounts} = this._dataView.filter(filter, dataType);
+            this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
         } else {
-            const [{rows, size, totalCount, filterCount}, ...filterResultsets] = this._dataView.filter(filter);
-            filterResultsets.forEach(({rows, size, totalCount, filterCount, appliedFilterCount, selectedCount}) => {
-                this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+            const [{rows, size, totalCount}, ...filterResultsets] = this._dataView.filter(filter);
+            filterResultsets.forEach(({rows, size, totalCount, dataCounts}) => {
+                this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
             })
-            this.processIncomingRows(DataTypes.ROW_DATA, rows, size, totalCount, filterCount)
+            this.processIncomingRows(DataTypes.ROW_DATA, rows, size, totalCount)
         }
     }
 
@@ -208,17 +207,16 @@ console.log('[LocalView] processIncomingRows size=${size} totalCOunt=${totalCoun
         // when we have set data, need to save meta someghow
 
         this._filterData = this._dataView.getFilterData(column, searchText, range);
-        
-        // should getFilterData return this ? YES
+        console.log(`LocalVide.getFilterData `, this._filterData)
+        // TODO should getFilterData return this ? YES
         this._filterData.searchText = searchText;
 
         // emit data if range specified or not required
         if (this._filterData.type === DataTypes.FILTER_BINS || range !== NULL_RANGE){
-            const {rows, size, filterCount, totalCount, appliedFilterCount, selectedCount} = this._filterData;
+            const {rows, size, totalCount, dataCounts} = this._filterData;
             // there is no listener for this when we emit binned Filter data (no range required)
             // but that's ok, the BinView will ask for them when it's ready
-            console.log(`[LocalView emit FILTERDATA filterCount=${filterCount} / ${totalCount}]`)
-            this.emit(DataTypes.FILTER_DATA, rows, size, totalCount, filterCount, appliedFilterCount, selectedCount);
+            this.emit(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
         }
     }
 

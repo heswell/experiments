@@ -1,6 +1,13 @@
-import {functor, overrideColName} from './filter';
+import {
+    functor, 
+    overrideColName, 
+    SET_FILTER_DATA_COLUMNS, 
+    BIN_FILTER_DATA_COLUMNS} from './filter';
 
 const SORT_ASC = 'asc';
+
+export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
+export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS)
 
 export function mapSortCriteria(sortCriteria, columnMap) {
     return sortCriteria.map(s => {

@@ -10,16 +10,14 @@ import {
     extendsFilter,
     extractFilterForColumn,
     functor as filterPredicate,
-    includesColumn as filterIncludesColumn,
-    overrideColName,
-    removeFilterForColumn,
+    splitFilterOnColumn,
+    overrideColName
 } from '../filter';
 import { addRowsToIndex } from '../rowUtils';
 import { groupbyExtendsExistingGroupby } from '../groupUtils';
 import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
 import { DataTypes } from '../types';
 import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const SINGLE_COLUMN = 1;
 
@@ -43,10 +41,6 @@ export default class BaseRowSet {
         this.data = table.rows;
         const {length} = this.data;
         this.totalCount = length;
-        this.filterCount = length;
-        // not applicable to rowSet, only used by sub types
-        this.appliedFilterCount = null;
-        this.selectedCount = 0;
     }
 
     // used by binned rowset
@@ -59,10 +53,16 @@ export default class BaseRowSet {
         }
     }
 
+    get filterCount(){
+        return this.filterSet
+            ? this.filterSet.length
+            : this.data.length;
+    }
+
     setRange(range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
-        const {totalCount, filterCount, appliedFilterCount, selectedCount} = this;
+        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         this.range = range;
         return {
@@ -70,26 +70,20 @@ export default class BaseRowSet {
             range,
             size: this.size,
             offset: this.offset,
-            totalCount,
-            filterCount,
-            appliedFilterCount,
-            selectedCount
+            totalCount
         };
     }
 
     currentRange() {
         const { lo, hi } = this.range;
-        const {totalCount, filterCount, appliedFilterCount, selectedCount} = this;
+        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         return {
             rows: resultset,
             range: this.range,
             size: this.size,
             offset: this.offset,
-            totalCount,
-            filterCount,
-            appliedFilterCount,
-            selectedCount
+            totalCount
         };
     }
 
@@ -118,15 +112,12 @@ export default class BaseRowSet {
         const resultMap = {};
         const data = [];
         const dataRowCount = rows.length;
-        const filter = currentFilter === null
-            ? null
-            : filterIncludesColumn(currentFilter, column)
-                ? removeFilterForColumn(currentFilter, column)
-                : currentFilter;
-        // this filter for column that we remove will provide our selected values        
-        let filterCount = 0;
+        const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column)
+        // this filter for column that we remove will provide our selected values   
+        console.log(`we are missing opportunity to set selected with ${JSON.stringify(columnFilter)}`)     
+        let dataRowAllFilters = 0;
 
-        if (filter === null) {
+        if (otherFilters === null) {
             let result;
             for (let i = 0; i < dataRowCount; i++) {
                 const val = rows[i][colIdx];
@@ -138,10 +129,10 @@ export default class BaseRowSet {
                     data.push(result)
                 }
             }
-            filterCount = dataRowCount;
+            dataRowAllFilters = dataRowCount;
         } else {
 
-            const fn = filterPredicate(columnMap, filter);
+            const fn = filterPredicate(columnMap, otherFilters);
             let result;
 
             for (let i = 0; i < dataRowCount; i++) {
@@ -156,18 +147,16 @@ export default class BaseRowSet {
                     resultMap[val] = result;
                     data.push(result)
                 }
-                filterCount += isIncluded;
+                dataRowAllFilters += isIncluded;
             }
         }
 
         //TODO primary key should be indicated in columns
         const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
-        return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, filterCount, dataRowCount);
+        return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, dataRowAllFilters, dataRowCount);
 
     }
-
 }
-
 
 //TODO should range be baked into the concept of RowSet ?
 export class RowSet extends BaseRowSet {
@@ -191,7 +180,6 @@ export class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
-
     }
 
     buildSortSet() {
@@ -229,6 +217,7 @@ export class RowSet extends BaseRowSet {
         }
     }
 
+    // deprecated
     get size() {
         return this.filterSet === null
             ? this.data.length
@@ -279,7 +268,7 @@ export class RowSet extends BaseRowSet {
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        this.filterCount = this.totalCount;
+        // this.filterCount = this.totalCount;
         if (this.sortRequired) {
             this.sort(this.sortCols);
         }
@@ -302,13 +291,12 @@ export class RowSet extends BaseRowSet {
         }
         this.filterSet = newFilterSet;
         this.currentFilter = filter;
-        this.filterCount = newFilterSet.length;
         if (!extendsCurrentFilter && this.sortRequired) {
             // TODO this might be very expensive for large dataset
             // WHEN DO WE DO THIS - IS THIS CORRECT !!!!!
             this.sort(this.sortCols)
         }
-        return this.filterCount;
+        return newFilterSet.length;
 
     }
 
@@ -383,7 +371,6 @@ export class RowSet extends BaseRowSet {
             // filter only
             const fn = filterPredicate(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filterCount += 1;
                 const navIdx = this.filterSet.length;
                 this.filterSet.push(idx);
                 if (navIdx >= this.range.hi) {
@@ -411,7 +398,6 @@ export class RowSet extends BaseRowSet {
             // sort AND filter
             const fn = filterPredicate(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filterCount += 1;
                 // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
@@ -449,16 +435,22 @@ export class RowSet extends BaseRowSet {
 
 // TODO need to retain and return any searchText
 export class SetFilterRowSet extends RowSet {
-    constructor(table, columns, columnName, filterCount, totalCount) {
-        super(table, columns);
+    constructor(table, columns, columnName, dataRowAllFilters, dataRowTotal) {
+        super(table, columns);        
         this.columnName = columnName;
         this._searchText = null;
+        this.dataRowFilter = null;
+        this.dataCounts = {
+            dataRowTotal : dataRowTotal,
+            dataRowAllFilters : dataRowAllFilters,
+            dataRowCurrentFilter : 0,
+            filterRowTotal : this.data.length,
+            filterRowSelected : this.data.length,
+            filterRowHidden : 0
+        };
         this.sort([['value', 'asc']]);
         this.setSelected(null);
-        this.filterCount = filterCount;
-        this.totalCount = totalCount;
-        // all selected is default
-        this.selectedCount = this.data.length;
+        this.totalCount = dataRowTotal;
     }
 
     get searchText() {
@@ -466,6 +458,7 @@ export class SetFilterRowSet extends RowSet {
     }
 
     set searchText(text) {
+        // TODO
         this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
         // recalculate totalCount
         const {filterSet, data: rows} = this;
@@ -479,19 +472,49 @@ export class SetFilterRowSet extends RowSet {
         this._searchText = text;
     }
 
+
+    currentRange(){
+        //TODO move these into a single struct
+
+            return {
+                ...super.currentRange(),
+                //TODO is this necessary, these won't change on a range request
+                dataCounts: this.dataCounts
+            }
+    
+    }
+    
+    setRange(range, useDelta){
+
+        return {
+            ...super.setRange(range, useDelta),
+            //TODO is this necessary, these won't change on a range request
+            dataCounts: this.dataCounts
+        }
+    }
+
+    filter(filter){
+        super.filter(filter);
+
+        const {dataCounts, filterSet, data: rows, dataRowFilter, table, columnName} = this;
+        let columnFilter;
+
+        if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
+            const columnMap = table.columnMap;
+            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true);
+            dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
+                
+        } else {
+            dataCounts.filterRowSelected = filterSet.length;
+        }
+
+        dataCounts.filterRowTotal = filterSet.length;
+    }
+
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        const {data: rows} = this;
-        let totalCount = 0;
-        const colIdx = this.columnMap.totalCount;
-        for (let i=0;i<rows.length;i++){
-            const row = rows[i];
-            totalCount += row[colIdx];
-        }
-        this.filterCount = this.totalCount = totalCount;
         this._searchText = '';
-
     }
 
 
@@ -500,18 +523,26 @@ export class SetFilterRowSet extends RowSet {
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
-    setSelected(filter, appliedFilterCount) {
+    setSelected(dataRowFilter, dataRowAllFilters) {
 
-        this.appliedFilterCount = appliedFilterCount;
-        const columnFilter = extractFilterForColumn(filter, this.columnName);
+        const columnFilter = extractFilterForColumn(dataRowFilter, this.columnName);
         const columnMap = this.table.columnMap;
+        const {dataCounts, data: rows, filterSet} = this;
+
+        this.dataRowFilter = dataRowFilter;
         
         if (columnFilter){
-            const fn = filter ? filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true)  : () => true;
-            this.selectedCount = this.data.reduce((count, row) => count + (fn(row) ? 1 : 0),0) 
+            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true);
+            dataCounts.filterRowSelected = filterSet
+                ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
+                : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0) 
         } else {
-            this.selectedCount = this.data.length;
+            dataCounts.filterRowSelected = filterSet
+                ? filterSet.length
+                : rows.length;
         }
+
+        dataCounts.dataRowAllFilters = dataRowAllFilters;
 
         this.project = projectColumnsFilter(
             columnMap,

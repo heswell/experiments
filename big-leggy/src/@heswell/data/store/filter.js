@@ -1,5 +1,4 @@
 import * as d3 from 'd3-array';
-import {metaData} from './columnUtils';
 
 export const EQUALS = 'EQ';
 export const GREATER_THAN = 'GT';
@@ -29,8 +28,6 @@ export default function filterRows(rows, columnMap, filter) {
     return applyFilter(rows, functor(columnMap, filter));
 }
 
-export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
-export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS)
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;

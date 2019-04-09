@@ -275,31 +275,6 @@ function replace(arr,idx, value){
     return result;
 }
 
-//TODO cache result by length
-function metaData(columns){
-    const len = columns.length;
-    let metaStart = 0;
-    const next = () => len + metaStart++;
-    return {
-        IDX: next(),
-        DEPTH: next(),
-        COUNT: next(),
-        KEY: next(),
-        SELECTED: next(),
-        PARENT_IDX: next(),
-        IDX_POINTER: next(),
-        FILTER_COUNT: next(),
-        NEXT_FILTER_IDX: next(),
-        count: columns.length + metaStart
-    }
-}
-
-const DataTypes = {
-    ROW_DATA: 'rowData',
-    FILTER_DATA: 'filterData',
-    FILTER_BINS: 'filterBins'
-};
-
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
@@ -353,6 +328,29 @@ const BIN_FILTER_DATA_COLUMNS = [
 
 const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
+
+//TODO cache result by length
+function metaData(columns){
+    const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
+    return {
+        IDX: start + 1,
+        DEPTH: start + 2,
+        COUNT: start + 3,
+        KEY: start + 4,
+        SELECTED: start + 5,
+        PARENT_IDX: start + 6,
+        IDX_POINTER: start + 7,
+        FILTER_COUNT: start + 8,
+        NEXT_FILTER_IDX: start + 9,
+        count: start + 10
+    }
+}
+
+const DataTypes = {
+    ROW_DATA: 'rowData',
+    FILTER_DATA: 'filterData',
+    FILTER_BINS: 'filterBins'
+};
 
 const NULL_RANGE = {lo: 0,hi: 0};
 

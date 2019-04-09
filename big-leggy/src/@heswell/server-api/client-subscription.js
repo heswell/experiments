@@ -5,8 +5,9 @@ import { getWorker } from './worker';
 
 // const clientId = uuid();
 
-function postMessage(message){
-  getWorker().then(worker => worker.postMessage(message));
+async function postMessage(message){
+  const worker = await getWorker();
+  worker.postMessage(message);
 }
 
 export default class ClientSubscription {

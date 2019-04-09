@@ -62,9 +62,9 @@ export default class Grid extends React.Component {
         // we need to store rows in state so we can identify when they change. Everything else on dataView should be write only   
         this.state = { model, dataView, rows: [], showFilters, selected, groupToggled: false };
 
-        dataView.subscribe(columns, (msgType, rows, rowCount=null, totalCount=rowCount, filterCount=totalCount, appliedFilterCount=null) => {
+        dataView.subscribe(columns, (msgType, rows, rowCount=null, totalCount=rowCount) => {
             // maybe we should be setting rows and length in state
-            console.log(`[Grid]<${msgType}> rowCount=${rowCount} totalCount=${totalCount} filterCount=${filterCount} appliedFilterCount=${appliedFilterCount}`);
+            console.log(`[Grid]<${msgType}> rowCount=${rowCount} totalCount=${totalCount} `);
             const {model} = this.state;
             const {IDX, SELECTED} = model.meta;
             const state = {};

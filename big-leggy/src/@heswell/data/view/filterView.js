@@ -27,8 +27,8 @@ export default class FilterView extends EventEmitter {
         this._dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterData);
     }
 
-    onFilterData = (_, rows, rowCount, totalCount, filterCount, appliedFilterCount, selectedCount) => {
-        this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, filterCount, appliedFilterCount, selectedCount);
+    onFilterData = (_, rows, rowCount, totalCount, dataCounts) => {
+        this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, dataCounts);
     }
 
     get size(){

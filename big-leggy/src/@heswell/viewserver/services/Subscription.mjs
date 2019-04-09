@@ -1,6 +1,6 @@
 import {InMemoryView as View, columnUtils} from '../../data';
 import { DataTypes } from '../../data/store/types';
-import {setFilterColumnMeta} from '../../data/store/filterUtils';
+import {setFilterColumnMeta} from '../../data/store/columnUtils';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){

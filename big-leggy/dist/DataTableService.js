@@ -7,29 +7,228 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var path = _interopDefault(require('path'));
 var url = _interopDefault(require('url'));
 
+function ascending(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+function bisector(compare) {
+  if (compare.length === 1) compare = ascendingComparator(compare);
+  return {
+    left: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) < 0) lo = mid + 1;
+        else hi = mid;
+      }
+      return lo;
+    },
+    right: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) > 0) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+  };
+}
+
+function ascendingComparator(f) {
+  return function(d, x) {
+    return ascending(f(d), x);
+  };
+}
+
+var ascendingBisect = bisector(ascending);
+var bisectRight = ascendingBisect.right;
+
+function extent(values, valueof) {
+  let min;
+  let max;
+  if (valueof === undefined) {
+    for (let value of values) {
+      if (value != null && value >= value) {
+        if (min === undefined) {
+          min = max = value;
+        } else {
+          if (min > value) min = value;
+          if (max < value) max = value;
+        }
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null && value >= value) {
+        if (min === undefined) {
+          min = max = value;
+        } else {
+          if (min > value) min = value;
+          if (max < value) max = value;
+        }
+      }
+    }
+  }
+  return [min, max];
+}
+
+function identity(x) {
+  return x;
+}
+
+var array = Array.prototype;
+
+var slice = array.slice;
+
+function constant(x) {
+  return function() {
+    return x;
+  };
+}
+
+function range(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
+
+var e10 = Math.sqrt(50),
+    e5 = Math.sqrt(10),
+    e2 = Math.sqrt(2);
+
+function tickStep(start, stop, count) {
+  var step0 = Math.abs(stop - start) / Math.max(0, count),
+      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+      error = step0 / step1;
+  if (error >= e10) step1 *= 10;
+  else if (error >= e5) step1 *= 5;
+  else if (error >= e2) step1 *= 2;
+  return stop < start ? -step1 : step1;
+}
+
+function sturges(values) {
+  return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
+}
+
+function histogram() {
+  var value = identity,
+      domain = extent,
+      threshold = sturges;
+
+  function histogram(data) {
+    if (!Array.isArray(data)) data = Array.from(data);
+
+    var i,
+        n = data.length,
+        x,
+        values = new Array(n);
+
+    for (i = 0; i < n; ++i) {
+      values[i] = value(data[i], i, data);
+    }
+
+    var xz = domain(values),
+        x0 = xz[0],
+        x1 = xz[1],
+        tz = threshold(values, x0, x1);
+
+    // Convert number of thresholds into uniform thresholds.
+    if (!Array.isArray(tz)) {
+      tz = tickStep(x0, x1, tz);
+      tz = range(Math.ceil(x0 / tz) * tz, x1, tz); // exclusive
+    }
+
+    // Remove any thresholds outside the domain.
+    var m = tz.length;
+    while (tz[0] <= x0) tz.shift(), --m;
+    while (tz[m - 1] > x1) tz.pop(), --m;
+
+    var bins = new Array(m + 1),
+        bin;
+
+    // Initialize bins.
+    for (i = 0; i <= m; ++i) {
+      bin = bins[i] = [];
+      bin.x0 = i > 0 ? tz[i - 1] : x0;
+      bin.x1 = i < m ? tz[i] : x1;
+    }
+
+    // Assign data to bins by value, ignoring any outside the domain.
+    for (i = 0; i < n; ++i) {
+      x = values[i];
+      if (x0 <= x && x <= x1) {
+        bins[bisectRight(tz, x, 0, m)].push(data[i]);
+      }
+    }
+
+    return bins;
+  }
+
+  histogram.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant(_), histogram) : value;
+  };
+
+  histogram.domain = function(_) {
+    return arguments.length ? (domain = typeof _ === "function" ? _ : constant([_[0], _[1]]), histogram) : domain;
+  };
+
+  histogram.thresholds = function(_) {
+    return arguments.length ? (threshold = typeof _ === "function" ? _ : Array.isArray(_) ? constant(slice.call(_)) : constant(_), histogram) : threshold;
+  };
+
+  return histogram;
+}
+
 const EQUALS = 'EQ';
 const GREATER_THAN = 'GT';
 const GREATER_EQ = 'GE';
 const LESS_THAN = 'LT';
 const LESS_EQ = 'LE';
 const AND = 'AND';
+const OR = 'OR';
 const STARTS_WITH = 'SW';
-const SET = 'set';
-const EXCLUDE = 'exclude';
+const NOT_STARTS_WITH = 'NOT_SW';
+const IN = 'IN';
+const NOT_IN = 'NOT_IN';
 
+const SET_FILTER_DATA_COLUMNS = [
+    {name: 'value'}, 
+    {name: 'count'}, 
+    {name: 'totalCount'}
+];
+
+const BIN_FILTER_DATA_COLUMNS = [
+    {name: 'bin'}, 
+    {name: 'count'}, 
+    {name: 'bin-lo'},
+    {name: 'bin-hi'}
+];
 function functor(columnMap, filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
     switch (filter.type) {
-    case SET: return filter.mode === EXCLUDE
-        ? testExclude(columnMap, filter)
-        : testInclude(columnMap, filter);
+    case IN: return testInclude(columnMap, filter);
+    case NOT_IN: return testExclude(columnMap, filter);
     case EQUALS: return testEQ(columnMap, filter);
     case GREATER_THAN: return testGT(columnMap, filter);
     case GREATER_EQ: return testGE(columnMap, filter);
     case LESS_THAN: return testLT(columnMap, filter);
     case LESS_EQ: return testLE(columnMap, filter);
     case STARTS_WITH: return testSW(columnMap, filter);
+    case NOT_STARTS_WITH: return testSW(columnMap, filter, true);
     case AND: return testAND(columnMap, filter);
+    case OR: return testOR(columnMap, filter);
     default:
         console.log(`unrecognized filter type ${filter.type}`);
         return () => true;
@@ -41,11 +240,17 @@ function testAND(cols, f) {
     return row => filters.every(fn => fn(row));
 }
 
-function testSW(cols, f) {
+function testOR(cols, f) {
+    const filters = f.filters.map(f1 => functor(cols, f1));
+    return row => filters.some(fn => fn(row));
+}
+
+function testSW(cols, f, inversed = false) {
     const value = f.value.toLowerCase();
-    return f.mode === EXCLUDE
+    return inversed
         ? row => row[cols[f.colName]].toLowerCase().indexOf(value) !== 0
-        : row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0
+        : row => row[cols[f.colName]].toLowerCase().indexOf(value) === 0;
+   
 }
 
 function testGT(cols, f) {
@@ -79,7 +284,202 @@ function testEQ(cols, f) {
     return row => row[cols[f.colName]] === f.value;
 }
 
+// does f2 only narrow the resultset from f1
+function extendsFilter(f1=null, f2=null) {
+    // ignore filters which are identical
+    // include or exclude filters which add values
+    if (f2 === null){
+        return false
+    } else if (f1 === null) {
+        return true;
+    }
+    if (f1.colName && f1.colName === f2.colName) {
+        if (f1.type === f2.type) {
+            switch (f1.type) {
+            case IN:
+                return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
+            case NOT_IN: 
+                return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
+            case STARTS_WITH: return f2.value.length > f1.value.length && f2.value.indexOf(f1.value) === 0;
+                // more cases here such as GT,LT
+            default:
+            }
+        }
+
+    } else if (f1.colname && f2.colName) {
+        // different columns,always false
+        return false;
+    } else if (f2.type === AND && extendsFilters(f1, f2)) {
+        return true;
+    }
+
+    // safe option is to assume false, causing filter to be re-applied to base data
+    return false;
+}
+
+const byColName = (a, b) => a.colName === b.colName ? 0 : a.colName < b.colName ? -1 : 1;
+
+function extendsFilters(f1, f2) {
+    if (f1.colName) {
+        const matchingFilter = f2.filters.find(f => f.colName === f1.colName);
+        return filterEquals(matchingFilter, f1, true);
+    } else if (f1.filters.length === f2.filters.length) {
+        // if the only differences are extra values in an excludes filter or fewer values in an includes filter
+        // then we are still extending the filter (i.e. narrowing the resultset)
+        const a = f1.filters.sort(byColName);
+        const b = f2.filters.slice().sort(byColName);
+
+        for (let i = 0; i < a.length; i++) {
+            if (!filterEquals(a[i], b[i], true) && !filterExtends(a[i], b[i])) {
+                return false;
+            }
+        }
+        return true;
+    } else if (f2.filters.length > f1.filters.length){
+        return f1.filters.every(filter1 => {
+            const filter2 = f2.filters.find(f => f.colName === filter1.colName);
+            return filterEquals(filter1, filter2, true); // could also allow f2 extends f1
+        });
+    }
+}
+
+function splitFilterOnColumn(filter, columnName) {
+    if (!filter){
+        return [null,null];
+    } else if (filter.colName === columnName) {
+        return [filter,null];
+    } else if (filter.type !== 'AND') {
+        return [null, filter];
+    } else {
+        const [[columnFilter=null], filters] = partition(filter.filters, f => f.colName === columnName);
+        return filters.length === 1
+            ? [columnFilter,filters[0]]
+            : [columnFilter, { type: 'AND', filters }];
+    }
+}
+
+const overrideColName = (filter, colName) => {
+    const {type} = filter;
+    if (type === AND || type === OR){
+        return {
+            type,
+            filters: filter.filters.map(f => overrideColName(f, colName))
+        }
+    } else {
+        return {...filter, colName}
+    }
+};
+
+function extractFilterForColumn(filter, columnName) {
+    if (!filter) {
+        return null;
+    }
+    const { type, colName } = filter;
+    switch (type) {
+        case AND: 
+        case OR: 
+            return collectFiltersForColumn(type, filter.filters, columnName);
+
+        default:
+            return colName === columnName ? filter : null;
+    }
+}
+
+function collectFiltersForColumn(type, filters, columName){
+    const results = [];
+    filters.forEach(filter => {
+        const ffc = extractFilterForColumn(filter, columName);
+        if (ffc !== null){
+            results.push(ffc);
+        }
+    });
+    if (results.length === 1){
+        return results[0];
+    } else {
+        return {
+            type,
+            filters: results
+        }
+    }
+}
+
+const sameColumn = (f1, f2) => f1.colName === f2.colName;
+
+function filterEquals(f1, f2, strict = false) {
+    if (f1 && f1){
+        const isSameColumn = sameColumn(f1,f2);
+        if (!strict) {
+            return isSameColumn;
+        } else {
+            return isSameColumn &&
+                f1.type === f2.type && 
+                f1.mode === f2.mode &&
+                f1.value === f2.value &&
+                sameValues(f1.values, f2.values);
+        }
+    } else {
+        return false;
+    }
+}
+
+// does f2 extend f1 ?
+function filterExtends(f1, f2) {
+    if (f1.type === IN && f2.type === IN) {
+        return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
+    } else if (f1.type === NOT_IN && f2.type === NOT_IN) {
+        return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
+    } else {
+        return false;
+    }
+}
+
+// The folowing are array utilities but they are defined here as they are not suitable for large arrays, so we'll
+// keep them local to filters
+function containsAll(superList, subList) {
+    for (let i = 0, len = subList.length; i < len; i++) {
+        if (superList.indexOf(subList[i]) === -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// only suitable for small arrays of simple types (e.g. filter values)
+function sameValues(arr1, arr2) {
+    if (arr1 === arr2) {
+        return true;
+    } else if (arr1.length === arr2.length) {
+        const a = arr1.slice().sort();
+        const b = arr2.slice().sort();
+        return a.join('|') === b.join('|');
+    }
+    return false;
+}
+
+function partition(list, test1, test2=null) {
+    const results1 = [];
+    const misses = [];
+    const results2 = test2===null ? null : [];
+
+    for (let i = 0; i < list.length; i++) {
+        if (test1(list[i])) {
+            results1.push(list[i]);
+        } else if (test2 !== null && test2(list[i])) {
+            results2.push(list[i]);
+        } else {
+            misses.push(list[i]);
+        }
+    }
+
+    return test2 === null
+        ? [results1, misses]
+        : [results1, results2, misses];
+}
+
 const SORT_ASC = 'asc';
+
+const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
+const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
 function mapSortCriteria(sortCriteria, columnMap) {
     return sortCriteria.map(s => {
@@ -137,8 +537,7 @@ function projectColumnsFilter(map, columns, meta, filter){
     const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = functor(map, {...filter, colName: 'value'});
-
+    const fn = filter ? functor(map, overrideColName(filter, 'value'), true)  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -152,6 +551,7 @@ function projectColumnsFilter(map, columns, meta, filter){
         out[COUNT] = 0;
         out[KEY] = row[0];
         out[SELECTED] = fn(row) ? 1 : 0;
+
         return out;
     }
 }
@@ -159,9 +559,11 @@ function projectColumnsFilter(map, columns, meta, filter){
 const toKeyedColumn = (column, key) =>
     typeof column === 'string'
         ? { key, name: column }
-        : {...column, key};
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
 
-        const toColumn = column =>
+const toColumn = column =>
     typeof column === 'string'
         ? { name: column }
         : column;
@@ -191,20 +593,18 @@ function getDataType({type=null}){
 
 //TODO cache result by length
 function metaData(columns){
-    const len = columns.length;
-    let metaStart = 0;
-    const next = () => len + metaStart++;
+    const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
-        IDX: next(),
-        DEPTH: next(),
-        COUNT: next(),
-        KEY: next(),
-        SELECTED: next(),
-        PARENT_IDX: next(),
-        IDX_POINTER: next(),
-        FILTER_COUNT: next(),
-        NEXT_FILTER_IDX: next(),
-        count: columns.length + metaStart
+        IDX: start + 1,
+        DEPTH: start + 2,
+        COUNT: start + 3,
+        KEY: start + 4,
+        SELECTED: start + 5,
+        PARENT_IDX: start + 6,
+        IDX_POINTER: start + 7,
+        FILTER_COUNT: start + 8,
+        NEXT_FILTER_IDX: start + 9,
+        count: start + 10
     }
 }
 
@@ -392,384 +792,6 @@ function sortPosition(rows, sorter, row, positionWithinRange = 'last-available')
         return find(0, rows.length);
     }
 
-}
-
-function ascending(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-function bisector(compare) {
-  if (compare.length === 1) compare = ascendingComparator(compare);
-  return {
-    left: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) < 0) lo = mid + 1;
-        else hi = mid;
-      }
-      return lo;
-    },
-    right: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) > 0) hi = mid;
-        else lo = mid + 1;
-      }
-      return lo;
-    }
-  };
-}
-
-function ascendingComparator(f) {
-  return function(d, x) {
-    return ascending(f(d), x);
-  };
-}
-
-var ascendingBisect = bisector(ascending);
-var bisectRight = ascendingBisect.right;
-
-function extent(values, valueof) {
-  let min;
-  let max;
-  if (valueof === undefined) {
-    for (let value of values) {
-      if (value != null && value >= value) {
-        if (min === undefined) {
-          min = max = value;
-        } else {
-          if (min > value) min = value;
-          if (max < value) max = value;
-        }
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null && value >= value) {
-        if (min === undefined) {
-          min = max = value;
-        } else {
-          if (min > value) min = value;
-          if (max < value) max = value;
-        }
-      }
-    }
-  }
-  return [min, max];
-}
-
-function identity(x) {
-  return x;
-}
-
-var array = Array.prototype;
-
-var slice = array.slice;
-
-function constant(x) {
-  return function() {
-    return x;
-  };
-}
-
-function range(start, stop, step) {
-  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-  var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
-
-  while (++i < n) {
-    range[i] = start + i * step;
-  }
-
-  return range;
-}
-
-var e10 = Math.sqrt(50),
-    e5 = Math.sqrt(10),
-    e2 = Math.sqrt(2);
-
-function tickStep(start, stop, count) {
-  var step0 = Math.abs(stop - start) / Math.max(0, count),
-      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-      error = step0 / step1;
-  if (error >= e10) step1 *= 10;
-  else if (error >= e5) step1 *= 5;
-  else if (error >= e2) step1 *= 2;
-  return stop < start ? -step1 : step1;
-}
-
-function sturges(values) {
-  return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
-}
-
-function histogram() {
-  var value = identity,
-      domain = extent,
-      threshold = sturges;
-
-  function histogram(data) {
-    if (!Array.isArray(data)) data = Array.from(data);
-
-    var i,
-        n = data.length,
-        x,
-        values = new Array(n);
-
-    for (i = 0; i < n; ++i) {
-      values[i] = value(data[i], i, data);
-    }
-
-    var xz = domain(values),
-        x0 = xz[0],
-        x1 = xz[1],
-        tz = threshold(values, x0, x1);
-
-    // Convert number of thresholds into uniform thresholds.
-    if (!Array.isArray(tz)) {
-      tz = tickStep(x0, x1, tz);
-      tz = range(Math.ceil(x0 / tz) * tz, x1, tz); // exclusive
-    }
-
-    // Remove any thresholds outside the domain.
-    var m = tz.length;
-    while (tz[0] <= x0) tz.shift(), --m;
-    while (tz[m - 1] > x1) tz.pop(), --m;
-
-    var bins = new Array(m + 1),
-        bin;
-
-    // Initialize bins.
-    for (i = 0; i <= m; ++i) {
-      bin = bins[i] = [];
-      bin.x0 = i > 0 ? tz[i - 1] : x0;
-      bin.x1 = i < m ? tz[i] : x1;
-    }
-
-    // Assign data to bins by value, ignoring any outside the domain.
-    for (i = 0; i < n; ++i) {
-      x = values[i];
-      if (x0 <= x && x <= x1) {
-        bins[bisectRight(tz, x, 0, m)].push(data[i]);
-      }
-    }
-
-    return bins;
-  }
-
-  histogram.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant(_), histogram) : value;
-  };
-
-  histogram.domain = function(_) {
-    return arguments.length ? (domain = typeof _ === "function" ? _ : constant([_[0], _[1]]), histogram) : domain;
-  };
-
-  histogram.thresholds = function(_) {
-    return arguments.length ? (threshold = typeof _ === "function" ? _ : Array.isArray(_) ? constant(slice.call(_)) : constant(_), histogram) : threshold;
-  };
-
-  return histogram;
-}
-
-const SET_FILTER_DATA_COLUMNS = [
-    {name: 'value'}, 
-    {name: 'count'}, 
-    {name: 'totalCount'}
-];
-
-const BIN_FILTER_DATA_COLUMNS = [
-    {name: 'bin'}, 
-    {name: 'count'}, 
-    {name: 'bin-lo'},
-    {name: 'bin-hi'}
-];
-
-const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
-const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
-
-function includesNoValues(filter) {
-    // TODO make sure we catch all cases...
-    if (!filter){
-        return false;
-    } else if (filter.type === SET && filter.mode !== EXCLUDE && filter.values.length === 0) {
-        return true;
-    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
-        return true;
-    } else {
-        return false;
-    }
-}
-
-// does f2 only narrow the resultset from f1
-function extendsFilter(f1=null, f2=null) {
-    // ignore filters which are identical
-    // include or exclude filters which add values
-    if (f2 === null){
-        return false
-    } else if (f1 === null) {
-        return true;
-    }
-    if (f1.colName && f1.colName === f2.colName) {
-        if (f1.type === f2.type) {
-            switch (f1.type) {
-            case SET:
-                return f1.mode === EXCLUDE
-                    ? f2.values.length > f1.values.length && containsAll(f2.values, f1.values)
-                    : f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
-            case STARTS_WITH: return f2.value.length > f1.value.length && f2.value.indexOf(f1.value) === 0;
-                // more cases here such as GT,LT
-            default:
-            }
-        }
-
-    } else if (f1.colname && f2.colName) {
-        // different columns,always false
-        return false;
-    } else if (f2.type === AND && extendsFilters(f1, f2)) {
-        return true;
-    }
-
-    // safe option is to assume false, causing filter to be re-applied to base data
-    return false;
-}
-
-const byColName = (a, b) => a.colName === b.colName ? 0 : a.colName < b.colName ? -1 : 1;
-
-function extendsFilters(f1, f2) {
-    if (f1.colName) {
-        const matchingFilter = f2.filters.find(f => f.colName === f1.colName);
-        return filterEquals(matchingFilter, f1, true);
-    } else if (f1.filters.length === f2.filters.length) {
-        // if the only differences are extra values in an excludes filter or fewer values in an includes filter
-        // then we are still extending the filter (i.e. narrowing the resultset)
-        const a = f1.filters.sort(byColName);
-        const b = f2.filters.slice().sort(byColName);
-
-        for (let i = 0; i < a.length; i++) {
-            if (!filterEquals(a[i], b[i], true) && !filterExtends(a[i], b[i])) {
-                return false;
-            }
-        }
-        return true;
-    } else if (f2.filters.length > f1.filters.length){
-        return f1.filters.every(filter1 => {
-            const filter2 = f2.filters.find(f => f.colName === filter1.colName);
-            return filterEquals(filter1, filter2, true); // could also allow f2 extends f1
-        });
-    }
-}
-
-function includesColumn(filter, column) {
-    if (!filter) {
-        return false;
-    }
-    const { type, colName, filters } = filter;
-    switch (type) {
-    case 'AND': return filters.some(f => includesColumn(f, column));
-    default: return colName === column.name;
-    }
-}
-
-function extractFilterForColumn(filter, columnName) {
-    if (!filter) {
-        return null;
-    }
-    const { type, colName } = filter;
-    switch (type) {
-    case 'AND': return collectFiltersForColumn(filter.filters, columnName);
-    default: return colName === columnName ? filter : null;
-    }
-}
-
-function collectFiltersForColumn(filters, columName){
-    const results = [];
-    filters.forEach(filter => {
-        const ffc = extractFilterForColumn(filter, columName);
-        if (ffc !== null){
-            results.push(ffc);
-        }
-    });
-    if (results.length === 1){
-        return results[0];
-    } else {
-        return {
-            type: AND,
-            filters: results
-        }
-    }
-}
-
-function removeFilterForColumn(sourceFilter, column) {
-    const colName = column.name;
-    if (!sourceFilter){
-        return null;
-    } else if (sourceFilter.colName === colName) {
-        return null;
-    } else if (sourceFilter.type !== 'AND') {
-        throw Error(`removeFilter cannot remove ${column.name} from ${JSON.stringify(sourceFilter)}`);
-    } else {
-        const filters = sourceFilter.filters.filter(f => f.colName !== colName);
-        return filters.length === 1
-            ? filters[0]
-            : { type: 'AND', filters };
-    }
-}
-
-function filterEquals(f1, f2, strict = false) {
-    if (f1 && f1){
-        const sameColumn = f1.colName === f2.colName;
-        if (!strict) {
-            return sameColumn;
-        } else {
-            return sameColumn &&
-                f1.type === f2.type &&
-                f1.value === f2.value &&
-                sameValues(f1.values, f2.values);
-        }
-    } else {
-        return false;
-    }
-}
-
-// does f2 extend f1 ?
-function filterExtends(f1, f2) {
-    if (f1.type === SET && f1.mode !== EXCLUDE && f2.type === SET && f2.mode !== EXCLUDE) {
-        return f2.values.length < f1.values.length && containsAll(f1.values, f2.values);
-    } else if (f1.type === SET && f1.mode === EXCLUDE && f2.type === SET && f2.mode === EXCLUDE) {
-        return f2.values.length > f1.values.length && containsAll(f2.values, f1.values);
-    } else {
-        return false;
-    }
-}
-
-// The folowing are array utilities but they are defined here as they are not suitable for large arrays, so we'll
-// keep them local to filters
-function containsAll(superList, subList) {
-    for (let i = 0, len = subList.length; i < len; i++) {
-        if (superList.indexOf(subList[i]) === -1) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// only suitable for small arrays of simple types (e.g. filter values)
-function sameValues(arr1, arr2) {
-    if (arr1 === arr2) {
-        return true;
-    } else if (arr1.length === arr2.length) {
-        const a = arr1.slice().sort();
-        const b = arr2.slice().sort();
-        return a.join('|') === b.join('|');
-    }
-    return false;
 }
 
 const NULL_RANGE = {lo: 0,hi: 0};
@@ -2019,11 +2041,15 @@ class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
-        this.data = table.rows;
+        this.selectedSet = [];
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
+        this.data = table.rows;
+        const {length} = this.data;
+        this.totalCount = length;
     }
 
+    // used by binned rowset
     get filteredData() {
         if (this.filterSet) {
             return this.filterSet;
@@ -2033,27 +2059,37 @@ class BaseRowSet {
         }
     }
 
+    get filterCount(){
+        return this.filterSet
+            ? this.filterSet.length
+            : this.data.length;
+    }
+
     setRange(range$$1, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range$$1) : getFullRange(range$$1);
+        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         this.range = range$$1;
         return {
             rows: resultset,
             range: range$$1,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            totalCount
         };
     }
 
     currentRange() {
         const { lo, hi } = this.range;
+        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         return {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            totalCount
         };
     }
 
@@ -2067,7 +2103,6 @@ class BaseRowSet {
     //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
     getBinnedValuesForColumn(column) {
         const key = this.columnMap[column.name];
-
         const { data: rows, filteredData } = this;
         const numbers = filteredData.map(rowIdx => rows[rowIdx][key]);
         const data = histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
@@ -2077,23 +2112,20 @@ class BaseRowSet {
         return filterRowset;
     }
 
-    //TODO will need to make this more performant. We shouldn't need to actually test every row against the 
-    // filter - we've already done that to filter the rows
     getDistinctValuesForColumn(column) {
-
         const { data: rows, columnMap, currentFilter } = this;
         const colIdx = columnMap[column.name];
         const resultMap = {};
         const data = [];
-        const filter = currentFilter === null
-            ? null
-            : includesColumn(currentFilter, column)
-                ? removeFilterForColumn(currentFilter, column)
-                : currentFilter;
+        const dataRowCount = rows.length;
+        const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column);
+        // this filter for column that we remove will provide our selected values   
+        console.log(`we are missing opportunity to set selected with ${JSON.stringify(columnFilter)}`);     
+        let dataRowAllFilters = 0;
 
-        if (filter === null) {
+        if (otherFilters === null) {
             let result;
-            for (let i = 0, len = rows.length; i < len; i++) {
+            for (let i = 0; i < dataRowCount; i++) {
                 const val = rows[i][colIdx];
                 if (result = resultMap[val]) {
                     result[2] = ++result[1];
@@ -2103,12 +2135,13 @@ class BaseRowSet {
                     data.push(result);
                 }
             }
+            dataRowAllFilters = dataRowCount;
         } else {
 
-            const fn = functor(columnMap, filter);
+            const fn = functor(columnMap, otherFilters);
             let result;
 
-            for (let i = 0, len = rows.length; i < len; i++) {
+            for (let i = 0; i < dataRowCount; i++) {
                 const row = rows[i];
                 const val = row[colIdx];
                 const isIncluded = fn(row) ? 1 : 0;
@@ -2120,18 +2153,16 @@ class BaseRowSet {
                     resultMap[val] = result;
                     data.push(result);
                 }
+                dataRowAllFilters += isIncluded;
             }
         }
 
+        //TODO primary key should be indicated in columns
         const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
-        const filterRowset = new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name);
-
-        return filterRowset;
+        return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, dataRowAllFilters, dataRowCount);
 
     }
-
 }
-
 
 //TODO should range be baked into the concept of RowSet ?
 class RowSet extends BaseRowSet {
@@ -2147,7 +2178,6 @@ class RowSet extends BaseRowSet {
         super(table, columns, offset);
         this.project = projectColumns(table.columnMap, columns, this.meta);
         this.sortCols = null;
-        this.filteredCount = null;
         this.sortReverse = false;
         this.sortSet = this.buildSortSet();
         this.filterSet = null;
@@ -2156,7 +2186,6 @@ class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
-
     }
 
     buildSortSet() {
@@ -2194,10 +2223,11 @@ class RowSet extends BaseRowSet {
         }
     }
 
+    // deprecated
     get size() {
-        return this.filteredCount === null
+        return this.filterSet === null
             ? this.data.length
-            : this.filteredCount
+            : this.filterSet.length
     }
 
     get first() {
@@ -2244,7 +2274,7 @@ class RowSet extends BaseRowSet {
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        this.filteredCount = null;
+        // this.filterCount = this.totalCount;
         if (this.sortRequired) {
             this.sort(this.sortCols);
         }
@@ -2267,13 +2297,12 @@ class RowSet extends BaseRowSet {
         }
         this.filterSet = newFilterSet;
         this.currentFilter = filter;
-        this.filteredCount = newFilterSet.length;
-
         if (!extendsCurrentFilter && this.sortRequired) {
             // TODO this might be very expensive for large dataset
             // WHEN DO WE DO THIS - IS THIS CORRECT !!!!!
             this.sort(this.sortCols);
         }
+        return newFilterSet.length;
 
     }
 
@@ -2348,7 +2377,6 @@ class RowSet extends BaseRowSet {
             // filter only
             const fn = functor(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filteredCount += 1;
                 const navIdx = this.filterSet.length;
                 this.filterSet.push(idx);
                 if (navIdx >= this.range.hi) {
@@ -2376,7 +2404,7 @@ class RowSet extends BaseRowSet {
             // sort AND filter
             const fn = functor(this.columnMap, this.currentFilter);
             if (fn(row)) {
-                this.filteredCount += 1;
+                // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
                 const [[colIdx]] = sortCols; // TODO multi-colun sort
@@ -2411,12 +2439,24 @@ class RowSet extends BaseRowSet {
     }
 }
 
+// TODO need to retain and return any searchText
 class SetFilterRowSet extends RowSet {
-    constructor(table, columns, columnName) {
-        super(table, columns);
+    constructor(table, columns, columnName, dataRowAllFilters, dataRowTotal) {
+        super(table, columns);        
         this.columnName = columnName;
         this._searchText = null;
+        this.dataRowFilter = null;
+        this.dataCounts = {
+            dataRowTotal : dataRowTotal,
+            dataRowAllFilters : dataRowAllFilters,
+            dataRowCurrentFilter : 0,
+            filterRowTotal : this.data.length,
+            filterRowSelected : this.data.length,
+            filterRowHidden : 0
+        };
         this.sort([['value', 'asc']]);
+        this.setSelected(null);
+        this.totalCount = dataRowTotal;
     }
 
     get searchText() {
@@ -2424,31 +2464,100 @@ class SetFilterRowSet extends RowSet {
     }
 
     set searchText(text) {
-        this.filter({ type: 'SW', colName: 'value', value: text });
+        // TODO
+        this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
+        // recalculate totalCount
+        const {filterSet, data: rows} = this;
+        let totalCount = 0;
+        const colIdx = this.columnMap.totalCount;
+        for (let i=0;i<filterSet.length;i++){
+            const row = rows[filterSet[i]];
+            totalCount += row[colIdx];
+        }
+        this.totalCount = totalCount;
         this._searchText = text;
     }
+
+
+    currentRange(){
+        //TODO move these into a single struct
+
+            return {
+                ...super.currentRange(),
+                //TODO is this necessary, these won't change on a range request
+                dataCounts: this.dataCounts
+            }
+    
+    }
+    
+    setRange(range$$1, useDelta){
+
+        return {
+            ...super.setRange(range$$1, useDelta),
+            //TODO is this necessary, these won't change on a range request
+            dataCounts: this.dataCounts
+        }
+    }
+
+    filter(filter){
+        super.filter(filter);
+
+        const {dataCounts, filterSet, data: rows, dataRowFilter, table, columnName} = this;
+        let columnFilter;
+
+        if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
+            const columnMap = table.columnMap;
+            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0); 
+                
+        } else {
+            dataCounts.filterRowSelected = filterSet.length;
+        }
+
+        dataCounts.filterRowTotal = filterSet.length;
+    }
+
+    clearFilter() {
+        this.currentFilter = null;
+        this.filterSet = null;
+        this._searchText = '';
+    }
+
 
     get values() {
         const key = this.columnMap['value'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
-    setSelected(filter) {
+    setSelected(dataRowFilter, dataRowAllFilters) {
 
-        const columnFilter = extractFilterForColumn(filter, this.columnName);
-        if (columnFilter) {
+        const columnFilter = extractFilterForColumn(dataRowFilter, this.columnName);
+        const columnMap = this.table.columnMap;
+        const {dataCounts, data: rows, filterSet} = this;
 
-            this.project = projectColumnsFilter(
-                this.table.columnMap,
-                this.columns,
-                this.meta,
-                columnFilter);
-
-            // make sure next scroll operation sends a full rowset otw client-side selection changes may
-            // be lost ac changes will not exist in cached rows.  
-            this.setRange({ lo: 0, hi: 0 });
-
+        this.dataRowFilter = dataRowFilter;
+        
+        if (columnFilter){
+            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            dataCounts.filterRowSelected = filterSet
+                ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
+                : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0); 
+        } else {
+            dataCounts.filterRowSelected = filterSet
+                ? filterSet.length
+                : rows.length;
         }
+
+        dataCounts.dataRowAllFilters = dataRowAllFilters;
+
+        this.project = projectColumnsFilter(
+            columnMap,
+            this.columns,
+            this.meta,
+            columnFilter
+        );
+
+        return this.currentRange();
 
     }
 
@@ -3741,7 +3850,7 @@ const DEFAULT_INDEX_OFFSET = 100;
 
 class InMemoryView {
 
-    constructor(table, {columns = [], sortCriteria = null, groupBy = null, filter=null}, updateQueue=new UpdateQueue()) {
+    constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;
         this._index_offset = DEFAULT_INDEX_OFFSET;
         this._filter = filter;
@@ -3776,13 +3885,12 @@ class InMemoryView {
     }
 
     // Set the columns from client
-    set columns(columns){
-        console.log(`set client columns ${JSON.stringify(columns,null,2)}`);
+    set columns(columns) {
         this._columns = columns.map(toColumn);
         this._columnMap = buildColumnMap(this._columns);
     }
 
-    destroy(){
+    destroy() {
         this._table.removeListener('rowUpdated', this.rowUpdated);
         this._table.removeListener('rowUpdated', this.rowInserted);
         this._table = null;
@@ -3795,16 +3903,16 @@ class InMemoryView {
         return this._table.status;
     }
 
-    rowInserted(event, idx, row){
+    rowInserted(event, idx, row) {
         const { _update_queue, rowSet } = this;
-        const {size=null, replace, updates} = rowSet.insert(idx, row);
-        if (size !== null){
+        const { size = null, replace, updates } = rowSet.insert(idx, row);
+        if (size !== null) {
             _update_queue.resize(size);
         }
-        if (replace){
-            const {rows,size,offset} = rowSet.currentRange();
+        if (replace) {
+            const { rows, size, offset } = rowSet.currentRange();
             _update_queue.replace(rows, size, offset);
-        } else if (updates){
+        } else if (updates) {
             updates.forEach(update => {
                 _update_queue.update(update);
             });
@@ -3813,11 +3921,11 @@ class InMemoryView {
         // what about offset change only ?
     }
 
-    rowUpdated(event, idx, updates){
+    rowUpdated(event, idx, updates) {
         const { rowSet, _update_queue } = this;
         // const {range, rowSet} = _row_data;
         const result = rowSet.update(idx, updates);
-        if (result){
+        if (result) {
             if (rowSet instanceof RowSet) {
                 // we wouldn't have got the update back if it wasn't in range
                 if (withinRange(rowSet.range, result[0], rowSet.offset)) {
@@ -3834,7 +3942,7 @@ class InMemoryView {
         }
     }
 
-    getData(dataType){
+    getData(dataType) {
         return dataType === DataTypes.ROW_DATA
             ? this.rowSet
             : dataType === DataTypes.FILTER_DATA
@@ -3843,7 +3951,7 @@ class InMemoryView {
     }
 
     //TODO we seem to get a setRange when we reverse sort order, is that correct ?
-    setRange(range, useDelta=true, dataType=DataTypes.ROW_DATA) {
+    setRange(range, useDelta = true, dataType = DataTypes.ROW_DATA) {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
@@ -3853,47 +3961,52 @@ class InMemoryView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter) {
-        const { rowSet, _filter, filterRowSet } = this;
-        const {range} = rowSet;
-        this._filter = filter;
-        if (filter === null) {
-            if (_filter) {
-                rowSet.clearFilter();
-            }
-            // Note this is not strictly necessary. If filter in only on one column and filterRowSet is for same column, it can be kept
-            this.filterRowSet = null;
-        } else if (includesNoValues(filter)) {
-            // this accommodates where user has chosen de-select all from filter set - 
-            // TODO couldn't we handle that entirely on the client ?
-            // if (filterRowSet) {
-            //     filterRowSet.selectedIndices = [];
-            // }
-            return {
-                range,
-                rows: [],
-                size: 0,
-                offset: rowSet.offset
-            };
+    filter(filter, dataType=DataTypes.ROW_DATA) {
+        if (dataType === DataTypes.FILTER_DATA){
 
+            return this.filterFilterData(filter);
+        
         } else {
-            this.rowSet.filter(filter);
+            const { rowSet, _filter, filterRowSet } = this;
+            const { range } = rowSet;
+            this._filter = filter;
+            let filterResultset;
+            let filterCount = rowSet.totalCount;
+    
+            if (filter === null && _filter) {
+                rowSet.clearFilter();
+            } else if (filter){
+                filterCount = this.rowSet.filter(filter);
+            } else {
+                throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
+            }
+    
+            if (filterRowSet) {
+                if (filter){
+                    filterResultset = filterRowSet.setSelected(filter, filterCount);
+                } else {
+                    // TODO examine this. Must be a more efficient way to reset counts in filterSet
+                    const {columnName, range} = filterRowSet;
+                    this.filterRowSet = rowSet.getDistinctValuesForColumn({name:columnName});
+                    filterResultset = this.filterRowSet.setRange(range, false);
+                }
+            }
+    
+            const resultSet = this.rowSet.setRange(resetRange(range), false);
+    
+            return filterResultset
+                ? [resultSet, filterResultset]
+                : [resultSet];
         }
-
-        if (filterRowSet) {
-            filterRowSet.setSelected(filter);
-        }
-
-        return this.rowSet.setRange(resetRange(range), false);
 
     }
 
     groupBy(groupby) {
         const { rowSet, _columns, _groupState, _sortCriteria, _groupby } = this;
-        const {range: _range} = rowSet;
+        const { range: _range } = rowSet;
         this._groupby = groupby;
 
-        if (groupby === null){
+        if (groupby === null) {
             this.rowSet = RowSet.fromGroupRowSet(this.rowSet);
         } else {
             if (_groupby === null) {
@@ -3907,7 +4020,7 @@ class InMemoryView {
 
     setGroupState(groupState) {
         this._groupState = groupState;
-        const {rowSet} = this;
+        const { rowSet } = this;
         rowSet.setGroupState(groupState);
         // TODO should we have setRange return the following directly, so IMV doesn't have to decide how to call setRange ?
         // should we reset the range ?
@@ -3915,8 +4028,8 @@ class InMemoryView {
     }
 
     get updates() {
-        const {_update_queue, rowSet: {range}} = this;
-        let results={
+        const { _update_queue, rowSet: { range } } = this;
+        let results = {
             updates: _update_queue.popAll(),
             range: {
                 lo: range.lo,
@@ -3926,7 +4039,7 @@ class InMemoryView {
         return results;
     }
 
-    getFilterData(column, searchText=null, range=NULL_RANGE) {
+    getFilterData(column, searchText = null, range = NULL_RANGE) {
 
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
@@ -3936,36 +4049,53 @@ class InMemoryView {
         // No this should be decided beforehand (on client) 
         const type = getFilterType(colDef);
 
-        if (type === 'number'){
+        if (type === 'number') {
             // // we need a notification from server to tell us when this is closed.
             // we should assign to filterRowset
             this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
-        
-        } else if (!filterRowSet || filterRowSet.columnName !== column.name){
-            
+
+        } else if (!filterRowSet || filterRowSet.columnName !== column.name) {
+
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
-        
-        } else if (searchText){
+
+        } else if (searchText) {
 
             filterRowSet.searchText = searchText;
-       
-        } else if (filterRowSet && filterRowSet.searchText){
+
+        } else if (filterRowSet && filterRowSet.searchText) {
             // reset the filter
             filterRowSet.clearFilter();
 
-        } else if (filter && filter.colName === column.name){
+        } else if (filter && filter.colName === column.name) {
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
-            filterRowSet.setRange({lo: 0,hi: 0});
-        } 
+            filterRowSet.setRange({ lo: 0, hi: 0 });
+        }
 
-        if (filter){
-            this.filterRowSet.setSelected(filter);
+        if (filter) {
+            this.filterRowSet.setSelected(filter, this.rowSet.filterCount);
         }
 
         // do we need to returtn searchText ? If so, it should
         // be returned by the rowSet
         return this.filterRowSet.setRange(range, false);
+
+    }
+
+    filterFilterData(filter){
+        const {filterRowSet} = this;
+        if (filterRowSet){
+
+            if (filter === null) {
+                filterRowSet.clearFilter();
+            } else if (filter){
+                filterRowSet.filter(filter);
+            }
+            return filterRowSet.setRange(resetRange(filterRowSet.range), false);
+    
+        } else {
+            console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`);
+        }
 
     }
 

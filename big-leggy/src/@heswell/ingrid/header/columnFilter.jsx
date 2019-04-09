@@ -119,7 +119,7 @@ export default class ColumnFilter extends React.Component {
                         <SetFilter className='FilterPanel'
                             column={column}
                             filter={filter}
-                            height={325}
+                            height={350}
                             width={column.width + 120}
                             dataView={dataView}
                             onHide={this.hideFilter}

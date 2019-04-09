@@ -1,5 +1,5 @@
 import MessageQueue from '../../server-core/message-queue';
-import {setFilterColumnMeta} from '../../data/store/filter';
+import {setFilterColumnMeta} from '../../data/store/columnUtils';
 import { DataTypes } from '../../data';
 import {join, pluck} from '../data/testData';
 

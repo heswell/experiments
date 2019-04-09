@@ -1,7 +1,7 @@
 import { replace, indexOf } from './utils/arrayUtils.mjs';
 import {rangeUtils, DataTypes} from '../data/index';
 import { metaData } from '../data/store/columnUtils';
-import {setFilterColumnMeta} from '../data/store/filterUtils';
+import {setFilterColumnMeta} from '../data/store/columnUtils';
 
 
 const {NULL_RANGE} = rangeUtils;

@@ -33,26 +33,6 @@ const pendingPromises = {};
 let _requestId = 1;
 let _subscriptionId = 1;
 
-// async function getWorker(callback){
-//     return asyncWorkerModule.then(workerModule => {
-//         const Worker = workerModule.default;
-
-//         return worker || (worker = new Promise((resolve, reject) => {
-//             const w = new Worker();
-//             w.onmessage = ({data: message}) => {
-//                 if (message.type === 'identify'){
-//                     // w.onmessage = messageFromTheWorker;
-//                     w.onmessage = callback;
-//                     resolve(w);
-//                 } else {
-//                     reject(new Error('Worker failed to identify'));
-//                 }
-//             };
-//         }))
-
-//     });
-// }
-
 function postMessage(message){
     getWorker().then(worker => worker.postMessage(message));
 }
