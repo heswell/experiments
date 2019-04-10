@@ -1087,22 +1087,12 @@ class ServerProxy {
 
             case FILTER_DATA:
             case SEARCH_DATA:
-
                 if (subscription = this.subscriptions[viewport]) {
                     const { filterData } = message;
 
                     const { rowset: data } = subscription.putData(type, filterData);
 
-                    // if (dataType === DataTypes.FILTER_BINS){
-                    //     this.postMessage( {
-                    //         data: {
-                    //             type: DataTypes.FILTER_BINS,
-                    //             viewport,
-                    //             [dataType]: filterData
-                    //         }
-                    //     } );
-
-                    /*} else */ if (data.length || filterData.size === 0) {
+                    if (data.length || filterData.size === 0) {
                         this.postMessage({
                             data: {
                                 type,
@@ -1111,7 +1101,7 @@ class ServerProxy {
                                     ...filterData,
                                     data
                                 }
-                            }
+                            },
                         });
                     }
                 }

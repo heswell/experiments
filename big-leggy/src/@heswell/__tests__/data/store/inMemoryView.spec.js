@@ -147,9 +147,14 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 0 },
             size: 38,
             offset: 0,
-            totalCount: 1247,
-            selectedCount: 38,
-            filterCount: 1247
+            dataCounts : {
+                dataRowAllFilters: 1247,
+                dataRowCurrentFilter: 0,
+                dataRowTotal: 1247,
+                filterRowHidden: 0,
+                filterRowSelected: 38,
+                filterRowTotal: 38
+            }
         })
 
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
@@ -169,9 +174,14 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 10 },
             size: 38,
             offset: 0,
-            totalCount: 1247,
-            filterCount: 1247,
-            selectedCount: 38
+            dataCounts : {
+                dataRowAllFilters: 1247,
+                dataRowCurrentFilter: 0,
+                dataRowTotal: 1247,
+                filterRowHidden: 0,
+                filterRowSelected: 38,
+                filterRowTotal: 38
+            }
         })
     });
 
@@ -196,9 +206,15 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 0 },
             size: 10,
             offset: 0,
-            totalCount: 91,
-            filterCount: 10,
-            selectedCount: 10
+            dataCounts : {
+                dataRowAllFilters: 1247,
+                dataRowCurrentFilter: 0,
+                dataRowTotal: 1247,
+                filterRowHidden: 0,
+                filterRowSelected: 10,
+                filterRowTotal: 10
+            }
+
         })
 
         results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
@@ -217,10 +233,17 @@ describe('getFilterData', () => {
             ],
             range: { lo: 0, hi: 10 },
             size: 10,
-            filterCount: 10,
-            selectedCount: 10,
-            totalCount: 91,
-            offset: 0
+            offset: 0,
+            dataCounts : {
+                dataRowAllFilters: 1247,
+                dataRowCurrentFilter: 0,
+                dataRowTotal: 1247,
+                filterRowHidden: 0,
+                filterRowSelected: 10,
+                filterRowTotal: 10
+            }
+
+
         })
     });
 
@@ -247,9 +270,15 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 10 },
             size: 12,
             offset: 0,
-            filterCount: 1247,
-            totalCount: 1247,
-            selectedCount: 12
+            dataCounts: {
+                dataRowAllFilters: 1247,
+                dataRowCurrentFilter: 0,
+                dataRowTotal: 1247,
+                filterRowHidden: 0,
+                filterRowSelected: 12,
+                filterRowTotal: 12
+
+            }
         })
 
     });

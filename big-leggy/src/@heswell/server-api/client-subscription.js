@@ -62,10 +62,11 @@ export default class ClientSubscription {
       })
   }
 
-  filter(filter){
+  filter(filter, dataType=DataTypes.ROW_DATA){
       postMessage({
           viewport: this.id,
           type: Message.FILTER,
+          dataType,
           filter
       })
   }

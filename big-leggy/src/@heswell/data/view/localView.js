@@ -14,11 +14,11 @@ const NULL_DATARANGE = {
     size: 0
 };
 
-const emptyConfig = {}
+const EMPTY_OBJECT = {}
 
 export default class LocalView extends EventEmitter {
 
-    constructor(config=emptyConfig){
+    constructor(config=EMPTY_OBJECT){
         super();
 
         this._dataOptions = null;
@@ -87,10 +87,10 @@ export default class LocalView extends EventEmitter {
         this.removeAllListeners();
     }
 
-    processIncomingRows(dataType, rows, size, totalCount, dataCounts){
+    processIncomingRows(dataType, rows, size, dataCounts){
         const [targetData, meta] = this.getData(dataType);
         const rowset = targetData.rows = rowUtils.mergeAndPurge(targetData, rows, size, meta);
-        this.emit(dataType, rowset, size, totalCount, dataCounts);
+        this.emit(dataType, rowset, size, dataCounts);
     }
 
     processUpdate(evtName, updates){
@@ -134,8 +134,8 @@ export default class LocalView extends EventEmitter {
                 targetData.range = { lo, hi };
                 if (this._dataView){
                     // TODO the counts will never change during a setRange operation
-                    const {rows, size, totalCount, dataCounts} = this._dataView.setRange({lo, hi}, useDelta, dataType);
-                    this.processIncomingRows(dataType, rows, size, totalCount, dataCounts)
+                    const {rows, size, dataCounts} = this._dataView.setRange({lo, hi}, useDelta, dataType);
+                    this.processIncomingRows(dataType, rows, size, dataCounts)
                 }
             }
         }
@@ -147,15 +147,12 @@ export default class LocalView extends EventEmitter {
     }
 
     filter(filter, dataType=DataTypes.ROW_DATA){
-        if (dataType === DataTypes.FILTER_DATA){
-            const {rows, size, totalCount, dataCounts} = this._dataView.filter(filter, dataType);
-            this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
-        } else {
-            const [{rows, size, totalCount}, ...filterResultsets] = this._dataView.filter(filter);
-            filterResultsets.forEach(({rows, size, totalCount, dataCounts}) => {
-                this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
-            })
-            this.processIncomingRows(DataTypes.ROW_DATA, rows, size, totalCount)
+        const [{rows, size}=EMPTY_OBJECT, ...filterResultsets] = this._dataView.filter(filter, dataType);
+        filterResultsets.forEach(({rows, size, dataCounts}) => {
+            this.processIncomingRows(DataTypes.FILTER_DATA, rows, size, dataCounts);
+        })
+        if (rows){
+            this.processIncomingRows(DataTypes.ROW_DATA, rows, size)
         }
     }
 
@@ -213,10 +210,10 @@ export default class LocalView extends EventEmitter {
 
         // emit data if range specified or not required
         if (this._filterData.type === DataTypes.FILTER_BINS || range !== NULL_RANGE){
-            const {rows, size, totalCount, dataCounts} = this._filterData;
+            const {rows, size, dataCounts} = this._filterData;
             // there is no listener for this when we emit binned Filter data (no range required)
             // but that's ok, the BinView will ask for them when it's ready
-            this.emit(DataTypes.FILTER_DATA, rows, size, totalCount, dataCounts);
+            this.emit(DataTypes.FILTER_DATA, rows, size, dataCounts);
         }
     }
 

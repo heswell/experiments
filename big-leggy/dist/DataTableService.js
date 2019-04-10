@@ -2045,8 +2045,6 @@ class BaseRowSet {
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
-        const {length} = this.data;
-        this.totalCount = length;
     }
 
     // used by binned rowset
@@ -2068,28 +2066,24 @@ class BaseRowSet {
     setRange(range$$1, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range$$1) : getFullRange(range$$1);
-        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         this.range = range$$1;
         return {
             rows: resultset,
             range: range$$1,
             size: this.size,
-            offset: this.offset,
-            totalCount
+            offset: this.offset
         };
     }
 
     currentRange() {
         const { lo, hi } = this.range;
-        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         return {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset,
-            totalCount
+            offset: this.offset
         };
     }
 
@@ -2120,7 +2114,6 @@ class BaseRowSet {
         const dataRowCount = rows.length;
         const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column);
         // this filter for column that we remove will provide our selected values   
-        console.log(`we are missing opportunity to set selected with ${JSON.stringify(columnFilter)}`);     
         let dataRowAllFilters = 0;
 
         if (otherFilters === null) {
@@ -2274,7 +2267,6 @@ class RowSet extends BaseRowSet {
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        // this.filterCount = this.totalCount;
         if (this.sortRequired) {
             this.sort(this.sortCols);
         }
@@ -2447,16 +2439,15 @@ class SetFilterRowSet extends RowSet {
         this._searchText = null;
         this.dataRowFilter = null;
         this.dataCounts = {
-            dataRowTotal : dataRowTotal,
-            dataRowAllFilters : dataRowAllFilters,
+            dataRowTotal,
+            dataRowAllFilters,
             dataRowCurrentFilter : 0,
             filterRowTotal : this.data.length,
             filterRowSelected : this.data.length,
             filterRowHidden : 0
         };
+        this.setProjection();
         this.sort([['value', 'asc']]);
-        this.setSelected(null);
-        this.totalCount = dataRowTotal;
     }
 
     get searchText() {
@@ -2466,15 +2457,14 @@ class SetFilterRowSet extends RowSet {
     set searchText(text) {
         // TODO
         this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
-        // recalculate totalCount
         const {filterSet, data: rows} = this;
-        let totalCount = 0;
+        // let totalCount = 0;
         const colIdx = this.columnMap.totalCount;
         for (let i=0;i<filterSet.length;i++){
             const row = rows[filterSet[i]];
-            totalCount += row[colIdx];
+            // totalCount += row[colIdx];
         }
-        this.totalCount = totalCount;
+        // this.totalCount = totalCount;
         this._searchText = text;
     }
 
@@ -2550,14 +2540,22 @@ class SetFilterRowSet extends RowSet {
 
         dataCounts.dataRowAllFilters = dataRowAllFilters;
 
+        this.setProjection(columnFilter);
+
+        return this.currentRange();
+
+    }
+
+    setProjection(columnFilter = null){
+
+        const columnMap = this.table.columnMap;
+
         this.project = projectColumnsFilter(
             columnMap,
             this.columns,
             this.meta,
             columnFilter
         );
-
-        return this.currentRange();
 
     }
 
@@ -3964,7 +3962,7 @@ class InMemoryView {
     filter(filter, dataType=DataTypes.ROW_DATA) {
         if (dataType === DataTypes.FILTER_DATA){
 
-            return this.filterFilterData(filter);
+            return [,this.filterFilterData(filter)];
         
         } else {
             const { rowSet, _filter, filterRowSet } = this;
@@ -4196,7 +4194,13 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
 
         invoke: {
             value: (method, queue, type, ...params) => {
-                const data = view[method](...params);
+                let data, filterData;
+
+                if (method === 'filter'){
+                    [data, ...filterData] = view[method](...params);
+                } else {
+                    data = view[method](...params);
+                }
                 const meta = type === DataTypes.FILTER_DATA
                     ? setFilterColumnMeta
                     : tableMeta; 
@@ -4209,6 +4213,16 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
                         data
                     }, meta);
                 }
+
+                filterData && filterData.forEach(data => {
+                    queue.push({
+                        priority: 1,
+                        viewport,
+                        type: DataTypes.FILTER_DATA,
+                        data
+                    }, setFilterColumnMeta);
+
+                });
             }
         },
 
@@ -4395,8 +4409,8 @@ function sort$1(clientId, {viewport, sortCriteria}, queue){
     _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
-function filter$1(clientId, {viewport, filter}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter);
+function filter$1(clientId, {viewport, filter, dataType}, queue){
+    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
 }
 
 function select(clientId, {viewport, dataType, colName, filterMode}, queue){

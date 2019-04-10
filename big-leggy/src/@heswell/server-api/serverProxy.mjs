@@ -402,7 +402,7 @@ export class ServerProxy {
             case Message.FILTER_DATA:
             case Message.SEARCH_DATA:
                 if (subscription = this.subscriptions[viewport]) {
-                    const { filterData: {dataCounts, ...filterData} } = message;
+                    const { filterData } = message;
 
                     const { rowset: data } = subscription.putData(type, filterData);
 
@@ -416,7 +416,6 @@ export class ServerProxy {
                                     data
                                 }
                             },
-                            dataCounts
                         });
                     }
                 }

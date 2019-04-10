@@ -112,7 +112,7 @@ export default class RemoteView extends EventEmitter {
                         ? rowSet.data
                         : rowUtils.mergeAndPurge(targetData, data, size, meta);
 
-                    this.emit(type, targetData.rows, size, undefined, dataCounts);
+                    this.emit(type, targetData.rows, size, dataCounts);
 
                     break;
 
@@ -229,8 +229,8 @@ export default class RemoteView extends EventEmitter {
         this._subscription.sort(sortCriteria);
     }
 
-    filter(filter) {
-        this._subscription.filter(filter);
+    filter(filter, type) {
+        this._subscription.filter(filter, type);
     }
 
     get filterRows () {

@@ -39,8 +39,6 @@ export default class BaseRowSet {
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
-        const {length} = this.data;
-        this.totalCount = length;
     }
 
     // used by binned rowset
@@ -62,28 +60,24 @@ export default class BaseRowSet {
     setRange(range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
-        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         this.range = range;
         return {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset,
-            totalCount
+            offset: this.offset
         };
     }
 
     currentRange() {
         const { lo, hi } = this.range;
-        const {totalCount} = this;
         const resultset = this.slice(lo, hi);
         return {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset,
-            totalCount
+            offset: this.offset
         };
     }
 
@@ -114,7 +108,6 @@ export default class BaseRowSet {
         const dataRowCount = rows.length;
         const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column)
         // this filter for column that we remove will provide our selected values   
-        console.log(`we are missing opportunity to set selected with ${JSON.stringify(columnFilter)}`)     
         let dataRowAllFilters = 0;
 
         if (otherFilters === null) {
@@ -268,7 +261,6 @@ export class RowSet extends BaseRowSet {
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
-        // this.filterCount = this.totalCount;
         if (this.sortRequired) {
             this.sort(this.sortCols);
         }
@@ -441,16 +433,15 @@ export class SetFilterRowSet extends RowSet {
         this._searchText = null;
         this.dataRowFilter = null;
         this.dataCounts = {
-            dataRowTotal : dataRowTotal,
-            dataRowAllFilters : dataRowAllFilters,
+            dataRowTotal,
+            dataRowAllFilters,
             dataRowCurrentFilter : 0,
             filterRowTotal : this.data.length,
             filterRowSelected : this.data.length,
             filterRowHidden : 0
         };
+        this.setProjection();
         this.sort([['value', 'asc']]);
-        this.setSelected(null);
-        this.totalCount = dataRowTotal;
     }
 
     get searchText() {
@@ -460,15 +451,14 @@ export class SetFilterRowSet extends RowSet {
     set searchText(text) {
         // TODO
         this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
-        // recalculate totalCount
         const {filterSet, data: rows} = this;
-        let totalCount = 0;
+        // let totalCount = 0;
         const colIdx = this.columnMap.totalCount;
         for (let i=0;i<filterSet.length;i++){
             const row = rows[filterSet[i]];
-            totalCount += row[colIdx];
+            // totalCount += row[colIdx];
         }
-        this.totalCount = totalCount;
+        // this.totalCount = totalCount;
         this._searchText = text;
     }
 
@@ -544,14 +534,22 @@ export class SetFilterRowSet extends RowSet {
 
         dataCounts.dataRowAllFilters = dataRowAllFilters;
 
+        this.setProjection(columnFilter);
+
+        return this.currentRange();
+
+    }
+
+    setProjection(columnFilter = null){
+
+        const columnMap = this.table.columnMap;
+
         this.project = projectColumnsFilter(
             columnMap,
             this.columns,
             this.meta,
             columnFilter
         );
-
-        return this.currentRange();
 
     }
 

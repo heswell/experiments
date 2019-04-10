@@ -67,7 +67,13 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
         invoke: {
             value: (method, queue, type, ...params) => {
-                const data = view[method](...params);
+                let data, filterData;
+
+                if (method === 'filter'){
+                    [data, ...filterData] = view[method](...params);
+                } else {
+                    data = view[method](...params);
+                }
                 const meta = type === DataTypes.FILTER_DATA
                     ? setFilterColumnMeta
                     : tableMeta 
@@ -80,6 +86,16 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                         data
                     }, meta);
                 }
+
+                filterData && filterData.forEach(data => {
+                    queue.push({
+                        priority: 1,
+                        viewport,
+                        type: DataTypes.FILTER_DATA,
+                        data
+                    }, setFilterColumnMeta);
+
+                });
             }
         },
 

@@ -183,10 +183,8 @@ class MessageQueue {
     }
 
     push(message, meta) {
-        // onsole.log(`MessageQueue. push<${message.type}}> ${JSON.stringify(message.range || (message.data && message.data.range))}`);
         const { type, data } = message;
         if (type === UPDATE) {
-            //onsole.log(`MessageQueue. UPDATE pushed ${JSON.stringify(message)}`);
             mergeAndPurgeUpdates(this._queue, message);
         } else if (type === ROWSET) {
             if (message.data.rows.length === 0 && message.size > 0) {

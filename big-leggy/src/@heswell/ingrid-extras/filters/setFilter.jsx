@@ -107,7 +107,7 @@ export class SetFilter extends React.Component {
 
     }
 
-    handleFilterViewUpdate(_, rows, rowCount=null, totalCount=rowCount, dataCounts){
+    handleFilterViewUpdate(_, rows, rowCount=null, dataCounts){
         this.setState({dataCounts})
     }
 

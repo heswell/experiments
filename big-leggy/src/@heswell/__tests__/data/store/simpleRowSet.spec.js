@@ -569,8 +569,8 @@ describe('getDistinctValuesForColumn', () => {
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
             ['T3', 20, 20,  0,0,0, 'T3', 1],
-            ['T4', 3 ,3,  1,0,0, 'T4', 1],
-            ['T5', 1 ,1,  2,0,0, 'T5', 1]
+            ['T4', 0 ,3,  1,0,0, 'T4', 1],
+            ['T5', 0 ,1,  2,0,0, 'T5', 1]
         ])
     });
 

@@ -9,7 +9,7 @@ import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 import { connect } from '../src/@heswell/server-api/server-api';
 const data= null;
 
-// const locked = true;
+const locked = true;
 
 const tablename = 'Instruments'
 const columns = [
