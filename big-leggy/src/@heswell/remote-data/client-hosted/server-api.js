@@ -109,7 +109,7 @@ class ServerAPI {
     subscribe(message, viewport=`viewport-${_subscriptionId++}`){
         // From here, the serverProxy will maintain the association between connection
         // and viewport, we only have to supply viewport
-        console.log(`[ServerApi.subscribe]   ${API.addSubscription}  ===>  SW   vp: ${viewport} ${JSON.stringify(message,null,2)}`)
+        logger.log(`<subscribe>   ===>  SW   vp: ${viewport} `)
         postMessageToWorker({
             connectionId: this.connectionId,
             viewport,

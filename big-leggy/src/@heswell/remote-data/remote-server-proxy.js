@@ -4,20 +4,9 @@ import * as Message from './messages.js';
 import {ServerApiMessageTypes as API} from './messages.js';
 import {DataTypes} from '../data/store/types.js';
 import {NULL_RANGE} from '../data/store/rangeUtils.js';
-import {createLogger, logColor} from './constants';
-
-const serverModule = process.env.SERVER_MODULE || '/viewserver.js';
-const MSG_FROM_CLIENT = '<== C';
-const MSG_TO_CLIENT = '==> C';
-const MSG_TO_SERVER = '==> S';
-const MSG_FROM_SERVER = '<== S';
-
-let asyncServerModule;
+import {msgType as Msg, createLogger, logColor} from './constants';
 
 const logger = createLogger('RemoteServerProxy', logColor.blue);
-
-const BUFFER_SIZE = 100;
-const BUFFER_ROWS = 100;
 
 function partition(array, test, pass = [], fail = []) {
 
@@ -30,20 +19,14 @@ function partition(array, test, pass = [], fail = []) {
 
 export class ServerProxy {
 
-    constructor(postMessage) {
-        this.server = null;
+    constructor(clientCallback) {
         this.connection = null;
         this.connectionStatus = 'not-connected';
 
         this.queuedRequests = [];
         this.subscriptions = {};
         this.pendingSubscriptionRequests = {};
-
-        // tidy this up
-        this.postMessage = message => {
-            print(message.data, MSG_TO_CLIENT);
-            postMessage(message);
-        }
+        this.postMessageToClient = clientCallback;
 
     }
 
@@ -52,19 +35,10 @@ export class ServerProxy {
         const { type, viewport } = message;
         const isReady = this.connectionStatus === 'ready';
         let subscription;
-        print(message, MSG_FROM_CLIENT);
 
         switch (type) {
 
-            case Message.CONNECT:
-                this.connect(message);
-                break;
-
-            case API.addSubscription:
-                this.subscribe(message)
-                break;
-
-            case Message.SET_VIEWPORT_RANGE:
+            case Msg.setViewRange:
                 //TODO drop buffering if we are scrolling faster than buffer can keep up
                 if (subscription = this.subscriptions[viewport]) {
                     const { bufferSize } = subscription;
@@ -78,9 +52,8 @@ export class ServerProxy {
                     });
                     const rows = subscription.putRange(message.range, dataType);
                     if (rows.length) {
-                        console.log(`%cserverProxy emit<${dataType}> rows from cache ${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}`,'color:red');
-                        // never send back selectedIndices from cache, they will often be stale
-                        this.postMessage({ data: { type: dataType, viewport, [dataType]: { data: rows, size, offset, range } } });
+                        logger.log(`<handleMessageFromClient -> postMessage> ${dataType} rows from cache ${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}`);
+                        this.postMessageToClient({ data: { type: dataType, viewport, [dataType]: { data: rows, size, offset, range } } });
                     }
                 } else {
                     console.log(`%c setViewRange, no subscription`,'background-color: brown;color: cyan')
@@ -89,8 +62,8 @@ export class ServerProxy {
 
                 break;
 
-            case Message.EXPAND_GROUP:
-            case Message.COLLAPSE_GROUP:
+            case Msg.expandGroup:
+            case Msg.collapseGroup:
 
                 this.sendIfReady(message, this.connectionStatus === 'ready');
 
@@ -98,7 +71,7 @@ export class ServerProxy {
                     const groupRow = subscription.toggleGroupNode(message.groupKey);
                     const {IDX, DEPTH} = subscription.meta;
                     const updates = [[groupRow[IDX], DEPTH, groupRow[DEPTH]]];
-                    this.postMessage({ data: { type: 'update', viewport, updates } });
+                    this.postMessageToClient({ data: { type: 'update', viewport, updates } });
                 }
 
                 break;
@@ -174,40 +147,20 @@ export class ServerProxy {
     }
 
     // if we're going to support multiple connections, we need to save them against connectionIs
-    connect({connectionString, connectionId=0}) {
+    async connect({connectionString, connectionId=0}) {
 
         logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`)
         this.connectionStatus = 'connecting';
 
-        const module = asyncServerModule ||
-            (asyncServerModule = import(/* webpackIgnore: true */ serverModule)
-                .catch(err => console.log(`failed to load server ${err}`)))
+        const connection = this.connection = await Connection.connect(connectionString);
 
-            module.then(serverModule => {
-            const Server = serverModule.default;
-            const server = this.server = new Server();
-
-            Connection.connect(connectionString).then(connection => {
-                // shouldn't we read connection status from the connection object itself
-                this.connection = connection;
-
-                // call the server to group messages by viewport, then invoke each batch with the subscription for that viewport
-                connection.on('message', (evtName, msg) => {
-                    return this.receiveMessageFromServer(msg);
-                });
-
-                if (server.connectionPipeline) {
-                    const [first, ...rest] = server.connectionPipeline;
-                    rest.reduce((result, next) => result
-                        .then(next), first(connection))
-                        .then(() => this.onReady(connectionId));
-                } else {
-                    this.onReady(connectionId);
-                }
-
-            });
-
+        // call the server to group messages by viewport, then invoke each batch with the subscription for that viewport
+        connection.on('message', (evtName, msg) => {
+            return this.handleMessageFromServer(msg);
         });
+
+        this.onReady(connectionId);
+
     }
 
     subscribe(/* client message */ message ){
@@ -233,7 +186,7 @@ export class ServerProxy {
                 range: {
                     lo: 0,
                     hi: range.hi || 10, // where should this come from. This will cause key errors if bigger than viewport
-                    bufferSize: BUFFER_SIZE
+                    bufferSize: 0
                 }
             }, isReady);
         }
@@ -273,7 +226,7 @@ export class ServerProxy {
                 if (rows.length) {
                     // is it ever likely that we will have data immediately following subscription ?
                     //onsole.log(`ServerProxy.subscribed ${rows.length} rows in range, following queued message handling`);
-                    this.postMessage({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rows, size } } });
+                    this.postMessageToClient({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rows, size } } });
                 }
 
             });
@@ -288,8 +241,8 @@ export class ServerProxy {
                 dataType: DataTypes.ROW_DATA,
                 viewport,
                 range: {
-                    lo: Math.max(0, range.lo - BUFFER_ROWS),
-                    hi: range.hi + BUFFER_ROWS
+                    lo: Math.max(0, range.lo),
+                    hi: range.hi
                 }
             });
 
@@ -307,52 +260,15 @@ export class ServerProxy {
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
         this.queuedRequests = remainingMessages;
-        this.postMessage({ data: { type: 'connection-status', status: 'ready', connectionId } });
+        this.postMessageToClient({ data: { type: 'connection-status', status: 'ready', connectionId } });
     }
 
     sendMessageToServer(message) {
         const { clientId } = this.connection;
-        const { requestId = this.connection.nextRequestId() } = message;
-        const serverMessage = this.server.serialize(message, clientId, requestId);
-        if (serverMessage === null) {
-            console.warn(`[ServerProxy sendMessageToServer] ${JSON.stringify(message)} not supported by server`);
-        } else {
-            print(message, MSG_TO_SERVER);
-            this.connection.send(serverMessage);
-        }
-    }
-
-    receiveMessageFromServer(message) {
-
-        // onsole.groupCollapsed(`receiveMessageFromServer`);
-        // onsole.log(message);
-        // onsole.groupEnd();
-        print(message, MSG_FROM_SERVER);
-        const { messageHandlers = {}, customMessageTypes = {} } = this.server;
-
-        // feels wrong to pass all subscriptions to server here - should really pass just the subscription
-        // for the message. But as a payload can include messages for more than one subscription, we would
-        // first have to ask server to group the messages by viewport. Some messages are not associated
-        // with any viewport
-        const messageFromServer = this.server.deserialize(message, this.subscriptions);
-        if (messageFromServer) {
-
-            const { type } = messageFromServer;
-
-            // messages that can be handled entirely by the server - e.g. Heartbeat
-            if (messageHandlers[type]) {
-                messageHandlers[type](this.connection, message);
-            } else if (customMessageTypes[type]) {
-                // can be used to chain message requests/responses e.g. a server initiating a LOGIN 
-                // request can reister a listener for the LOGIN_RESPONSE
-                this.connection.emit(type, message);
-            } else {
-                this.handleMessageFromServer(messageFromServer);
-            }
-        } else {
-            logger.log(`unable to deserialize message ${JSON.stringify(message)}`);
-        }
-
+        //const { requestId = this.connection.nextRequestId() } = message;
+        // TODO do we need the requestId ?
+        // const serverMessage = this.server.serialize(message, clientId, requestId);
+        this.connection.send({clientId, message});
     }
 
     handleMessageFromServer(message) {
@@ -373,7 +289,7 @@ export class ServerProxy {
                     const { data } = message;
                     const rows = subscription.putSnapshot(data);
                     if (rows.length) {
-                        this.postMessage({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { ...data, data: rows } } });
+                        this.postMessageToClient({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { ...data, data: rows } } });
                     }
                 }
                 break;
@@ -390,7 +306,7 @@ export class ServerProxy {
                     const { rowset: data } = subscription.putData(type, filterData);
 
                     if (data.length || filterData.size === 0) {
-                        this.postMessage({
+                        this.postMessageToClient({
                             data: {
                                 type,
                                 viewport,
@@ -406,7 +322,7 @@ export class ServerProxy {
                 break;
 
             default:
-                this.postMessage({ data: message });
+                this.postMessageToClient({ data: message });
 
         }
 
@@ -435,14 +351,14 @@ export class ServerProxy {
 
                 if (rowset && rowset.length) {
                     const { range } = subscription.rowData;
-                    this.postMessage({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rowset, size, range, offset } } });
+                    this.postMessageToClient({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { data: rowset, size, range, offset } } });
 
                 } else if (updates && updates.length) {
-                    this.postMessage({ data: { type: 'update', viewport, updates, size } });
+                    this.postMessageToClient({ data: { type: 'update', viewport, updates, size } });
                 } else if (size !== undefined && size !== lastSize) {
                     // size undefined if we have received an update where no updated rows are in the viewport
                     // post a size update - only the scrollbar will reflect the change
-                    this.postMessage({ data: { type: 'size', viewport, size } });
+                    this.postMessageToClient({ data: { type: 'size', viewport, size } });
                 }
 
             }
@@ -451,31 +367,4 @@ export class ServerProxy {
 
     }
 
-}
-
-function print(message, direction, method=null){
-    logger.log(`${method === null ? '' : '.' + method}] %c${direction}  ${message.type} ${messageToString(message, direction)}`);
-}
-
-function messageToString(message, direction){
-    const {requestId='', viewport=''} = message;
-    switch (message.type){
-        case Message.SET_VIEWPORT_RANGE:
-            return `${requestId} range: %c${message.range.lo} - ${message.range.hi} %cvp ${viewport}`;
-        case API.addSubscription:
-        case Message.SUBSCRIBED:
-            return `${requestId} vp:${message.viewport}`;
-        case 'rowset':
-        case Message.SNAPSHOT:
-            return `${message.data.rows.length} of ${message.data.size} rows`;
-        case Message.RowData:
-            return `${message.rowData.data.length} of ${message.rowData.size} rows`;
-        case Message.FILTER_DATA:
-            if (message.data){
-                console.table(message.data.rows)
-            }
-            return `${(message.data || message.filterData).rows.length} of %c${(message.data || message.filterData).size} rows`;
-        default:
-            return '';
-    }
 }

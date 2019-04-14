@@ -4,10 +4,11 @@ import {msgType as Msg, createLogger, logColor,
 } from './constants';
 
 import {ServerProxy} from './remote-server-proxy.js';
+import RemoteSubscription from './remote-subscription';
 
 const serverProxy = new ServerProxy(messageFromTheServer);
 
-export const postMessageToWorker = async (message) => {
+export const postMessageToServer = async (message) => {
     // const worker = await getWorker();
     // worker.postMessage(message);
   serverProxy.handleMessageFromClient(message);
@@ -18,6 +19,9 @@ function messageFromTheServer({data: {type: msgType, ...message}}){
       case Msg.connectionStatus:
           logger.log(`<==   ${msgType}`)
           onConnected(message);
+          break;
+      case Msg.rowData:
+          subscriptions[message.viewport].postMessageToClient(message);
           break;
       default:
           logger.log(`does not yet handle ${msgType}}`);
@@ -80,7 +84,7 @@ export const connect = (
               isDefaultConnection 
           };
           logger.log(JSON.stringify({type: Msg.connect, clientId, connectionId, connectionString}))
-          postMessageToWorker({type: Msg.connect, clientId, connectionId, connectionString});
+          serverProxy.connect({connectionId, connectionString});
       })
   )
 }
@@ -93,7 +97,7 @@ function onConnected(message){
           const {resolve, connectionString, timeoutHandle, isDefaultConnection} = pendingPromises[connectionId];
           clearTimeout(timeoutHandle);
           delete pendingPromises[connectionId];
-          const connection = connections[connectionString] = RemoteConnection(connectionId, postMessageToWorker);
+          const connection = connections[connectionString] = RemoteConnection(connectionId, postMessageToServer);
           resolve(connection);
           if (isDefaultConnection && defaultConnection.status !== 'connected'){
               defaultConnection.status = 'connected';
@@ -108,21 +112,14 @@ function onConnected(message){
   Subscribing to services
 
   --------------------------------------------------------*/
-export function subscribe(message){
-  console.log(`[serverApi2.subscribe] vp ${message.viewport}`)
+export function subscribe(message, clientCallback){
+  logger.log(`<subscribe> vp ${message.viewport}`)
   const viewport = message.viewport;
-  // const subscription = subscriptions[viewport] = new ClientSubscription(null, viewport)
-  const subscription = subscriptions[viewport] = new Proxy({}, {
-    get: function(o, p) {
-      return (...args) => {
-        logger.log(`method ${p} invoked on ClientSubscription proxy`, args)
-      }
-    }
-  });
+  const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback)
 
   // blocks here until connection is resolved (to an instance of ServerApi)
    getDefaultConnection().then(remoteConnection => {
-      console.log(`serverApi, now we have a remoteConnection, we can subscribe`)
+      logger.log(`now we have a remoteConnection, we can subscribe`)
       remoteConnection.subscribe(message, viewport);
   });
   // clearTimeout(timeoutHandle);
@@ -139,29 +136,13 @@ const RemoteConnection = (connectionId, postMessage) => ({
     subscribe(message, viewport){
         // From here, the serverProxy will maintain the association between connection
         // and viewport, we only have to supply viewport
-        logger.log(`${Msg.addSubscription}  ===>  SW   vp: ${viewport} ${JSON.stringify(message,null,2)}`)
-        postMessage({
+        logger.log(`[RemoteConnection]<subscribe>  ===>  SW   vp: ${viewport}`)
+        serverProxy.subscribe({
             connectionId,
             viewport,
             type: Msg.addSubscription,
             ...message
-        })
-        if (subscriptions[viewport]){
-            subscriptions[viewport].connectionId = this.connectionId;
-            return subscriptions[viewport];
-        } else {
-            // when would there NOT be an existing subscription
-            return subscriptions[viewport] = new Proxy({}, {
-              get: function(o, p) {
-                return p === 'then'
-                  ? undefined
-                  : (...args) => {
-                    logger.log(`method ${p} invoked on RemoteConnection subscription proxy`, args)
-                }
-              }
-            });
-            // return subscriptions[viewport] = new ClientSubscription(this.connectionId, viewport);
-        }
+        });
     },
 
     query: (type, params=null) => new Promise((resolve, reject) => {

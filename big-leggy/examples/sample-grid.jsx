@@ -76,7 +76,10 @@ const subscription1 = subscribeRemoteDataView({
     viewport: 'test-vp-id-1',
     tablename: 'Instruments',
     columns,
-    range: {lo:0, hi: 10}
+    range: {lo:0, hi: 25}
+}, ({viewport, rowData}) => {
+  console.log(`rowData for ${viewport}`);
+  console.table(rowData.rows);
 });
 
 // const subscription2 = subscribeRemoteDataView({

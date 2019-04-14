@@ -1,12 +1,9 @@
 import {EventEmitter} from './transports/eventEmitter.mjs';
-
 const transportModule = process.env.TRANSPORT || '/websocket.js';
-
 let connection;
 let _requestSeq = 0;
 
 export default class Connection extends EventEmitter {
-
     static connect(connectionString, userid=null, password=null) {
 
         return connection || (connection = new Promise(
@@ -20,23 +17,15 @@ export default class Connection extends EventEmitter {
     }
 
     constructor(transport) {
-
         super();
-
         this.transport = transport;
-
         transport.on('message', (evtName, message) => {
             if (Array.isArray(message)) {
-                message.forEach(message => this.publishMessage(message));
+                message.forEach(message => this.emit('message', message));
             } else {
-                this.publishMessage(message);
+                this.emit('message', message);
             }
-
         });
-    }
-
-    publishMessage(message){
-        this.emit('message', message);
     }
 
     // send message to server
@@ -49,5 +38,4 @@ export default class Connection extends EventEmitter {
         _requestSeq += 1;
         return 'REQ' + _requestSeq;
     }
-
 }

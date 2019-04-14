@@ -883,7 +883,7 @@ class ServerProxy {
     // if we're going to support multiple connections, we need to save them against connectionIs
     connect({connectionString, connectionId: connectionId$$1=0}) {
 
-        console.log(`[ServerProxy.connect] connectionString: ${connectionString} connectionId: ${connectionId$$1}`);
+        logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId$$1}`);
         this.connectionStatus = 'connecting';
 
         const module = asyncServerModule ||

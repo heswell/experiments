@@ -9,6 +9,7 @@ export const connectionId = {
 export const msgType = {
   connect : 'connect',
   connectionStatus : 'connection-status',
+  rowData : 'rowData',
 
 
 
@@ -24,7 +25,6 @@ export const msgType = {
   getSearchData : 'GetSearchData',
   groupBy : 'groupBy',
   modifySubscription : 'ModifySubscription',
-  rowData : 'rowData',
   searchData : 'searchData',
   select : 'select',
   setColumns: 'setColumns',
