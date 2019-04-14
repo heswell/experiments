@@ -65,7 +65,7 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
             const msg = JSON.stringify(queue);
-            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
+            //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;
@@ -75,7 +75,7 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
     function queueReader() {
         if (_update_queue.length > 0) {
             const msg = JSON.stringify(_update_queue.queue);
-            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
             return msg;
         } else {
             return null;

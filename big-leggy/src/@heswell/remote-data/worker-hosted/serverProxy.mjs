@@ -1,12 +1,15 @@
 import Connection from './connection.mjs';
 import Subscription from './subscription.mjs';
-import * as Message from './messages.js';
-import {ServerApiMessageTypes as API} from './messages.js';
-import {DataTypes} from '../data/store/types.js';
-import {NULL_RANGE} from '../data/store/rangeUtils.js';
+import * as Message from '../messages.js';
+import {ServerApiMessageTypes as API} from '../messages.js';
+import {DataTypes} from '../../data/store/types.js';
+import {NULL_RANGE} from '../../data/store/rangeUtils.js';
+import {createLogger, logColor} from '../constants';
 
-const serverModule = process.env.SERVER_MODULE || '/server-api/dist/viewserver.js';
-console.log(`[ServerProxy] serverModule = ${serverModule}`)
+const logger = createLogger('ServerProxy', logColor.brown);
+
+const serverModule = process.env.SERVER_MODULE || '/viewserver.js';
+logger.log(`serverModule = ${serverModule}`)
 const PLAIN = 'color: black; font-weight: normal';
 const BLUE = 'color: blue; font-weight: bold';
 const BROWN = 'color: brown; font-weight: bold';
@@ -48,7 +51,7 @@ export class ServerProxy {
         this.pendingSubscriptionRequests = {};
 
         Promise.resolve().then(() => {
-            console.log(`[ServerProxy.constructor]   ==> identity`);
+            logger.log(`<constructor>   ==> identity`);
             postMessage({ data: { type: 'identify', clientId: windowId() } });
         });
 
@@ -200,7 +203,7 @@ export class ServerProxy {
             (asyncServerModule = import(/* webpackIgnore: true */ serverModule)
                 .catch(err => console.log(`failed to load server ${err}`)))
 
-        module.then(serverModule => {
+            module.then(serverModule => {
             const Server = serverModule.default;
             const server = this.server = new Server();
 

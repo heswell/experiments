@@ -1,8 +1,12 @@
-import { replace, indexOf } from './utils/arrayUtils.mjs';
-import {rangeUtils, DataTypes} from '../data/index';
-import { metaData } from '../data/store/columnUtils';
-import {setFilterColumnMeta} from '../data/store/columnUtils';
+import {rangeUtils, DataTypes} from '../../data/index';
+import { metaData } from '../../data/store/columnUtils';
+import {setFilterColumnMeta} from '../../data/store/columnUtils';
 
+function replace(arr,idx, value){
+    const result = arr.slice();
+    result[idx] = value;
+    return result;
+}
 
 const {NULL_RANGE} = rangeUtils;
 
@@ -266,7 +270,7 @@ export default class Subscription {
     // child contents of grouped data.
     toggleGroupNode(groupKey) {
         const { KEY, DEPTH } = this.meta;
-        const idx = indexOf(this._data.data, row => row[KEY] === groupKey);
+        const idx = this._data.data.findIndex(row => row[KEY] === groupKey);
         const groupRow = this._data.data[idx];
         return this._data.data[idx] = replace(groupRow, DEPTH, -groupRow[DEPTH]);
     }

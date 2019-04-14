@@ -10,7 +10,7 @@ import {
     COLLAPSE_GROUP,
     DATA,
     ServerApiMessageTypes as API
-} from '../messages';
+} from '../../messages';
 
 
 //const HEART = String.fromCharCode(9829);

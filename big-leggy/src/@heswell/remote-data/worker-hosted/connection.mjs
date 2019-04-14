@@ -1,6 +1,6 @@
 import {EventEmitter} from './transports/eventEmitter.mjs';
 
-const transportModule = process.env.TRANSPORT;
+const transportModule = process.env.TRANSPORT || '/websocket.js';
 
 let connection;
 let _requestSeq = 0;

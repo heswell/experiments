@@ -3,7 +3,7 @@ import {metaData} from '../data/store/columnUtils';
 import { DataTypes, NULL_RANGE, columnUtils, rangeUtils, rowUtils } from '@heswell/data';
 import {setFilterColumnMeta, binFilterColumnMeta} from '../data/store/columnUtils';
 import {EventEmitter} from '@heswell/utils';
-import {subscribe} from './server-api';
+import {subscribe as subscribeServerApi} from './client-hosted/server-api';
 const uuid = require('uuid');
 
 export default class RemoteView extends EventEmitter {
@@ -66,7 +66,7 @@ export default class RemoteView extends EventEmitter {
     }
 
     subscribe(columns, callback) {
-        this._subscription = subscribe({
+        this._subscription = subscribeServerApi({
             viewport: this._id,
             tablename: this._table,
             columns: this._dataOptions.columns,

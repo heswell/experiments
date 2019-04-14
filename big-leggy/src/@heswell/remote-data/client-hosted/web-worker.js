@@ -1,5 +1,5 @@
 
-import {ServerProxy} from './serverProxy.mjs';
+import {ServerProxy} from '../worker-hosted/serverProxy.mjs';
 
 export default class WebWorker {
 

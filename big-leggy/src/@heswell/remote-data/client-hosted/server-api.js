@@ -1,29 +1,29 @@
-import * as Message from './messages.js';
-import {ServerApiMessageTypes as API} from './messages.js';
+import * as Message from '../messages.js';
+import {ServerApiMessageTypes as API} from '../messages.js';
 import ClientSubscription from './client-subscription';
-import uuid from '../server-core/uuid';
+import uuid from '../../server-core/uuid';
+import {msgType as Msg, createLogger, logColor, connectionId as _connectionId} from '../constants';
 
-import { getWorker } from './worker';
+import { postMessageToWorker, setWorkerCallback } from './worker';
+
+const logger = createLogger('ServerApi', logColor.brown);
 
 const clientId = uuid();
 
 // first call to getWorker triggers the module load and sets the callback
-getWorker(messageFromTheWorker)
+setWorkerCallback(messageFromTheWorker)
 
 const workerModule = process.env.WORKER_MODULE || '/web-worker.js';
-console.log(`[ServerApi] workerModule = ${workerModule}`)
+logger.log(`[ServerApi] workerModule = ${workerModule}`)
 // const asyncWorkerModule = import(/* webpackIgnore: true */ workerModule)
 //     .catch(err => console.log(`failed to load worker ${err}`));
 
 
-// let worker;
 let defaultConnection = {status: 'pending'};
 let pendingConnection = new Promise((resolve, reject) => {
     defaultConnection.resolve = resolve;
     defaultConnection.reject = reject;
 });
-
-
 
 const getDefaultConnection = () => pendingConnection;
 
@@ -32,10 +32,6 @@ const subscriptions = {};
 const pendingPromises = {};
 let _requestId = 1;
 let _subscriptionId = 1;
-
-function postMessage(message){
-    getWorker().then(worker => worker.postMessage(message));
-}
 
 // Multiple calls to this will be ok, but only one connection to each server will be possible
 // more than one connection can be created if more than one url is specified. 
@@ -59,9 +55,12 @@ export function connect(
 
         defaultConnection.status = 'connecting';
     }
+
+    // connections[connectionString] set to a promise. However will be replaced with
+    // the actual connection once connected, That can't be right
     return connections[connectionString] || (
         connections[connectionString] = new Promise(async (resolve, reject) => {
-            const connectionId = `connection-${_requestId++}`;
+            const connectionId = `connection-${_connectionId.nextValue}`;
             const timeoutHandle = setTimeout(() => {
                 delete pendingPromises[connectionId];
                 reject(new Error('timed out waiting for server response'));
@@ -71,11 +70,11 @@ export function connect(
                 reject,
                 connectionString,
                 timeoutHandle,
-                isDefaultConnection
+                // do we want this to be true ONLY if this was the first request ?
+                isDefaultConnection 
             };
-            const worker = await getWorker();
-            const msg = {type: 'connect', clientId, connectionId, connectionString};
-            worker.postMessage(msg);
+            logger.log(JSON.stringify({type: Msg.connect, clientId, connectionId, connectionString}))
+            postMessageToWorker({type: 'connect', clientId, connectionId, connectionString});
         })
     )
 }
@@ -86,7 +85,7 @@ export function subscribe(message){
     const viewport = message.viewport || `viewport-${_subscriptionId++}`;
     const subscription = subscriptions[viewport] = new ClientSubscription(null, viewport)
 
-    // const timeoutHandle = setTimeout(() => {throw new Error(`Timed out`)}, 1000)
+    // blocks here until connection is resolved (to an instance of ServerApi)
     getDefaultConnection().then(connection => {
         console.log(`serverApi, now we have a connection, we can subscribe`)
         connection.subscribe(message, viewport);
@@ -96,6 +95,7 @@ export function subscribe(message){
     return subscription;
 }
 
+// returned to clients asynchronously when they subscribe
 class ServerAPI {
     constructor(connectionId, isDefault){
         this.connectionId = connectionId;
@@ -110,7 +110,7 @@ class ServerAPI {
         // From here, the serverProxy will maintain the association between connection
         // and viewport, we only have to supply viewport
         console.log(`[ServerApi.subscribe]   ${API.addSubscription}  ===>  SW   vp: ${viewport} ${JSON.stringify(message,null,2)}`)
-        postMessage({
+        postMessageToWorker({
             connectionId: this.connectionId,
             viewport,
             type: API.addSubscription,
@@ -127,7 +127,7 @@ class ServerAPI {
     query(requestType, params=null){
         return new Promise(function(resolve, reject){
             const correlationId = uuid.v1();
-            postMessage({
+            postMessageToWorker({
                 requestId: correlationId,
                 type: requestType,
                 params

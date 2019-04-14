@@ -77,6 +77,7 @@ export default class Grid extends React.Component {
             }
 
             if (this.state.groupToggled && rowCount !== 0){
+                // is this necessary every time ?
                 const [group] = model._groups;
                 const [column] = group.columns;
                 const width = getColumnWidth(column);
@@ -85,6 +86,7 @@ export default class Grid extends React.Component {
             }
 
             if (rowCount !== null && rowCount !== model.rowCount) {
+                // don't we really only need to do this if rowCount change takes us out of / in to scroll state ?
                 state.model = this.reducer.dispatch({ type: Action.ROWCOUNT, rowCount });
             }
             this.setState(state);

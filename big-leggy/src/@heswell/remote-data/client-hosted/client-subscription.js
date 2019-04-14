@@ -1,14 +1,7 @@
 // import uuid from '../server-core/uuid';
-import * as Message from './messages.js';
-import { DataTypes } from '../data/store/types';
-import { getWorker } from './worker';
-
-// const clientId = uuid();
-
-async function postMessage(message){
-  const worker = await getWorker();
-  worker.postMessage(message);
-}
+import * as Message from '../messages.js';
+import { DataTypes } from '../../data/store/types';
+import { postMessageToWorker } from './worker';
 
 export default class ClientSubscription {
   constructor(connectionId, subscriptionId){
@@ -29,7 +22,7 @@ export default class ClientSubscription {
   }
 
   setRange(lo, hi, dataType=DataTypes.ROW_DATA){
-      postMessage({
+    postMessageToWorker({
           // clientId,
           viewport: this.id,
           type: Message.SET_VIEWPORT_RANGE,
@@ -39,7 +32,7 @@ export default class ClientSubscription {
   }
 
   groupBy(columns){
-      postMessage({
+    postMessageToWorker({
           viewport: this.id,
           type: Message.GROUP_BY,
           groupBy: columns
@@ -47,7 +40,7 @@ export default class ClientSubscription {
   }
 
   setGroupState(groupState){
-      postMessage({
+    postMessageToWorker({
           viewport: this.id,
           type: Message.SET_GROUP_STATE,
           groupState
@@ -55,7 +48,7 @@ export default class ClientSubscription {
   }
 
   sort(columns){
-      postMessage({
+    postMessageToWorker({
           viewport: this.id,
           type: Message.SORT,
           sortCriteria: columns
@@ -63,7 +56,7 @@ export default class ClientSubscription {
   }
 
   filter(filter, dataType=DataTypes.ROW_DATA){
-      postMessage({
+    postMessageToWorker({
           viewport: this.id,
           type: Message.FILTER,
           dataType,
@@ -72,7 +65,7 @@ export default class ClientSubscription {
   }
 
   getFilterData(column, searchText, range){
-      postMessage({
+    postMessageToWorker({
           viewport: this.id,
           type: Message.GET_FILTER_DATA,
           column,
