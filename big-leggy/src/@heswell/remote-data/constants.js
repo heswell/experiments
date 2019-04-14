@@ -10,7 +10,7 @@ export const msgType = {
   connect : 'connect',
   connectionStatus : 'connection-status',
   rowData : 'rowData',
-
+  rowSet: 'rowset',
 
 
 

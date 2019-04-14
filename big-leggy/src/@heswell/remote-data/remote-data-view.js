@@ -5,6 +5,7 @@ import {msgType as Msg, createLogger, logColor,
 
 import {ServerProxy} from './remote-server-proxy.js';
 import RemoteSubscription from './remote-subscription';
+import { fillNavSetsFromGroups } from '../data/store/groupUtils';
 
 const serverProxy = new ServerProxy(messageFromTheServer);
 
@@ -23,8 +24,17 @@ function messageFromTheServer({data: {type: msgType, ...message}}){
       case Msg.rowData:
           subscriptions[message.viewport].postMessageToClient(message);
           break;
+      case Msg.rowSet: {  
+          const {viewport, data} = message;
+          // logger.log(JSON.stringify(message,null,2))
+          subscriptions[message.viewport].postMessageToClient({
+            viewport,
+            rowData: data
+          });
+          }
+          break;
       default:
-          logger.log(`does not yet handle ${msgType}}`);
+          logger.log(`does not yet handle ${msgType}`);
   }
 }
 
@@ -97,7 +107,7 @@ function onConnected(message){
           const {resolve, connectionString, timeoutHandle, isDefaultConnection} = pendingPromises[connectionId];
           clearTimeout(timeoutHandle);
           delete pendingPromises[connectionId];
-          const connection = connections[connectionString] = RemoteConnection(connectionId, postMessageToServer);
+          const connection = connections[connectionString] = RemoteConnectionAPI(connectionId, postMessageToServer);
           resolve(connection);
           if (isDefaultConnection && defaultConnection.status !== 'connected'){
               defaultConnection.status = 'connected';
@@ -127,7 +137,7 @@ export function subscribe(message, clientCallback){
   return subscription;
 }
 
-const RemoteConnection = (connectionId, postMessage) => ({
+const RemoteConnectionAPI = (connectionId, postMessage) => ({
   
     disconnect(){
         console.log(`disconnect ${connectionId}`)

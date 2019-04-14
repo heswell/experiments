@@ -1,5 +1,5 @@
-import Connection from './worker-hosted/connection.mjs';
 import Subscription from './worker-hosted/subscription.mjs';
+import Connection from './remote-websocket-connection';
 import * as Message from './messages.js';
 import {ServerApiMessageTypes as API} from './messages.js';
 import {DataTypes} from '../data/store/types.js';
@@ -41,20 +41,19 @@ export class ServerProxy {
             case Msg.setViewRange:
                 //TODO drop buffering if we are scrolling faster than buffer can keep up
                 if (subscription = this.subscriptions[viewport]) {
-                    const { bufferSize } = subscription;
                     const { range, dataType } = message;
-                    const { size, offset } = subscription[dataType];
+                    // const { size, offset } = subscription[dataType];
                     this.sendMessageToServer({
-                        type: Message.SET_VIEWPORT_RANGE,
+                        type: Msg.setViewRange,
                         ...message,
                         dataType,
-                        range: { ...range, bufferSize }
+                        range: { ...range, bufferSize: 0 }
                     });
-                    const rows = subscription.putRange(message.range, dataType);
-                    if (rows.length) {
-                        logger.log(`<handleMessageFromClient -> postMessage> ${dataType} rows from cache ${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}`);
-                        this.postMessageToClient({ data: { type: dataType, viewport, [dataType]: { data: rows, size, offset, range } } });
-                    }
+                    // const rows = subscription.putRange(message.range, dataType);
+                    // if (rows.length) {
+                    //     logger.log(`<handleMessageFromClient -> postMessage> ${dataType} rows from cache ${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}`);
+                    //     this.postMessageToClient({ data: { type: dataType, viewport, [dataType]: { data: rows, size, offset, range } } });
+                    // }
                 } else {
                     console.log(`%c setViewRange, no subscription`,'background-color: brown;color: cyan')
                     this.queuedRequests.push(message);
@@ -151,16 +150,8 @@ export class ServerProxy {
 
         logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`)
         this.connectionStatus = 'connecting';
-
-        const connection = this.connection = await Connection.connect(connectionString);
-
-        // call the server to group messages by viewport, then invoke each batch with the subscription for that viewport
-        connection.on('message', (evtName, msg) => {
-            return this.handleMessageFromServer(msg);
-        });
-
+        this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
         this.onReady(connectionId);
-
     }
 
     subscribe(/* client message */ message ){

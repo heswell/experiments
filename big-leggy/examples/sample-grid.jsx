@@ -71,16 +71,27 @@ ReactDOM.render(
   </>,
   document.getElementById('root'));
 
-
+let count = 0;  
+let start = performance.now();
 const subscription1 = subscribeRemoteDataView({
     viewport: 'test-vp-id-1',
     tablename: 'Instruments',
     columns,
     range: {lo:0, hi: 25}
 }, ({viewport, rowData}) => {
+  const end = performance.now();
   console.log(`rowData for ${viewport}`);
   console.table(rowData.rows);
+  console.log(`time to data ${end-start} ms`)
+
+  if (count++ === 0){
+    start = performance.now();
+    subscription1.setRange(20,45);
+  }
+
 });
+
+
 
 // const subscription2 = subscribeRemoteDataView({
 //   viewport: 'test-vp-id-2',

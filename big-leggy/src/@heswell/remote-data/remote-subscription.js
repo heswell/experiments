@@ -1,6 +1,5 @@
 import { DataTypes } from '../data/store/types';
 import {msgType as Msg} from './constants';
-import { postMessageToWorker } from './client-hosted/worker';
 
 export default class RemoteSubscription {
   constructor(viewport, postMessageToServer, postMessageToClient){
@@ -13,7 +12,7 @@ export default class RemoteSubscription {
     this.postMessageToServer({
           // clientId,
           viewport: this.viewport,
-          type: postMessageToWorker.setRange,
+          type: Msg.setViewRange,
           range: {lo,hi},
           dataType
       })

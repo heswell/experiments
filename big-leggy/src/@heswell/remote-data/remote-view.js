@@ -135,7 +135,7 @@ export default class RemoteView extends EventEmitter {
                     break;
 
                 default:
-                    console.log(`RemoteVide no handler for ${JSON.stringify(message)}`);
+                    console.log(`RemoteView no handler for ${JSON.stringify(message)}`);
             }
         };
 

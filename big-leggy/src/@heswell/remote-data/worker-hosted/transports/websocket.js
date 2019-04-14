@@ -4,16 +4,13 @@ import {EventEmitter} from './eventEmitter.mjs';
 export function connect(connectionString) {
     console.log(`[WebSocket.connect]`)
     return new Promise(function (resolve, reject) {
-
         const transport = new Connection(connectionString);
-
         transport.on('connection-status', (eventName, {status}) => {
 
             if (status === 'connected') {
                 console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
                 resolve(transport);
             }
-
         });
     });
 }
@@ -21,9 +18,7 @@ export function connect(connectionString) {
 class Connection extends EventEmitter {
 
     constructor(connectionString) {
-
         super();
-
         const ws = new WebSocket('ws://' + connectionString);
 
         ws.onopen = evt => {
@@ -32,13 +27,9 @@ class Connection extends EventEmitter {
         };
 
         ws.onmessage = evt => websocketMessage(this, evt);
-
         ws.onerror = evt => websocketError(this, evt);
-
         ws.onclose = evt => websocketClosed(this, evt);
-
         this.ws = ws;
-
     }
 
     //TODO should we separate the message type from the message itself ?
