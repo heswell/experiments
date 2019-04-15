@@ -1,3 +1,8 @@
+/*
+    why is _scrollLeft set to undefined in both willMount and willUnmount
+
+*/
+
 // TODO calculate width, height if not specified
 /*global requestAnimationFrame cancelAnimationFrame */
 import React from 'react';
@@ -28,20 +33,19 @@ export default class Grid extends React.Component {
         showFilters: false
     };
 
-    header;
-    viewport;
-    // can this be replaced with value from model ?
-    _scrollLeft;
-    reducer;
-    _scrollTimer;
-
     constructor(props) {
         super(props);
         let { dataView, showFilters, columns } = props;
-        const scrollbarSize = getScrollbarSize();
 
+        this.header = React.createRef();
+        this.viewport = React.createRef();
         this.inlineFilter = React.createRef();
 
+        const scrollbarSize = getScrollbarSize();
+
+        this._scrollLeft = undefined;
+        this._scrollTimer = null;
+    
         // NO, the columnMap must be owned by the grid
         const { columnMap } = dataView;
         // we know height and rowheight, can can make an accurate estimation of range
@@ -116,7 +120,7 @@ export default class Grid extends React.Component {
         return (
             <div style={{ ...style, position: 'relative', height, width }} className={className}>
                 {showHeaders &&
-                    <Header ref={header => this.header = header}
+                    <Header ref={this.header}
                         height={headingHeight}
                         gridModel={model}
                         onColumnResize={this.handleColumnResize}
@@ -147,7 +151,7 @@ export default class Grid extends React.Component {
                 <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
                     {interpolatingStyle =>
                         <Viewport
-                            ref={viewport => this.viewport = viewport}
+                            ref={this.viewport}
                             rows={rows}
                             selectedRows={selected}
                             selectionDefault={selectionDefault}
@@ -179,9 +183,8 @@ export default class Grid extends React.Component {
 
     componentWillUnmount() {
         this._scrollLeft = undefined;
-        this.header = null;
         this.state.dataView.unsubscribe();        
-        // this.state.dataView.removeListener(DataTypes.ROW_DATA, this.onRowset)
+
         // don't destroy a  Data View that we don't sown
         if (!this.props.dataView){
             this.state.dataView.destroy();
@@ -310,7 +313,7 @@ export default class Grid extends React.Component {
         const model = this.reducer.dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
         this.setState({ model }, () => {
             this.state.dataView.sort(model.sortBy);
-            this.viewport.setScroll(0);
+            this.viewport.current.setScroll(0);
         });
     }
 
@@ -328,7 +331,7 @@ export default class Grid extends React.Component {
         const groupToggled = groupBy !== null;
         this.setState({ model, groupToggled }, () => {
             this.state.dataView.groupBy(groupBy, extendsExistingGroupBy);
-            this.viewport.setScroll(0, 0);
+            this.viewport.current.setScroll(0, 0);
         });
     }
 
@@ -402,7 +405,7 @@ export default class Grid extends React.Component {
                         const { scrollLeft } = this.reducer.state;
                         model = this.reducer.dispatch({ type, scrollDistance });
                         if (model.scrollLeft !== scrollLeft) {
-                            this.viewport.scrollTo(model.scrollLeft);
+                            this.viewport.current.scrollTo(model.scrollLeft);
                             this._scrollTimer = requestAnimationFrame(scroll);
                             this.setState({ model });
                         }
@@ -502,6 +505,7 @@ export default class Grid extends React.Component {
         }
     }
 
+    // do we need to call a prop for this ?
     handleVerticalScroll = (scrollTop) => {
 
         if (this.props.onScroll) {
@@ -522,8 +526,8 @@ export default class Grid extends React.Component {
 
     onHorizontalScroll() {
         const scrollLeft = this._scrollLeft;
-        if (this.header) {
-            this.header.setScrollLeft(scrollLeft);
+        if (this.header.current) {
+            this.header.current.setScrollLeft(scrollLeft);
         }
         if (this.inlineFilter.current) {
             this.inlineFilter.current.setScrollLeft(scrollLeft);

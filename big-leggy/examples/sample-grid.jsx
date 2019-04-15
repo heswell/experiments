@@ -5,12 +5,12 @@ import {LocalView} from '../src/@heswell/data/view';
 import RemoteView from '../src/@heswell/remote-data/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
-//import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
+import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
 import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
 import { connect as connectRemoteDataView } from '../src/@heswell/remote-data/remote-data-view';
 import {subscribe as subscribeRemoteDataView} from '../src/@heswell/remote-data/remote-data-view';
 
-const data= null;
+//const data= null;
 
 const locked = true;
 
@@ -71,6 +71,7 @@ ReactDOM.render(
   </>,
   document.getElementById('root'));
 
+  /*
 let count = 0;  
 let start = performance.now();
 const subscription1 = subscribeRemoteDataView({
@@ -91,7 +92,7 @@ const subscription1 = subscribeRemoteDataView({
 
 });
 
-
+*/
 
 // const subscription2 = subscribeRemoteDataView({
 //   viewport: 'test-vp-id-2',
