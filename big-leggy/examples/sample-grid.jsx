@@ -6,8 +6,8 @@ import RemoteView from '../src/@heswell/remote-data/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
-import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
-import { connect as connectRemoteDataView } from '../src/@heswell/remote-data/remote-data-view';
+// import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
+// import { connect as connectRemoteDataView } from '../src/@heswell/remote-data/remote-data-view';
 import {subscribe as subscribeRemoteDataView} from '../src/@heswell/remote-data/remote-data-view';
 
 //const data= null;

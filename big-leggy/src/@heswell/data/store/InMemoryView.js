@@ -122,7 +122,7 @@ export default class InMemoryView {
     filter(filter, dataType=DataTypes.ROW_DATA) {
         if (dataType === DataTypes.FILTER_DATA){
 
-            return [,this.filterFilterData(filter)];
+            return [undefined,this.filterFilterData(filter)];
         
         } else {
             const { rowSet, _filter, filterRowSet } = this;

@@ -106,7 +106,7 @@ export default class BaseRowSet {
         const resultMap = {};
         const data = [];
         const dataRowCount = rows.length;
-        const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column)
+        const [/*columnFilter*/, otherFilters] = splitFilterOnColumn(currentFilter, column)
         // this filter for column that we remove will provide our selected values   
         let dataRowAllFilters = 0;
 

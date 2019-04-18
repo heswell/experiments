@@ -6,6 +6,39 @@ import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
 
+const DEFAULT_STATE = {
+    width: 400,
+    height: 300,
+    headerHeight: 25,
+    rowHeight: 23,
+    minColumnWidth: 80,
+    groupColumnWidth: 'auto',
+    columns: [],
+    sortBy: null,
+    groupBy: null,
+    groupState: null,
+    filter: null,
+    rowCount: 0,
+    scrollbarSize: 15,
+    scrollLeft: 0,
+    collapsedColumns: null,
+
+    displayWidth: 400,
+    totalColumnWidth: 0,
+    selectionModel: Selection.MultipleRow,
+
+    meta: null,
+
+    _columns: null,
+    _columnMap: null,
+    _movingColumn: null,
+    _groups: null,
+    _overTheLine: 0,
+    _columnDragPlaceholder: null,
+    _headingDepth: 1,
+    _headingResize: undefined
+};
+
 const DEFAULT_PRESENTER = getFormatter();
 const RESIZING = {resizing: true};
 const NOT_RESIZING = {resizing: false};
@@ -25,7 +58,7 @@ const MAX_OVER_THE_LINE = 20;
 
 const MISSING_TYPE = undefined;
 const handlers = {
-    [Grid.INITIALIZE]: init,
+    [Grid.INITIALIZE]: initialize,
     [Grid.ROWCOUNT]: setRowCount,
     [Grid.SORT]: sort,
     [Grid.FILTER]: applyFilter,
@@ -49,11 +82,19 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
-export default function handle(state, action){
+//TODO move to grid, we shouldn't know about data here
+export function init({data, model}){
+    return {
+        data,
+        model: initialize(DEFAULT_STATE, {type: Grid.INITIALIZE, gridState: model})
+    }
+}
+
+export default function reducer(state, action){
     return (handlers[action.type] || MISSING_HANDLER)(state, action);
 }
 
-export function init(state, action) {
+export function initialize(state, action) {
     const {
         width=state.width,
         height=state.height,
@@ -85,7 +126,7 @@ export function init(state, action) {
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize);
 
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
-
+    console.log(`initialize rowCount = ${rowCount}`)
     return {
         ...state,
         width,
@@ -115,9 +156,11 @@ function setRowCount(state, {rowCount}) {
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
 
     if (displayWidth === state.displayWidth){
+        console.log(`setRowCount 1`);
         return { ...state, rowCount };
     } else {
-        return init(state, {gridState: {rowCount}});
+        console.log(`setRowCount 2 to ${rowCount}`);
+        return initialize(state, {gridState: {rowCount}});
     }
 }
 
@@ -128,7 +171,7 @@ function sort(state, {column, direction, preserveExistingSort}) {
         : state.sortBy.concat(newSortCriteria);
 
     // be careful - re-assigns keys to columns
-    return init(state, {gridState: {sortBy}});
+    return initialize(state, {gridState: {sortBy}});
 }
 
 // This will cause entire grid to re-render when only headings need to,
@@ -151,14 +194,14 @@ function sortGroup(state, {column}) {
                 ? sortCol
                 : groupCol);
 
-            return init(state, {gridState: {groupBy}});
+            return initialize(state, {gridState: {groupBy}});
         }
     }
     return state;
 }
 
 function applyGroup(state, {groupBy,rowCount=state.rowCount}) {
-    return init(state, {gridState: {groupBy,rowCount}});
+    return initialize(state, {gridState: {groupBy,rowCount}});
 }
 
 // do we need ?
@@ -222,12 +265,12 @@ function getColumnAdjustments(pos, numCols, diff){
 }
 
 function gridResize(state, {width,height}) {
-    return init(state, {gridState: {width,height}});
+    return initialize(state, {gridState: {width,height}});
 }
 
 // called as a one-off rather than continuous resize, e.g. for grouped column
 function groupColumnWidth(state, {/*column, */width}){
-    return init(state, {gridState: {groupColumnWidth: width}});
+    return initialize(state, {gridState: {groupColumnWidth: width}});
 }
 
 function columnResize(state, {column, width}) {
@@ -353,7 +396,7 @@ function collapseColumn(state, {column}) {
         ? [column.label]
         : state.collapsedColumns.concat(column.label);
 
-    return init(state, {gridState: {collapsedColumns}});
+    return initialize(state, {gridState: {collapsedColumns}});
 }
 
 function expandColumn(state, {column}) {
@@ -362,7 +405,7 @@ function expandColumn(state, {column}) {
         ? null
         : updatedCollapsedColumns;
 
-    return init(state, {gridState: {collapsedColumns}});
+    return initialize(state, {gridState: {collapsedColumns}});
 }
 
 // This function manipulates state without cloning - it is an internal function called on 

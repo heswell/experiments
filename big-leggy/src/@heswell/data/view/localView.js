@@ -142,8 +142,10 @@ export default class LocalView extends EventEmitter {
     }
 
     sort(sortCriteria){
-        const {rows, size} = this._dataView.sort(sortCriteria);
-        this.processIncomingRows(DataTypes.ROW_DATA, rows, size)
+        if (sortCriteria !== null){
+            const {rows, size} = this._dataView.sort(sortCriteria);
+            this.processIncomingRows(DataTypes.ROW_DATA, rows, size)
+        }
     }
 
     filter(filter, dataType=DataTypes.ROW_DATA){
@@ -196,7 +198,7 @@ export default class LocalView extends EventEmitter {
     }
 
     // TODO add support for filter, so we can filter out zero-value filterCount
-    getFilterData(column, searchText=null, filter=null){
+    getFilterData(column, searchText=null/*, filter=null*/){
         const range = this._filterData /* && (searchText || this._filterData.searchText) */
             ? this._filterData.range
             : NULL_RANGE;
