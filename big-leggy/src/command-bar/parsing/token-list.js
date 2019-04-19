@@ -80,7 +80,7 @@ export default class TokenList {
   }
 
   shouldApplyValidation(){
-    return this._requiredDescriptors.length > 0 && this._optionalDescriptors.length > 0;
+    return this._requiredDescriptors.length > 0 || this._optionalDescriptors.length > 0;
   }
 
   /**
@@ -148,6 +148,12 @@ export default class TokenList {
     }
   }
 
+  getIndexOfTokenAtOffset(offset){
+    return this._tokens.findIndex(
+      ({ startOffset, text }) => offset >= startOffset && offset <= startOffset + text.length
+    )
+
+  }
   getTokenAtOffset(offset) {
     return this._tokens.find(
       ({ startOffset, text }) => offset >= startOffset && offset <= startOffset + text.length
@@ -169,6 +175,7 @@ export default class TokenList {
     const len = text.length;
     let startOffset = 0;
     let tokenIdx = 0;
+    let wsIdx = 0;
     const requiredDescriptors = this._requiredDescriptors;
 
     for (let i = 0; i < text.length; i++) {
@@ -180,8 +187,9 @@ export default class TokenList {
           i++;
         }
         const t = text.substring(tokenStart, i + 1);
-        results.push({ type: TokenType.WhiteSpace, startOffset, text: t });
+        results.push({ type: TokenType.WhiteSpace, startOffset, text: t, wsIdx });
         startOffset += t.length;
+        wsIdx += 1;
       } else {
         const tokenDescriptor = requiredDescriptors[tokenIdx] || UNKNOWN_TOKEN_DESCRIPTOR;
         const { searchId } = tokenDescriptor;
@@ -264,11 +272,9 @@ export default class TokenList {
 
 }
 
-export const EmptyTokenList = new TokenList();
-
 const searchTokenResolvedMultipleResults = (_searchTokens, searchId) => {
   const searchToken = _searchTokens[searchId];
   return searchToken && searchToken.matchingSuggestions && searchToken.matchingSuggestions.length;
 }
 
-export const EmtyTokenList = new TokenList();
+export const EmptyTokenList = new TokenList();

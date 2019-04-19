@@ -99,11 +99,11 @@ export const searchAssets = searchTerm =>
       Assets.forEach(entity => {
         // search terms are logically ANDed together, so we must match every pattern
         if (searchPatterns.every(pattern => entity.some(property => pattern.test(property)))) {
-          const [bbgld, ric, name] = entity;
+          const [bbgId, ric, name] = entity;
           searchResult.searchResults.push({
             value: entity.join(),
-            speedbarText: `${bbgld}`,
-            suggestionText: `${bbgld} ${ric} (${name})`
+            speedbarText: `${bbgId}`,
+            suggestionText: [bbgId, ric, name]
           });
         }
       });

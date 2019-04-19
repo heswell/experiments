@@ -258,7 +258,7 @@ export default class CommandWindow extends React.Component {
     }
   };
 
-  processInput(inputText = '', inputMethod = InputMethod.UserInput) {
+  async processInput(inputText = '', inputMethod = InputMethod.UserInput) {
     const {
       searchTokens,
       commandState: { commandPrefix },
@@ -532,8 +532,8 @@ export default class CommandWindow extends React.Component {
           }
         });
         setTimeout(() => {
-          this.clearState(true);
-        }, 100);
+          this.clearState(false);
+        }, 200);
       } catch (err) {
         const errorMessage = err.toString();
         this.setState({
@@ -567,7 +567,7 @@ export default class CommandWindow extends React.Component {
   }
 
   getUnresolvedSearchTokens(){
-    const {searchTokens} = this.state;
+    const {searchTokens = {} } = this.state;
     return Object.values(searchTokens).filter(token => token.matchingSuggestions && token.matchingSuggestions.length > 0);
   }
 
@@ -631,7 +631,7 @@ export default class CommandWindow extends React.Component {
           onClearSearchToken={this.clearSearchToken}
           onRevisitSearchToken={this.revisitSearchToken}
           onFocus={this.handleFocus}
-          onClick={this.handleClick}
+          onClick={this.handleInputClick}
         />
         {showSuggestions && (
           <CommandSuggestions

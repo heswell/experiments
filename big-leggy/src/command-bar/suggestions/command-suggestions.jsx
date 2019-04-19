@@ -57,6 +57,8 @@ export default class CommandSuggestions extends React.Component {
     const showCommandCue = isComplete || (!showSuggestions && tokenDescriptors.length > 0);
     const showTooltip = !searchIsUnresolved && !showCommandCue && !showSuggestions;
 
+    const [unmatched] = unresolvedSearchResults;
+    
     return <>
       {showCommandCue && (
         <CommandCue

@@ -87,6 +87,12 @@ function parsePrefixAndMapToCommand(
     if (commandStatus === CommandStatus.PrefixValid) {
       const cmdPrefix = commandPrefix.toUpperCase();
       command = commands.find(cmd => cmd.prefix.toUpperCase() === cmdPrefix);
+
+      const requiredTokens = command.commandTokens.filter(token => token.required !== false);
+      if (requiredTokens.length === 0){
+        commandStatus = CommandStatus.CommandComplete;
+      }
+
     } else {
       commandPrefix = '';
     }

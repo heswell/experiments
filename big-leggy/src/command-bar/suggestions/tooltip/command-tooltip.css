@@ -7,6 +7,11 @@
   flex-flow: column nowrap;
   flex: 1 1 auto;
   font-size: .8125rem;
+  white-space: nowrap;
+}
+
+.speedbar-command-prefix {
+  white-space: nowrap;
 }
 
 .speedbar-window-command .suggestions-tooltip-icon,

@@ -2,7 +2,7 @@ import { buildRegexFromSearchTerm } from '../../../token-search';
 
 export const SEARCHID_OPTIONAL_TOKENS = 'optional-tokens';
 
-export const patternsLast = (suggestion1, suggestion2) => {
+const patternsLast = (suggestion1, suggestion2) => {
   const s1 = suggestion1.pattern === undefined ? 0 : 1;
   const s2 = suggestion2.pattern === undefined ? 0 : 1;
   return s1 - s2;

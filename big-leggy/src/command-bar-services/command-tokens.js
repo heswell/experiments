@@ -102,7 +102,7 @@ export const MULTIPLIER = {
   description: '100x Multiplier',
   formatHelp: '100x',
   valuesHelp: [
-    {value: '<value>x', description: 'Multiplier', pattern: /^\d+x?$/}
+    {value: '<value>x', description: 'Multiplier', pattern: /^\d+(x)?$/}
   ],
   pattern: /^\d+x$/i,
   required: false
@@ -123,7 +123,7 @@ export const LEI = {
   description: 'xyzLE LEI',
   formatHelp: 'xyzLE',
   valuesHelp: [
-    {value: '<entity>le', description: 'LEI', pattern: /^[a-z\d]+(l|le)?$/}
+    {value: '<entity>le', description: 'LEI', pattern: /^[a-z,\d]+(l|le)?$/}
   ],
   pattern: /^[a-z0-9]+le$/i,
   required: false
@@ -132,9 +132,9 @@ export const LEI = {
 export const PCT_STRIKE = {
   name: 'pctStrike',
   description: 'Percentage Strike',
-  formatHelp: 'pet',
+  formatHelp: 'pct',
   valuesHelp: [
-    { value: 'pet', description: 'Pet Strike' }
+    { value: 'pct', description: 'Pct Strike' }
   ],
   pattern: /^pct$/i,
   required: false

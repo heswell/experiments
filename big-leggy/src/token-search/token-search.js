@@ -1,5 +1,6 @@
 export const SearchTokenStatus = {
-  Resolved: 'resolved'
+  Resolved: 'resolved',
+  ResolvedMany: 'resolved-many'
 }
 
 const PATTERN_MATCH_ANYTHING = /\S+/;
@@ -30,6 +31,8 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
     let token;
     let remainingText = inputText;
     let suggestion;
+    let searchTerm;
+    let matchingSuggestions;
     const tokens = [];
     const searchTokens = {};
     let tokenIdx = 0;
@@ -41,7 +44,7 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
 
       if (descriptor.searchId) {
         try {
-          [token, remainingText, suggestion] = await resolveSearchToken(
+          [token, remainingText, suggestion, searchTerm, matchingSuggestions] = await resolveSearchToken(
             command,
             descriptor.searchId,
             remainingText,
@@ -58,10 +61,14 @@ export const resolveSearchTokens = async (command, inputText, searchService) =>
       }
       tokens.push(token);
       if (suggestion) {
+        const multipleSuggestions = matchingSuggestions.length > 0;
         if (descriptor.searchId) {
           searchTokens[descriptor.searchId] = {
-            status: SearchTokenStatus.Resolved,
-            suggestion
+            status: multipleSuggestions ? SearchTokenStatus.ResolvedMany : SearchTokenStatus.Resolved,
+            suggestion,
+            token,
+            searchTerm,
+            matchingSuggestions
           };
         }
       }
@@ -80,6 +87,7 @@ export const resolveSearchToken = async (command, searchId, text, searchService,
     const searchTerms = text.trim().split(/\s+/);
     const currentSearchTerms = [];
     let lastSearchResult = null;
+    let multipleResults = false;
     const nextTokenPattern =
       nextTokenDescriptor && nextTokenDescriptor.pattern
         ? nextTokenDescriptor.pattern
@@ -100,15 +108,16 @@ export const resolveSearchToken = async (command, searchId, text, searchService,
           resolved = true;
         } else {
           // is one of the results an exact match ?
-          const suggestion = lastSearchResult && lastSearchResult.suggestions.find(({speedbarText}) => speedbarText === lastSearchResult.searchTerm)
+          const suggestion = lastSearchResult && lastSearchResult.suggestions.find(({speedbarText}) => speedbarText.toLowerCase() === lastSearchResult.searchTerm.toLowerCase())
           if (suggestion){
             resolved = true;
           } else {
             if (lastSearchResult){
               // do we try matching remaining searchTerms against remaining tokens to determine extent of search terms
-              console.log(`absolutely no match for ${searchText} what about ${lastSearchResult.searchTerm} or ${previousSearchTerms}`)
+              console.log(`multiple matches`)
+              multipleResults = true;
+              resolved = true;
             }
-            return reject(Error(`No match found for ’${searchText}'`));
           }
           // const nextTerm = currentSearchTerms[currentSearchTerms.length - 1]
           // if (nextTokenPattern.test(nextTerm)){
@@ -142,15 +151,27 @@ export const resolveSearchToken = async (command, searchId, text, searchService,
       }
 
       if (resolved) {
-        const [suggestion] = lastSearchResult.suggestions;
+        const suggestion = multipleResults
+        ? {
+          value: '',
+          speedbarText: lastSearchResult.searchTerm,
+          suggestionText: ''
+        }
+        : lastSearchResult.suggestions[0];
+
         const speedbarText = insertNonBreakingSpaces(suggestion.speedbarText);
+
         resolve([
           speedbarText,
           lastSearchResult.remainingText,
           {
             ...suggestion,
             speedbarText
-          }
+          },
+          lastSearchResult.searchTerm,
+          multipleResults
+            ? lastSearchResult.suggestions
+            : []
         ]);
       }
     };

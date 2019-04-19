@@ -7,7 +7,7 @@ const styles = {
 }
 
 const enterPrompt = 'Hit Enter to submit command';
-const optionsPrompt = 'or add optional parameters';
+const optionsPrompt = 'or add optional parameters:';
 const unresolvedSearchPrompt = 'Correct highlighted multiple matches';
 
 export default class CommandCue extends React.Component {
@@ -20,7 +20,7 @@ export default class CommandCue extends React.Component {
         ? unresolvedSearchPrompt
         : enterPrompt;
 
-      // only show this if the final token has been validated or is complete
+      // TODO don't show prompt if we have validation errors
       return this.showOptionsPrompt()
         ? basePrompt + ' ' + optionsPrompt
         : basePrompt;

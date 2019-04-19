@@ -81,10 +81,9 @@ export class TokenMirror extends React.Component {
   }
 
   getPositionOfTokenAtOffset(offset) {
-    const token = this.props.tokenList.getTokenAtOffset(offset);
-    if (token && token.idx !== undefined) {
-      console.log(`[TokenMirror] getPositionOfTokenAtOffset token = ${token.text}`);
-      return this.tokenPositions[token.idx]
+    const idx = this.props.tokenList.getIndexOfTokenAtOffset(offset);
+    if (idx !== -1) {
+      return this.tokenPositions[idx]
     }
   }
 
@@ -93,7 +92,7 @@ export class TokenMirror extends React.Component {
     // also, what about :before/:after ?
     if (this.el.current) {
       const { left: offsetLeft } = this.el.current.getBoundingClientRect();
-      const termWrappers = Array.from(this.el.current.querySelectorAll('.token-wrapper[data-idx]'));
+      const termWrappers = Array.from(this.el.current.querySelectorAll('div'));
       return termWrappers.map(termWrapper => {
         // const term = termWrapper.querySelector('.term');
         const term = termWrapper;

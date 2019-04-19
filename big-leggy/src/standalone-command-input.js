@@ -145,3 +145,10 @@ ReactDOM.render(
   document.getElementById('root'));
 
 
+const commandList = document.querySelectorAll('#sample-commands li');
+Array.from(commandList).forEach(item => item.addEventListener('click', e => {
+  navigator.clipboard.writeText(e.target.innerText).then(result => {
+    const input = document.querySelector('.speedbar-input');
+    input.focus();
+  })
+}))

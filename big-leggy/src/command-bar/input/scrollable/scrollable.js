@@ -5,8 +5,7 @@ import * as styles from './scrollable.styles';
 
 const defaultState = {
   contentWidth: auto,
-  // scrollRight: 0,
-  scrollLeft: auto,
+  scrollLeft: 0,
   animateScroll: false
 }
 
@@ -60,15 +59,23 @@ export default class Scrollable extends React.Component {
 
  scrollIntoView({ tokenLeft, tokenWidth }) {
    console.log(`[Scrollable] scrollIntoView ${tokenLeft} ${tokenWidth}`)
+
+   const width = this.getWidth();
+   const { contentWidth } = this.state;
+
     const scrollLeft = calculateScrollOffset(
       this.state.scrollLeft,
-      this.getWidth(),
-      this.state.contentWidth,
+      width,
+      contentWidth,
       tokenLeft - 3,
       tokenWidth + 6);
 
     if (scrollLeft !== this.state.scrollLeft) {
-      this.setState({ scrollLeft })
+      this.setState({ 
+        scrollLeft,
+        // animate unless we're typing at the far right
+        animateScroll: Math.abs(scrollLeft) < contentWidth - width
+      })
     }
   }
 
@@ -81,12 +88,10 @@ export default class Scrollable extends React.Component {
 
       if (contentWidth !== this.state.contentWidth) {
         // assuming cursor ar end ...
-        const scrollLeft = containerWidth - contentWidth;
-        console.log(`set contentWidth ${contentWidth} left ${scrollLeft}`)
         this.setState({
-          scrollLeft,
+          // scrollLeft,
           contentWidth,
-          animateScroll: true
+          animateScroll: false
         });
       }
     }

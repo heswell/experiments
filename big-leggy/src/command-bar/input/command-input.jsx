@@ -35,7 +35,7 @@ export default class CommandInput extends React.Component {
 
     this.state = {
       containerWidth: undefined,
-      hilightedTokenIdx: -1
+      highlightedTokenIdx: -1
     }
 
     this.handleClick = this.handleClick.bind(this);
@@ -54,29 +54,29 @@ export default class CommandInput extends React.Component {
   }
 
   handleMouseLeave(){
-    if (this.state.hilightedTokenIdx !== -1){
-      this.setState({hilightedTokenIdx: -1});
+    if (this.state.highlightedTokenIdx !== -1){
+      this.setState({highlightedTokenIdx: -1});
     }
   }
 
   handleMouseMove(e){
-    const {highlightTokensOnHover: higlightable = []} = this.props;
-    const {hilightedTokenIdx} = this.state;
+    const {highlightTokensOnHover: highlightable = []} = this.props;
+    const {highlightedTokenIdx} = this.state;
 
-    if (higlightable.length > 0){
+    if (highlightable.length > 0){
       const tokenMirror = this.tokenMirror.current;
       const tokenIdx = tokenMirror.getTokenIdxAtPosition(e.clientX);
-      const shouldHighlightToken = higlightable.includes(tokenIdx);
+      const shouldHighlightToken = highlightable.includes(tokenIdx);
       if (shouldHighlightToken){
-        if (hilightedTokenIdx !== tokenIdx){
-          this.setState({hilightedTokenIdx: tokenIdx});
+        if (highlightedTokenIdx !== tokenIdx){
+          this.setState({highlightedTokenIdx: tokenIdx});
         }
-      } else if (hilightedTokenIdx !== -1){
-        this.setState({hilightedTokenIdx: -1})
+      } else if (highlightedTokenIdx !== -1){
+        this.setState({highlightedTokenIdx: -1})
       }
 
-    } else if (hilightedTokenIdx !== -1){
-      this.setState({hilightedTokenIdx: -1})
+    } else if (highlightedTokenIdx !== -1){
+      this.setState({highlightedTokenIdx: -1})
     }
   }
 
@@ -179,9 +179,9 @@ export default class CommandInput extends React.Component {
     const cursorPosition = this.getCursorPosition();
 
     if (cursorPosition !== this.cursorPosition) {
-      if (scroller && scroller.canScroll()) {
+      if (scroller && tokenMirror && scroller.canScroll()) {
         const tokenPosition = tokenMirror.getPositionOfTokenAtOffset(cursorPosition);
-        if (tokenPosition) {
+        if (tokenPosition) { // this will stop us scrolling right if command ends in whitespace
           const { offsetLeft, left, right } = tokenPosition;
           console.log(`[CommandInput] selectionCHanged to token ${offsetLeft}`)
           // only if cursor is at end ...
@@ -287,7 +287,7 @@ export default class CommandInput extends React.Component {
     }
   }
   setCursorPosition(offset) {
-    this.cursorPosition = offset;
+    // this.cursorPosition = offset;
     if (this.cursorTimeout) {
       clearTimeout(this.cursorTimeout);
     }
@@ -414,7 +414,7 @@ export default class CommandInput extends React.Component {
               style={{ width: this.state.inputWidth }}
               value={displayText}
               onFocus={this.props.onFocus}
-              onClick={this.props.onClick}
+              onClick={this.handleClick}
               onChange={this.handleChange}
               onPaste={this.handlePaste}
               onKeyDown={this.handleKeyDown}
