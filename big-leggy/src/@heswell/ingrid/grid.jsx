@@ -5,99 +5,89 @@
 
 // TODO calculate width, height if not specified
 /*global requestAnimationFrame cancelAnimationFrame */
-import React, {useRef, useState, useReducer, useEffect, useCallback} from 'react';
+import React, { useRef, useState, useReducer, useEffect, useCallback } from 'react';
 import cx from 'classnames';
 import * as Action from './model/constants';
 import { Motion, spring } from 'react-motion';
-import modelReducer, {init} from './model/modelReducer';
+import reducer, { init } from './model/gridReducer';
 import Header from './header/header';
 import ColumnBearer from './core/ColumnBearer';
 import InlineFilter from './header/inlineFilter';
 import Viewport from './core/viewport';
-import {getScrollbarSize, getColumnWidth} from './utils/domUtils';
+import { getScrollbarSize, getColumnWidth } from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
-import {DataTypes, filter as filterUtils, groupHelpers, columnUtils} from '../data';
+import { DataTypes, filter as filterUtils, groupHelpers, columnUtils } from '../data';
 
-import {createLogger, logColor} from '../remote-data/constants';
+import { createLogger, logColor } from '../remote-data/constants';
 
 import './grid.css';
 
-    // static defaultProps = {
-    //     style: {},
-    //     selected: [],
-    //     headerHeight: 24,
-    //     rowHeight: 23,
-    //     minColumnWidth: 80,
-    //     onContextMenu: () => { },
-    //     showFilters: false
-    // };
+// static defaultProps = {
+//     rowHeight: 23,
+//     minColumnWidth: 80,
+// };
 
 const logger = createLogger('Grid', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
 
-const reducer = ({data, model}, action) => {
+export default function Grid({
+    dataView,
+    columns,
+    style,
+    showHeaders = true,
+    headerHeight = showHeaders ? 24 : 0,
+    selectionDefault,
+    selected = [],
+    showFilters = false,
+    onSingleSelect,
+    onSelectionChange,
+    //TODO are any of the above needed by model in props ?
+    ...props }) {
 
-    if (action.type === 'data'){
-        const {rows, rowCount} = action;
-        return { 
-            data: { rows, rowCount, selected: [] }, 
-            model: rowCount === data.rowCount
-                ? model
-                : modelReducer(model, { type: Action.ROWCOUNT, rowCount })
-        }
-    } else {
-        return {
-            data,
-            model: modelReducer(model, action)
-        }
-    }
-}
-
-const Grid = (props) => {
-
-    let { dataView, columns } = props;
     const { columnMap } = dataView;
 
     const header = useRef(null);
     const viewport = useRef(null);
-    // const inlineFilter = useRef(null);
-    
+    const inlineFilter = useRef(null);
+
     const [state, setState] = useState({
-        showFilters: props.showFilters || false,
+        showFilters,
+        showFilter: null,
         groupToggled: false
 
     });
 
+    // both should go in a ref
     let _scrollLeft = undefined;
     let _scrollTimer = null;
 
-    const [{model, data}, dispatch] = useReducer(reducer, {
+    const [{ model, data }, dispatch] = useReducer(reducer, {
         model: {
-        ...props,
-        columns: columns.map(columnUtils.toKeyedColumn),
-        columnMap,
-        scrollbarSize,
-        headerHeight: props.showHeaders === false ? 0 : props.headerHeight
+            ...props,
+            columns: columns.map(columnUtils.toKeyedColumn),
+            columnMap,
+            scrollbarSize,
+            headerHeight
         },
         data: {
             rows: [],
             rowCount: 0,
-            selected: []
+            selected
         }
     }, init);
 
-    const { height, width, headerHeight, _headingDepth, sortBy } = model;
+    const { height, width, _headingDepth, groupBy, sortBy } = model;
 
     useEffect(() => {
         logger.log('<call dataView.subscribe>')
-        dataView.subscribe(columns, (msgType, rows, rowCount=null) => {
+        dataView.subscribe(columns, (msgType, rows, rowCount = null) => {
             // maybe we should be setting rows and length in state
             logger.log(`<${msgType}> rowCount=${rowCount}`);
             // const {IDX, SELECTED} = model.meta;
             dispatch({ type: 'data', rows, rowCount })
-    
+
             // if (this.state.groupToggled && rowCount !== 0){
             //     // is this necessary every time ?
             //     const [group] = model._groups;
@@ -106,174 +96,303 @@ const Grid = (props) => {
             //     dispatch({ type: Action.GROUP_COLUMN_WIDTH, column, width });
             //     state.groupToggled = false;
             // }
-    
+
         });
 
         // TODO how do we manage this 
         dataView.setRange(0, 25, false);
 
-    },[dataView]);
+    }, [dataView]);
 
     useEffect(() => dataView.sort(sortBy), [dataView, sortBy])
 
 
+    const filterHeight = state.showFilters ? 24 : 0;
+    const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
+    const totalHeaderHeight = headingHeight + filterHeight;
 
-        const { showFilters, /*selected*/ } = state;
-        const { style, selectionDefault } = props;
-        const isEmpty = dataView.size <= 0;
-        const emptyDisplay = (isEmpty && props.emptyDisplay) || null;
-        const className = cx(
-            'Grid',
-            props.className,
-            emptyDisplay ? 'empty' : '',
-            isEmpty && props.showHeaderWhenEmpty === false ? 'no-header' : ''
-        );
+    const sort = useCallback((column, direction = null, preserveExistingSort = false) => {
+        // this will transform the columns which will cause whole grid to re-render down to cell level. All
+        // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
+        dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
+        viewport.current.setScroll(0);
+    }, [dispatch])
 
-        const filterHeight = showFilters ? 24 : 0;
-        const showHeaders = props.showHeaders !== false && headerHeight !== 0;
-        const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
-        const totalHeaderHeight = headingHeight + filterHeight;
+    const setViewRange = useCallback((firstVisibleRow, lastVisibleRow, initialRange = false) => {
+        const sendDelta = initialRange === false;
+        dataView.setRange(firstVisibleRow, lastVisibleRow, sendDelta);
+    }, [dataView])
 
-        const sort = useCallback((column, direction = null, preserveExistingSort = false) => {
-            // this will transform the columns which will cause whole grid to re-render down to cell level. All
-            // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
-            dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
-            viewport.current.setScroll(0);
-        },[dispatch])
-
-        const setViewRange = useCallback((firstVisibleRow, lastVisibleRow, initialRange=false) => {
-            const sendDelta = initialRange === false;
-            dataView.setRange(firstVisibleRow, lastVisibleRow, sendDelta);
-        },[dataView])
-
-        const handleColumnResize = useCallback((phase, column, width) => {
-            if (phase === 'resize') {
-                if (column.isHeading) {
-                    dispatch({ type: Action.RESIZE_HEADING, column, width });
-                } else {
-                    // TODO do we need to consider scrolling ?
-                    dispatch({ type: Action.COLUMN_RESIZE, column, width });
-                }
-            } else if (phase === 'begin') {
-                dispatch({ type: Action.COLUMN_RESIZE_BEGIN, column }) ;
-            } else if (phase === 'end') {
-                dispatch({ type: Action.COLUMN_RESIZE_END, column });
+    const handleColumnResize = useCallback((phase, column, width) => {
+        if (phase === 'resize') {
+            if (column.isHeading) {
+                dispatch({ type: Action.RESIZE_HEADING, column, width });
+            } else {
+                // TODO do we need to consider scrolling ?
+                dispatch({ type: Action.COLUMN_RESIZE, column, width });
             }
-        },[dispatch])
+        } else if (phase === 'begin') {
+            dispatch({ type: Action.COLUMN_RESIZE_BEGIN, column });
+        } else if (phase === 'end') {
+            dispatch({ type: Action.COLUMN_RESIZE_END, column });
+        }
+    }, [dispatch])
 
-        //TODO if we can pass the required data back with the request, we won't need to embed this callback
-        const showContextMenu = useCallback((e, location, options) => {
+    //TODO if we can pass the required data back with the request, we won't need to embed this callback
+    const showContextMenu = useCallback((e, location, options) => {
 
-            e.preventDefault();
-            e.stopPropagation();
-        
-            const { clientX: left, clientY: top } = e;
-            const contextMenu = <GridContextMenu component={this}
-                location={location}
-                options={{
-                    ...options,
-                    model,
-                    showFilters: props.showFilters
-                }}
-                doAction={handleContextMenuAction} />;
-        
-            PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component: contextMenu });
-        
-        },[model, props])
+        e.preventDefault();
+        e.stopPropagation();
 
-        const handleContextMenuAction = useCallback((action, {column}) => {
-            switch (action) {
+        const { clientX: left, clientY: top } = e;
+        const contextMenu = <GridContextMenu component={this}
+            location={location}
+            options={{
+                ...options,
+                model,
+                showFilters: state.showFilters
+            }}
+            doAction={handleContextMenuAction} />;
+
+        PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component: contextMenu });
+
+    }, [model, props])
+
+    const handleContextMenuAction = useCallback((action, { column } = {}) => {
+        switch (action) {
             case ContextMenuActions.SortAscending: return sort(column, 'asc');
             case ContextMenuActions.SortDescending: return sort(column, 'dsc');
             case ContextMenuActions.SortAddAscending: return sort(column, 'asc', true);
             case ContextMenuActions.SortAddDescending: return sort(column, 'dsc', true);
-            case ContextMenuActions.GroupBy: return groupBy(column);
-            case ContextMenuActions.GroupByReplace: return groupBy(column, true);
+            case ContextMenuActions.GroupBy: return handleGroupBy(column);
+            case ContextMenuActions.GroupByReplace: return handleGroupBy(column, true);
             default:
 
+        }
+
+        if (action === 'groupby-remove') {
+            this.groupBy(data.column);
+        } else if (action === 'show-filters') {
+            setState({
+                ...state,
+                showFilters: state.showFilters === false
+            });
+        } else if (action === 'hide-filters') {
+            this.props.dispatch({ type: 'SAVE_CONFIG', config: { showFilters: false } });
+        }
+
+    }, []);
+
+    const handleColumnMoveBegin = useCallback((column) => {
+        if (column.isHeading) {
+            console.log(`col  heading move begin`);
+        } else {
+            dispatch({ type: Action.MOVE_BEGIN, column, scrollLeft: _scrollLeft });
+        }
+    }, [dispatch]);
+
+    const handleColumnMove = useCallback((phase, column, distance) => {
+        if (phase === 'move' && distance !== 0) {
+
+            //TODO refs needed
+            if (_scrollTimer !== null) {
+                cancelAnimationFrame(_scrollTimer);
+                _scrollTimer = null;
             }
 
-            if (action === 'groupby-remove') {
-                this.groupBy(data.column);
-            } else if (action === 'show-filters') {
-                this.setState({showFilters: this.state.showFilters === false});
-            } else if (action === 'hide-filters') {
-                this.props.dispatch({ type: 'SAVE_CONFIG', config: { showFilters: false } });
-            }
+            dispatch({ type: Action.MOVE, distance, scrollLeft: _scrollLeft });
+            // handle the scenario where we have horizontal scrolling to deal with
+            // if (model._overTheLine) {
+            //     const scroll = () => {
+            //         const type = model._overTheLine > 0 ? Action.SCROLL_RIGHT : Action.SCROLL_LEFT;
+            //         const scrollDistance = type === Action.SCROLL_RIGHT ? 3 : -3;
+            //         const { scrollLeft } = this.reducer.state;
+            //         model = this.reducer.dispatch({ type, scrollDistance });
+            //         if (model.scrollLeft !== scrollLeft) {
+            //             this.viewport.current.scrollTo(model.scrollLeft);
+            //             this._scrollTimer = requestAnimationFrame(scroll);
+            //             this.setState({ model });
+            //         }
+            //     };
 
-        },[]);
+            //     _scrollTimer = requestAnimationFrame(scroll);
+            // }
 
-        const handleColumnMove = () =>  console.log(`handleColumnMove`)
-        const handleToggleCollapseColumn = () => console.log(`handleToggleCollapseColumn`)
-        const toggleGroupAll = () => console.log('toggleGroupAll');
-        const groupBy = () => console.log('groupBy');
+        } else if (phase === 'begin') {
+            handleColumnMoveBegin(column);
+        } else if (phase === 'end') {
+            handleColumnMoveEnd(column);
+        }
+    }, [dispatch]);
 
-        const sortGroup = () => console.log('sortGroup');
-        const toggleGroup = () => console.log('toggleGroup');
+    const handleColumnMoveEnd = useCallback(column => {
+        if (column.isHeading) {
+            console.log(`col heading move end`);
+        } else {
+            dispatch({ type: Action.MOVE_END, column });
+        }
+    }, [dispatch]);
 
-        const handleVerticalScroll = () => console.log('handleVerticalScroll');
-        const handleHorizontalScroll = () => console.log('handleHorizontalScroll');
-        const handleSelectionChange = () => console.log('handleSelectionChange');
-        const handleCellClick = () => console.log('handleCellClick');
+    const handleToggleCollapseColumn = () => console.log(`handleToggleCollapseColumn`)
+    const toggleGroupAll = () => console.log('toggleGroupAll');
 
-        return (
-            <div style={{ ...style, position: 'relative', height, width }} className={className}>
-                {showHeaders &&
-                    <Header ref={header}
-                        height={headingHeight}
+    const handleGroupBy = useCallback((column, replace) => {
+        const existingGroupBy = groupBy;
+        const extendsExistingGroupBy = !replace && Array.isArray(existingGroupBy) && existingGroupBy.length > 0;
+        const newGroupBy = groupHelpers.updateGroupBy(existingGroupBy, column, replace);
+        dispatch({ type: Action.GROUP, groupBy: newGroupBy });
+        const groupToggled = newGroupBy !== null;
+        setState({ groupToggled });
+        dataView.groupBy(newGroupBy, extendsExistingGroupBy);
+        viewport.current.setScroll(0, 0);
+    }, [dataView, groupBy])
+
+    const toggleGroup = useCallback(groupRow => {
+        const groupState = groupHelpers.toggleGroupState(groupRow, model);
+        dataView.setGroupState(groupState);
+        dispatch({ type: Action.TOGGLE, groupState });
+    }, [model, dispatch])
+
+    const sortGroup = () => console.log('sortGroup');
+    const handleVerticalScroll = () => console.log('handleVerticalScroll');
+    const handleHorizontalScroll = () => console.log('handleHorizontalScroll');
+
+    const handleSelectionChange = useCallback((selected, idx, selectedItem) => {
+        // selection needs to be sent to server
+        onSelectionChange && onSelectionChange(selected, idx);
+        if (selected.length === 1 && onSingleSelect) {
+            idx = selected[0];
+            onSingleSelect(idx, selectedItem);
+        }
+    },[])
+
+    const handleCellClick = () => console.log('handleCellClick');
+
+    const handleFilterOpen = useCallback(column => {
+        if (state.showFilter !== column.name) {
+            // we could call dataView here to trigger build of filter data
+            // this could be moved down to serverApi
+            const { key, name } = column.isGroup ? column.columns[0] : column;
+
+            dataView.getFilterData({
+                key, name
+            });
+
+            setTimeout(() => {
+                setState({
+                    ...state,
+                    showFilter: column.name
+                });
+            }, 50)
+        }
+    }, [dataView, state])
+
+    const handleFilter = useCallback((column, newFilter) => {
+        const filter = filterUtils.addFilter(model.filter, newFilter);
+        console.log(`
+                add filter ${JSON.stringify(newFilter, null, 2)}
+                to filter ${JSON.stringify(model.filter, null, 2)}
+                creates new filter = ${JSON.stringify(filter, null, 2)}
+            `)
+
+        dataView.filter(filter);
+        dispatch({ type: Action.FILTER, column, filter });
+
+        if (newFilter.isNumeric) {
+            // re-request the filterData, this will re-create bins on the filtered data
+            const { key, name } = column.isGroup ? column.columns[0] : column;
+            dataView.getFilterData({ key, name });
+        }
+    }, [model]);
+
+    const handleClearFilter = useCallback(column => {
+        const filter = filterUtils.removeFilterForColumn(model.filter, column);
+        dataView.filter(filter);
+        dispatch({ type: Action.FILTER, column, filter })
+    }, [dispatch])
+
+    const handleFilterClose = useCallback((/*column*/) => {
+        setState({ showFilter: null });
+        dataView.setRange(0, 0, false, DataTypes.FILTER_DATA);
+    }, [dataView])
+
+    const handleSearchText = useCallback(({ key, name }, text) => {
+        dataView.getFilterData({ key, name }, text);
+    }, [dataView])
+
+    // // This is being used to handle selection in a set filter, need to consider how it will work
+    // // with regular row selection
+    const handleSelection = (dataType, colName, filterMode) => {
+        dataView.select(dataType, colName, filterMode);
+    }
+
+    const isEmpty = dataView.size <= 0;
+    const emptyDisplay = (isEmpty && props.emptyDisplay) || null;
+    const className = cx(
+        'Grid',
+        props.className,
+        emptyDisplay ? 'empty' : '',
+        isEmpty && props.showHeaderWhenEmpty === false ? 'no-header' : ''
+    );
+
+    return (
+        <div style={{ ...style, position: 'relative', height, width }} className={className}>
+            {showHeaders && headerHeight !== 0 &&
+                <Header ref={header}
+                    height={headingHeight}
+                    gridModel={model}
+                    onColumnResize={handleColumnResize}
+                    onColumnMove={handleColumnMove}
+                    onToggleCollapse={handleToggleCollapseColumn}
+                    onToggleGroupState={toggleGroupAll}
+                    onRemoveGroupbyColumn={groupBy}
+                    onSort={sort}
+                    onSortGroup={sortGroup}
+                    onHeaderClick={props.onHeaderClick}
+                    colHeaderRenderer={props.colHeaderRenderer}
+                    onContextMenu={showContextMenu} />}
+
+            {state.showFilters &&
+                <InlineFilter ref={inlineFilter}
+                    onFilter={handleFilter}
+                    onSelect={handleSelection}
+                    onClearFilter={handleClearFilter}
+                    onFilterOpen={handleFilterOpen}
+                    onFilterClose={handleFilterClose}
+                    onSearchText={handleSearchText}
+                    showFilter={state.showFilter}
+                    dataView={dataView}
+                    gridModel={model}
+                    height={filterHeight}
+                    style={{ position: 'absolute', top: headerHeight, height: filterHeight, width }} />}
+
+            <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
+                {interpolatingStyle =>
+                    <Viewport
+                        ref={viewport}
+                        rows={data.rows}
+                        selectedRows={data.selected}
+                        selectionDefault={selectionDefault}
+                        style={interpolatingStyle}
+                        height={height - totalHeaderHeight}
+                        width={model.width}
                         gridModel={model}
-                        onColumnResize={handleColumnResize}
-                        onColumnMove={handleColumnMove}
-                        onToggleCollapse={handleToggleCollapseColumn}
-                        onToggleGroupState={toggleGroupAll}
-                        onRemoveGroupbyColumn={groupBy}
-                        onSort={sort}
-                        onSortGroup={sortGroup}
-                        onHeaderClick={props.onHeaderClick}
-                        colHeaderRenderer={props.colHeaderRenderer}
-                        onContextMenu={showContextMenu} />}
+                        onToggleGroup={toggleGroup}
+                        onSetRange={setViewRange}
+                        onVerticalScroll={handleVerticalScroll}
+                        onHorizontalScroll={handleHorizontalScroll}
+                        onSelectionChange={handleSelectionChange}
+                        onCellClick={handleCellClick}
+                        onContextMenu={showContextMenu}
+                    />}
+            </Motion>
+            {emptyDisplay}
 
-                {/* {showFilters &&
-                    <InlineFilter ref={inlineFilter}
-                        onFilter={this.handleFilter}
-                        onSelect={this.handleSelection}
-                        onClearFilter={this.handleClearFilter}
-                        onFilterOpen={this.handleFilterOpen}
-                        onFilterClose={this.handleFilterClose}
-                        onSearchText={this.handleSearchText}
-                        showFilter={this.state.showFilter}
-                        dataView={dataView}
-                        gridModel={model}
-                        height={filterHeight}
-                        style={{ position: 'absolute', top: headerHeight, height: filterHeight, width: width }} />} */}
+            {model._movingColumn &&
+                <ColumnBearer gridModel={model} rows={data.rows} />}
 
-                <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
-                    {interpolatingStyle =>
-                        <Viewport
-                            ref={viewport}
-                            rows={data.rows}
-                            selectedRows={data.selected}
-                            selectionDefault={selectionDefault}
-                            style={interpolatingStyle}
-                            height={height - totalHeaderHeight}
-                            width={model.width}
-                            gridModel={model}
-                            onToggleGroup={toggleGroup}
-                            onSetRange={setViewRange}
-                            onVerticalScroll={handleVerticalScroll}
-                            onHorizontalScroll={handleHorizontalScroll}
-                            onSelectionChange={handleSelectionChange}
-                            onCellClick={handleCellClick}
-                            onContextMenu={showContextMenu}
-                        />}
-                </Motion>
-                {emptyDisplay}
-
-                {model._movingColumn &&
-                    <ColumnBearer gridModel={model} rows={data.rows} />}
-
-            </div>
-        );
+        </div>
+    );
 
     // componentWillMount() {
     //     this._scrollLeft = undefined;
@@ -343,62 +462,7 @@ const Grid = (props) => {
 
     // }
 
-    // handleFilterOpen = column => {
-    //     if (this.state.showFilter !== column.name){
-    //         // we could call dataView here to trigger build of filter data
-    //         // this could be moved down to serverApi
-    //         const {key, name} = column.isGroup ? column.columns[0] : column;
 
-    //         this.state.dataView.getFilterData({
-    //             key, name
-    //         });
-    //         setTimeout(() => {
-    //             this.setState({
-    //                 showFilter: column.name
-    //             });
-    //         }, 50)
-    //     }
-    // }
-
-    // handleFilter = (column, newFilter) => {
-    //     const filter = filterUtils.addFilter(this.state.model.filter,newFilter);
-    //     console.log(`
-    //         add filter ${JSON.stringify(newFilter,null,2)}
-    //         to filter ${JSON.stringify(this.state.model.filter,null,2)}
-            
-    //         creates new filter = ${JSON.stringify(filter,null,2)}
-    //     `)
-        
-    //     this.state.dataView.filter(filter);
-    //     this.setState({
-    //         model: this.reducer.dispatch({ type: Action.FILTER, column, filter })
-    //     });
-
-    //     if (newFilter.isNumeric){
-    //         // re-request the filterData, this will re-create bins on the filtered data
-    //         const {key, name} = column.isGroup ? column.columns[0] : column;
-    //         this.state.dataView.getFilterData({ key, name });
-    //     }
-    // }
-
-    // handleClearFilter = column => {
-    //     const filter = filterUtils.removeFilterForColumn(this.state.model.filter,column);
-    //     this.state.dataView.filter(filter);
-    //     this.setState({
-    //         model: this.reducer.dispatch({ type: Action.FILTER, column, filter })
-    //     });
-    // }
-
-    // handleFilterClose = (/*column*/) => {
-    //     this.setState({
-    //         showFilter: null
-    //     });
-    //     this.state.dataView.setRange(0,0,false,DataTypes.FILTER_DATA);
-    // }
-
-    // handleSearchText = ({key, name},text) => {
-    //     this.state.dataView.getFilterData({key,name}, text);
-    // }
 
     // sortGroup = column => {
     //     const model = this.reducer.dispatch({ type: Action.SORT_GROUP, column });
@@ -406,27 +470,6 @@ const Grid = (props) => {
     //     this.setState({ model });
     // }
 
-    // groupBy = (column, replace) => {
-    //     const existingGroupBy = this.state.model.groupBy;
-    //     const extendsExistingGroupBy = !replace && Array.isArray(existingGroupBy) && existingGroupBy.length > 0;
-    //     const groupBy = groupHelpers.updateGroupBy(existingGroupBy, column, replace);
-    //     const model = this.reducer.dispatch({ type: Action.GROUP, groupBy });
-    //     const groupToggled = groupBy !== null;
-    //     this.setState({ model, groupToggled }, () => {
-    //         this.state.dataView.groupBy(groupBy, extendsExistingGroupBy);
-    //         this.viewport.current.setScroll(0, 0);
-    //     });
-    // }
-
-    // toggleGroup = groupRow => {
-
-    //     const { model, dataView } = this.state;
-    //     const groupState = groupHelpers.toggleGroupState(groupRow, model);
-    //     dataView.setGroupState(groupState);
-    //     this.setState({
-    //         model: this.reducer.dispatch({ type: Action.TOGGLE, groupState })
-    //     });
-    // }
 
     // toggleGroupAll = (column, expanded) => {
     //     console.log(`toggleGroupAll ${column.name}`)
@@ -439,80 +482,12 @@ const Grid = (props) => {
     //     });
     // }
 
-    // handleColumnMoveBegin = (column) => {
-    //     if (column.isHeading) {
-    //         console.log(`col  heading move begin`);
-    //     } else {
-    //         this.setState({ model: this.reducer.dispatch({ type: Action.MOVE_BEGIN, column, scrollLeft: this._scrollLeft }) });
-    //     }
-    // }
-
-    // handleColumnMove = (phase, column, distance) => {
-    //     if (phase === 'move' && distance !== 0) {
-
-    //         if (this._scrollTimer !== null) {
-    //             cancelAnimationFrame(this._scrollTimer);
-    //             this._scrollTimer = null;
-    //         }
-
-    //         this.setState((/*state*/) => {
-    //             let model = this.reducer.dispatch({ type: Action.MOVE, distance, scrollLeft: this._scrollLeft });
-    //             if (model._overTheLine) {
-    //                 const scroll = () => {
-    //                     const type = model._overTheLine > 0 ? Action.SCROLL_RIGHT : Action.SCROLL_LEFT;
-    //                     const scrollDistance = type === Action.SCROLL_RIGHT ? 3 : -3;
-    //                     const { scrollLeft } = this.reducer.state;
-    //                     model = this.reducer.dispatch({ type, scrollDistance });
-    //                     if (model.scrollLeft !== scrollLeft) {
-    //                         this.viewport.current.scrollTo(model.scrollLeft);
-    //                         this._scrollTimer = requestAnimationFrame(scroll);
-    //                         this.setState({ model });
-    //                     }
-    //                 };
-
-    //                 this._scrollTimer = requestAnimationFrame(scroll);
-    //             }
-    //             return { model };
-    //         });
-
-    //     } else if (phase === 'begin') {
-    //         this.handleColumnMoveBegin(column);
-    //     } else if (phase === 'end') {
-    //         this.handleColumnMoveEnd(column);
-    //     }
-    // }
-
-    // handleColumnMoveEnd = column => {
-    //     if (column.isHeading) {
-    //         console.log(`col heading move end`);
-    //     } else {
-    //         this.setState({ model: this.reducer.dispatch({ type: Action.MOVE_END, column }) });
-    //     }
-    // }
-
     // handleToggleCollapseColumn = column => {
     //     const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
     //     this.setState({ model: this.reducer.dispatch({ type: action, column }) });
     // }
 
 
-    // // This is being used to handle selection in a set filter, need to consider how it will work
-    // // with regular row selection
-    // handleSelection = (dataType, colName, filterMode) => {
-    //     this.state.dataView.select(dataType, colName, filterMode);
-    // }
-
-    // handleSelectionChange = (selected, idx, selectedItem) => {
-    //     this.setState({selected}, () => {
-    //         if (this.props.onSelectionChange) {
-    //             this.props.onSelectionChange(selected, idx);
-    //         }
-    //         if (selected.length === 1 && this.props.onSingleSelect) {
-    //             idx = selected[0];
-    //             this.props.onSingleSelect(idx, selectedItem);
-    //         }
-    //     });
-    // }
 
     // handleCellClick = (selectedCell) => {
     //     if (this.props.onSelectCell) {
@@ -550,6 +525,3 @@ const Grid = (props) => {
     // }
 
 }
-
-
-export default Grid;

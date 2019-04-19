@@ -6,7 +6,7 @@ import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
 
-const DEFAULT_STATE = {
+export const DEFAULT_MODEL_STATE = {
     width: 400,
     height: 300,
     headerHeight: 25,
@@ -82,13 +82,6 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
-//TODO move to grid, we shouldn't know about data here
-export function init({data, model}){
-    return {
-        data,
-        model: initialize(DEFAULT_STATE, {type: Grid.INITIALIZE, gridState: model})
-    }
-}
 
 export default function reducer(state, action){
     return (handlers[action.type] || MISSING_HANDLER)(state, action);

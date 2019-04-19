@@ -66,6 +66,10 @@ export default class FilterView extends EventEmitter {
         const item = this._dataView.filterRows.find(r => r[KEY] === value);
         return item ? item[IDX] : -1;
     }
+
+    sort(){
+        
+    }
   
 }
 
