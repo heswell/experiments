@@ -320,8 +320,10 @@ export function getDirection(depth, groupby) {
     return direction;
 }
 
-export function updateGroupBy(existingGroupBy = null, column, replace = false) {
-    if (replace || existingGroupBy === null) {
+// should be called toggleColumnInGroupBy
+export function updateGroupBy(existingGroupBy = null, column/*, replace = false*/) {
+    console.log(``)
+    if (existingGroupBy === null) {
         return [[column.name, ASC]];
     } else {
         return indexOfCol(column.name, existingGroupBy) === -1

@@ -1,6 +1,6 @@
-import * as Grid from './constants';
+import * as Grid from './actions';
 import modelReducer, {initialize, DEFAULT_MODEL_STATE} from './modelReducer';
-import * as Action from './constants';
+import * as Action from './actions';
 
 export function init({data, model}){
   return {

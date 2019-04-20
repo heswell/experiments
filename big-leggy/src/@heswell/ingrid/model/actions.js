@@ -1,6 +1,7 @@
 export const INITIALIZE = 'INITIALIZE';
 export const ROWCOUNT = 'ROWCOUNT';
 export const GROUP = 'GROUP';
+export const groupExtend = 'GROUP_EXTEND';
 export const SORT = 'SORT';
 export const SORT_GROUP = 'SORT_GROUP';
 export const FILTER = 'FILTER';

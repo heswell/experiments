@@ -1,10 +1,11 @@
-import * as Grid from './constants';
+import * as Action from './actions';
 import {Selection} from '../types';
 import {getFormatter} from '../registry/dataTypeRegistry';
 import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
+import {updateGroupBy} from '../../data/store/groupUtils'
 
 export const DEFAULT_MODEL_STATE = {
     width: 400,
@@ -16,6 +17,7 @@ export const DEFAULT_MODEL_STATE = {
     columns: [],
     sortBy: null,
     groupBy: null,
+    extendsPrevGroupBy: undefined,
     groupState: null,
     filter: null,
     rowCount: 0,
@@ -58,32 +60,34 @@ const MAX_OVER_THE_LINE = 20;
 
 const MISSING_TYPE = undefined;
 const handlers = {
-    [Grid.INITIALIZE]: initialize,
-    [Grid.ROWCOUNT]: setRowCount,
-    [Grid.SORT]: sort,
-    [Grid.FILTER]: applyFilter,
-    [Grid.SORT_GROUP]: sortGroup,
-    [Grid.GROUP]: applyGroup,
-    [Grid.COLUMN_RESIZE_BEGIN]: columnResizeBegin,
-    [Grid.GRID_RESIZE]: gridResize,
-    [Grid.COLUMN_RESIZE]: columnResize,
-    [Grid.GROUP_COLUMN_WIDTH]: groupColumnWidth,
-    [Grid.RESIZE_HEADING]: resizeHeading,
-    [Grid.COLUMN_RESIZE_END]: columnResizeEnd,
-    [Grid.MOVE_BEGIN]: moveBegin,
-    [Grid.MOVE]: move,
-    [Grid.MOVE_END]: moveEnd,
-    [Grid.TOGGLE]: toggle,
-    [Grid.SCROLLLEFT]: setScrollLeft,
-    [Grid.SCROLL_LEFT]: autoScrollLeft,
-    [Grid.SCROLL_RIGHT]: autoScrollRight,
-    [Grid.COLUMN_COLLAPSE]: collapseColumn,
-    [Grid.COLUMN_EXPAND]: expandColumn,
+    [Action.INITIALIZE]: initialize,
+    [Action.ROWCOUNT]: setRowCount,
+    [Action.SORT]: sort,
+    [Action.FILTER]: applyFilter,
+    [Action.SORT_GROUP]: sortGroup,
+    [Action.GROUP]: setGroupBy,
+    [Action.groupExtend]: extendGroup,
+    [Action.COLUMN_RESIZE_BEGIN]: columnResizeBegin,
+    [Action.GRID_RESIZE]: gridResize,
+    [Action.COLUMN_RESIZE]: columnResize,
+    [Action.GROUP_COLUMN_WIDTH]: groupColumnWidth,
+    [Action.RESIZE_HEADING]: resizeHeading,
+    [Action.COLUMN_RESIZE_END]: columnResizeEnd,
+    [Action.MOVE_BEGIN]: moveBegin,
+    [Action.MOVE]: move,
+    [Action.MOVE_END]: moveEnd,
+    [Action.TOGGLE]: toggle,
+    [Action.SCROLLLEFT]: setScrollLeft,
+    [Action.SCROLL_LEFT]: autoScrollLeft,
+    [Action.SCROLL_RIGHT]: autoScrollRight,
+    [Action.COLUMN_COLLAPSE]: collapseColumn,
+    [Action.COLUMN_EXPAND]: expandColumn,
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
 
 export default function reducer(state, action){
+    console.log(`reducer ${action.type}`)
     return (handlers[action.type] || MISSING_HANDLER)(state, action);
 }
 
@@ -99,6 +103,7 @@ export function initialize(state, action) {
         columnMap=state.columnMap,
         sortBy=state.sortBy,
         groupBy=state.groupBy,
+        extendsPrevGroupBy=state.extendsPrevGroupBy,
         groupState=state.groupState,
         filter=state.filter,
         rowCount=state.rowCount,
@@ -133,6 +138,7 @@ export function initialize(state, action) {
         columnMap,
         sortBy,
         groupBy,
+        extendsPrevGroupBy,
         groupState,
         collapsedColumns,
         filter,
@@ -193,8 +199,16 @@ function sortGroup(state, {column}) {
     return state;
 }
 
-function applyGroup(state, {groupBy,rowCount=state.rowCount}) {
-    return initialize(state, {gridState: {groupBy,rowCount}});
+function extendGroup(state, {column, rowCount=state.rowCount}) {
+    const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
+    const extendsPrevGroupBy = groupBy !== null && Array.isArray(state.groupBy) && state.groupBy.length > 0
+    console.log(`modelReducer applyGroup new Group ${groupBy}`)
+    return initialize(state, {gridState: {groupBy, extendsPrevGroupBy, rowCount}});
+}
+
+function setGroupBy(state, {column, rowCount=state.rowCount}) {
+    const groupBy = [[column.name, ASC]];
+    return initialize(state, {gridState: {groupBy, extendsPrevGroupBy: false, rowCount}});
 }
 
 // do we need ?

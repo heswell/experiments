@@ -7,7 +7,7 @@
 /*global requestAnimationFrame cancelAnimationFrame */
 import React, { useRef, useState, useReducer, useEffect, useCallback } from 'react';
 import cx from 'classnames';
-import * as Action from './model/constants';
+import * as Action from './model/actions';
 import { Motion, spring } from 'react-motion';
 import reducer, { init } from './model/gridReducer';
 import Header from './header/header';
@@ -17,7 +17,7 @@ import Viewport from './core/viewport';
 import { getScrollbarSize, getColumnWidth } from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu, { ContextMenuActions } from './contextMenu';
-import { DataTypes, filter as filterUtils, groupHelpers, columnUtils } from '../data';
+import { DataTypes, filter as filterUtils, groupHelpers, columnUtils, ASC } from '../data';
 
 import { createLogger, logColor } from '../remote-data/constants';
 
@@ -41,6 +41,8 @@ export default function Grid({
     selectionDefault,
     selected = [],
     showFilters = false,
+    onScroll,
+    onSelectCell,
     onSingleSelect,
     onSelectionChange,
     //TODO are any of the above needed by model in props ?
@@ -54,8 +56,7 @@ export default function Grid({
 
     const [state, setState] = useState({
         showFilters,
-        showFilter: null,
-        groupToggled: false
+        showFilter: null
 
     });
 
@@ -78,7 +79,8 @@ export default function Grid({
         }
     }, init);
 
-    const { height, width, _headingDepth, groupBy, sortBy } = model;
+    const { height, width, _headingDepth, groupBy, extendsPrevGroupBy, sortBy } = model;
+    logger.log(`groupBy from model ${groupBy}`)
 
     useEffect(() => {
         logger.log('<call dataView.subscribe>')
@@ -88,6 +90,7 @@ export default function Grid({
             // const {IDX, SELECTED} = model.meta;
             dispatch({ type: 'data', rows, rowCount })
 
+            // NO set group header width within model
             // if (this.state.groupToggled && rowCount !== 0){
             //     // is this necessary every time ?
             //     const [group] = model._groups;
@@ -105,6 +108,11 @@ export default function Grid({
     }, [dataView]);
 
     useEffect(() => dataView.sort(sortBy), [dataView, sortBy])
+    useEffect(() => {
+        console.log(`groupBy changes to ${JSON.stringify(groupBy)} extendsPrevGroupBy=${extendsPrevGroupBy}`);
+        dataView.groupBy(groupBy, extendsPrevGroupBy);
+        viewport.current.setScroll(0, 0);
+    }, [dataView, groupBy])
 
 
     const filterHeight = state.showFilters ? 24 : 0;
@@ -117,6 +125,20 @@ export default function Grid({
         dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
         viewport.current.setScroll(0);
     }, [dispatch])
+
+    const unGroupBy = useCallback(column => {
+        dispatch({ type: Action.groupExtend, column });
+    }, [dispatch])
+
+    const sortGroup = useCallback(column => {
+        dispatch({ type: Action.SORT_GROUP, column });
+    }, [dispatch]);
+
+    const toggleGroup = useCallback(groupRow => {
+        const groupState = groupHelpers.toggleGroupState(groupRow, model);
+        dataView.setGroupState(groupState);
+        dispatch({ type: Action.TOGGLE, groupState });
+    }, [model, dispatch])
 
     const setViewRange = useCallback((firstVisibleRow, lastVisibleRow, initialRange = false) => {
         const sendDelta = initialRange === false;
@@ -145,16 +167,19 @@ export default function Grid({
         e.stopPropagation();
 
         const { clientX: left, clientY: top } = e;
-        const contextMenu = <GridContextMenu component={this}
-            location={location}
-            options={{
-                ...options,
-                model,
-                showFilters: state.showFilters
-            }}
-            doAction={handleContextMenuAction} />;
+        const component = (
+            <GridContextMenu component={this}
+                location={location}
+                options={{
+                    ...options,
+                    model,
+                    showFilters: state.showFilters
+                }}
+                dispatch={dispatch}
+                doAction={handleContextMenuAction} />)
+            ;
 
-        PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component: contextMenu });
+        PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component });
 
     }, [model, props])
 
@@ -164,8 +189,6 @@ export default function Grid({
             case ContextMenuActions.SortDescending: return sort(column, 'dsc');
             case ContextMenuActions.SortAddAscending: return sort(column, 'asc', true);
             case ContextMenuActions.SortAddDescending: return sort(column, 'dsc', true);
-            case ContextMenuActions.GroupBy: return handleGroupBy(column);
-            case ContextMenuActions.GroupByReplace: return handleGroupBy(column, true);
             default:
 
         }
@@ -181,7 +204,7 @@ export default function Grid({
             this.props.dispatch({ type: 'SAVE_CONFIG', config: { showFilters: false } });
         }
 
-    }, []);
+    }, [sort]);
 
     const handleColumnMoveBegin = useCallback((column) => {
         if (column.isHeading) {
@@ -233,29 +256,45 @@ export default function Grid({
         }
     }, [dispatch]);
 
-    const handleToggleCollapseColumn = () => console.log(`handleToggleCollapseColumn`)
-    const toggleGroupAll = () => console.log('toggleGroupAll');
-
-    const handleGroupBy = useCallback((column, replace) => {
-        const existingGroupBy = groupBy;
-        const extendsExistingGroupBy = !replace && Array.isArray(existingGroupBy) && existingGroupBy.length > 0;
-        const newGroupBy = groupHelpers.updateGroupBy(existingGroupBy, column, replace);
-        dispatch({ type: Action.GROUP, groupBy: newGroupBy });
-        const groupToggled = newGroupBy !== null;
-        setState({ groupToggled });
-        dataView.groupBy(newGroupBy, extendsExistingGroupBy);
-        viewport.current.setScroll(0, 0);
-    }, [dataView, groupBy])
-
-    const toggleGroup = useCallback(groupRow => {
-        const groupState = groupHelpers.toggleGroupState(groupRow, model);
+    const toggleGroupAll = useCallback((column, expanded) => {
+        console.log(`toggleGroupAll ${column.name}`)
+        const groupState = expanded === 1
+            ? { '*': true }
+            : {};
         dataView.setGroupState(groupState);
-        dispatch({ type: Action.TOGGLE, groupState });
-    }, [model, dispatch])
+        dispatch({ type: Action.TOGGLE, groupState })
+    }, [dataView, dispatch])
 
-    const sortGroup = () => console.log('sortGroup');
-    const handleVerticalScroll = () => console.log('handleVerticalScroll');
-    const handleHorizontalScroll = () => console.log('handleHorizontalScroll');
+    const handleToggleCollapseColumn = useCallback(column => {
+        const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
+        dispatch({ type: action, column });
+    }, [dispatch])
+
+
+    // do we need to call a prop for this ?
+    const handleVerticalScroll = useCallback(scrollTop => {
+        onScroll && onScroll({ scrollTop });
+    }, [])
+
+    const handleHorizontalScroll = useCallback(scrollLeft => {
+        if (_scrollLeft !== scrollLeft) {
+            _scrollLeft = scrollLeft;
+            onHorizontalScroll();
+        }
+
+        onScroll && onScroll({ scrollLeft });
+    }, []);
+
+    // useEffect
+    const onHorizontalScroll = useCallback(() => {
+        const scrollLeft = _scrollLeft;
+        if (header.current) {
+            header.current.setScrollLeft(scrollLeft);
+        }
+        if (inlineFilter.current) {
+            inlineFilter.current.setScrollLeft(scrollLeft);
+        }
+    }, []);
 
     const handleSelectionChange = useCallback((selected, idx, selectedItem) => {
         // selection needs to be sent to server
@@ -264,9 +303,11 @@ export default function Grid({
             idx = selected[0];
             onSingleSelect(idx, selectedItem);
         }
-    },[])
+    }, [])
 
-    const handleCellClick = () => console.log('handleCellClick');
+    const handleCellClick = useCallback(selectedCell => {
+        onSelectCell && onSelectCell(selectedCell);
+    }, [])
 
     const handleFilterOpen = useCallback(column => {
         if (state.showFilter !== column.name) {
@@ -345,9 +386,9 @@ export default function Grid({
                     onColumnMove={handleColumnMove}
                     onToggleCollapse={handleToggleCollapseColumn}
                     onToggleGroupState={toggleGroupAll}
-                    onRemoveGroupbyColumn={groupBy}
                     onSort={sort}
                     onSortGroup={sortGroup}
+                    onRemoveGroupbyColumn={unGroupBy}
                     onHeaderClick={props.onHeaderClick}
                     colHeaderRenderer={props.colHeaderRenderer}
                     onContextMenu={showContextMenu} />}
@@ -461,67 +502,4 @@ export default function Grid({
     //     }
 
     // }
-
-
-
-    // sortGroup = column => {
-    //     const model = this.reducer.dispatch({ type: Action.SORT_GROUP, column });
-    //     this.state.dataView.groupBy(model.groupBy);
-    //     this.setState({ model });
-    // }
-
-
-    // toggleGroupAll = (column, expanded) => {
-    //     console.log(`toggleGroupAll ${column.name}`)
-    //     const groupState = expanded === 1
-    //         ? {'*': true}
-    //         : {};
-    //     this.state.dataView.setGroupState(groupState);
-    //     this.setState({
-    //         model: this.reducer.dispatch({ type: Action.TOGGLE, groupState })
-    //     });
-    // }
-
-    // handleToggleCollapseColumn = column => {
-    //     const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
-    //     this.setState({ model: this.reducer.dispatch({ type: action, column }) });
-    // }
-
-
-
-    // handleCellClick = (selectedCell) => {
-    //     if (this.props.onSelectCell) {
-    //         this.props.onSelectCell(selectedCell);
-    //     }
-    // }
-
-    // // do we need to call a prop for this ?
-    // handleVerticalScroll = (scrollTop) => {
-
-    //     if (this.props.onScroll) {
-    //         this.props.onScroll({ scrollTop });
-    //     }
-    // }
-
-    // handleHorizontalScroll = scrollLeft => {
-    //     if (this._scrollLeft !== scrollLeft) {
-    //         this._scrollLeft = scrollLeft;
-    //         this.onHorizontalScroll();
-    //     }
-
-    //     if (this.props.onScroll) {
-    //         this.props.onScroll({ scrollLeft });
-    //     }
-    // }
-
-    // onHorizontalScroll() {
-    //     const scrollLeft = this._scrollLeft;
-    //     if (this.header.current) {
-    //         this.header.current.setScrollLeft(scrollLeft);
-    //     }
-    //     if (this.inlineFilter.current) {
-    //         this.inlineFilter.current.setScrollLeft(scrollLeft);
-    //     }
-    // }
-
 }

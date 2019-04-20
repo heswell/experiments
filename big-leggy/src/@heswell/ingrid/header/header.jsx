@@ -57,9 +57,11 @@ export default class Header extends React.Component {
                                 onColumnMove={onColumnMove}
                                 onToggleCollapse={onToggleCollapse}
                                 onContextMenu={onContextMenu}
-                                onRemoveGroupbyColumn={onRemoveGroupbyColumn}
+
                                 onSort={onSort}
                                 onSortGroup={onSortGroup}
+                                onRemoveGroupbyColumn={onRemoveGroupbyColumn}
+
                                 onHeaderClick={onHeaderClick}
                                 onToggleGroupState={onToggleGroupState}
                                 colHeaderRenderer={this.props.colHeaderRenderer}

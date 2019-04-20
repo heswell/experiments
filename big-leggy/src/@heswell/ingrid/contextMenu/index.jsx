@@ -1,5 +1,6 @@
 import React from 'react';
 import { ContextMenu, MenuItem, Separator } from '../services/popups';
+import * as Action from '../model/actions';
 
 export const ContextMenuActions = {
     SortAscending : 'sort-asc',
@@ -10,14 +11,29 @@ export const ContextMenuActions = {
     GroupByReplace : 'groupby-replace'
 };
 
+
 export default class GridContextMenu extends React.Component {
+
+    handleMenuAction = (action, data) => {
+        const {dispatch, doAction} = this.props;
+        switch(action){
+            case ContextMenuActions.GroupBy:
+                dispatch({ type: Action.groupExtend, column: data.column });
+                break;
+            case ContextMenuActions.GroupByReplace:
+                dispatch({ type: Action.GROUP, column: data.column });
+                break;
+            default:
+                doAction(action, data)
+        }
+    }
 
     render() {
 
         const {location, options} = this.props;
 
         return (
-            <ContextMenu doAction={this.props.doAction}>
+            <ContextMenu doAction={this.handleMenuAction}>
                 {this.menuItems(location, options)}
             </ContextMenu>
         );
