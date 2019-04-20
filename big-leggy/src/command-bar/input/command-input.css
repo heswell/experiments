@@ -1,14 +1,14 @@
 
 .speedbar {
   --speedbar-height: 29px;
-  flex: 0 0 29px;
+  flex: 0 0 var(--speedbar-height);
   background-color: var(--aurora-desktop-launcher-speedbar-bg);
   border-radius: 0 4px 0 0;
   font-size: .975rem;
 }
 
 .speedbar-outer-container {
-  height: var(--speedbar-height);
+  height: 100%;
   display: flex;
   align-items: center;
   position: relative;

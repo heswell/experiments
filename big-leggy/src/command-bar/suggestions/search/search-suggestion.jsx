@@ -4,24 +4,24 @@ import cn from 'classnames';
 import './search-suggestion.css'
 
 const styles = {
-  newSpeedbarSearchItem: 'search-suggestion-suggested-item',
-  newSpeedbarSearchCol: 'search-suggestion-search-col',
-  newSpeedbarSearchMatch: 'search-suggestion-search-match',
-  newSpeedbarSearchItemSelected: 'search-suggestion-selected'
+  speedbarSearchItem: 'search-suggestion-suggested-item',
+  speedbarSearchCol: 'search-suggestion-search-col',
+  speedbarSearchMatch: 'search-suggestion-search-match',
+  speedbarSearchItemSelected: 'search-suggestion-selected'
 }
 
 export default class SearchSuggestion extends React.Component {
 
-  renderCol(displayText, idx, themedStyles) {
+  renderCol(displayText, idx) {
     const { searchTermPattern } = this.props;
     const textChunks = displayText.split(searchTermPattern);
 
     return (
-      <span key={idx} className={themedStyles.newSpeedbarSearchCol}>
+      <span key={idx} className={styles.speedbarSearchCol}>
         {textChunks.map((textChunk, chunkIdx) => {
           if (searchTermPattern.test(textChunk)) {
             return (
-              <span key={chunkIdx} className={themedStyles.newSpeedbarSearchMatch}>
+              <span key={chunkIdx} className={styles.speedbarSearchMatch}>
                 {textChunk}
               </span>
             );
@@ -34,17 +34,18 @@ export default class SearchSuggestion extends React.Component {
   }
 
   render() {
-    const { suggestion: { value, suggestionText }, isSelected, onClick } = this.props;
+    const { suggestion: { value, suggestionText }, isSelected, onClick, style } = this.props;
     const displayText = Array.isArray(suggestionText)
       ? suggestionText
       : [suggestionText];
 
     return (
       <div
+        style={style}
         data-id={value}
         tablndex={-1}
-        className={cn(styles.newSpeedbarSearchItem, {
-          [styles.newSpeedbarSearchItemSelected]: isSelected
+        className={cn(styles.speedbarSearchItem, {
+          [styles.speedbarSearchItemSelected]: isSelected
         })}
         onClick={onClick}
       >

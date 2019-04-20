@@ -1,13 +1,15 @@
 .search-suggestion-suggested-item {
   white-space: nowrap;
   font-size: 13px;
-  line-height: 20px;
+  line-height: 26px;
   display: table-row;
+  overflow: hidden;
 }
 
 .search-suggestion-search-col {
   display: table-cell;
   padding: 0 6px;
+  width: 1px;
 }
   
 .search-suggestion-search-col:last-child {

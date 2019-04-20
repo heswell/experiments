@@ -72,11 +72,11 @@ export const searchUsers = searchTerm =>
     Users.forEach(user => {
       // search terms are logically ANDed together, so we must match every pattern
       if (searchPatterns.every(pattern => user.some(property => pattern.test(property)))) {
-        const [firstname, surname, company] = user;
+        const [firstName, lastName, company, oeAlias] = user;
         searchResult.searchResults.push({
           value: user.join(),
-          speedbarText: `${firstname} ${surname} (${company.slice(0, 2)}${ELLIPSIS})`,
-          suggestionText: `${firstname} ${surname} (${company})`
+          speedbarText: `${lastName}, ${firstName} (${company.slice(0, 2)}${ELLIPSIS})`,
+          suggestionText: [`${lastName}, ${firstName}`, `${oeAlias}`, company]
         });
       }
     });
@@ -135,13 +135,42 @@ const strategies = [
 ];
 
 const Users = [
-  ['janie', 'Jones', 'credit suisse'],
-  ['simon', 'Johns', 'credit suisse'],
-  ['billy', 'bragg', 'credit agricole'],
-  ['jenny', 'Jones', 'deutsche bank'],
-  ['grahame', 'greene', 'citadel'],
-  ['patsy', 'Sledge-hammer', 'Royal Caribbean'],
-  ['Richard', 'Chamberlain', 'citadel']
+  ['janie', 'Jones', 'credit suisse (Casablanca Ltd)', 12356],
+  ['simon', 'Johns', 'credit suisse (Casablanca Ltd)', 12345],
+  ['billy', 'bragg', 'credit agricole', 100102],
+  ['jenny', 'Jones', 'deutsche bank', 100606],
+  ['grahame', 'greene', 'citadel', 100607],
+  ['patsy', 'Sledge-hammer', 'Royal Caribbean Holidays', 34567],
+  ['Richard', 'Chamberlain', 'citadel', 100607],
+  ['billy', 'Budd', 'credit suisse (Casablanca Ltd)', 12345],
+  ['sarah', 'Palin', 'credit suisse (Casablanca Ltd)', 12345],
+  ['mary', 'Tudor', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Anne', 'Widdicombe', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Benedict', 'Cumberbach', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Jo', 'Blow', 'credit suisse (Casablanca Ltd)', 12345],
+  ['william', 'Braithwaite', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Margaret', 'Smith-Williamson', 'credit suisse (Casablanca Ltd)', 12345],
+  ['June', 'Whitfield', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Simon', 'Clegg', 'credit suisse (Casablanca Ltd)', 12345],
+  ['billy', 'Graham', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Frank', 'Worthington', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Paul', 'McCartney', 'credit suisse (Casablanca Ltd)', 12345],
+  ['John', 'Smith', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Joan', 'Smith', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Joanne', 'Smythe', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Derek', 'Jones', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Dan', 'Jonson', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Jerome', 'Jerome', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Michael', 'Poston', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Susanna', 'Barre', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Butch', 'Mahoney', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Percival', 'Shelley', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Shelley', 'Duval', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Fat', 'Ladd', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Slim', 'Shadey', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Alan', 'Ladd', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Julie', 'Christie', 'credit suisse (Casablanca Ltd)', 12345],
+  ['Michelle', 'Pfeiffer', 'credit suisse (Casablanca Ltd)', 12345],
 ];
 const Assets = [
   ['vod In', 'vod.l', 'vodafone'],
