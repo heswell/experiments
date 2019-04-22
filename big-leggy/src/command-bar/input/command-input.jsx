@@ -95,6 +95,10 @@ export default class CommandInput extends React.Component {
   };
 
   async handleChange(e) {
+    // const cursorPosition = this.getCursorPosition();
+    // if (this.tokenAtOffsetIsResolvedSearchToken(cursorPosition)) {
+    //   console.log(`%cCOmmandInput handleChange editing resolved search token`,'color:red; font-weight: bold;')
+    // }
     const value = e.target.value;
     this.props.onChange(value);
   };
@@ -121,13 +125,14 @@ export default class CommandInput extends React.Component {
             this.props.onClear();
           } else {
             const cursorPosition = this.getCursorPosition();
-            if (this.tokenAtOffsetIsResolvedSearchToken(cursorPosition - 1)) {
+            const {tokenList} = this.props;
+            if (tokenList.tokenAtOffsetIsResolvedSearchToken(cursorPosition - 1)) {
               console.log('tokenAtCursorlsResolvedSearchToken =================')
               if (e.ctrlKey) {
                 this.props.onClearSearchToken(cursorPosition);
                 e.preventDefault();
               } else {
-                console.log('unresolve the token =================')
+                console.log('revisit a search token =================')
                 this.props.onRevisitSearchToken(cursorPosition);
               }
             }
@@ -162,17 +167,6 @@ export default class CommandInput extends React.Component {
     return prefixAcceptedCommandEmpty || prefixSelected;
   }
 
-  tokenAtOffsetIsResolvedSearchToken(offset) {
-    const { tokenList } = this.props;
-    if (tokenList) {
-      const token = tokenList.getTokenAtOffset(offset);
-      if (token && token.searchId && this.hasAcceptedSuggestion(token.searchId)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   handleSelectionChange() {
     const scroller = this.scrollable.current;
     const tokenMirror = this.tokenMirror.current;
@@ -189,6 +183,8 @@ export default class CommandInput extends React.Component {
         }
       }
       this.cursorPosition = cursorPosition;
+      const cursorAtEnd = this.cursorPosition === this.props.inputText.length;
+      this.scrollable.current.setCursorAtEnd(cursorAtEnd);
     }
 
     // experiments
@@ -252,9 +248,6 @@ export default class CommandInput extends React.Component {
   canAcceptSuggestion() {
     return this.props.suggestions.length > 0 && this.props.selectedSuggestionIdx > -1;
   }
-  hasAcceptedSuggestion(searchId) {
-    return searchId in this.props.tokenList.searchTokens;
-  }
   acceptSuggestion(selectedSuggestionIdx) {
     this.props.onAcceptSuggestion(selectedSuggestionIdx);
   }
@@ -287,6 +280,7 @@ export default class CommandInput extends React.Component {
     }
   }
   setCursorPosition(offset) {
+    console.log(`COmmandInput setCursorPosition ${offset}`)
     // this.cursorPosition = offset;
     if (this.cursorTimeout) {
       clearTimeout(this.cursorTimeout);
@@ -354,7 +348,15 @@ export default class CommandInput extends React.Component {
       return '';
     }
   }
+
+  componentWillReceiveProps(nextProps){
+    console.log(`CommandInput componentWillReceiveProps '${this.props.inputText}' => '${nextProps.inputText}' equal ? ${this.props.inputText === nextProps.inputText}`)
+  }
+
+
   componentDidUpdate(prevProps) {
+    console.log(`COmmandInput componentDidUpdate cursorPosition = ${this.getCursorPosition()} '${this.props.inputText}'`)
+
     const { commandStatus: prevStatus} = prevProps.commandState;
     const { commandStatus } = this.props.commandState;
 
@@ -387,6 +389,8 @@ export default class CommandInput extends React.Component {
     const showCommand = this.shouldShowCommandPrefix();
     const displayPrefix = this.getCommandPrefix();
     const displayText = showCommand ? commandText : inputText;
+
+    console.log(`COmmandInput about to render cursorPosition = ${this.getCursorPosition()} '${inputText}'`)
 
     return (
       <div ref={this.containerElement} className={styles.speedbar}>

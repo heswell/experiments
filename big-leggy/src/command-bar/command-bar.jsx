@@ -192,7 +192,8 @@ export default class CommandWindow extends React.Component {
     const { tokenList } = this.state;
     let token = tokenList.getTextTokenBeforeOffset(cursorPosition);
     // changes here
-    if (token && token.text.replace(/\s/g, ' ') === this.state.searchTerm) {
+    //if (token && token.text.replace(/\s/g, ' ') === this.state.searchTerm) {
+    if (token && tokenList.unformatSearchText(token.text) === this.state.searchTerm) {
       return token.startOffset;
     } else {
       return cursorPosition;
@@ -219,16 +220,17 @@ export default class CommandWindow extends React.Component {
     const token = tokenList.getTokenAtOffset(offset);
     if (token && token.searchId) {
       const { [token.searchId]: _, ...searchTokens } = this.state.searchTokens;
-      this.setState(
-        {
-          searchTokens
-        }
-      );
+      console.log(`%cCommandBar is editing search token ${JSON.stringify(token)}`,'color: blue;font-weight: bold;')
+      // this.setState(
+      //   {
+      //     searchTokens
+      //   }
+      // );
     }
   }
 
   /** User has user CTRL+Backspace to remove a word and is positioned i=on a resolved search token.
-  •* Clear the entire token,-which may incluse embedded spaces.
+  •* Clear the entire token,-which may include embedded spaces.
   */
   clearSearchToken(tokenOffset) {
     console.log(`clear search token at ${tokenOffset}`)
@@ -262,7 +264,8 @@ export default class CommandWindow extends React.Component {
     const {
       searchTokens,
       commandState: { commandPrefix },
-      selectedSuggestionIdx
+      selectedSuggestionIdx,
+      tokenList: currentTokenList
     } = this.state;
 
     let validPrefix = commandPrefix
@@ -272,6 +275,9 @@ export default class CommandWindow extends React.Component {
       // command is selected ...
       ({ speedbarText: validPrefix } = this.getSuggestion(selectedSuggestionIdx));
     }
+
+    const searchTokenEdited = inputMethod === InputMethod.UserInput && 
+      currentTokenList.tokenAtOffsetIsResolvedSearchToken(this.input.current.cursorPosition);
 
     const fullCommandText = `${validPrefix} ${inputText}`;
     const [commandState, tokenList, command] = parseCommand(
@@ -305,6 +311,8 @@ export default class CommandWindow extends React.Component {
       }, () => {
         if (inputMethod === InputMethod.PasteCommand) {
           this.postInputPasteHandling(inputText);
+        } else if (searchTokenEdited){
+          this.postInputSearchTokenEdited();
         } else {
           this.postInputSearchHandling(inputText);
         }
@@ -340,6 +348,17 @@ export default class CommandWindow extends React.Component {
           this.setCursorPosition(newInputText.length);
         }
       );
+    }
+  }
+
+  postInputSearchTokenEdited(){
+    const {command, tokenList} = this.state;
+    const cursorPosition = this.getCursorPosition();
+    const token = tokenList.getTokenAtOffset(cursorPosition);
+    if (token && token.searchId){
+      const searchTerm = tokenList.unformatSearchText(token.text);
+      console.log(`%cpostInputSearchTokenEdited ${token.searchId} '${token.text}' = '${searchTerm}'`,'color: red;font-weight: bold')
+      this.invokeSearch(command, token.searchId, searchTerm);
     }
   }
 
@@ -447,6 +466,7 @@ export default class CommandWindow extends React.Component {
               this.invalidateSearchTerm(searchTerm);
             } else if (searchTerm[searchTerm.length - 1] === ' ' && searchResult.searchResults.length === 1) {
               console.log(`shall we auto accept here ??? ${searchResult.searchResults[0].speedbarText}`)
+              // DO not auto accept edited search token result
               this.acceptSuggestion(0);
             }
           });
@@ -581,6 +601,7 @@ export default class CommandWindow extends React.Component {
 
   setCursorPosition(offset) {
     if (this.input.current) {
+      console.log(`CommandBar setCursorPosition ${offset}`)
       return this.input.current.setCursorPosition(offset);
     }
   }

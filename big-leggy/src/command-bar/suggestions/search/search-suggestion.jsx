@@ -17,7 +17,8 @@ export default class SearchSuggestion extends React.Component {
     const textChunks = displayText.split(searchTermPattern);
 
     return (
-      <span key={idx} className={styles.speedbarSearchCol}>
+      <td key={idx} className={styles.speedbarSearchCol}>
+        <div className="cell-container">
         {textChunks.map((textChunk, chunkIdx) => {
           if (searchTermPattern.test(textChunk)) {
             return (
@@ -29,7 +30,8 @@ export default class SearchSuggestion extends React.Component {
             return textChunk;
           }
         })}
-      </span>
+        </div>
+      </td>
     )
   }
 
@@ -40,8 +42,7 @@ export default class SearchSuggestion extends React.Component {
       : [suggestionText];
 
     return (
-      <div
-        style={style}
+      <tr
         data-id={value}
         tablndex={-1}
         className={cn(styles.speedbarSearchItem, {
@@ -50,7 +51,7 @@ export default class SearchSuggestion extends React.Component {
         onClick={onClick}
       >
         {displayText.map((text, idx) => this.renderCol(text, idx, styles))}
-      </div>
+      </tr>
     );
   }
 }

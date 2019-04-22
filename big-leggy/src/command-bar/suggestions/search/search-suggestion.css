@@ -2,18 +2,16 @@
   white-space: nowrap;
   font-size: 13px;
   line-height: 26px;
-  display: table-row;
   overflow: hidden;
 }
 
 .search-suggestion-search-col {
-  display: table-cell;
   padding: 0 6px;
-  width: 1px;
 }
   
 .search-suggestion-search-col:last-child {
-  width: 100%;
+  width: 99%;
+  padding: 0;
 }
   
 .search-suggestion-search-match {
@@ -22,4 +20,13 @@
   
 .search-suggestion-selected {
   background-color: #ccc;
+}
+
+.cell-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-suggestion-search-col:last-child .cell-container {
+  overflow: hidden;
 }

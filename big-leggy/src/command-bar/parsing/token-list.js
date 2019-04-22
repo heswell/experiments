@@ -2,6 +2,8 @@ import { NORMAL_SPACE, NB_SPACE, PATTERN_SPACE_ALL } from '../../token-search/to
 
 // redfined here, when exported from utils - lest does not import them correctly
 const PATTERN_SPACE = new RegExp(`${NORMAL_SPACE}+`);
+const PATTERN_ALL_NB_SPACE = new RegExp(`${NB_SPACE}+`,'g');
+const PATTERN_NON_SEARCHABLE_TEXT = /[^a-z0-9\s]/gi;
 
 export const TokenType = {
   WhiteSpace: 'whitespace',
@@ -128,6 +130,12 @@ export default class TokenList {
     }
   }
 
+  unformatSearchText(text){
+    let text1 = text.replace(PATTERN_ALL_NB_SPACE, ' ');
+    let text2 = text1.replace(PATTERN_NON_SEARCHABLE_TEXT,'');
+    return text2;
+  }
+
   getNextTokenIndexAtOffset(offset) {
 
     if (offset === 0 && this._tokens.length === 0) {
@@ -160,6 +168,16 @@ export default class TokenList {
     );
   }
 
+  tokenAtOffsetIsResolvedSearchToken(offset) {
+    const token = this.getTokenAtOffset(offset);
+    if (token && token.searchId in this.searchTokens) {
+        return true;
+    } else {
+      return false;
+    }
+  }
+
+
   toString() {
     return this._tokens.map(t => t.text).join('');
   }
@@ -169,6 +187,7 @@ export default class TokenList {
   *	so thye can be represented as a single token.
   */
   parseText(text, delimiter = PATTERN_SPACE) {
+    //TODO we need to examine searchTokens and remove any that are not present by end of parsing 
     const results = [];
     let character;
     let tokenStart;

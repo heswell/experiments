@@ -66,6 +66,7 @@ export class TokenMirror extends React.Component {
       const newWidth = Math.ceil(width);
       if (newWidth !== this.currentWidth) {
         this.currentWidth = newWidth;
+        console.log(`new contentWidth = ${newWidth}`)
         this.props.onContentResize(newWidth);
       }
     }
@@ -94,13 +95,8 @@ export class TokenMirror extends React.Component {
       const { left: offsetLeft } = this.el.current.getBoundingClientRect();
       const termWrappers = Array.from(this.el.current.querySelectorAll('div'));
       return termWrappers.map(termWrapper => {
-        // const term = termWrapper.querySelector('.term');
         const term = termWrapper;
         const { left, top, right, bottom } = term.getBoundingClientRect();
-        // const runtimeStyle = window.getComputedStyle(term, null);
-        // const boxShadow = runtimeStyle.getPropertyValue(`box-shadow`);
-        // const clipPath = runtimeStyle.getPropertyValue(`clip-path`);
-        // const [ofTop, ofRight, ofBottom, ofLeft] = calculateOverflow(boxShadow, clipPath);
         const [ofTop, ofRight, ofBottom, ofLeft] = [0, 0, 0, 0];
         const absLeft = Math.round(left) - ofLeft;
         return {
