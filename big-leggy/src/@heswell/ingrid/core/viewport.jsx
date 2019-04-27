@@ -3,6 +3,8 @@ import Canvas from './canvas';
 import css from '../style/grid';
 import KeyMap from '../utils/keyMap';
 import SelectionModel from '../model/selectionModel';
+import * as Action from '../model/actions';
+import { groupHelpers } from '../../data';
 
 export default class Viewport extends React.Component {
 
@@ -33,6 +35,17 @@ export default class Viewport extends React.Component {
 
         this.viewState = this.getState(props, props);
 
+    }
+
+    handleToggleGroup = (groupRow) => {
+        const {dispatch, gridModel: model} = this.props;
+        const groupState = groupHelpers.toggleGroupState(groupRow, model);
+        dispatch({ type: Action.TOGGLE, groupState });      
+    }
+
+    setRange(lo, hi){
+        this.props.onSetRange(lo, hi);
+        this.props.dispatch({type: Action.RANGE, lo, hi});
     }
 
     render() {
@@ -102,6 +115,7 @@ export default class Viewport extends React.Component {
                                     left={columnGroup.renderLeft}
                                     width={columnGroup.renderWidth}
                                     focusedRow={this.state.focusedIdx}
+                                    onToggleGroup={this.handleToggleGroup}
                                     onSelect={this.selectionHandler}/>
                             )}
                     </div>
@@ -125,7 +139,7 @@ export default class Viewport extends React.Component {
     componentWillMount(){
 
         const {firstVisibleRow, numberOfRowsInViewport} = this.viewState;
-        this.props.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport, true);
+        this.setRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport, true);
 
     }
 
@@ -143,7 +157,7 @@ export default class Viewport extends React.Component {
             if (numberOfRowsInViewport !== viewState.numberOfRowsInViewport){
                 // This will escalate to Grid, which will reset rows, but viewport is going to re-render before that, potentially with
                 // invalid no of rows (i.e. mismatch between rows and keys)
-                nextProps.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport);
+                this.setRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport)
                 rangeSet = true;
             }
             this.viewState = viewState = newState;
@@ -151,7 +165,7 @@ export default class Viewport extends React.Component {
 
         if (nextProps.gridModel.rowCount !== this.props.gridModel.rowCount && !rangeSet){
             const {firstVisibleRow, numberOfRowsInViewport} = viewState;
-            nextProps.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport);
+            this.setRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport)
             if (this.scrollTop !== 0){
                 console.log(`rowcount change and we're not at top of viewport, do we need to scroll down ?`)
 
@@ -192,7 +206,7 @@ export default class Viewport extends React.Component {
 
         if (this.viewState.firstVisibleRow !== prevFirst) {
             const { firstVisibleRow, numberOfRowsInViewport } = this.viewState;
-            this.props.onSetRange(firstVisibleRow, firstVisibleRow + numberOfRowsInViewport);
+            this.setRange(firstVisibleRow, firstVisibleRow + numberOfRowsInViewport);
         }
 
         if (this.props.onVerticalScroll) {

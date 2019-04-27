@@ -3,6 +3,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import ColumnGroupHeader from './columnGroupHeader';
+import * as Action from '../model/actions';
+
 import css from '../style/grid';
 
 const NULL_REF = () => {};
@@ -20,17 +22,75 @@ export default class Header extends React.Component {
         this.state = { scrollLeft: 0 };
     }
 
+    handleSort = (column, direction = null, preserveExistingSort = false) => {
+        const {dispatch} = this.props;
+        // this will transform the columns which will cause whole grid to re-render down to cell level. All
+        // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
+        dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
+    }
+
+    handleColumnMove = (phase, column, distance) => {
+        if (!column.isHeading){
+            const {dispatch} = this.props;
+            const {scrollLeft} = this.state;
+    
+            if (phase === 'move' && distance !== 0) {
+                dispatch({ type: Action.MOVE, distance, scrollLeft });
+            } else if (phase === 'begin') {
+                dispatch({ type: Action.MOVE_BEGIN, column, scrollLeft });
+            } else if (phase === 'end') {
+                dispatch({ type: Action.MOVE_END, column });
+            }    
+        }
+    }
+
+    handleColumnResize = (phase, column, width) => {
+        const {dispatch} = this.props;
+    
+        if (phase === 'resize') {
+            if (column.isHeading) {
+                dispatch({ type: Action.RESIZE_HEADING, column, width });
+            } else {
+                // TODO do we need to consider scrolling ?
+                dispatch({ type: Action.COLUMN_RESIZE, column, width });
+            }
+        } else if (phase === 'begin') {
+            dispatch({ type: Action.COLUMN_RESIZE_BEGIN, column });
+        } else if (phase === 'end') {
+            dispatch({ type: Action.COLUMN_RESIZE_END, column });
+        }
+    };
+
+    handleRemoveGroupBy = column => {
+        this.props.dispatch({ type: Action.groupExtend, column });
+    }
+
+    handleSortGroup = column => {
+        this.props.dispatch({ type: Action.SORT_GROUP, column });
+    };
+
+    handleToggleGroupState = (column, expanded) => {
+        const {dispatch, dataView} = this.props;
+        console.log(`toggleGroupAll ${column.name}`)
+        const groupState = expanded === 1
+            ? { '*': true }
+            : {};
+        dataView.setGroupState(groupState);
+        dispatch({ type: Action.TOGGLE, groupState })
+    }
+
     render() {
 
         const className = cx('Header', this.props.className);
         const {height,
             gridModel: model,
             onContextMenu,
-            onColumnResize,onColumnMove,onToggleCollapse,onToggleGroupState,
-            onSort,onSortGroup,onHeaderClick, onRemoveGroupbyColumn} = this.props;
+            onToggleCollapse,
+            onHeaderClick} = this.props;
+            
         const style = {...css.Header, ...this.props.style, height};
         const {sortBy, headerHeight, groupState} = model;
-        const multiColumnSort = sortBy !== null && sortBy.length > 1;
+        const multiColumnSort = sortBy && sortBy.length > 1;
 
         return (
             <div className={className} style={style}>
@@ -53,17 +113,17 @@ export default class Header extends React.Component {
                                 columnGroup={group}
                                 filter={model.filter}
                                 multiColumnSort={multiColumnSort}
-                                onColumnResize={onColumnResize}
-                                onColumnMove={onColumnMove}
+                                onColumnResize={this.handleColumnResize}
+                                onColumnMove={this.handleColumnMove}
                                 onToggleCollapse={onToggleCollapse}
                                 onContextMenu={onContextMenu}
 
-                                onSort={onSort}
-                                onSortGroup={onSortGroup}
-                                onRemoveGroupbyColumn={onRemoveGroupbyColumn}
+                                onSort={this.handleSort}
+                                onSortGroup={this.handleSortGroup}
+                                onRemoveGroupbyColumn={this.handleRemoveGroupBy}
 
                                 onHeaderClick={onHeaderClick}
-                                onToggleGroupState={onToggleGroupState}
+                                onToggleGroupState={this.handleToggleGroupState}
                                 colHeaderRenderer={this.props.colHeaderRenderer}
                                 colGroupHeaderRenderer={this.props.colGroupHeaderRenderer}
                             />

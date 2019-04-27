@@ -5,9 +5,136 @@ import {msgType as Msg, createLogger, logColor,
 
 import {ServerProxy} from './remote-server-proxy.js';
 import RemoteSubscription from './remote-subscription';
-import { fillNavSetsFromGroups } from '../data/store/groupUtils';
+import { metaData } from '../data/store/columnUtils';
+
+const logger = createLogger('RemoteDataView', logColor.blue);
 
 const serverProxy = new ServerProxy(messageFromTheServer);
+
+const defaultRange = {lo: 0, hi: 0};
+
+export default class RemoteDataView {
+
+  constructor(url, tableName){
+    connect(url);
+    
+    this.tableName = tableName;
+
+    this.subscription = null;
+
+    this.columns = null;
+    this.meta = null;
+    this.range = null;
+    this.groupBy = undefined;
+    this.groupState = undefined;
+    this.sortBy = undefined;
+    this.filterBy = undefined;
+
+    this.size = 0;
+    this.dataRows = [];
+    this.filterRows = [];
+  }
+
+  subscribe({
+    viewport = uuid(),
+    tableName=this.tableName,
+    columns,
+    range= defaultRange,
+    ...options
+    }, callback){
+      
+      if (!tableName) throw Error("RemoteDataView subscribe called without table name");
+      if (!columns) throw Error("RemoteDataView subscribe called without columns");
+
+      this.tableName = tableName;
+      this.columns = columns;
+      this.meta = metaData(columns);
+
+      logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
+
+      this.subscription = subscribe({
+        ...options,
+        viewport,
+        tablename: tableName,
+        columns,
+        range
+      }, (message) => {
+
+        const {rowData: {rows, size, range, offset}} = message;
+
+        logger.log(`receive rows ${rows.length} of ${size} for range ${range.lo}:${range.hi} (current range ${this.range.lo}:${this.range.hi})`, message)
+
+        const mergedRows = mergeAndPurge(this.range, this.rows, offset, rows, size, this.meta);
+
+        console.table(mergedRows);
+
+      
+        this.size = size;
+        this.rows = mergedRows;
+      
+        callback(mergedRows);
+    
+    });
+
+    logger.log(`git a subscription`, this.subscription)
+  }
+
+  unsubscribe(){
+
+  }
+
+  set rows(newRows){
+    this.dataRows = newRows;
+  }
+
+  get rows(){
+    return this.dataRows;
+  }
+
+  setRange(lo, hi){
+    logger.log(`setRange lo: ${lo} hi ${hi}`)
+    this.range = {lo,hi};
+    if (this.subscription){
+      this.subscription.setRange(lo,hi);
+    }
+  }
+
+  group(columns){
+    this.groupBy = columns;
+    if (this.subscription){
+      this.subscription.groupBy(columns);
+    }
+  }
+
+  setGroupState(groupState){
+    this.groupState = groupState;
+    if (this.subscription){
+      this.subscription.setGroupState(groupState);
+    }
+  }
+
+  sort(columns){
+    this.sortBy = columns;
+    if (this.subscription){
+      this.subscription.sort(columns);
+    }
+
+  }
+
+  filter(filter){
+    this.filterBy = filter;
+    if (this.subscription){
+      this.subscription.filter(filter);
+    }
+
+  }
+
+  getFilterData(column, searchText){
+    if (this.subscription){
+      this.subscription.getFilterData(column, searchText);
+    }
+  }
+}
 
 export const postMessageToServer = async (message) => {
     // const worker = await getWorker();
@@ -52,8 +179,6 @@ let pendingConnection = new Promise((resolve, reject) => {
 });
 
 const getDefaultConnection = () => pendingConnection;
-
-const logger = createLogger('RemoteDataView', logColor.blue);
 
 
 /*--------------------------------------------------------
@@ -122,15 +247,15 @@ function onConnected(message){
   Subscribing to services
 
   --------------------------------------------------------*/
-export function subscribe(message, clientCallback){
-  logger.log(`<subscribe> vp ${message.viewport}`)
-  const viewport = message.viewport;
+export function subscribe(options, clientCallback){
+  logger.log(`<subscribe> vp ${options.viewport} table ${options.tablename}`)
+  const viewport = options.viewport;
   const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback)
 
   // blocks here until connection is resolved (to an instance of ServerApi)
    getDefaultConnection().then(remoteConnection => {
       logger.log(`now we have a remoteConnection, we can subscribe`)
-      remoteConnection.subscribe(message, viewport);
+      remoteConnection.subscribe(options, viewport);
   });
   // clearTimeout(timeoutHandle);
 
@@ -166,3 +291,63 @@ const RemoteConnectionAPI = (connectionId, postMessage) => ({
         })
 
 });
+
+/*--------------------------------------------------------
+
+Utility functions
+
+  --------------------------------------------------------*/
+
+// TODO create a pool of these and reuse them
+function emptyRow(idx, {IDX, count}){
+  const row = Array(count);
+  row[IDX] = idx;
+  return row;
+}
+
+function mergeAndPurge({lo, hi}, rows, offset = 0, newRows, size, meta) {
+  // console.groupCollapsed(`mergeAndPurge range: ${lo} - ${hi} 
+  //  old   rows: [${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}]
+  //  new   rows: [${newRows.length ? newRows[0][0]: null} - ${newRows.length ? newRows[newRows.length-1][0]: null}]
+  //     `);
+  const {IDX} = meta;
+  const results = [];
+  const low = lo + offset;
+  const high = Math.min(hi + offset, size + offset);
+
+  let idx;
+  let row;
+
+  for (let i = 0; i < newRows.length; i++) {
+    if (row = newRows[i]) {
+        idx = row[IDX];
+
+        if (idx >= low && idx < high) {
+            results[idx - low] = newRows[i];
+        }
+    }
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+      if (row = rows[i]) {
+          idx = row[IDX];
+          if (idx >= low && idx < high && results[idx - low] === undefined){
+            results[idx - low] = rows[i];
+          }
+      }
+  }
+
+
+  // make sure the resultset contains entries for the full range
+  // TODO make this more efficient
+  const rowCount = hi - lo;
+  for (let i=0;i<rowCount;i++){
+      if (results[i] === undefined){
+          results[i] = emptyRow(i+low, meta);
+      }
+  }
+  // console.table(results);
+  // console.groupEnd();
+  return results;
+
+}

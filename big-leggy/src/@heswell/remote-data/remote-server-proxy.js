@@ -49,7 +49,7 @@ export class ServerProxy {
                         dataType,
                         range: { ...range, bufferSize: 0 }
                     });
-                    // const rows = subscription.putRange(message.range, dataType);
+                    const rows = subscription.putRange(message.range, dataType);
                     // if (rows.length) {
                     //     logger.log(`<handleMessageFromClient -> postMessage> ${dataType} rows from cache ${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}`);
                     //     this.postMessageToClient({ data: { type: dataType, viewport, [dataType]: { data: rows, size, offset, range } } });
@@ -83,6 +83,7 @@ export class ServerProxy {
                 break;
 
             case Message.GROUP_BY:
+            logger.log(`<GROUP_BY>`, message)
                 if (subscription = this.subscriptions[viewport]) {
                     subscription.clear();
                 }
@@ -263,7 +264,6 @@ export class ServerProxy {
     }
 
     handleMessageFromServer(message) {
-
         let subscription;
         const { type, viewport } = message;
 
@@ -276,11 +276,14 @@ export class ServerProxy {
                 break;
 
             case Message.SNAPSHOT:
+                logger.log(`<handleMessageFromServer>`,message)
                 if (subscription = this.subscriptions[viewport]) {
                     const { data } = message;
                     const rows = subscription.putSnapshot(data);
                     if (rows.length) {
                         this.postMessageToClient({ data: { type: DataTypes.ROW_DATA, viewport, rowData: { ...data, data: rows } } });
+                    } else {
+                        logger.log(`no rows after putSnapshot`)
                     }
                 }
                 break;
@@ -322,6 +325,9 @@ export class ServerProxy {
     // data is an array of batches where each batch contains the set of 
     // data updates for one viewport
     processData(data) {
+
+        logger.log(`<processData>`,data)
+
         data.forEach(batch => {
 
             const { viewport, size, offset, rows, updates: rowUpdates } = batch;

@@ -11,7 +11,6 @@ export const ContextMenuActions = {
     GroupByReplace : 'groupby-replace'
 };
 
-
 export default class GridContextMenu extends React.Component {
 
     handleMenuAction = (action, data) => {
@@ -23,9 +22,25 @@ export default class GridContextMenu extends React.Component {
             case ContextMenuActions.GroupByReplace:
                 dispatch({ type: Action.GROUP, column: data.column });
                 break;
+            case ContextMenuActions.SortAscending: 
+                return this.sort(data.column, 'asc');
+            case ContextMenuActions.SortDescending: 
+                return this.sort(data.column, 'dsc');
+            case ContextMenuActions.SortAddAscending:
+                return this.sort(data.column, 'asc', true);
+            case ContextMenuActions.SortAddDescending:
+                return this.sort(data.column, 'dsc', true);
+    
             default:
                 doAction(action, data)
         }
+    }
+
+    sort = (column, direction = null, preserveExistingSort = false) => {
+        const {dispatch} = this.props;
+        // this will transform the columns which will cause whole grid to re-render down to cell level. All
+        // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
+        dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
     }
 
     render() {
@@ -57,7 +72,7 @@ export default class GridContextMenu extends React.Component {
                     </MenuItem>
                 );
 
-                if (sortCriteria !== null && sortCriteria.length){
+                if (sortCriteria && sortCriteria.length){
                     menuItems.push(
                         <MenuItem key='sort-add-asc' action='sort-add-asc' data={options} label='Add to Sort' >
                             <MenuItem key='sort-add-asc' action='sort-add-asc' data={options} label='ASC' />
@@ -68,7 +83,7 @@ export default class GridContextMenu extends React.Component {
                                 
             } else {    
 
-                if (sortCriteria !== null && sortCriteria.length > 1){
+                if (sortCriteria && sortCriteria.length > 1){
                     menuItems.push(
                        <MenuItem key='sort-remove' action='sort-remove' data={options} label='Remove from Sort' />
                     );
@@ -82,10 +97,7 @@ export default class GridContextMenu extends React.Component {
             }
 
             if (groupBy && groupBy.length) {
-                if (isGroup){
-                    menuItems.push(<MenuItem key='groupby-remove-all' action='groupby-remove-all' data={options} label={`Remove Grouping`} />);
-                } else {
-                    menuItems.push(<MenuItem key='groupby-replace' action='groupby-replace' data={options} label={`Group by ${colName}`} />);
+                if (!isGroup){
                     menuItems.push(<MenuItem key='groupby-add' action='groupby' data={options} label={`Add ${colName} to Group`} />);
                 }
             } else {

@@ -2,15 +2,53 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Header from './header';
 import ColumnFilter from './columnFilter';
-import {filter} from '../../data'
+import {filter as filterUtils} from '../../data'
+import * as Action from '../model/actions';
 
-const {STARTS_WITH} = filter;
+const {STARTS_WITH} = filterUtils;
 
 export default class InlineFilter extends React.Component {
 
     header;
 
     state = { scrollLeft: 0 }
+
+    handleFilter = (column, newFilter) => {
+        const {gridModel: model, dispatch, dataView} = this.props;
+        const filter = filterUtils.addFilter(model.filter, newFilter);
+        console.log(`
+                add filter ${JSON.stringify(newFilter, null, 2)}
+                to filter ${JSON.stringify(model.filter, null, 2)}
+                creates new filter = ${JSON.stringify(filter, null, 2)}
+            `)
+
+        dataView.filter(filter);
+        dispatch({ type: Action.FILTER, column, filter });
+
+        if (newFilter.isNumeric) {
+            // re-request the filterData, this will re-create bins on the filtered data
+            const { key, name } = column.isGroup ? column.columns[0] : column;
+            dataView.getFilterData({ key, name });
+        }
+
+    }
+
+    handleClearFilter = column => {
+        const {gridModel: model, dispatch, dataView} = this.props;
+        const filter = filterUtils.removeFilterForColumn(model.filter, column);
+        dataView.filter(filter);
+        dispatch({ type: Action.FILTER, column, filter })
+    }
+
+    handleSearchText = ({ key, name }, text) => {
+        this.props.dataView.getFilterData({ key, name }, text);
+    }
+
+        // // This is being used to handle selection in a set filter, need to consider how it will work
+    // // with regular row selection
+    handleSelection = (dataType, colName, filterMode) => {
+        this.props.dataView.select(dataType, colName, filterMode);
+    }
 
     render(){
         const {filter} = this.props.gridModel;
@@ -21,13 +59,13 @@ export default class InlineFilter extends React.Component {
                 dataView={dataView}
                 filter={filter}
                 onKeyDown={this.handleKeyDown}
-                onClearFilter={onClearFilter}
+                onClearFilter={this.handleClearFilter}
                 onFilterOpen={onFilterOpen}
                 onFilterClose={onFilterClose}
-                onSearchText={onSearchText}
+                onSearchText={this.handleSearchText}
                 showFilter={showFilter === column.name}
-                onFilter={onFilter}
-                onSelect={onSelect}/>;
+                onFilter={this.handleFilter}
+                onSelect={this.handleSelection}/>;
         
         return (
             // watch out for shouldComponentUpdate in ColumnGroupHeader, can block rendering of Filter

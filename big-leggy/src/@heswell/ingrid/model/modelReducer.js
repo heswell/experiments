@@ -5,7 +5,6 @@ import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
-import {updateGroupBy} from '../../data/store/groupUtils'
 
 export const DEFAULT_MODEL_STATE = {
     width: 400,
@@ -15,11 +14,13 @@ export const DEFAULT_MODEL_STATE = {
     minColumnWidth: 80,
     groupColumnWidth: 'auto',
     columns: [],
-    sortBy: null,
-    groupBy: null,
+    // Note: values which have never been set are undefined, once set, they are unset to null
+    range: undefined,
+    sortBy: undefined,
+    groupBy: undefined,
+    groupState: undefined,
+    filter: undefined,
     extendsPrevGroupBy: undefined,
-    groupState: null,
-    filter: null,
     rowCount: 0,
     scrollbarSize: 15,
     scrollLeft: 0,
@@ -41,7 +42,6 @@ export const DEFAULT_MODEL_STATE = {
     _headingResize: undefined
 };
 
-const DEFAULT_PRESENTER = getFormatter();
 const RESIZING = {resizing: true};
 const NOT_RESIZING = {resizing: false};
 const EMPTY_ARRAY = [];
@@ -77,6 +77,7 @@ const handlers = {
     [Action.MOVE]: move,
     [Action.MOVE_END]: moveEnd,
     [Action.TOGGLE]: toggle,
+    [Action.RANGE]: setRange,
     [Action.SCROLLLEFT]: setScrollLeft,
     [Action.SCROLL_LEFT]: autoScrollLeft,
     [Action.SCROLL_RIGHT]: autoScrollRight,
@@ -87,7 +88,6 @@ const handlers = {
 
 
 export default function reducer(state, action){
-    console.log(`reducer ${action.type}`)
     return (handlers[action.type] || MISSING_HANDLER)(state, action);
 }
 
@@ -103,6 +103,7 @@ export function initialize(state, action) {
         columnMap=state.columnMap,
         sortBy=state.sortBy,
         groupBy=state.groupBy,
+        range=state.range,
         extendsPrevGroupBy=state.extendsPrevGroupBy,
         groupState=state.groupState,
         filter=state.filter,
@@ -138,6 +139,7 @@ export function initialize(state, action) {
         columnMap,
         sortBy,
         groupBy,
+        range,
         extendsPrevGroupBy,
         groupState,
         collapsedColumns,
@@ -201,7 +203,7 @@ function sortGroup(state, {column}) {
 
 function extendGroup(state, {column, rowCount=state.rowCount}) {
     const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
-    const extendsPrevGroupBy = groupBy !== null && Array.isArray(state.groupBy) && state.groupBy.length > 0
+    const extendsPrevGroupBy = groupBy && Array.isArray(state.groupBy) && state.groupBy.length > 0
     console.log(`modelReducer applyGroup new Group ${groupBy}`)
     return initialize(state, {gridState: {groupBy, extendsPrevGroupBy, rowCount}});
 }
@@ -211,11 +213,23 @@ function setGroupBy(state, {column, rowCount=state.rowCount}) {
     return initialize(state, {gridState: {groupBy, extendsPrevGroupBy: false, rowCount}});
 }
 
-// do we need ?
 function toggle(state, {groupState}) {
     return {...state, groupState};
-    //return setRowCount({...state, groupState},{rowCount});
+}
 
+function setRange(state, {lo, hi}) {
+    const {range} = state;
+    if (range && lo === range.lo && hi === range.hi){
+        console.log(`%cNO CHANGE TO RANGE ${JSON.stringify(range)}`,'background-color: rebeccapurple; color: white; font-weight: bold;')
+        return state;
+    } else {
+        return {
+            ...state,
+            range: {
+                lo, hi
+            }
+        };
+    }
 }
 
 const splitKeys = compositeKey => compositeKey.split(':').map(k => parseInt(k,10));
@@ -333,27 +347,36 @@ function setScrollLeft(state, {scrollLeft}) {
 }
 
 function autoScrollLeft(state, {scrollDistance}) {
+    const {_overTheLine,  _movingColumn: column} = state;
+
     const scrollLeft = Math.max(state.scrollLeft + scrollDistance, 0);
     if (scrollLeft === state.scrollLeft){
-        return state;
-    } else {
-        const column = state._movingColumn;
+        return _overTheLine === 0
+            ? state
+            : { ...state, _overTheLine: 0 };
+    } else if (column) {
         const _virtualLeft = column.left + scrollLeft;
         const _movingColumn = {...column, _virtualLeft};
         return _updateColumnPosition({...state, scrollLeft,_movingColumn}, column);
+    } else {
+        return state;
     }
 }
 
 function autoScrollRight(state, {scrollDistance}) {
-    const maxScroll = state.totalColumnWidth - state.displayWidth;
+    const {totalColumnWidth, displayWidth, _movingColumn: column, _overTheLine} = state;
+    const maxScroll = totalColumnWidth - displayWidth;
     const scrollLeft = Math.min(state.scrollLeft + scrollDistance, maxScroll);
     if (scrollLeft === state.scrollLeft){
-        return state;
-    } else {
-        const column = state._movingColumn;
+        return _overTheLine === 0
+            ? state
+            : { ...state, _overTheLine: 0 };
+    } else if (column) {
         const _virtualLeft = column.left + scrollLeft;
         const _movingColumn = {...column, _virtualLeft};
         return _updateColumnPosition({...state, scrollLeft,_movingColumn}, column);
+    } else {
+        return state;
     }
 }
 
@@ -375,8 +398,7 @@ function move(state, {distance, scrollLeft=0}) {
     const column = state._movingColumn;    
     const oldPosLeft = column.left;
     const canScroll = state.displayWidth < state.totalColumnWidth;
-    // const farRight = state.totalColumnWidth - column.width;
-    // const newPosLeft = Math.min(Math.max(0,oldPosLeft + distance), farRight);
+
     // TODO take current scroll position into account when determining farRight
     const farLeft = scrollLeft === 0 ? 0 : -MAX_OVER_THE_LINE;
     const rightLine = state.displayWidth - column.width;
@@ -384,7 +406,6 @@ function move(state, {distance, scrollLeft=0}) {
     const newPosLeft = Math.min(farRight, Math.max(farLeft, oldPosLeft + distance));
     // If we slip furthar than farLeft or farRight, we need to capture mouse position  
 
-    //TODO calculate the virtual position as well as the actual position   
     const _movingColumn = {...column, left: newPosLeft, _virtualLeft: newPosLeft + scrollLeft};
     const overTheLineLeft = newPosLeft < 0;
     const overTheLineRight = newPosLeft > rightLine;

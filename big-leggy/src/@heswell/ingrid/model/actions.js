@@ -1,7 +1,8 @@
+export const COLUMN_COLLAPSE = 'COLUMN_COLLAPSE';
+export const COLUMN_EXPAND = 'COLUMN_EXPAND';
 export const INITIALIZE = 'INITIALIZE';
 export const ROWCOUNT = 'ROWCOUNT';
 export const GROUP = 'GROUP';
-export const groupExtend = 'GROUP_EXTEND';
 export const SORT = 'SORT';
 export const SORT_GROUP = 'SORT_GROUP';
 export const FILTER = 'FILTER';
@@ -18,5 +19,5 @@ export const TOGGLE = 'TOGGLE';
 export const SCROLLLEFT = 'SCROLLLEFT';
 export const SCROLL_LEFT = 'SCROLL_LEFT';
 export const SCROLL_RIGHT = 'SCROLL_RIGHT';
-export const COLUMN_COLLAPSE = 'COLUMN_COLLAPSE';
-export const COLUMN_EXPAND = 'COLUMN_EXPAND';
+export const RANGE = 'RANGE';
+export const groupExtend = 'GROUP_EXTEND';
