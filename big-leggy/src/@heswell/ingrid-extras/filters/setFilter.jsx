@@ -2,12 +2,12 @@
 import React from 'react';
 import cx from 'classnames';
 import {filter as filterUtils, DataTypes} from '../../data';
-import {FilterView} from '../../data/view';
+import FilterView from '../../remote-data/view/filter-data-view';
 import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
 import SearchBar from './filter-toolbar'
 import './setFilter.css';
-import { NOT_IN } from '../../data/store/filter';
+import { NOT_IN, SET_FILTER_DATA_COLUMNS as filterColumns } from '../../data/store/filter';
 
 const {IN} = filterUtils;
 const NO_STYLE = {}
@@ -100,14 +100,15 @@ export class SetFilter extends React.Component {
 
         this.searchText = ''
 
-        this.handleFilterViewUpdate = this.handleFilterViewUpdate.bind(this);
+        this.handleDataCountUpdate = this.handleDataCountUpdate.bind(this);
         this.toggleZeroRows = this.toggleZeroRows.bind(this);
 
-        filterView.addListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate)
+        // TODO how do we add multiple subscriptions
+        filterView.subscribeToDataCounts(this.handleDataCountUpdate)
 
     }
 
-    handleFilterViewUpdate(_, rows, rowCount=null, dataCounts){
+    handleDataCountUpdate(dataCounts){
         this.setState({dataCounts})
     }
 
@@ -119,9 +120,9 @@ export class SetFilter extends React.Component {
         });
 
         if (showZeroRows){
-            filterView.removeFilter(ZeroRowFilter);
+            filterView.filter(null);
         } else {
-            filterView.addFilter(ZeroRowFilter);
+            filterView.filter(ZeroRowFilter);
         }
     }
 
@@ -136,13 +137,10 @@ export class SetFilter extends React.Component {
             suppressFooter=false
         } = this.props;
 
-        const {filterView, selectionDefault, otherFilters, dataCounts, showZeroRows} = this.state;
+        const {filterView, selectionDefault, dataCounts, showZeroRows} = this.state;
         const allSelected = selectionDefault === SELECT_ALL;
         const clickHandler = allSelected ? this.handleDeselectAll : this.handleSelectAll;
         const selectionText = allSelected ? 'DESELECT ALL' : 'SELECT ALL';
-        const columns = otherFilters
-            ? filterView.columns
-            : filterView.columns.filter(column => column.name !== 'count')
 
             return (
             <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width: 300,height,visibility: style.visibility}}>
@@ -161,7 +159,7 @@ export class SetFilter extends React.Component {
                         onHide={this.props.onClose}/>}
                     <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}}
                         selectionDefault={true}
-                        columns={columns}
+                        columns={filterColumns}
                         dataView={filterView}
                         onSelectionChange={this.handleSelectionChange}/>
                     <FilterCounts style={{height: 50}} column={column} dataCounts={dataCounts} searchText={this.searchText}/>  
@@ -186,8 +184,8 @@ export class SetFilter extends React.Component {
             this.props.onHide();
         }
         const {filterView} = this.state;
-        filterView.removeListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate);
-        filterView.destroy();
+        // filterView.removeListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate);
+        // filterView.destroy();
     }
 
     handleSearchText = searchText => {

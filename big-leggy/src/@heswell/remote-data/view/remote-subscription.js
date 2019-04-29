@@ -1,5 +1,5 @@
-import { DataTypes } from '../data/store/types';
-import {msgType as Msg} from './constants';
+import { DataTypes } from '../../data/store/types';
+import {msgType as Msg} from '../constants';
 
 export default class RemoteSubscription {
   constructor(viewport, postMessageToServer, postMessageToClient){

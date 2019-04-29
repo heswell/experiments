@@ -13,7 +13,7 @@ import Viewport from './core/viewport';
 import { getScrollbarSize } from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu from './contextMenu';
-import { DataTypes, columnUtils } from '../data';
+import { columnUtils } from '../data';
 
 import { createLogger, logColor } from '../remote-data/constants';
 
@@ -25,7 +25,6 @@ const scrollbarSize = getScrollbarSize();
 
 export default function Grid({
     dataView,
-    dataView2,
     columns,
     style,
     showHeaders = true,
@@ -40,7 +39,6 @@ export default function Grid({
     //TODO are any of the above needed by model in props ?
     ...props }) {
 
-    const { columnMap } = dataView;
 
     const header = useRef(null);
     const viewport = useRef(null);
@@ -57,7 +55,7 @@ export default function Grid({
         model: {
             ...props,
             columns: columns.map(columnUtils.toKeyedColumn),
-            columnMap,
+            columnMap: columnUtils.buildColumnMap(columns),
             scrollbarSize,
             headerHeight
         },
@@ -74,7 +72,6 @@ export default function Grid({
         _headingDepth,
         groupBy,
         groupState,
-        extendsPrevGroupBy, 
         sortBy,
         range,
         _overTheLine,
@@ -82,14 +79,16 @@ export default function Grid({
 
     useEffect(() => {
         logger.log('<call dataView.subscribe>')
-        dataView.subscribe(columns, (msgType, rows, rowCount = null) => {
-            dispatch({ type: 'data', rows, rowCount })
-        });
-        dataView2.subscribe({
+        // dataView.subscribe(columns, (msgType, rows, rowCount = null) => {
+        //     dispatch({ type: 'data', rows, rowCount })
+        // });
+        dataView.subscribe({
             columns
-        }, () => {})
+        }, (rows, rowCount) => {
+            dispatch({ type: 'data', rows, rowCount })
+        })
         // TODO how do we manage this 
-        dataView.setRange(0, 25, false);
+        //dataView.setRange(0, 25, false);
     }, [dataView]);
 
     useEffect(() => {
@@ -116,15 +115,13 @@ export default function Grid({
     useEffect(() => {
         if (sortBy !== undefined){
             dataView.sort(sortBy);
-            dataView2.sort(sortBy);
             viewport.current.setScroll(0);
         }
     }, [dataView, sortBy]);
 
     useEffect(() => {
         if (groupBy !== undefined){
-            dataView.groupBy(groupBy, extendsPrevGroupBy);
-            dataView2.group(groupBy);
+            dataView.group(groupBy);
             viewport.current.setScroll(0, 0);
         }
     }, [dataView, groupBy])
@@ -132,25 +129,19 @@ export default function Grid({
     useEffect(() => {
         if (groupState !== undefined){
             dataView.setGroupState(groupState);
-            dataView2.setGroupState(groupState);
             viewport.current.setScroll(0);
         }
     }, [dataView, groupState]);
 
     useEffect(() => {
         if (range !== undefined){
-            dataView2.setRange(range.lo, range.hi);
+            dataView.setRange(range.lo, range.hi);
         }
     }, [dataView, range]);
 
     const filterHeight = state.showFilters ? 24 : 0;
     const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
     const totalHeaderHeight = headingHeight + filterHeight;
-
-    const setViewRange = useCallback((firstVisibleRow, lastVisibleRow, initialRange = false) => {
-        const sendDelta = initialRange === false;
-        dataView.setRange(firstVisibleRow, lastVisibleRow, sendDelta);
-    }, [dataView])
 
     //TODO if we can pass the required data back with the request, we won't need to embed this callback
     const showContextMenu = useCallback((e, location, options) => {
@@ -252,7 +243,7 @@ export default function Grid({
             showFilter: null 
         }));
         // I think we're doing this so that if same filter is opened again, dataView sends rows
-        dataView.setRange(0, 0, false, DataTypes.FILTER_DATA);
+        dataView.setFilterRange(0, 0);
     }, [dataView])
 
     const isEmpty = dataView.size <= 0;
@@ -300,7 +291,6 @@ export default function Grid({
                         style={interpolatingStyle}
                         height={height - totalHeaderHeight}
                         width={model.width}
-                        onSetRange={setViewRange}
                         onVerticalScroll={handleVerticalScroll}
                         onHorizontalScroll={handleHorizontalScroll}
                         onSelectionChange={handleSelectionChange}

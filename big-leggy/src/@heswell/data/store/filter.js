@@ -13,9 +13,9 @@ export const IN = 'IN';
 export const NOT_IN = 'NOT_IN';
 
 export const SET_FILTER_DATA_COLUMNS = [
-    {name: 'value'}, 
-    {name: 'count'}, 
-    {name: 'totalCount'}
+    {name: 'name'}, 
+    {name: 'count', width: 40}, 
+    {name: 'totalCount', width: 40}
 ];
 
 export const BIN_FILTER_DATA_COLUMNS = [

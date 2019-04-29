@@ -37,14 +37,15 @@ export default class Viewport extends React.Component {
 
     }
 
-    handleToggleGroup = (groupRow) => {
+    handleToggleGroup = groupRow => {
+        console.log(`handleToggleGroup this === ${typeof this}`)
         const {dispatch, gridModel: model} = this.props;
+        console.log(`handleToggleGroup model === ${typeof model.columnMap}`)
         const groupState = groupHelpers.toggleGroupState(groupRow, model);
         dispatch({ type: Action.TOGGLE, groupState });      
     }
 
     setRange(lo, hi){
-        this.props.onSetRange(lo, hi);
         this.props.dispatch({type: Action.RANGE, lo, hi});
     }
 

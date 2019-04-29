@@ -1,10 +1,10 @@
-import Subscription from './worker-hosted/subscription.mjs';
-import Connection from './remote-websocket-connection';
-import * as Message from './messages.js';
-import {ServerApiMessageTypes as API} from './messages.js';
-import {DataTypes} from '../data/store/types.js';
-import {NULL_RANGE} from '../data/store/rangeUtils.js';
-import {msgType as Msg, createLogger, logColor} from './constants';
+import Subscription from '../worker-hosted/subscription.mjs';
+import Connection from '../remote-websocket-connection';
+import * as Message from '../messages.js';
+import {ServerApiMessageTypes as API} from '../messages.js';
+import {DataTypes} from '../../data/store/types.js';
+import {NULL_RANGE} from '../../data/store/rangeUtils.js';
+import {msgType as Msg, createLogger, logColor} from '../constants';
 
 const logger = createLogger('RemoteServerProxy', logColor.blue);
 
@@ -295,8 +295,7 @@ export class ServerProxy {
             case Message.FILTER_DATA:
             case Message.SEARCH_DATA:
                 if (subscription = this.subscriptions[viewport]) {
-                    const { filterData } = message;
-
+                    const { data: filterData } = message;
                     const { rowset: data } = subscription.putData(type, filterData);
 
                     if (data.length || filterData.size === 0) {

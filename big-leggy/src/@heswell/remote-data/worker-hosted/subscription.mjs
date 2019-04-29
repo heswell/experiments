@@ -1,4 +1,4 @@
-import {rangeUtils, DataTypes} from '../../data/index';
+import {rangeUtils, DataTypes, NULL_RANGE} from '../../data/index';
 import { metaData } from '../../data/store/columnUtils';
 import {setFilterColumnMeta} from '../../data/store/columnUtils';
 
@@ -7,8 +7,6 @@ function replace(arr,idx, value){
     result[idx] = value;
     return result;
 }
-
-const {NULL_RANGE} = rangeUtils;
 
 //TODO can this be merged with DataRange
 export class DataRange {
@@ -184,7 +182,7 @@ export default class Subscription {
     }
 
     _putRows(targetData, rows, meta, newOffset = 0) {
-        const { data, range, offset } = targetData;
+        const { data, range=NULL_RANGE, offset } = targetData;
         const {IDX} = meta;
         const { lo, hi } = range;
         const low = lo + offset;

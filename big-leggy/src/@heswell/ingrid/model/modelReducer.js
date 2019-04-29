@@ -20,7 +20,6 @@ export const DEFAULT_MODEL_STATE = {
     groupBy: undefined,
     groupState: undefined,
     filter: undefined,
-    extendsPrevGroupBy: undefined,
     rowCount: 0,
     scrollbarSize: 15,
     scrollLeft: 0,
@@ -104,7 +103,6 @@ export function initialize(state, action) {
         sortBy=state.sortBy,
         groupBy=state.groupBy,
         range=state.range,
-        extendsPrevGroupBy=state.extendsPrevGroupBy,
         groupState=state.groupState,
         filter=state.filter,
         rowCount=state.rowCount,
@@ -140,7 +138,6 @@ export function initialize(state, action) {
         sortBy,
         groupBy,
         range,
-        extendsPrevGroupBy,
         groupState,
         collapsedColumns,
         filter,
@@ -203,14 +200,13 @@ function sortGroup(state, {column}) {
 
 function extendGroup(state, {column, rowCount=state.rowCount}) {
     const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
-    const extendsPrevGroupBy = groupBy && Array.isArray(state.groupBy) && state.groupBy.length > 0
     console.log(`modelReducer applyGroup new Group ${groupBy}`)
-    return initialize(state, {gridState: {groupBy, extendsPrevGroupBy, rowCount}});
+    return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
 function setGroupBy(state, {column, rowCount=state.rowCount}) {
     const groupBy = [[column.name, ASC]];
-    return initialize(state, {gridState: {groupBy, extendsPrevGroupBy: false, rowCount}});
+    return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
 function toggle(state, {groupState}) {
@@ -220,7 +216,6 @@ function toggle(state, {groupState}) {
 function setRange(state, {lo, hi}) {
     const {range} = state;
     if (range && lo === range.lo && hi === range.hi){
-        console.log(`%cNO CHANGE TO RANGE ${JSON.stringify(range)}`,'background-color: rebeccapurple; color: white; font-weight: bold;')
         return state;
     } else {
         return {

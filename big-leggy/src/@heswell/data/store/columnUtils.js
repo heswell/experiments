@@ -23,6 +23,18 @@ export function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
+export const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
+
+export const toColumn = column =>
+    typeof column === 'string'
+        ? { name: column }
+        : column;
+
 export function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
@@ -83,18 +95,6 @@ export function projectColumnsFilter(map, columns, meta, filter){
         return out;
     }
 }
-
-export const toKeyedColumn = (column, key) =>
-    typeof column === 'string'
-        ? { key, name: column }
-        : typeof column.key === 'number'
-            ? column
-            : {...column, key};
-
-export const toColumn = column =>
-    typeof column === 'string'
-        ? { name: column }
-        : column;
 
 export function getFilterType(column){
     return column.filter || getDataType(column);

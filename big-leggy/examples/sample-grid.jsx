@@ -7,7 +7,7 @@ import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 //import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
  import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
-import RemoteDataView, {subscribe as subscribeRemoteDataView} from '../src/@heswell/remote-data/remote-data-view';
+import RemoteDataView from '../src/@heswell/remote-data/view/remote-data-view';
 
 const data= null;
 
@@ -51,8 +51,7 @@ class SampleGrid extends React.Component {
         <Grid
           height={600}
           width={800}
-          dataView={view}
-          dataView2={remoteDataView}
+          dataView={remoteDataView}
           columns={columns}/>
       </div>
     )
