@@ -70,12 +70,11 @@ export default class Header extends React.Component {
     };
 
     handleToggleGroupState = (column, expanded) => {
-        const {dispatch, dataView} = this.props;
+        const {dispatch} = this.props;
         console.log(`toggleGroupAll ${column.name}`)
         const groupState = expanded === 1
             ? { '*': true }
             : {};
-        dataView.setGroupState(groupState);
         dispatch({ type: Action.TOGGLE, groupState })
     }
 

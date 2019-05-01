@@ -11,11 +11,9 @@ export default class FilterDataView extends BaseDataView {
 
   constructor(dataView, column){
         super();
-
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;
-
     }
 
     subscribe({columns}, callback){
@@ -24,7 +22,7 @@ export default class FilterDataView extends BaseDataView {
         this.columns = columns;
         this.meta = metaData(columns);
 
-        this.dataView.subscribeToFilterData(message => {
+        this.dataView.subscribeToFilterData(this.column, message => {
 
             const {filterData} = message;
             const {rows, size, range, dataCounts} = filterData;
@@ -37,8 +35,7 @@ export default class FilterDataView extends BaseDataView {
 
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
-            }
-    
+            }    
   
         })
     }
@@ -52,8 +49,8 @@ export default class FilterDataView extends BaseDataView {
     }
 
     destroy(){
-        console.log(`filterView remove listener`)
-        this.dataView.removeListener(DataTypes.FILTER_DATA, this.onFilterData);
+        logger.log(`<destroy>`)
+        this.dataView.unsubscribeFromFilterData(this.column);
     }
 
     onFilterData = (_, rows, rowCount, totalCount, dataCounts) => {

@@ -34,7 +34,7 @@ export default class RemoteDataView extends BaseDataView {
     this.filterRange = null;
     this.filterDataCallback = null;
 
-    this.filterRows = [];
+    this.filterDataMessage = null;
   }
 
   subscribe({
@@ -74,7 +74,8 @@ export default class RemoteDataView extends BaseDataView {
       } else if (filterData && this.filterDataCallback) {
         this.filterDataCallback(message)
       } else if (filterData){
-        logger.log(`filterData received but no callback registered`)
+        // experiment - need to store the column as well
+        this.filterDataMessage = message;
       }
 
     });
@@ -131,11 +132,19 @@ export default class RemoteDataView extends BaseDataView {
     }
   }
 
-  subscribeToFilterData(callback) {
+  subscribeToFilterData(column, callback) {
+    logger.log(`<subscribeToFilterData>`)
     this.filterDataCallback = callback;
+
+    if (this.filterDataMessage){
+      callback(this.filterDataMessage);
+      // do we need to nullify now ?
+    }
+
   }
 
   unsubscribeFromFilterData(){
+    logger.log(`<unsubscribeFromFilterData>`)
     this.filterDataCallback = null;
   }
 

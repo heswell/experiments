@@ -185,7 +185,7 @@ export class SetFilter extends React.Component {
         }
         const {filterView} = this.state;
         // filterView.removeListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate);
-        // filterView.destroy();
+        filterView.destroy();
     }
 
     handleSearchText = searchText => {

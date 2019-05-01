@@ -283,7 +283,6 @@ export default function Grid({
                     <Viewport
                         ref={viewport}
                         dispatch={dispatch}
-                        dataView={dataView}
                         gridModel={model}
                         rows={data.rows}
                         selectedRows={data.selected}
@@ -308,28 +307,7 @@ export default function Grid({
 
     // componentWillReceiveProps(nextProps) {
 
-    //     const {data, dataView, defaultSelected, selected, width, height} = nextProps;
-    //     if (data !== this.props.data) {
-    //         const [rows, rowCount] = this.state.dataView.setData(data);
-    //         this.setState({
-    //             model: this.reducer.dispatch({ type: Action.ROWCOUNT, rowCount }),
-    //             rows
-    //         });
-    //     } else if (dataView !== this.props.dataView){
-    //         this.props.dataView.removeListener(DataTypes.ROW_DATA, this.onRowset);
-    //         dataView.on(DataTypes.ROW_DATA, this.onRowset);
-    //         const {height, rowHeight} = this.state.model;
-    //         const visibleRows = Math.ceil(height / rowHeight); // not accurate, we should store this
-    //         dataView.setRange(0, visibleRows, false);
-    //         this.setState({ dataView });
-    //     }
-
-    //     if (selected !== this.props.selected || defaultSelected !== this.props.defaultSelected){
-    //         this.setState({
-    //             selected: defaultSelected || selected
-    //         });
-    //     }
-
+    //     const {width, height} = nextProps;
     //     // we only actually need to reset the model when height or length
     //     // changes if vertical scroll state is affected - if we go from
     //     // vertical scrollbar showing to no vertical scrollbar or vice versa.
