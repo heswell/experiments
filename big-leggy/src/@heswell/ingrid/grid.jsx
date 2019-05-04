@@ -79,12 +79,11 @@ export default function Grid({
 
     useEffect(() => {
         logger.log('<call dataView.subscribe>')
-        // dataView.subscribe(columns, (msgType, rows, rowCount = null) => {
-        //     dispatch({ type: 'data', rows, rowCount })
-        // });
+
         dataView.subscribe({
             columns
         }, (rows, rowCount) => {
+            logger.log(`<useEffect dataView mesage>`);
             dispatch({ type: 'data', rows, rowCount })
         })
         // TODO how do we manage this 
@@ -93,6 +92,7 @@ export default function Grid({
 
     useEffect(() => {
         overTheLine.current = _overTheLine;
+        logger.log(`<useEffect _overTheLine>`);
         // we want to keep dispatching scroll as long as the column is over the line
         const scroll = () => {
             if (overTheLine.current !== 0){
@@ -255,6 +255,8 @@ export default function Grid({
         isEmpty && props.showHeaderWhenEmpty === false ? 'no-header' : ''
     );
 
+    logger.log(`<render>`)    
+
     return (
         <div style={{ ...style, position: 'relative', height, width }} className={className}>
             {showHeaders && headerHeight !== 0 &&
@@ -283,6 +285,7 @@ export default function Grid({
                     <Viewport
                         ref={viewport}
                         dispatch={dispatch}
+                        dataView={dataView}
                         gridModel={model}
                         rows={data.rows}
                         selectedRows={data.selected}

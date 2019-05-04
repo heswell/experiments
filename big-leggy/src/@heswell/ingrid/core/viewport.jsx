@@ -46,7 +46,9 @@ export default class Viewport extends React.Component {
     }
 
     setRange(lo, hi){
-        this.props.dispatch({type: Action.RANGE, lo, hi});
+        console.log(`viewport setRange ${lo}:${hi}`)
+        // this.props.dispatch({type: Action.RANGE, lo, hi});
+        this.props.dataView.setRange(lo, hi);
     }
 
     render() {

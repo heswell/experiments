@@ -12,156 +12,12 @@ import { DataTypes } from '../../data/store/types';
 
 const logger = createLogger('RemoteDataView', logColor.blue);
 
+/*----------------------------------------------------------------
+  Set up the Server Proxy
+  ----------------------------------------------------------------*/
 const serverProxy = new ServerProxy(messageFromTheServer);
 
-const defaultRange = { lo: 0, hi: 0 };
-
-export default class RemoteDataView extends BaseDataView {
-
-  constructor(url, tableName) {
-    super();
-
-    connect(url);
-
-    this.tableName = tableName;
-
-    this.subscription = null;
-
-    this.groupBy = undefined;
-    this.groupState = undefined;
-    this.sortBy = undefined;
-    this.filterBy = undefined;
-    this.filterRange = null;
-    this.filterDataCallback = null;
-
-    this.filterDataMessage = null;
-  }
-
-  subscribe({
-    viewport = uuid(),
-    tableName = this.tableName,
-    columns,
-    range = defaultRange,
-    ...options
-  }, callback) {
-
-    if (!tableName) throw Error("RemoteDataView subscribe called without table name");
-    if (!columns) throw Error("RemoteDataView subscribe called without columns");
-
-    this.tableName = tableName;
-    this.columns = columns;
-    this.meta = metaData(columns);
-
-    // logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
-
-    this.subscription = subscribe({
-      ...options,
-      viewport,
-      tablename: tableName,
-      columns,
-      range
-    }, (message) => {
-
-      const { rowData, filterData } = message;
-
-      if (rowData) {
-        const { rows, size, offset } = rowData;
-
-        const mergedRows = this.processData(rows, size, offset)
-
-        callback(mergedRows, size);
-
-      } else if (filterData && this.filterDataCallback) {
-        this.filterDataCallback(message)
-      } else if (filterData){
-        // experiment - need to store the column as well
-        this.filterDataMessage = message;
-      }
-
-    });
-
-  }
-
-  unsubscribe() {
-
-  }
-
-  setRange(lo, hi) {
-    if (hi === 0){
-      debugger;
-    }
-    this.range = { lo, hi };
-    if (this.subscription) {
-      this.subscription.setRange(lo, hi);
-    }
-  }
-
-  group(columns) {
-    this.groupBy = columns;
-    if (this.subscription) {
-      this.subscription.groupBy(columns);
-    }
-  }
-
-  setGroupState(groupState) {
-    this.groupState = groupState;
-    if (this.subscription) {
-      this.subscription.setGroupState(groupState);
-    }
-  }
-
-  sort(columns) {
-    this.sortBy = columns;
-    if (this.subscription) {
-      this.subscription.sort(columns);
-    }
-
-  }
-
-  filter(filter, dataType=DataTypes.ROW_DATA) {
-    this.filterBy = filter;
-    if (this.subscription) {
-      this.subscription.filter(filter, dataType);
-    }
-
-  }
-
-  getFilterData(column, searchText) {
-    if (this.subscription) {
-      this.subscription.getFilterData(column, searchText);
-    }
-  }
-
-  subscribeToFilterData(column, callback) {
-    logger.log(`<subscribeToFilterData>`)
-    this.filterDataCallback = callback;
-
-    if (this.filterDataMessage){
-      callback(this.filterDataMessage);
-      // do we need to nullify now ?
-    }
-
-  }
-
-  unsubscribeFromFilterData(){
-    logger.log(`<unsubscribeFromFilterData>`)
-    this.filterDataCallback = null;
-  }
-
-  // To support multiple open filters, we need a column here
-  setFilterRange(lo, hi) {
-    this.filterRange = { lo, hi };
-    if (this.subscription) {
-      logger.log(`<setFilterRange> ${lo}: ${hi}`)
-      this.subscription.setRange(lo, hi, DataTypes.FILTER_DATA);
-    }
-  }
-
-}
-
-export const postMessageToServer = async (message) => {
-  // const worker = await getWorker();
-  // worker.postMessage(message);
+const postMessageToServer = async (message) => {
   serverProxy.handleMessageFromClient(message);
 }
 
@@ -189,10 +45,12 @@ function messageFromTheServer({ data: { type: msgType, ...message } }) {
   }
 }
 
+const defaultRange = { lo: 0, hi: 0 };
 
-let _requestId = 1;
+/*----------------------------------------------------------------
+  connection/subscription management
+  ----------------------------------------------------------------*/
 const clientId = uuid();
-
 const connections = {};
 const subscriptions = {};
 const pendingPromises = {};
@@ -203,6 +61,165 @@ let pendingConnection = new Promise((resolve, reject) => {
 });
 
 const getDefaultConnection = () => pendingConnection;
+
+
+/*----------------------------------------------------------------
+ A RemoteDataView manages a single subscription via the ServerProxy
+  ----------------------------------------------------------------*/
+export default class RemoteDataView extends BaseDataView {
+
+  constructor(url, tableName) {
+    super();
+
+    connect(url);
+
+    this.tableName = tableName;
+
+    this.subscription = null;
+
+    this.viewport = null;
+    this.groupBy = undefined;
+    this.groupState = undefined;
+    this.sortBy = undefined;
+    this.filterBy = undefined;
+    this.filterRange = null;
+    this.filterDataCallback = null;
+
+    this.filterDataMessage = null;
+  }
+
+  subscribe({
+    viewport = uuid(),
+    tableName = this.tableName,
+    columns,
+    range = defaultRange,
+    ...options
+  }, callback) {
+
+    if (!tableName) throw Error("RemoteDataView subscribe called without table name");
+    if (!columns) throw Error("RemoteDataView subscribe called without columns");
+
+    this.viewport = viewport;
+    this.tableName = tableName;
+    this.columns = columns;
+    this.meta = metaData(columns);
+
+    // logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
+
+    this.subscription = subscribe({
+      ...options,
+      viewport,
+      tablename: tableName,
+      columns,
+      range
+    }, (message) => {
+
+      const { rowData, filterData } = message;
+
+      if (rowData) {
+        const { rows, size, offset, range } = rowData;
+
+        const {lo:_lo,hi:_hi} = this.range || {lo:-1,hi:-1}
+        logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi}`)
+  
+        const mergedRows = this.processData(rows, size, offset)
+
+        callback(mergedRows, size);
+
+      } else if (filterData && this.filterDataCallback) {
+        this.filterDataCallback(message)
+      } else if (filterData) {
+        // experiment - need to store the column as well
+        this.filterDataMessage = message;
+      }
+
+    });
+
+  }
+
+  unsubscribe() {
+
+  }
+
+  setRange(lo, hi, dataType = DataTypes.ROW_DATA) {
+    if (dataType === DataTypes.ROW_DATA){
+      this.range = { lo, hi };
+    }
+
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.setViewRange,
+      range: { lo, hi },
+      dataType
+    })
+  }
+
+  group(columns) {
+    this.groupBy = columns;
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.groupBy,
+      groupBy: columns
+    })
+  }
+
+  setGroupState(groupState) {
+    this.groupState = groupState;
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.setGroupState,
+      groupState
+    })
+  }
+
+  sort(columns) {
+    this.sortBy = columns;
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.sort,
+      sortCriteria: columns
+    })
+  }
+
+  filter(filter, dataType=DataTypes.ROW_DATA){
+    this.filterBy = filter;
+    postMessageToServer({
+          viewport: this.viewport,
+          type: Msg.filter,
+          dataType,
+          filter
+      })
+  }
+
+  getFilterData(column, searchText) {
+    if (this.subscription) {
+      this.subscription.getFilterData(column, searchText);
+    }
+  }
+
+  subscribeToFilterData(column, callback) {
+    logger.log(`<subscribeToFilterData>`)
+    this.filterDataCallback = callback;
+
+    if (this.filterDataMessage) {
+      callback(this.filterDataMessage);
+      // do we need to nullify now ?
+    }
+
+  }
+
+  unsubscribeFromFilterData() {
+    logger.log(`<unsubscribeFromFilterData>`)
+    this.filterDataCallback = null;
+  }
+
+  // To support multiple open filters, we need a column here
+  setFilterRange(lo, hi) {
+    this.filterRange = { lo, hi };
+    this.setRange(lo, hi, DataTypes.FILTER_DATA);
+  }
+
+}
 
 
 /*--------------------------------------------------------
@@ -281,7 +298,6 @@ export function subscribe(options, clientCallback) {
     logger.log(`now we have a remoteConnection, we can subscribe`)
     remoteConnection.subscribe(options, viewport);
   });
-  // clearTimeout(timeoutHandle);
 
   return subscription;
 }

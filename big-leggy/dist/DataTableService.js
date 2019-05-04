@@ -204,9 +204,9 @@ const IN = 'IN';
 const NOT_IN = 'NOT_IN';
 
 const SET_FILTER_DATA_COLUMNS = [
-    {name: 'value'}, 
-    {name: 'count'}, 
-    {name: 'totalCount'}
+    {name: 'name'}, 
+    {name: 'count', width: 40}, 
+    {name: 'totalCount', width: 40}
 ];
 
 const BIN_FILTER_DATA_COLUMNS = [
@@ -495,6 +495,18 @@ function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
+const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
+
+const toColumn = column =>
+    typeof column === 'string'
+        ? { name: column }
+        : column;
+
 function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
@@ -555,18 +567,6 @@ function projectColumnsFilter(map, columns, meta, filter){
         return out;
     }
 }
-
-const toKeyedColumn = (column, key) =>
-    typeof column === 'string'
-        ? { key, name: column }
-        : typeof column.key === 'number'
-            ? column
-            : {...column, key};
-
-const toColumn = column =>
-    typeof column === 'string'
-        ? { name: column }
-        : column;
 
 function getFilterType(column){
     return column.filter || getDataType(column);
@@ -2112,7 +2112,7 @@ class BaseRowSet {
         const resultMap = {};
         const data = [];
         const dataRowCount = rows.length;
-        const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column);
+        const [/*columnFilter*/, otherFilters] = splitFilterOnColumn(currentFilter, column);
         // this filter for column that we remove will provide our selected values   
         let dataRowAllFilters = 0;
 
@@ -3962,7 +3962,7 @@ class InMemoryView {
     filter(filter, dataType=DataTypes.ROW_DATA) {
         if (dataType === DataTypes.FILTER_DATA){
 
-            return [,this.filterFilterData(filter)];
+            return [undefined,this.filterFilterData(filter)];
         
         } else {
             const { rowSet, _filter, filterRowSet } = this;
@@ -4400,7 +4400,12 @@ function setViewRange(clientId, request, queue){
             ? DataType.FilterData
             : dataType === 'searchData' ? DataType.SearchData : null;
         // should be purge the queue of any pending updates outside the requested range ?
-    console.log(`DataTableService: setRange ${range.lo} - ${range.hi}`);
+
+    const now = new Date().getTime();
+    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`);
+    queue.currentRange();
+    console.log(' ');
+
     _subscriptions[viewport].invoke('setRange', queue, type, range, useDelta, dataType);
 
 }

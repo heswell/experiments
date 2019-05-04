@@ -1,7 +1,7 @@
 
 import React from 'react';
 import cx from 'classnames';
-import {filter as filterUtils, DataTypes} from '../../data';
+import {filter as filterUtils} from '../../data';
 import FilterView from '../../remote-data/view/filter-data-view';
 import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
@@ -25,9 +25,8 @@ const ZeroRowFilter = {
     values: [0]
 }
 
-const FilterCounts = ({column, dataCounts=NO_COUNT, searchText}) => {
+const FilterCounts = ({column, dataCounts=NO_COUNT/*, searchText*/}) => {
     const {dataRowTotal, dataRowAllFilters, filterRowTotal, filterRowSelected} = dataCounts;
-    console.log(`FilterCount ${JSON.stringify(dataCounts,null,2)}`)
     return (
         <div className="filter-count-section">
             <div className="filter-row-counts">

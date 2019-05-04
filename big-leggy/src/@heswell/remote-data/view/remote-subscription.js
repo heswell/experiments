@@ -1,6 +1,8 @@
-import { DataTypes } from '../../data/store/types';
 import {msgType as Msg} from '../constants';
 
+// This is given to client on subscription and acts as a conduit between client and server
+// client calls api methods directly, the view calls postMessageToClient when it receives
+// responses from server. 
 export default class RemoteSubscription {
   constructor(viewport, postMessageToServer, postMessageToClient){
       this.viewport = viewport;
@@ -8,48 +10,6 @@ export default class RemoteSubscription {
       this.postMessageToClient = postMessageToClient;
   }
 
-  setRange(lo, hi, dataType=DataTypes.ROW_DATA){
-    this.postMessageToServer({
-          // clientId,
-          viewport: this.viewport,
-          type: Msg.setViewRange,
-          range: {lo,hi},
-          dataType
-      })
-  }
-
-  groupBy(columns){
-    this.postMessageToServer({
-          viewport: this.viewport,
-          type: Msg.groupBy,
-          groupBy: columns
-      })
-  }
-
-  setGroupState(groupState){
-    this.postMessageToServer({
-          viewport: this.viewport,
-          type: Msg.setGroupState,
-          groupState
-      })
-  }
-
-  sort(columns){
-    this.postMessageToServer({
-          viewport: this.viewport,
-          type: Msg.sort,
-          sortCriteria: columns
-      })
-  }
-
-  filter(filter, dataType=DataTypes.ROW_DATA){
-    this.postMessageToServer({
-          viewport: this.viewport,
-          type: Msg.filter,
-          dataType,
-          filter
-      })
-  }
 
   getFilterData(column, searchText, range){
     this.postMessageToServer({

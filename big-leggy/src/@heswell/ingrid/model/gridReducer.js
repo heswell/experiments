@@ -10,7 +10,7 @@ export function init({data, model}){
 }
 
 export default function ({data, model}, action){
-
+  console.log(`gridReducer ${action.type}`)  
   if (action.type === 'data'){
       const {IDX, SELECTED} = model.meta;
       const {rows, rowCount} = action;

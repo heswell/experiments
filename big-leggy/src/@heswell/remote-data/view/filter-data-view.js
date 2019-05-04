@@ -14,6 +14,8 @@ export default class FilterDataView extends BaseDataView {
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;
+        //TODO this is not right
+        this.range = {lo:0,hi:20}
     }
 
     subscribe({columns}, callback){

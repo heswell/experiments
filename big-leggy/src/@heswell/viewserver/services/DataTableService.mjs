@@ -145,7 +145,12 @@ export function setViewRange(clientId, request, queue){
             ? DataType.FilterData
             : dataType === 'searchData' ? DataType.SearchData : null;
         // should be purge the queue of any pending updates outside the requested range ?
-    console.log(`DataTableService: setRange ${range.lo} - ${range.hi}`)
+
+    const now = new Date().getTime()
+    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`)
+    queue.currentRange();
+    console.log(' ')
+
     _subscriptions[viewport].invoke('setRange', queue, type, range, useDelta, dataType);
 
 }

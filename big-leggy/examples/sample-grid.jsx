@@ -2,11 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Table from '../src/@heswell/data/store/table';
 import {LocalView} from '../src/@heswell/data/view';
-import RemoteView from '../src/@heswell/remote-data/remote-view';
+// import RemoteView from '../src/@heswell/remote-data/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 //import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
- import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
+// import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
 import RemoteDataView from '../src/@heswell/remote-data/view/remote-data-view';
 
 const data= null;
@@ -38,8 +38,8 @@ if (data){
   // note, we can also pass groupBy, sortCriteria etc etc
   view = new LocalView({table});
 } else {
-  view = new RemoteView({tablename: tableName, columns});
-  connectServerApi('127.0.0.1:9090');
+  // view = new RemoteView({tablename: tableName, columns});
+  // connectServerApi('127.0.0.1:9090');
 }
 
 const remoteDataView = new RemoteDataView('127.0.0.1:9090', 'Instruments');

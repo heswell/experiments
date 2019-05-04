@@ -4,6 +4,7 @@ export default class BaseDataView {
     this.columns = null;
     this.meta = null;
     this.range = null;
+    this.keys = [];
 
     this.size = 0;
     this.dataRows = [];
@@ -43,16 +44,25 @@ function emptyRow(idx, { IDX, count }) {
 
 function mergeAndPurge({ lo, hi }, rows, offset = 0, newRows, size, meta) {
   // console.groupCollapsed(`mergeAndPurge range: ${lo} - ${hi} 
-  //  old   rows: [${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}]
-  //  new   rows: [${newRows.length ? newRows[0][0]: null} - ${newRows.length ? newRows[newRows.length-1][0]: null}]
+  //  old   rows: [${rows.length ? rows[0][7]: null} - ${rows.length ? rows[rows.length-1][7]: null}]
+  //  new   rows: [${newRows.length ? newRows[0][7]: null} - ${newRows.length ? newRows[newRows.length-1][7]: null}]
   //     `);
-  const { IDX } = meta;
+  const { IDX, KEY } = meta;
   const results = [];
   const low = lo + offset;
   const high = Math.min(hi + offset, size + offset);
 
   let idx;
   let row;
+
+  // 1) iterate existing rows, copy to correct slot in results if still in range
+  //    if not still in range, collect rowKey
+  // 2) iterate new rows, if not already in results (shouldn't be) , move to correct slot in results
+  //      assign rowKey from available values, or assign next
+  // 3) assign empty row to any free slots in results
+
+
+  // overwrite key field in row, track actual key with local map
 
   for (let i = 0; i < newRows.length; i++) {
     if (row = newRows[i]) {

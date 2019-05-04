@@ -44,6 +44,17 @@ export default class MessageQueue {
         this._queue = this._queue.filter(batch => batch.viewport !== viewport);
     }
 
+    currentRange(){
+        for (let i = 0; i<this._queue.length; i++){
+            const message = this._queue[i];
+            const {data} = message;
+            if (data){
+                console.log(`${message.type} ${JSON.stringify(data.range)}`)
+            }
+        }
+        console.log()
+    }
+
     extract(test) {
         if (this._queue.length === 0) {
             return EMPTY_ARRAY;
@@ -196,9 +207,9 @@ function mergeAndPurgeUpdates(queue, message) {
             }
             else {
                 // merge updates for same row(s)
-                //onsole.log(`mergeAndPurgeUpdates ${JSON.stringify(queue[i])} ${JSON.stringify(message.updates)}`)
+                //console.log(`mergeAndPurgeUpdates ${JSON.stringify(queue[i])} ${JSON.stringify(message.updates)}`)
             }
-            //onsole.log(`merging rowset current range [${lo},${hi}] [${queue[i].rows.lo},${queue[i].rows.hi}]`);
+            console.log(`merging rowset current range [${lo},${hi}] [${queue[i].rows.lo},${queue[i].rows.hi}]`);
             queue.splice(i, 1);
         }
     }
@@ -214,8 +225,10 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    // console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`)
+    const now = new Date().getTime()
+    console.log(`[${now}] extracted messages ${extract.map(formatMessage)}\n\n`)
     return extract;
 }
 
-// const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;
+
+const formatMessage = msg => ` type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[7])}]`;
