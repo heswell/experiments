@@ -14,17 +14,18 @@ export default class FilterDataView extends BaseDataView {
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;
-        //TODO this is not right
-        this.range = {lo:0,hi:20}
     }
 
-    subscribe({columns}, callback){
+    subscribe({columns, range}, callback){
         logger.log(`FilterView subscribe to ${JSON.stringify(columns)}`)
 
         this.columns = columns;
         this.meta = metaData(columns);
+        //TODO make range s setter
+        this.range = range;
+        this.keyCount = range.hi - range.lo;
 
-        this.dataView.subscribeToFilterData(this.column, message => {
+        this.dataView.subscribeToFilterData(this.column, this.range, message => {
 
             const {filterData} = message;
             const {rows, size, range, dataCounts} = filterData;

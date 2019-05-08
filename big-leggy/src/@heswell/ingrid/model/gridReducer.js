@@ -14,7 +14,7 @@ export default function ({data, model}, action){
   if (action.type === 'data'){
       const {IDX, SELECTED} = model.meta;
       const {rows, rowCount} = action;
-      const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX])
+      const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
       return { 
           data: { rows, rowCount, selected }, 
           model: rowCount === data.rowCount

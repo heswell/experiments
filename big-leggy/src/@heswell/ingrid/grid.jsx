@@ -80,14 +80,16 @@ export default function Grid({
     useEffect(() => {
         logger.log('<call dataView.subscribe>')
 
+        const rowCount = Math.ceil(height / model.rowHeight) + 1
+
         dataView.subscribe({
-            columns
+            columns,
+            range: {lo:0, hi: rowCount}
         }, (rows, rowCount) => {
             logger.log(`<useEffect dataView mesage>`);
             dispatch({ type: 'data', rows, rowCount })
         })
-        // TODO how do we manage this 
-        //dataView.setRange(0, 25, false);
+
     }, [dataView]);
 
     useEffect(() => {
@@ -129,7 +131,6 @@ export default function Grid({
     useEffect(() => {
         if (groupState !== undefined){
             dataView.setGroupState(groupState);
-            viewport.current.setScroll(0);
         }
     }, [dataView, groupState]);
 

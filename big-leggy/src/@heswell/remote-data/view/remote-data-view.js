@@ -103,6 +103,9 @@ export default class RemoteDataView extends BaseDataView {
     this.tableName = tableName;
     this.columns = columns;
     this.meta = metaData(columns);
+    this.range = range;
+    console.log(`1) this.range = ${JSON.stringify(range)}`)
+    this.keyCount = range.hi - range.lo;
 
     // logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
 
@@ -115,13 +118,13 @@ export default class RemoteDataView extends BaseDataView {
     }, (message) => {
 
       const { rowData, filterData } = message;
-
       if (rowData) {
         const { rows, size, offset, range } = rowData;
 
-        const {lo:_lo,hi:_hi} = this.range || {lo:-1,hi:-1}
-        logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi}`)
-  
+        const { lo: _lo, hi: _hi } = this.range || { lo: -1, hi: -1 }
+        console.log(`1.5) this.range = ${JSON.stringify(range)}`)
+        logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi} size: ${size}`)
+
         const mergedRows = this.processData(rows, size, offset)
 
         callback(mergedRows, size);
@@ -141,17 +144,21 @@ export default class RemoteDataView extends BaseDataView {
 
   }
 
-  setRange(lo, hi, dataType = DataTypes.ROW_DATA) {
-    if (dataType === DataTypes.ROW_DATA){
-      this.range = { lo, hi };
-    }
+  setRange(lo, hi) {
 
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.setViewRange,
       range: { lo, hi },
-      dataType
-    })
+      dataType: DataTypes.ROW_DATA
+    });
+
+    if (hi-lo !== this.range.hi - this.range.lo){
+      this.keyCount = hi - lo;
+    }
+    this.range = { lo, hi };
+    console.log(`2) this.range = ${JSON.stringify(this.range)}`)
+
   }
 
   group(columns) {
@@ -160,7 +167,8 @@ export default class RemoteDataView extends BaseDataView {
       viewport: this.viewport,
       type: Msg.groupBy,
       groupBy: columns
-    })
+    });
+    this.clearData();
   }
 
   setGroupState(groupState) {
@@ -169,7 +177,7 @@ export default class RemoteDataView extends BaseDataView {
       viewport: this.viewport,
       type: Msg.setGroupState,
       groupState
-    })
+    });
   }
 
   sort(columns) {
@@ -178,17 +186,18 @@ export default class RemoteDataView extends BaseDataView {
       viewport: this.viewport,
       type: Msg.sort,
       sortCriteria: columns
-    })
+    });
+    this.clearData();
   }
 
-  filter(filter, dataType=DataTypes.ROW_DATA){
+  filter(filter, dataType = DataTypes.ROW_DATA) {
     this.filterBy = filter;
     postMessageToServer({
-          viewport: this.viewport,
-          type: Msg.filter,
-          dataType,
-          filter
-      })
+      viewport: this.viewport,
+      type: Msg.filter,
+      dataType,
+      filter
+    })
   }
 
   getFilterData(column, searchText) {
@@ -197,10 +206,10 @@ export default class RemoteDataView extends BaseDataView {
     }
   }
 
-  subscribeToFilterData(column, callback) {
+  subscribeToFilterData(column, range, callback) {
     logger.log(`<subscribeToFilterData>`)
     this.filterDataCallback = callback;
-
+    this.setFilterRange(range.lo, range.hi);
     if (this.filterDataMessage) {
       callback(this.filterDataMessage);
       // do we need to nullify now ?
@@ -216,7 +225,14 @@ export default class RemoteDataView extends BaseDataView {
   // To support multiple open filters, we need a column here
   setFilterRange(lo, hi) {
     this.filterRange = { lo, hi };
-    this.setRange(lo, hi, DataTypes.FILTER_DATA);
+    console.log(`setFilerRange ${lo}:${hi}`)
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.setViewRange,
+      dataType: DataTypes.FILTER_DATA,
+      range: { lo, hi }
+    })
+
   }
 
 }

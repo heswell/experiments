@@ -110,8 +110,6 @@ export default React.memo(({
             : (renderer && renderer(props)) || getCellRenderer(props); 
     });
 
-    console.log(`Row render`)
-
     return (
         <div className={className}
             data_key={myKey}

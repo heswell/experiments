@@ -2,7 +2,6 @@ import Connection from '../remote-websocket-connection';
 import * as Message from '../messages.js';
 import { ServerApiMessageTypes as API } from '../messages.js';
 import { DataTypes } from '../../data/store/types.js';
-import { NULL_RANGE } from '../../data/store/rangeUtils.js';
 import { msgType as Msg, createLogger, logColor } from '../constants';
 
 const logger = createLogger('RemoteServerProxy', logColor.blue);
@@ -55,33 +54,22 @@ export class ServerProxy {
         this.onReady(connectionId);
     }
 
-    subscribe(/* client message */ message) {
+    subscribe(message) {
         const isReady = this.connectionStatus === 'ready';
         const { viewport } = message;
+        const byTypeAndViewport = msg => msg.viewport === viewport && msg.type === Message.SET_VIEWPORT_RANGE;
+        const [rangeMessages] = partition(this.queuedRequests, byTypeAndViewport);
 
-        if (message) {
-            const byTypeAndViewport = msg => msg.viewport === viewport && msg.type === Message.SET_VIEWPORT_RANGE;
-            const [rangeMessages] = partition(this.queuedRequests, byTypeAndViewport);
+        this.pendingSubscriptionRequests[viewport] = message;
 
-            const { range = NULL_RANGE } = message;
-            this.pendingSubscriptionRequests[viewport] = message;
-            logger.log(`SUBSCRIBE to ${viewport} 
-                with range ${range.lo} = ${range.hi} stored
-                        range ${range.lo} = ${range.hi === 0 ? 10 : range.hi} sent to server
+        logger.log(`SUBSCRIBE to ${viewport} 
+                with range ${message.range.lo} = ${message.range.hi} sent to server
                         we have ${rangeMessages.length} range messages
 
                 ${JSON.stringify(this.queuedRequests, null, 2)}`)
-            logger.log(message)
+        logger.log(message)
 
-            this.sendIfReady({
-                ...message,
-                range: {
-                    lo: 0,
-                    hi: range.hi || 10, // where should this come from. This will cause key errors if bigger than viewport
-                    bufferSize: 0
-                }
-            }, isReady);
-        }
+        this.sendIfReady( message, isReady);
 
     }
 

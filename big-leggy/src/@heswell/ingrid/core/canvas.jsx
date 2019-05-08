@@ -32,7 +32,7 @@ export default class Canvas extends React.Component {
           width,
           height,
           rows,
-          keyMap,
+          // keyMap,
           gridModel,
           selectedRows,
           selectedCells,
@@ -46,9 +46,11 @@ export default class Canvas extends React.Component {
 
         // console.log(`Canvas render for rows ${rows.map(r => [r[0]])}`);
 
+        const {RENDER_IDX} = gridModel.meta;
         this.rowPositions = rows.map((row, idx) => {
           const absIdx = firstVisibleRow + idx
-          return [keyMap[absIdx], rowHeight*absIdx, row, absIdx]
+          // return [keyMap[absIdx], rowHeight*absIdx, row, absIdx]
+          return [row[RENDER_IDX], rowHeight*absIdx, row, absIdx]
         })
         .filter(([key]) => key !== undefined)
         .sort(byKey)

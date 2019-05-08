@@ -145,7 +145,7 @@ export default class BaseRowSet {
         }
 
         //TODO primary key should be indicated in columns
-        const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
+        const table = new Table({ data, primaryKey: 'name', columns: SET_FILTER_DATA_COLUMNS });
         return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, dataRowAllFilters, dataRowCount);
 
     }
@@ -441,7 +441,7 @@ export class SetFilterRowSet extends RowSet {
             filterRowHidden : 0
         };
         this.setProjection();
-        this.sort([['value', 'asc']]);
+        this.sort([['name', 'asc']]);
     }
 
     get searchText() {
@@ -450,7 +450,7 @@ export class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
-        this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
+        this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;
         // let totalCount = 0;
         const colIdx = this.columnMap.totalCount;
@@ -491,7 +491,7 @@ export class SetFilterRowSet extends RowSet {
 
         if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
             const columnMap = table.columnMap;
-            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
                 
         } else {
@@ -509,7 +509,7 @@ export class SetFilterRowSet extends RowSet {
 
 
     get values() {
-        const key = this.columnMap['value'];
+        const key = this.columnMap['name'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
@@ -522,7 +522,7 @@ export class SetFilterRowSet extends RowSet {
         this.dataRowFilter = dataRowFilter;
         
         if (columnFilter){
-            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet
                 ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
                 : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0) 
@@ -536,6 +536,7 @@ export class SetFilterRowSet extends RowSet {
 
         this.setProjection(columnFilter);
 
+        console.log(`SetFilterRowSet.setSelected selectedCount ${dataCounts.filterRowSelected} current range ${JSON.stringify(this.range)}`)
         return this.currentRange();
 
     }

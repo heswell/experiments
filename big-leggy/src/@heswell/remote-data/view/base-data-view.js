@@ -3,12 +3,37 @@ export default class BaseDataView {
   constructor(){
     this.columns = null;
     this.meta = null;
-    this.range = null;
-    this.keys = [];
+    this.keys = {
+//      idx: [],
+      free: [],
+      used: {}
+    };
 
+    this.range = {lo:0, hi:0};
     this.size = 0;
     this.dataRows = [];
 
+  }
+
+  clearData(){
+    const {keys, range, dataRows} = this;
+    
+    dataRows.length = 0;
+    keys.used = {};
+    keys.free.length = 0;
+    this.keyCount = range.hi - range.lo;
+  }
+
+  set keyCount(keyCount){
+    const {keys} = this;
+    const freeKeys = [];
+
+    for (let i=0;i<keyCount;i++){
+      if (keys.used[i] === undefined){
+        freeKeys.push(i);
+      }
+    }
+    keys.free = freeKeys;
   }
 
   set rows(newRows) {
@@ -20,8 +45,8 @@ export default class BaseDataView {
   }
 
   processData(rows,size, offset){
-
-    const mergedRows = mergeAndPurge(this.range, this.rows, offset, rows, size, this.meta);
+    console.log(`processDate this range = ${JSON.stringify(this.range)}`)
+    const mergedRows = mergeAndPurge(this.range, this.rows, offset, rows, size, this.meta, this.keys);
     this.size = size;
     return this.rows = mergedRows;
 
@@ -42,58 +67,75 @@ function emptyRow(idx, { IDX, count }) {
   return row;
 }
 
-function mergeAndPurge({ lo, hi }, rows, offset = 0, newRows, size, meta) {
+function mergeAndPurge({ lo, hi }, rows, offset = 0, newRows, size, meta, keys) {
   // console.groupCollapsed(`mergeAndPurge range: ${lo} - ${hi} 
   //  old   rows: [${rows.length ? rows[0][7]: null} - ${rows.length ? rows[rows.length-1][7]: null}]
   //  new   rows: [${newRows.length ? newRows[0][7]: null} - ${newRows.length ? newRows[newRows.length-1][7]: null}]
   //     `);
-  const { IDX, KEY } = meta;
-  const results = [];
+  const { IDX, RENDER_IDX } = meta;
+  const {free, used: usedKeys} = keys;
   const low = lo + offset;
   const high = Math.min(hi + offset, size + offset);
+  const rowCount = hi - lo;
 
-  let idx;
-  let row;
-
+  let pos, row, rowIdx, rowKey;
+  const results = [];
+  let used = {};
   // 1) iterate existing rows, copy to correct slot in results if still in range
   //    if not still in range, collect rowKey
-  // 2) iterate new rows, if not already in results (shouldn't be) , move to correct slot in results
-  //      assign rowKey from available values, or assign next
-  // 3) assign empty row to any free slots in results
-
-
-  // overwrite key field in row, track actual key with local map
-
-  for (let i = 0; i < newRows.length; i++) {
-    if (row = newRows[i]) {
-      idx = row[IDX];
-
-      if (idx >= low && idx < high) {
-        results[idx - low] = newRows[i];
-      }
-    }
-  }
-
+  
   for (let i = 0; i < rows.length; i++) {
     if (row = rows[i]) {
-      idx = row[IDX];
-      if (idx >= low && idx < high && results[idx - low] === undefined) {
-        results[idx - low] = rows[i];
+      rowIdx = row[IDX];
+      rowKey = row[RENDER_IDX];
+      pos = rowIdx - low;
+
+      if (usedKeys[rowKey] === 1 && rowIdx >= low && rowIdx < high) {
+        results[pos] = rows[i];
+        used[rowKey] = 1;
+      } else if (usedKeys[rowKey] === 1 && rowKey < rowCount){
+        free.push(rowKey);
+        used[rowKey] = undefined;
       }
     }
   }
 
+  // 2) iterate new rows, if not already in results (shouldn't be) , move to correct slot in results
+  //      assign rowKey from free values
+  for (let i = 0; i < newRows.length; i++) {
+    if (row = newRows[i]) {
+      rowIdx = row[IDX];
+      pos = rowIdx - low;
 
-  // make sure the resultset contains entries for the full range
-  // TODO make this more efficient
-  const rowCount = hi - lo;
-  for (let i = 0; i < rowCount; i++) {
-    if (results[i] === undefined) {
-      results[i] = emptyRow(i + low, meta);
+      if (rowIdx >= low && rowIdx < high) {
+        if (results[pos]){
+          rowKey = results[pos][RENDER_IDX]
+        } else {
+          rowKey = free.shift();
+          used[rowKey] = 1;
+        }
+        results[pos] = row;
+        row[RENDER_IDX] = rowKey; 
+
+      } else {
+        console.warn('new row outside range')
+      }
     }
   }
+  // 3) assign empty row to any free slots in results
+  // TODO make this more efficient
+  for (let i = 0, freeIdx=0; i < rowCount; i++) {
+    if (results[i] === undefined) {
+      const row = results[i] = emptyRow(i + low, meta);
+      rowKey = free[freeIdx++]; // don't remove from free
+      row[RENDER_IDX] = rowKey; 
+      used[rowKey] = 3;
+    }
+  }
+
   // console.table(results);
   // console.groupEnd();
+  keys.used = used;
   return results;
 
 }

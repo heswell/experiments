@@ -526,7 +526,7 @@ function buildColumnMap(columns){
 
 function projectColumns(map, columns, meta){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -536,6 +536,7 @@ function projectColumns(map, columns, meta){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -546,10 +547,10 @@ function projectColumns(map, columns, meta){
 
 function projectColumnsFilter(map, columns, meta, filter){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = filter ? functor(map, overrideColName(filter, 'value'), true)  : () => true;
+    const fn = filter ? functor(map, overrideColName(filter, 'name'), true)  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -559,6 +560,7 @@ function projectColumnsFilter(map, columns, meta, filter){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -596,15 +598,16 @@ function metaData(columns){
     const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
-        DEPTH: start + 2,
-        COUNT: start + 3,
-        KEY: start + 4,
-        SELECTED: start + 5,
-        PARENT_IDX: start + 6,
-        IDX_POINTER: start + 7,
-        FILTER_COUNT: start + 8,
-        NEXT_FILTER_IDX: start + 9,
-        count: start + 10
+        RENDER_IDX: start + 2,
+        DEPTH: start + 3,
+        COUNT: start + 4,
+        KEY: start + 5,
+        SELECTED: start + 6,
+        PARENT_IDX: start + 7,
+        IDX_POINTER: start + 8,
+        FILTER_COUNT: start + 9,
+        NEXT_FILTER_IDX: start + 10,
+        count: start + 11
     }
 }
 
@@ -2151,7 +2154,7 @@ class BaseRowSet {
         }
 
         //TODO primary key should be indicated in columns
-        const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
+        const table = new Table({ data, primaryKey: 'name', columns: SET_FILTER_DATA_COLUMNS });
         return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, dataRowAllFilters, dataRowCount);
 
     }
@@ -2447,7 +2450,7 @@ class SetFilterRowSet extends RowSet {
             filterRowHidden : 0
         };
         this.setProjection();
-        this.sort([['value', 'asc']]);
+        this.sort([['name', 'asc']]);
     }
 
     get searchText() {
@@ -2456,7 +2459,7 @@ class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
-        this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
+        this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;
         // let totalCount = 0;
         const colIdx = this.columnMap.totalCount;
@@ -2497,7 +2500,7 @@ class SetFilterRowSet extends RowSet {
 
         if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
             const columnMap = table.columnMap;
-            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = functor(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0); 
                 
         } else {
@@ -2515,7 +2518,7 @@ class SetFilterRowSet extends RowSet {
 
 
     get values() {
-        const key = this.columnMap['value'];
+        const key = this.columnMap['name'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
@@ -2528,7 +2531,7 @@ class SetFilterRowSet extends RowSet {
         this.dataRowFilter = dataRowFilter;
         
         if (columnFilter){
-            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = functor(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet
                 ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
                 : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0); 
@@ -2542,6 +2545,7 @@ class SetFilterRowSet extends RowSet {
 
         this.setProjection(columnFilter);
 
+        console.log(`SetFilterRowSet.setSelected selectedCount ${dataCounts.filterRowSelected} current range ${JSON.stringify(this.range)}`);
         return this.currentRange();
 
     }
