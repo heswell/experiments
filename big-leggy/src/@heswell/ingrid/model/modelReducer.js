@@ -90,7 +90,11 @@ export default function reducer(state, action){
     return (handlers[action.type] || MISSING_HANDLER)(state, action);
 }
 
-export function initialize(state, action) {
+export const initModel = model =>
+    initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
+  
+
+function initialize(state, action) {
     const {
         width=state.width,
         height=state.height,
@@ -154,10 +158,8 @@ function setRowCount(state, {rowCount}) {
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
 
     if (displayWidth === state.displayWidth){
-        console.log(`setRowCount 1`);
         return { ...state, rowCount };
     } else {
-        console.log(`setRowCount 2 to ${rowCount}`);
         return initialize(state, {gridState: {rowCount}});
     }
 }

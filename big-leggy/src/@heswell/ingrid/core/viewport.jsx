@@ -1,185 +1,169 @@
-import React from 'react';
+import React, { useState, useCallback, useRef, useEffect, useReducer } from 'react';
 import Canvas from './canvas';
+import ColumnBearer from '../core/ColumnBearer';
 import css from '../style/grid';
 import SelectionModel from '../model/selectionModel';
 import * as Action from '../model/actions';
+import dataReducer from '..//model/dataReducer';
+import { getScrollbarSize } from '../utils/domUtils';
 import { groupHelpers } from '../../data';
 
-export default class Viewport extends React.Component {
+const scrollbarSize = getScrollbarSize();
 
-    constructor(props) {
+export const Viewport = React.memo(({
+    style,
+    height,
+    dispatch,
+    callbackPropsDispatch,
+    dataView,
+    gridModel: model,
+    selectedRows,
+    onCellClick, // will go when we pass callbackPropsDispatch down
+    onContextMenu
+}) =>  {
 
-        super(props);
+    const scrollingCanvas = useRef(null);
+    const scrollableContainerEl = useRef(null);
+    const verticalScrollContainer = useRef(null);
+    const scrollTop = useRef(0);
+    const firstVisibleRow = useRef(0);
+    const groupBy = useRef(model.groupBy);
 
-        this.scrollingCanvas = React.createRef();
-        this.verticalScrollContainer = React.createRef();
-        this.scrollableContainerEl = React.createRef();
+    const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
-        this.verticalScrollTimer = null;
+    const selIdx = selectionState.focusedIdx;
+    console.log(`selIdx = ${selIdx}`)
 
-        const selectionState = SelectionModel.getInitialState(props);
+    const [data, dispatchData] = useReducer(dataReducer(model), {
+            rows: [],
+            rowCount: 0,
+            selected: []
+    });
 
-        //TODO selectionModel needs to be configured with selectionMode and probably 
-        // passed down from grid or created here
-        this.state = {
-            ...selectionState
-        };
+    useEffect(() => {
 
-        const { height, gridModel } = props;
-        this.numberOfRowsInViewport = Math.ceil(height / gridModel.rowHeight) + 1;
+        const rowCount = Math.ceil(height / model.rowHeight) + 1
 
-        this.scrollTop = 0;
-        this.firstVisibleRow = 0;
-
-    }
-
-    handleToggleGroup = groupRow => {
-        const { dispatch, gridModel: model } = this.props;
-        const groupState = groupHelpers.toggleGroupState(groupRow, model);
-        dispatch({ type: Action.TOGGLE, groupState });
-    }
-
-    onVerticalScroll = (e) => {
-        if (e.target === e.currentTarget) {
-            if (this.verticalScrollTimer) {
-                window.cancelAnimationFrame(this.scrollTimer);
+        dataView.subscribe({
+            columns: model.columns,
+            range: { lo: 0, hi: rowCount }
+        }, (rows, rowCount) => {
+            if (rowCount !== model.rowCount){
+                dispatch({type: Action.ROWCOUNT, rowCount})
             }
-            this.scrollTop = e.target.scrollTop;
-            this.verticalScrollTimer = requestAnimationFrame(() => {
-                this.handleVerticalScroll();
-                this.verticalScrollTimer = null;
-            });
+            dispatchData({ rows, rowCount })
+        })
+
+    }, [dataView]);
+
+    const handleVerticalScroll = useCallback(e => {
+        if (e.target === e.currentTarget) {
+            scrollTop.current = e.target.scrollTop;
+            const firstRow = Math.floor(scrollTop.current / model.rowHeight)
+            if (firstRow !== firstVisibleRow.current) {
+                const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
+                dataView.setRange(firstRow, firstRow + numberOfRowsInViewport);
+                firstVisibleRow.current = firstRow;
+                callbackPropsDispatch({type: 'scroll', scrollTop: scrollTop.current})
+            }
         }
-    }
+    },[]);
 
-    handleVerticalScroll = () => {
-
-        const { gridModel: {rowHeight}, dataView, onVerticalScroll } = this.props;
-        const firstVisibleRow = Math.floor(this.scrollTop / rowHeight)
-        if (firstVisibleRow !== this.firstVisibleRow) {
-            dataView.setRange(firstVisibleRow, firstVisibleRow + this.numberOfRowsInViewport);
-            this.firstVisibleRow = firstVisibleRow;
-        }
-
-        onVerticalScroll && onVerticalScroll(this.scrollTop);
-
-    }
-
-    handleHorizontalScroll = e => {
+    const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {
             const scrollLeft = e.target.scrollLeft;
-            this.setScroll(null, scrollLeft);
-            if (this.props.onHorizontalScroll) {
-                this.props.onHorizontalScroll(scrollLeft);
-            }
+            scrollingCanvas.current.setScrollLeft(scrollLeft);
+            callbackPropsDispatch({type: 'scroll', scrollLeft})
         }
-    }
+    },[])
 
+    useEffect(() => {
+        console.log(`%clets see how often this sucker reruns`,'color:brown;font-weight:bold;')
+    },[])
 
-    scrollTo(scrollLeft) {
-        this.scrollableContainerEl.current.scrollLeft = scrollLeft;
-    }
-
-    setScroll(scrollTop, scrollLeft) {
-        if (typeof scrollTop === 'number') {
-            this.verticalScrollContainer.current.scrollTop = scrollTop;
-        }
-
-        if (typeof scrollLeft === 'number' && this.scrollingCanvas.current) {
-            this.scrollingCanvas.current.setScrollLeft(scrollLeft)
-        }
-    }
+    useEffect(() => {
+        console.log(`useEffect selectionState changed to ${JSON.stringify(selectionState)}`)
+    }, [selectionState])
 
     // should this be handled here or at the grid level ?
-    selectionHandler = (idx, selectedItem, rangeSelect, incrementalSelection) => {
-        const { selectionModel } = this.props.gridModel;
-        const { selected, lastTouchIdx } = SelectionModel.handleItemClick(selectionModel, this.state, idx, selectedItem, rangeSelect, incrementalSelection);
+    const selectionHandler = useCallback((idx, selectedItem, rangeSelect, incrementalSelection) => {
+        const { selectionModel } = model;
         // we must also allow selected to be injected via props
-        this.setState({ idx, selected, lastTouchIdx }, () => {
-            if (this.props.onSelectionChange) {
-                this.props.onSelectionChange(selected, idx, selectedItem);
-            }
+        setSelectionState(state => {
+            const { selected, lastTouchIdx } = SelectionModel.handleItemClick(selectionModel, state, idx, selectedItem, rangeSelect, incrementalSelection);
+            callbackPropsDispatch({type: 'selection', selected, idx, selectedItem})
+            return { focusedIdx: idx, selected, lastTouchIdx }
         });
-    }
+    },[]);
 
-    componentWillReceiveProps(nextProps) {
-        // TODO are we supporting selectedRows ?
-        if (SelectionModel.selectionDiffers(nextProps.selectedRows, this.state.selected)) {
-            this.setState(SelectionModel.getInitialState(nextProps));
-        }
-    }
+    const handleToggleGroup = useCallback(groupRow => {
+        const groupState = groupHelpers.toggleGroupState(groupRow, model);
+        dispatch({ type: Action.TOGGLE, groupState });
+    })
 
-    render() {
+    const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
+    // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
+    // displayed even when not needed, when grid is stretched.
+    const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
+    const contentHeight = Math.max(model.rowHeight * data.rowCount, maxContentHeight);
+    const displayWidth = contentHeight > height
+        ? model.width - scrollbarSize
+        : model.width;
+    const overflow = displayWidth === model.width ? 'hidden' : 'auto';
+    console.log(`contentHeight = ${contentHeight}`)
 
-        //TODO rowHeight is on the gridModel
-        const { gridModel: model, style,
-            ...props } = this.props;
-        const { height, width, rows } = props;
-        const { firstVisibleRow } = this;
-        const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
-        const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
-        //TODO move contentHeight to model 
-        const contentHeight = Math.max(model.rowHeight * model.rowCount, maxContentHeight);
-        const commonSpec = {
-            rows,
-            rowHeight: model.rowHeight,
-            firstVisibleRow,
-            height: contentHeight,
-            selectedRows: this.state.selected
-        };
+    let emptyRows = groupBy.current === model.groupBy
+        ? null
+        : ((groupBy.current = model.groupBy), []);
 
-        // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
-        // displayed even when not needed, when grid is stretched.
-        const overflow = model.displayWidth === width ? 'hidden' : 'auto';
 
-        return (
-            <div className='Viewport' style={{ ...css.Viewport, ...style }}>
+    return (
+        <>
+        <div className='Viewport' style={{ ...css.Viewport, ...style }}>
 
-                {horizontalScrollingRequired &&
-                    model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
-                        <div className='CanvasScroller horizontal scrollable-content'
-                            ref={this.scrollableContainerEl}
-                            key={idx} style={{ left: colGroup.renderLeft, width: colGroup.renderWidth }}
-                            onScroll={this.handleHorizontalScroll}>
+            {horizontalScrollingRequired &&
+                model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
+                    <div className='CanvasScroller horizontal scrollable-content'
+                        ref={scrollableContainerEl}
+                        key={idx} style={{ left: colGroup.renderLeft, width: colGroup.renderWidth }}
+                        onScroll={handleHorizontalScroll}>
 
-                            <div className='CanvasScroller-content' style={{ width: colGroup.width, height: 15 }} />
-                        </div>
-                    )
-                }
-
-                <div className='ViewportContent scrollable-content'
-                    ref={this.verticalScrollContainer}
-                    style={{ ...css.ViewportContent, bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
-                    onScroll={this.onVerticalScroll} >
-
-                    <div className='scrolling-canvas-container'
-                        style={{ width: model.displayWidth, height: contentHeight }}>
-
-                        {/* this.renderGutters(model, commonSpec)*/}
-
-                        {
-                            // ideally, we want to give each Canvas a 'view' of the gridModel
-                            // that only allows it to see its own group - like a lens
-
-                            model._groups.map((columnGroup, idx) =>
-                                <Canvas
-                                    key={idx}
-                                    // keyMap={keyMap}
-                                    {...props} /* onSelectionChange,onCellClick */
-                                    {...commonSpec}
-                                    gridModel={model}
-                                    className={columnGroup.locked ? 'fixed' : undefined}
-                                    ref={columnGroup.locked ? null : this.scrollingCanvas}
-                                    columnGroup={columnGroup}
-                                    left={columnGroup.renderLeft}
-                                    width={columnGroup.renderWidth}
-                                    focusedRow={this.state.focusedIdx}
-                                    onToggleGroup={this.handleToggleGroup}
-                                    onSelect={this.selectionHandler} />
-                            )}
+                        <div className='CanvasScroller-content' style={{ width: colGroup.width, height: 15 }} />
                     </div>
+                )
+            }
+
+            <div className='ViewportContent scrollable-content'
+                ref={verticalScrollContainer}
+                style={{ ...css.ViewportContent, bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
+                onScroll={handleVerticalScroll} >
+
+                <div className='scrolling-canvas-container'
+                    style={{ width: model.displayWidth, height: contentHeight }}>
+                    {
+                        model._groups.map((columnGroup, idx) =>
+                            <Canvas
+                                key={idx}
+                                gridModel={model}
+                                rows={emptyRows || data.rows}
+                                selectedRows={selectionState.selected}
+                                firstVisibleRow={firstVisibleRow.current}
+                                height={contentHeight}
+                                ref={columnGroup.locked ? null : scrollingCanvas}
+                                columnGroup={columnGroup}
+                                // focusedRow={this.state.focusedIdx}
+                                onToggleGroup={handleToggleGroup}
+                                onCellClick={onCellClick}
+                                onContextMenu={onContextMenu}
+                                onSelect={selectionHandler} />
+                        )}
                 </div>
             </div>
-        );
-    }
-}
+        </div>
+        {model._movingColumn &&
+            <ColumnBearer gridModel={model} rows={data.rows} />}
+
+        </>
+    );
+
+})

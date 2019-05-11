@@ -5,11 +5,10 @@ import React, { useRef, useState, useReducer, useEffect, useCallback } from 'rea
 import cx from 'classnames';
 import * as Action from './model/actions';
 import { Motion, spring } from 'react-motion';
-import reducer, { init } from './model/gridReducer';
+import modelReducer, {initModel} from './model/modelReducer';
 import Header from './header/header';
-import ColumnBearer from './core/ColumnBearer';
 import InlineFilter from './header/inlineFilter';
-import Viewport from './core/viewport';
+import { Viewport } from './core/viewport';
 import { getScrollbarSize } from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu from './contextMenu';
@@ -23,25 +22,47 @@ const logger = createLogger('Grid', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
 
+const callbackPropReducer = (
+    onScroll,
+    onSingleSelect,
+    onSelectionChange,
+    onSelectCell
+
+) => (state, action) => {
+    const { type, ...props } = action;
+    if (type === 'scroll') {
+        onScroll && onScroll(props);
+    } else if (type === 'selection'){
+        const {selected, idx, selectedItem} = action;
+        onSelectionChange && onSelectionChange(selected, idx);
+        if (selected.length === 1 && onSingleSelect) {
+            onSingleSelect(selected[0], selectedItem);
+        }
+    } else if (type === 'select-cell'){
+        const {idx:rowIdx, cellIdx} = action;
+        onSelectCell && onSelectCell(rowIdx, cellIdx);
+    }
+
+    return state;
+}
+
 export default function Grid({
     dataView,
     columns,
     style,
     showHeaders = true,
     headerHeight = showHeaders ? 24 : 0,
-    selectionDefault,
     selected = [],
     showFilters = false,
     onScroll,
     onSelectCell,
     onSingleSelect,
     onSelectionChange,
-    //TODO are any of the above needed by model in props ?
-    ...props }) {
+    ...props
+}) {
 
 
     const header = useRef(null);
-    const viewport = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
     const overTheLine = useRef(0);
@@ -51,22 +72,39 @@ export default function Grid({
         showFilter: null
     });
 
-    const [{ model, data }, dispatch] = useReducer(reducer, {
-        model: {
-            ...props,
-            columns: columns.map(columnUtils.toKeyedColumn),
-            columnMap: columnUtils.buildColumnMap(columns),
-            scrollbarSize,
-            headerHeight
-        },
-        data: {
-            rows: [],
-            rowCount: 0,
-            selected
+    const handleScroll = params => {
+        const {scrollLeft:pos = -1} = params;
+        if (pos !== -1){
+            if (scrollLeft.current !== pos) {
+                scrollLeft.current = pos;
+                if (header.current) {
+                    header.current.setScrollLeft(pos);
+                }
+                if (inlineFilter.current) {
+                    inlineFilter.current.setScrollLeft(pos);
+                }
+            }
         }
-    }, init);
+        onScroll && onScroll(params);
+    }
 
-    const { 
+    const [, callbackPropsDispatch] = useReducer(callbackPropReducer(
+        handleScroll,
+        onSingleSelect,
+        onSelectionChange,
+        onSelectCell
+    ), null);
+
+    const [model, dispatch] = useReducer(modelReducer, {
+        //TODO which props exactly does the model still use ?
+        ...props,
+        columns: columns.map(columnUtils.toKeyedColumn),
+        columnMap: columnUtils.buildColumnMap(columns),
+        scrollbarSize,
+        headerHeight
+    }, initModel);
+
+    const {
         height,
         width,
         _headingDepth,
@@ -74,68 +112,44 @@ export default function Grid({
         groupState,
         sortBy,
         range,
-        _overTheLine,
-        scrollLeft: columnScroll } = model;
-
-    useEffect(() => {
-        logger.log('<call dataView.subscribe>')
-
-        const rowCount = Math.ceil(height / model.rowHeight) + 1
-
-        dataView.subscribe({
-            columns,
-            range: {lo:0, hi: rowCount}
-        }, (rows, rowCount) => {
-            logger.log(`<useEffect dataView mesage>`);
-            dispatch({ type: 'data', rows, rowCount })
-        })
-
-    }, [dataView]);
+        _overTheLine } = model;
 
     useEffect(() => {
         overTheLine.current = _overTheLine;
         logger.log(`<useEffect _overTheLine>`);
         // we want to keep dispatching scroll as long as the column is over the line
         const scroll = () => {
-            if (overTheLine.current !== 0){
+            if (overTheLine.current !== 0) {
                 const type = overTheLine.current > 0 ? Action.SCROLL_RIGHT : Action.SCROLL_LEFT;
                 const scrollDistance = type === Action.SCROLL_RIGHT ? 3 : -3;
-                dispatch({ type, scrollDistance });  
+                dispatch({ type, scrollDistance });
                 requestAnimationFrame(scroll);
             }
         };
         scroll();
-        
-    },[_overTheLine])
+
+    }, [_overTheLine])
 
     useEffect(() => {
-        if (columnScroll !== 0){
-            viewport.current.scrollTo(columnScroll);
-        }
-    },[columnScroll])
-
-    useEffect(() => {
-        if (sortBy !== undefined){
+        if (sortBy !== undefined) {
             dataView.sort(sortBy);
-            viewport.current.setScroll(0);
         }
     }, [dataView, sortBy]);
 
     useEffect(() => {
-        if (groupBy !== undefined){
+        if (groupBy !== undefined) {
             dataView.group(groupBy);
-            viewport.current.setScroll(0, 0);
         }
     }, [dataView, groupBy])
 
     useEffect(() => {
-        if (groupState !== undefined){
+        if (groupState !== undefined) {
             dataView.setGroupState(groupState);
         }
     }, [dataView, groupState]);
 
     useEffect(() => {
-        if (range !== undefined){
+        if (range !== undefined) {
             dataView.setRange(range.lo, range.hi);
         }
     }, [dataView, range]);
@@ -186,39 +200,6 @@ export default function Grid({
     }, [dispatch])
 
 
-    // do we need to call a prop for this ?
-    const handleVerticalScroll = useCallback(scrollTop => {
-        onScroll && onScroll({ scrollTop });
-    }, [])
-
-    const handleHorizontalScroll = useCallback(pos => {
-        if (scrollLeft.current !== pos) {
-            scrollLeft.current = pos;
-            if (header.current) {
-                header.current.setScrollLeft(pos);
-            }
-            if (inlineFilter.current) {
-                inlineFilter.current.setScrollLeft(pos);
-            }
-            }
-
-        onScroll && onScroll({ scrollLeft: pos });
-    }, []);
-
-
-    const handleSelectionChange = useCallback((selected, idx, selectedItem) => {
-        // selection needs to be sent to server
-        onSelectionChange && onSelectionChange(selected, idx);
-        if (selected.length === 1 && onSingleSelect) {
-            idx = selected[0];
-            onSingleSelect(idx, selectedItem);
-        }
-    }, [])
-
-    const handleCellClick = useCallback(selectedCell => {
-        onSelectCell && onSelectCell(selectedCell);
-    }, [])
-
     const handleFilterOpen = useCallback(column => {
         if (state.showFilter !== column.name) {
             // we could call dataView here to trigger build of filter data
@@ -239,9 +220,9 @@ export default function Grid({
     }, [dataView, state])
 
     const handleFilterClose = useCallback((/*column*/) => {
-        setState(state => ({ 
+        setState(state => ({
             ...state,
-            showFilter: null 
+            showFilter: null
         }));
         // I think we're doing this so that if same filter is opened again, dataView sends rows
         dataView.setFilterRange(0, 0);
@@ -255,8 +236,6 @@ export default function Grid({
         emptyDisplay ? 'empty' : '',
         isEmpty && props.showHeaderWhenEmpty === false ? 'no-header' : ''
     );
-
-    logger.log(`<render>`)    
 
     return (
         <div style={{ ...style, position: 'relative', height, width }} className={className}>
@@ -284,52 +263,18 @@ export default function Grid({
             <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
                 {interpolatingStyle =>
                     <Viewport
-                        ref={viewport}
                         dispatch={dispatch}
+                        callbackPropsDispatch={callbackPropsDispatch}
                         dataView={dataView}
                         gridModel={model}
-                        rows={data.rows}
-                        selectedRows={data.selected}
-                        selectionDefault={selectionDefault}
+                        // selectedRows={data.selected}
                         style={interpolatingStyle}
                         height={height - totalHeaderHeight}
-                        width={model.width}
-                        onVerticalScroll={handleVerticalScroll}
-                        onHorizontalScroll={handleHorizontalScroll}
-                        onSelectionChange={handleSelectionChange}
-                        onCellClick={handleCellClick}
+                        onCellClick={onSelectCell}
                         onContextMenu={showContextMenu}
                     />}
             </Motion>
             {emptyDisplay}
-
-            {model._movingColumn &&
-                <ColumnBearer gridModel={model} rows={data.rows} />}
-
         </div>
     );
-
-    // componentWillReceiveProps(nextProps) {
-
-    //     const {width, height} = nextProps;
-    //     // we only actually need to reset the model when height or length
-    //     // changes if vertical scroll state is affected - if we go from
-    //     // vertical scrollbar showing to no vertical scrollbar or vice versa.
-
-    //     if (this.props.width !== width || this.props.height !== nextProps.height){
-    //     //     this.props.height !== nextProps.height ||
-    //     //     this.props.columns !== nextProps.columns ||
-    //     //     model.sortCriteria !== dataView.sortCriteria ||
-    //     //     model.groupBy !== dataView.groupBy ||
-    //     //     this.props.groupColumnWidth !== nextProps.groupColumnWidth) {
-
-    //     //     const {columns, minColumnWidth, groupColumnWidth} = nextProps;
-    //     //     const {sortCriteria, groupBy} = dataView;
-    //     //     // careful, columns depends on groupBy
-    //         this.setState({
-    //             model: this.reducer.dispatch({ type: Action.GRID_RESIZE, width, height })
-    //         });
-    //     }
-
-    // }
 }

@@ -26,31 +26,35 @@ export default class Canvas extends React.Component {
     render() {
 
         const {
-          rowHeight,
-          firstVisibleRow,
-          left,
-          width,
-          height,
-          rows,
-          // keyMap,
-          gridModel,
-          selectedRows,
-          selectedCells,
+          cellClass,
+          cellRenderer,
           columnGroup,
-          cellRenderer
+          firstVisibleRow,
+          focusedRow,
+          gridModel,
+          height,
+          rowClass,
+          rows,
+          selectedCells, // NOT PASSED
+          selectedRows,
+          onCellClick,
+          onDoubleClick,
+          onSelect,
+          onToggleGroup,
+          onKeyDown
         } = this.props;
 
         const focusCellRow = selectedCells ? selectedCells.rowIdx : -1;
         const focusCell = selectedCells ? selectedCells.idx : -1;
         const focusCellActive = focusCell !== -1 && selectedCells.active;
+        const {renderLeft: left, renderWidth: width} = columnGroup;
 
         // console.log(`Canvas render for rows ${rows.map(r => [r[0]])}`);
 
         const {RENDER_IDX} = gridModel.meta;
         this.rowPositions = rows.map((row, idx) => {
           const absIdx = firstVisibleRow + idx
-          // return [keyMap[absIdx], rowHeight*absIdx, row, absIdx]
-          return [row[RENDER_IDX], rowHeight*absIdx, row, absIdx]
+          return [row[RENDER_IDX], gridModel.rowHeight*absIdx, row, absIdx]
         })
         .filter(([key]) => key !== undefined)
         .sort(byKey)
@@ -59,7 +63,7 @@ export default class Canvas extends React.Component {
         .map(([key, ,row, abs_idx]) => {
 
         // with multiple canvases, this all has to be repeated for each canvas
-            const isFocused = this.props.focusedRow === abs_idx;
+            const isFocused = focusedRow === abs_idx;
             const isSelected = contains(selectedRows,abs_idx);
             const isCellFocused = focusCellRow === abs_idx;
             const isCellEdited = isCellFocused && focusCellActive;
@@ -81,26 +85,27 @@ export default class Canvas extends React.Component {
                 //somehow we need to merge meta into columns
                 meta: gridModel.meta,
                 columns: columnGroup.columns,
-                rowClass: this.props.rowClass,
-                cellClass: this.props.cellClass,
+                rowClass,
+                cellClass,
                 cellRenderer,
-                onCellClick: this.props.onCellClick,
-                onDoubleClick: this.props.onDoubleClick,
-                onSelect: this.props.onSelect,
-                onToggle: this.props.onToggleGroup,
+                onCellClick,
+                onDoubleClick,
+                onSelect,
+                onToggle: onToggleGroup,
                 onContextMenu: this.handleContextMenuFromRow
             });
         });
 
         // console.log(`%c[Canvas] rowsRendered = ${gridRows.length}`,'color: red; font-weight: bold;')
 
-        const className = cx('Canvas', this.props.className);
+        const className = cx('Canvas', {
+          fixed: columnGroup.locked
+        });
 
         return (
             <div style={{...css.Canvas,left,width,height}} className={className} 
                 onContextMenu={this.handleContextMenuFromCanvas}
-                onScroll={this.props.onScroll}
-                onKeyDown={this.props.onKeyDown} >
+                onKeyDown={onKeyDown} >
                 <div ref={this.contentEl} 
                     style={{...css.CanvasContent, width: Math.max(columnGroup.width,width), height}}>
                     {gridRows}

@@ -14,7 +14,6 @@ export default class CheckList extends React.Component {
             minColumnWidth={80}
             columns={this.props.columns}
             selectionModel={Selection.Checkbox}
-            selectionDefault={this.props.selectionDefault}
             height={this.props.height}
             width={this.props.width}
             style={this.props.style}
