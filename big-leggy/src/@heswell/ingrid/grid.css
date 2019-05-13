@@ -128,12 +128,6 @@
 	background: #eaeaea;
 }
 
-.GroupHeader {
-	height: 100%;
-	overflow: hidden;
-}
-
-
 .group-heading .InnerHeaderCell {
 	font-weight: normal;
 }

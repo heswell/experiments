@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell';
 import GroupbyHeaderCell from './groupbyHeaderCell';
-import '../style/grid';
+import './columnGroupHeader.css';
 
 function shallowEqual(a, b) {
     if (a === b) {
@@ -36,7 +36,7 @@ export default class GroupHeader extends React.Component {
             <div className='GroupHeader' style={{height: '100%', width: renderWidth, left: renderLeft}}>
 
                 {headings.map((heading,idx) =>
-                    <div className='group-heading' key={idx} style={{width,height: '100%'}}>
+                    <div className='group-heading' key={idx} style={{width}}>
                         {this.renderColHeadings(heading)}
                     </div>
                 ).reverse()}

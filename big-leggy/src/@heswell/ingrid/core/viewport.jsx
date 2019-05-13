@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect, useReducer } from 'react';
+import React, { useState, useCallback, useContext, useRef, useEffect, useReducer } from 'react';
 import Canvas from './canvas';
 import ColumnBearer from '../core/ColumnBearer';
 import css from '../style/grid';
@@ -7,16 +7,15 @@ import * as Action from '../model/actions';
 import dataReducer from '..//model/dataReducer';
 import { getScrollbarSize } from '../utils/domUtils';
 import { groupHelpers } from '../../data';
+import {GridDispatch} from '../grid-context';
 
 const scrollbarSize = getScrollbarSize();
 
 export const Viewport = React.memo(({
     style,
     height,
-    dispatch,
-    callbackPropsDispatch,
     dataView,
-    gridModel: model,
+    model,
     selectedRows,
     onCellClick, // will go when we pass callbackPropsDispatch down
     onContextMenu
@@ -29,10 +28,9 @@ export const Viewport = React.memo(({
     const firstVisibleRow = useRef(0);
     const groupBy = useRef(model.groupBy);
 
-    const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
+    const {dispatch, callbackPropsDispatch} = useContext(GridDispatch);
 
-    const selIdx = selectionState.focusedIdx;
-    console.log(`selIdx = ${selIdx}`)
+    const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
     const [data, dispatchData] = useReducer(dataReducer(model), {
             rows: [],
@@ -77,14 +75,6 @@ export const Viewport = React.memo(({
         }
     },[])
 
-    useEffect(() => {
-        console.log(`%clets see how often this sucker reruns`,'color:brown;font-weight:bold;')
-    },[])
-
-    useEffect(() => {
-        console.log(`useEffect selectionState changed to ${JSON.stringify(selectionState)}`)
-    }, [selectionState])
-
     // should this be handled here or at the grid level ?
     const selectionHandler = useCallback((idx, selectedItem, rangeSelect, incrementalSelection) => {
         const { selectionModel } = model;
@@ -101,6 +91,7 @@ export const Viewport = React.memo(({
         dispatch({ type: Action.TOGGLE, groupState });
     })
 
+    // all of these calculations belong in the modelReducer
     const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
     // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
     // displayed even when not needed, when grid is stretched.
@@ -110,7 +101,6 @@ export const Viewport = React.memo(({
         ? model.width - scrollbarSize
         : model.width;
     const overflow = displayWidth === model.width ? 'hidden' : 'auto';
-    console.log(`contentHeight = ${contentHeight}`)
 
     let emptyRows = groupBy.current === model.groupBy
         ? null

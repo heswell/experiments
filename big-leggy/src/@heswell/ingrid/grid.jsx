@@ -5,7 +5,7 @@ import React, { useRef, useState, useReducer, useEffect, useCallback } from 'rea
 import cx from 'classnames';
 import * as Action from './model/actions';
 import { Motion, spring } from 'react-motion';
-import modelReducer, {initModel} from './model/modelReducer';
+import modelReducer, { initModel } from './model/modelReducer';
 import Header from './header/header';
 import InlineFilter from './header/inlineFilter';
 import { Viewport } from './core/viewport';
@@ -13,6 +13,7 @@ import { getScrollbarSize } from './utils/domUtils';
 import { PopupService } from './services';
 import GridContextMenu from './contextMenu';
 import { columnUtils } from '../data';
+import {GridDispatch} from './grid-context';
 
 import { createLogger, logColor } from '../remote-data/constants';
 
@@ -32,14 +33,14 @@ const callbackPropReducer = (
     const { type, ...props } = action;
     if (type === 'scroll') {
         onScroll && onScroll(props);
-    } else if (type === 'selection'){
-        const {selected, idx, selectedItem} = action;
+    } else if (type === 'selection') {
+        const { selected, idx, selectedItem } = action;
         onSelectionChange && onSelectionChange(selected, idx);
         if (selected.length === 1 && onSingleSelect) {
             onSingleSelect(selected[0], selectedItem);
         }
-    } else if (type === 'select-cell'){
-        const {idx:rowIdx, cellIdx} = action;
+    } else if (type === 'select-cell') {
+        const { idx: rowIdx, cellIdx } = action;
         onSelectCell && onSelectCell(rowIdx, cellIdx);
     }
 
@@ -55,9 +56,10 @@ export default function Grid({
     selected = [],
     showFilters = false,
     onScroll,
-    onSelectCell,
+    onSelectCell=() => {},
     onSingleSelect,
     onSelectionChange,
+    //TODO be explicit, what can we have here
     ...props
 }) {
 
@@ -73,8 +75,8 @@ export default function Grid({
     });
 
     const handleScroll = params => {
-        const {scrollLeft:pos = -1} = params;
-        if (pos !== -1){
+        const { scrollLeft: pos = -1 } = params;
+        if (pos !== -1) {
             if (scrollLeft.current !== pos) {
                 scrollLeft.current = pos;
                 if (header.current) {
@@ -238,43 +240,44 @@ export default function Grid({
     );
 
     return (
-        <div style={{ ...style, position: 'relative', height, width }} className={className}>
-            {showHeaders && headerHeight !== 0 &&
-                <Header ref={header}
-                    height={headingHeight}
-                    dispatch={dispatch}
-                    gridModel={model}
-                    onToggleCollapse={handleToggleCollapseColumn}
-                    onHeaderClick={props.onHeaderClick}
-                    colHeaderRenderer={props.colHeaderRenderer}
-                    onContextMenu={showContextMenu} />}
-
-            {state.showFilters &&
-                <InlineFilter ref={inlineFilter}
-                    dispatch={dispatch}
-                    dataView={dataView}
-                    gridModel={model}
-                    onFilterOpen={handleFilterOpen}
-                    onFilterClose={handleFilterClose}
-                    showFilter={state.showFilter}
-                    height={filterHeight}
-                    style={{ position: 'absolute', top: headerHeight, height: filterHeight, width }} />}
-
-            <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
-                {interpolatingStyle =>
-                    <Viewport
+        // we can roll context menu into the context once more of the child components are functions
+        <GridDispatch.Provider value={{dispatch, callbackPropsDispatch}}>
+            <div style={{ ...style, position: 'relative', height, width }} className={className}>
+                {showHeaders && headerHeight !== 0 &&
+                    <Header ref={header}
+                        height={headingHeight}
                         dispatch={dispatch}
-                        callbackPropsDispatch={callbackPropsDispatch}
+                        gridModel={model}
+                        onToggleCollapse={handleToggleCollapseColumn}
+                        onHeaderClick={props.onHeaderClick}
+                        colHeaderRenderer={props.colHeaderRenderer}
+                        onContextMenu={showContextMenu} />}
+
+                {state.showFilters &&
+                    <InlineFilter ref={inlineFilter}
+                        dispatch={dispatch}
                         dataView={dataView}
                         gridModel={model}
-                        // selectedRows={data.selected}
-                        style={interpolatingStyle}
-                        height={height - totalHeaderHeight}
-                        onCellClick={onSelectCell}
-                        onContextMenu={showContextMenu}
-                    />}
-            </Motion>
-            {emptyDisplay}
-        </div>
+                        onFilterOpen={handleFilterOpen}
+                        onFilterClose={handleFilterClose}
+                        showFilter={state.showFilter}
+                        height={filterHeight}
+                        style={{ position: 'absolute', top: headerHeight, height: filterHeight, width }} />}
+
+                <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
+                    {interpolatingStyle =>
+                        <Viewport
+                            dataView={dataView}
+                            model={model}
+                            // selectedRows={data.selected}
+                            style={interpolatingStyle}
+                            height={height - totalHeaderHeight}
+                            onCellClick={onSelectCell}
+                            onContextMenu={showContextMenu}
+                        />}
+                </Motion>
+                {emptyDisplay}
+            </div>
+        </GridDispatch.Provider>
     );
 }

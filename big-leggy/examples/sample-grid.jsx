@@ -15,7 +15,7 @@ const locked = true;
 
 const tableName = 'Instruments'
 const columns = [
-  { name: 'Symbol', width: 120} ,
+  { name: 'Symbol', width: 120, locked} ,
   { name: 'Name', width: 200} ,
   { name: 'Price', 
     type: { 
@@ -50,7 +50,7 @@ class SampleGrid extends React.Component {
       <div className='sample-grid'>
         <Grid
           height={600}
-          width={800}
+          width={500}
           dataView={remoteDataView}
           columns={columns}/>
       </div>
