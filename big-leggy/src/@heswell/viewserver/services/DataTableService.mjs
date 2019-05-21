@@ -46,7 +46,8 @@ const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',
     FilterData: 'filterData',
-    SearchData: 'searchData'
+    SearchData: 'searchData',
+    Selected: 'selected'
 };
 
 // need an API call to expose tables so extension services can manipulate data
@@ -163,8 +164,8 @@ export function filter(clientId, {viewport, filter, dataType}, queue){
     _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
 }
 
-export function select(clientId, {viewport, dataType, colName, filterMode}, queue){
-    _subscriptions[viewport].invoke('select', queue, DataType.Rowset, dataType, colName, filterMode);
+export function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){
+    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection);
 }
 
 export function groupBy(clientId, {viewport, groupBy}, queue){

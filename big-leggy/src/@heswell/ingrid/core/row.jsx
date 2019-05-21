@@ -1,76 +1,38 @@
-import React, {useCallback/*, useEffect, useRef*/} from 'react';
+import React, {useCallback, useContext/*, useEffect, useRef*/} from 'react';
 import cx from 'classnames';
 import {getCellRenderer} from '../registry/dataTypeRegistry';
+import GridContext from '../grid-context';
+import * as Action from '../model/actions';
 
-const NOOP = () => {}
-
-// function useReportChange(props){
-//     const ref = useRef();
-
-//     useEffect(() => {
-//         ref.current = props;
-//     })
-
-//     const prevProps = ref.current || {}
-
-//     const changes = [];
-//     Object.keys(props).forEach(key => {
-//         if (props[key] !== prevProps[key]){
-//             changes.push(key);
-//         }
-//     })
-
-//     console.log(`${(props.myKey+' ').slice(0,2)} ${props.row[3]}[${props.row[0]}] : ${JSON.stringify(changes)}`)
-// }
-
-// TODO combine isSelected, isFocused and isLastSelected into a single status
 export default React.memo(({
     row,
-    isFocused,
     isSelected,
     isLastSelected,
     rowClass,
-    onToggle,
-    onCellClick,
-    onContextMenu=NOOP,
-    onDoubleClick=NOOP,
-    onSelect,
     cellClass,
     idx,
-    myKey,
     columns,
     cellRenderer,
     meta
 }) => {
 
+    const handleContextMenu = useCallback(e => showContextMenu(e, 'row', {idx, row}),[idx, row]);
+    const {dispatch, callbackPropsDispatch, showContextMenu} = useContext(GridContext);
 
-    // useReportChange({
-    //     idx,
-    //     myKey,
-    //     row,
-    //     isFocused,
-    //     isSelected,
-    //     isLastSelected,
-    //     rowClass,
-    //     onToggle,
-    //     onCellClick,
-    //     onContextMenu,
-    //     onDoubleClick,
-    //     onSelect,
-    //     cellClass,
-    //     columns,
-    //     cellRenderer         
-    // }) 
-
-    const handleContextMenu = useCallback(e => onContextMenu(e, {idx, row}),[idx, row]);
     const handleClick = useCallback(e => {
         const rangeSelect = e.shiftKey;
         const keepExistingSelection = e.ctrlKey || e.metaKey /* mac only */;
-        onSelect(idx, row, rangeSelect, keepExistingSelection);
+        callbackPropsDispatch({type:'selection', idx, row, rangeSelect, keepExistingSelection})
+        // onSelect(idx, row, rangeSelect, keepExistingSelection);
     },[idx, row])
-    const handleGroupCellClick = useCallback(cellIdx => {
-        onToggle(row);
-        onCellClick(idx, cellIdx);
+
+    const handleDoubleClick = useCallback(() => callbackPropsDispatch({type: 'double-click', idx, row}),[idx, row]);
+
+    const onClick = useCallback(cellIdx => {
+        if (isGroup){
+            dispatch({ type: Action.TOGGLE, groupRow: row });
+        }
+        callbackPropsDispatch({type: 'select-cell', idx, cellIdx})
     },[idx, row])
 
     const groupLevel = row[meta.DEPTH];
@@ -78,17 +40,12 @@ export default React.memo(({
 
     const className = cx(
         'GridRow',
-        isFocused ? 'focused' : null,
         isSelected ? 'selected' : null,
         isLastSelected ? 'last-selected' : null,
         rowClass ? rowClass(row) : null,
         isGroup ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}` : (idx % 2 === 0 ? 'even' : 'odd') 
     );
 
-    const onClick = isGroup ? handleGroupCellClick : onCellClick
-    
-    const handleDoubleClick = () => onDoubleClick(idx, row);
-    
     //TODO load default formatters here and pass formatter/cellClass down to cell 
     const cells = columns.filter(column => !column.hidden).map((column,i) => {
 
@@ -112,7 +69,6 @@ export default React.memo(({
 
     return (
         <div className={className}
-            data_key={myKey}
             tabIndex={0}
             onClick={handleClick} 
             onDoubleClick={handleDoubleClick} 

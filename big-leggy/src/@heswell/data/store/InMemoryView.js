@@ -113,9 +113,17 @@ export default class InMemoryView {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`InMemoryView.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`)
+        return this.rowSet.select(idx, rangeSelect, keepExistingSelection);
+        //TODO eliminate rows not in range
+    
+    }
+
     sort(sortCriteria) {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);
+        // assuming the only time we would not useDelta is when we want to reset ?
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 

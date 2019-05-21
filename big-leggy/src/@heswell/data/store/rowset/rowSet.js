@@ -3,6 +3,7 @@
  */
 import * as d3 from 'd3-array';
 import Table from '../table';
+import SelectionModel from '../selection-model';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
 import { 
     BIN_FILTER_DATA_COLUMNS,
@@ -35,10 +36,11 @@ export default class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
-        this.selectedSet = [];
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
+        this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+        this.selectionModel = new SelectionModel();
     }
 
     // used by binned rowset
@@ -66,7 +68,8 @@ export default class BaseRowSet {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            reset: useDelta === false
         };
     }
 
@@ -79,6 +82,21 @@ export default class BaseRowSet {
             size: this.size,
             offset: this.offset
         };
+    }
+
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`RowSet.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`)
+        
+        const {selected, deselected, ...selectionState} = this.selectionModel.select(
+            this.selected,
+            idx,
+            rangeSelect,
+            keepExistingSelection
+        );
+        
+        this.selected = selectionState;
+
+        return {selected, deselected};
     }
 
     selectNavigationSet(useFilter) {
@@ -173,6 +191,7 @@ export class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
+
     }
 
     buildSortSet() {
@@ -185,7 +204,7 @@ export class RowSet extends BaseRowSet {
     }
 
     slice(lo, hi) {
-
+        const {selectedSet} = this;
         if (this.filterSet) {
             const filteredData = this.filterSet.slice(lo, hi);
             const filterMapper = typeof filteredData[0] === 'number'
@@ -193,7 +212,7 @@ export class RowSet extends BaseRowSet {
                 : ([idx]) => this.data[idx];
             return filteredData
                 .map(filterMapper)
-                .map(this.project(lo + this.offset));
+                .map(this.project(lo + this.offset, selectedSet));
         } else if (this.sortCols) {
             const sortSet = this.sortSet;
             const results = []
@@ -204,9 +223,9 @@ export class RowSet extends BaseRowSet {
                 const row = rows[idx];
                 results.push(row);
             }
-            return results.map(this.project(lo + this.offset));
+            return results.map(this.project(lo + this.offset, selectedSet));
         } else {
-            return this.data.slice(lo, hi).map(this.project(lo + this.offset));
+            return this.data.slice(lo, hi).map(this.project(lo + this.offset, selectedSet));
         }
     }
 

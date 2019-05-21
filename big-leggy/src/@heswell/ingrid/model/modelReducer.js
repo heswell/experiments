@@ -164,7 +164,7 @@ function setRowCount(state, {rowCount}) {
     }
 }
 
-function sort(state, {column, direction, preserveExistingSort}) {
+function sort(state, {column, direction, preserveExistingSort=false}) {
     const newSortCriteria = [[column.name, direction || (column.sorted === 1 ? DSC : ASC)]];
     const sortBy = state.sortBy === null || preserveExistingSort !== true
         ? newSortCriteria
@@ -211,8 +211,46 @@ function setGroupBy(state, {column, rowCount=state.rowCount}) {
     return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
-function toggle(state, {groupState}) {
+function toggle(state, {groupRow}) {
+    const groupState = toggleGroupState(groupRow, state)
     return {...state, groupState};
+}
+
+function toggleGroupState(groupedRow, model) {
+
+    let { columns, columnMap, groupBy, groupState, meta } = model;
+    const groupLevel = groupedRow[meta.DEPTH];
+    const groupByIdx = groupBy.length - Math.abs(groupLevel);
+
+    const newGroupState = groupState === null ? {} : { ...groupState };
+    let stateEntry = newGroupState;
+
+    for (let i = 0; i <= groupByIdx; i++) {
+        const [groupCol] = groupBy[i];
+        const column = columns.find(col => col.name === groupCol);
+        const key = columnMap[column.name];
+        const groupVal = groupedRow[key];
+
+        if (i === groupByIdx) {
+            if (stateEntry[groupVal]) {
+                stateEntry[groupVal] = null;
+            } else {
+                stateEntry[groupVal] = i === groupBy.length - 1 ? true : {};
+            }
+        } else if (stateEntry[groupVal] === true) {
+            stateEntry = stateEntry[groupVal] = {};
+        } else {
+            // clone as we descend
+            stateEntry = stateEntry[groupVal] = { ...stateEntry[groupVal] };
+            if (!stateEntry) {
+                console.log(`Grid.toggleGroup something is wrong - trying to toggle a node whose parent is not expanded`);
+                return;
+            }
+        }
+    }
+
+    return newGroupState;
+
 }
 
 function setRange(state, {lo, hi}) {

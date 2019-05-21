@@ -111,9 +111,9 @@ export default class GridContextMenu extends React.Component {
         menuItems.push(<Separator key='1' />);
 
         if (options.showFilters) {
-            menuItems.push(<MenuItem key='hide-filters' action='hide-filters' label='Hide Filters' />);
+            menuItems.push(<MenuItem key='hide-filters' action={Action.TOGGLE_FILTERS} label='Hide Filters' />);
         } else {
-            menuItems.push(<MenuItem key='show-filters' action='show-filters' label='Column Filters' />);
+            menuItems.push(<MenuItem key='show-filters' action={Action.TOGGLE_FILTERS} label='Column Filters' />);
         }
         menuItems.push(<MenuItem key='settings' action='settings' label='Settings' />);
 

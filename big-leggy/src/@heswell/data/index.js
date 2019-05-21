@@ -21,7 +21,6 @@ import {
   NULL_RANGE as NULL } from './store/rangeUtils';
 
 import {
-  toggleGroupState,
   updateGroupBy,
   indexOfCol,
   groupbyExtendsExistingGroupby } from './store/groupUtils'
@@ -35,7 +34,6 @@ import {
 import * as types from './store/types';
 
 export const groupHelpers = {
-  toggleGroupState,
   updateGroupBy,
   indexOfCol,
   groupbyExtendsExistingGroupby

@@ -15,7 +15,7 @@ const locked = true;
 
 const tableName = 'Instruments'
 const columns = [
-  { name: 'Symbol', width: 120, locked} ,
+  { name: 'Symbol', width: 120} ,
   { name: 'Name', width: 200} ,
   { name: 'Price', 
     type: { 
@@ -50,8 +50,9 @@ class SampleGrid extends React.Component {
       <div className='sample-grid'>
         <Grid
           height={600}
-          width={500}
+          width={800}
           dataView={remoteDataView}
+          onSelectCell={(rowIdx, idx) => console.log(`sample-grid onSelectCell ${rowIdx}* ${idx}`)}
           columns={columns}/>
       </div>
     )

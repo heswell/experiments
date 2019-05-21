@@ -1,115 +1,137 @@
-import React from 'react';
+import React, {useContext, useCallback, useRef, useImperativeHandle, forwardRef} from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell';
 import GroupbyHeaderCell from './groupbyHeaderCell';
+import * as Action from '../model/actions';
+import GridContext from '../grid-context';
+
 import './columnGroupHeader.css';
 
-function shallowEqual(a, b) {
-    if (a === b) {
-        return true;
-    }
-    let k;
-    for (k in a) {
-        if (a.hasOwnProperty(k) &&
-            (!b.hasOwnProperty(k) || a[k] !== b[k])) {
-            return false;
+export default forwardRef(ColumnGrouHeader);
+
+export function ColumnGrouHeader({
+    columnGroup,
+    colGroupHeaderRenderer,
+    colHeaderRenderer,
+    model,
+    onColumnMove,
+    onHeaderClick
+
+},ref) {
+
+    const {dispatch, showContextMenu} = useContext(GridContext);
+    const containerEl = useRef(null);
+
+    useImperativeHandle(ref, () => ({
+        scrollLeft: scrollLeft => {
+                containerEl.current.scrollLeft = scrollLeft;
+        }
+      }))
+
+    const handleColumnResize = useCallback((phase, column, width) => {
+        if (phase === 'resize') {
+            if (column.isHeading) {
+                dispatch({ type: Action.RESIZE_HEADING, column, width });
+            } else {
+                // TODO do we need to consider scrolling ?
+                dispatch({ type: Action.COLUMN_RESIZE, column, width });
+            }
+        } else if (phase === 'begin') {
+            dispatch({ type: Action.COLUMN_RESIZE_BEGIN, column });
+        } else if (phase === 'end') {
+            dispatch({ type: Action.COLUMN_RESIZE_END, column });
+        }
+    },[]);
+
+    const handleRemoveGroupBy = useCallback(column => {
+        dispatch({ type: Action.groupExtend, column });
+    },[]);
+
+    const handleHeaderCellClick = column => {
+        let result = true;
+        if (onHeaderClick) {
+            result = onHeaderClick(column);
+        }
+        if (result !== false && column.sortable !== false) {
+            // this will transform the columns which will cause whole grid to re-render down to cell level. All
+            // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
+            dispatch({ type: Action.SORT, column });
         }
     }
 
-    for (k in b) {
-        if (b.hasOwnProperty(k) && !a.hasOwnProperty(k)) {
-            return false;
-        }
-    }
+    const handleToggleGroupState = useCallback((column, expanded) => {
+        const groupState = expanded === 1
+            ? { '*': true }
+            : {};
+        dispatch({ type: Action.TOGGLE, groupState })
+    },[]);
 
-    return true;
-}
+    const handleToggleCollapseColumn = useCallback(column => {
+        const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
+        dispatch({ type: action, column });
+    }, [])
 
-export default class GroupHeader extends React.Component {
-
-    render() {
-
-        const {renderWidth, renderLeft, headings=[]} = this.props.columnGroup;
-        const {width} = this.props;
-
-        return (
-            <div className='GroupHeader' style={{height: '100%', width: renderWidth, left: renderLeft}}>
-
-                {headings.map((heading,idx) =>
-                    <div className='group-heading' key={idx} style={{width}}>
-                        {this.renderColHeadings(heading)}
-                    </div>
-                ).reverse()}
-
-                <div style={{whiteSpace: 'nowrap', height: '100%', width, position: 'relative'}}>
-                    {this.renderHeaderCells()}
-                </div>
-            </div>
-        );
-    }
-
-    renderColHeadings = heading =>
-        heading.map((item,idx) =>
+    const renderColHeadings = heading =>
+        heading.map((item, idx) =>
             <HeaderCell
-                key={idx} className={cx('colgroup-header',{bottomless: item.label === ''})}
+                key={idx} className={cx('colgroup-header', { bottomless: item.label === '' })}
                 column={item}
-                onResize={this.props.onColumnResize}
-                onMove={this.props.onColumnMove}
-                onToggleCollapse={this.props.onToggleCollapse}
+                onResize={handleColumnResize}
+                onMove={onColumnMove}
+                onToggleCollapse={handleToggleCollapseColumn}
             />
         )
 
-    renderHeaderCells() {
+    const renderHeaderCells = () => {
 
-        const {multiColumnSort, groupState} = this.props;
-
-        return this.props.columnGroup.columns.filter(column => !column.hidden).map(column => {
+        return columnGroup.columns.filter(column => !column.hidden).map(column => {
 
             const props = {
                 key: column.key,
                 column,
-                onResize: this.props.onColumnResize,
-                onMove: this.props.onColumnMove,
-                onContextMenu: this.props.onContextMenu
+                onResize: handleColumnResize,
+                onMove: onColumnMove,
+                onContextMenu: showContextMenu
             };
 
-            if (column.isGroup){
+            const multiColumnSort = model.sortBy && model.sortBy.length > 1;
 
-                return this.renderGroupHeader({
+            if (column.isGroup) {
+
+                return renderGroupHeader({
                     ...props,
-                    groupState,
-                    onClick: this.handleGroupHeaderCellClick,
-                    onToggleGroupState: this.props.onToggleGroupState,
-                    onRemoveColumn: this.props.onRemoveGroupbyColumn
+                    groupState: model.groupState,
+                    onClick: handleGroupHeaderCellClick,
+                    onToggleGroupState: handleToggleGroupState,
+                    onRemoveColumn: handleRemoveGroupBy
                 });
 
             } else {
 
-                return this.renderCell({
+                return renderCell({
                     ...props,
                     value: column.name,
                     multiColumnSort,
-                    onClick: this.handleHeaderCellClick
+                    onClick: handleHeaderCellClick
                 });
             }
         });
-
     }
 
-    renderGroupHeader(props){
+    const renderGroupHeader = (props) => {
 
-        const renderer = this.props.colGroupHeaderRenderer;
+        const renderer = colGroupHeaderRenderer;
 
         return React.isValidElement(renderer)
             ? React.cloneElement(renderer, props)
-            : ((renderer && renderer(props)) || <GroupbyHeaderCell {...props}/>);
+            : ((renderer && renderer(props)) || <GroupbyHeaderCell {...props} />);
 
     }
 
     // TODO separate this pattern into reusable code
-    renderCell(props){
+    const renderCell = (props) => {
 
-        const renderer = this.props.colHeaderRenderer;
+        const renderer = colHeaderRenderer;
 
         return React.isValidElement(renderer)
             ? React.cloneElement(renderer, props)
@@ -117,32 +139,26 @@ export default class GroupHeader extends React.Component {
 
     }
 
-    shouldComponentUpdate(nextProps) {
-        return (
-            nextProps.width !== this.props.width ||
-            nextProps.columnGroup !== this.props.columnGroup ||
-            nextProps.groupState !== this.props.groupState ||
-            nextProps.colHeaderRenderer !== this.props.colHeaderRenderer ||
-            nextProps.filter !== this.props.filter || // required when rendeirng an InlineFilter, awkward though
-        // also, we only care about the filter if it filters column(s) inn this colGroup
-            !shallowEqual(nextProps.style, this.props.style) // don't like this
-        );
-    }
-
-    handleHeaderCellClick = column => {
-        let result = true;
-        if (this.props.onHeaderClick){
-            result = this.props.onHeaderClick(column);
+    const handleGroupHeaderCellClick = useCallback(column => {
+        if (column.sortable !== false) {
+            dispatch({ type: Action.SORT_GROUP, column });
         }
-        if (result !== false && this.props.onSort && column.sortable !== false){
-            this.props.onSort(column);
-        }
-    }
+    },[])
 
-    handleGroupHeaderCellClick = column => {
-        if (this.props.onSortGroup && column.sortable !== false){
-            this.props.onSortGroup(column);
-        }
-    }
+    const { width, renderWidth, renderLeft, headings = [] } = columnGroup;
 
+    return (
+        <div ref={containerEl} className='GroupHeader' style={{ height: '100%', width: renderWidth, left: renderLeft }}>
+
+            {headings.map((heading, idx) =>
+                <div className='group-heading' key={idx} style={{ width }}>
+                    {renderColHeadings(heading)}
+                </div>
+            ).reverse()}
+
+            <div style={{ whiteSpace: 'nowrap', height: '100%', width, position: 'relative' }}>
+                {renderHeaderCells()}
+            </div>
+        </div>
+    );
 }

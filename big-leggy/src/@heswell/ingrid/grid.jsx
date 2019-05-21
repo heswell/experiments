@@ -10,10 +10,10 @@ import Header from './header/header';
 import InlineFilter from './header/inlineFilter';
 import { Viewport } from './core/viewport';
 import { getScrollbarSize } from './utils/domUtils';
-import { PopupService } from './services';
-import GridContextMenu from './contextMenu';
 import { columnUtils } from '../data';
-import {GridDispatch} from './grid-context';
+import GridContext from './grid-context';
+import gridReducer from './grid-reducer';
+import {useContextMenu} from './use-context-menu';
 
 import { createLogger, logColor } from '../remote-data/constants';
 
@@ -22,30 +22,6 @@ import './grid.css';
 const logger = createLogger('Grid', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
-
-const callbackPropReducer = (
-    onScroll,
-    onSingleSelect,
-    onSelectionChange,
-    onSelectCell
-
-) => (state, action) => {
-    const { type, ...props } = action;
-    if (type === 'scroll') {
-        onScroll && onScroll(props);
-    } else if (type === 'selection') {
-        const { selected, idx, selectedItem } = action;
-        onSelectionChange && onSelectionChange(selected, idx);
-        if (selected.length === 1 && onSingleSelect) {
-            onSingleSelect(selected[0], selectedItem);
-        }
-    } else if (type === 'select-cell') {
-        const { idx: rowIdx, cellIdx } = action;
-        onSelectCell && onSelectCell(rowIdx, cellIdx);
-    }
-
-    return state;
-}
 
 export default function Grid({
     dataView,
@@ -56,11 +32,25 @@ export default function Grid({
     selected = [],
     showFilters = false,
     onScroll,
+    // TODO capture these as callbackProps
     onSelectCell=() => {},
     onSingleSelect,
     onSelectionChange,
-    //TODO be explicit, what can we have here
+    onDoubleClick,
+    //TODO be explicit, what can we have here - which of these make sense as grid props ?
     ...props
+    // width
+    // height
+    // rowHeight
+    // minColumnWidth
+    // groupColumnWidth
+    // sortBy
+    // groupBy
+    // range
+    // groupState
+    // filter
+    // collapsedColumns
+    // selectionModel
 }) {
 
 
@@ -80,21 +70,33 @@ export default function Grid({
             if (scrollLeft.current !== pos) {
                 scrollLeft.current = pos;
                 if (header.current) {
-                    header.current.setScrollLeft(pos);
+                    header.current.scrollLeft(pos);
                 }
                 if (inlineFilter.current) {
-                    inlineFilter.current.setScrollLeft(pos);
+                    inlineFilter.current.scrollLeft(pos);
                 }
             }
         }
         onScroll && onScroll(params);
     }
 
-    const [, callbackPropsDispatch] = useReducer(callbackPropReducer(
+    const handleSelectionChange = useCallback((idx, row, rangeSelect, keepExistingSelection) => {
+       console.log(`Grid handleSelectionchange ${idx}`)
+        dataView.select(idx, rangeSelect,keepExistingSelection);
+       //   onSelectionChange()
+      // if (selected.length === 1 && onSingleSelect) {
+      //     onSingleSelect(selected[0], selectedItem);
+      // }
+
+    },[])
+
+    // this reducer is a no=op - always returns same state
+    // TODO why not use existing reducer ?
+    const [, callbackPropsDispatch] = useReducer(gridReducer(
         handleScroll,
-        onSingleSelect,
-        onSelectionChange,
-        onSelectCell
+        handleSelectionChange,
+        onSelectCell,
+        onDoubleClick
     ), null);
 
     const [model, dispatch] = useReducer(modelReducer, {
@@ -105,6 +107,8 @@ export default function Grid({
         scrollbarSize,
         headerHeight
     }, initModel);
+
+    const showContextMenu = useContextMenu(model, state, setState, dispatch);
 
     const {
         height,
@@ -159,49 +163,7 @@ export default function Grid({
     const filterHeight = state.showFilters ? 24 : 0;
     const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
     const totalHeaderHeight = headingHeight + filterHeight;
-
-    //TODO if we can pass the required data back with the request, we won't need to embed this callback
-    const showContextMenu = useCallback((e, location, options) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const { clientX: left, clientY: top } = e;
-        const component = (
-            <GridContextMenu component={this}
-                location={location}
-                options={{
-                    ...options,
-                    model,
-                    showFilters: state.showFilters
-                }}
-                dispatch={dispatch}
-                doAction={handleContextMenuAction} />)
-            ;
-
-        PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component });
-
-    }, [model, props])
-
-    const handleContextMenuAction = useCallback(action => {
-
-        if (action === 'show-filters') {
-            setState({
-                ...state,
-                showFilters: state.showFilters === false
-            });
-        } else if (action === 'hide-filters') {
-            this.props.dispatch({ type: 'SAVE_CONFIG', config: { showFilters: false } });
-        }
-
-    }, []);
-
-    const handleToggleCollapseColumn = useCallback(column => {
-        const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
-        dispatch({ type: action, column });
-    }, [dispatch])
-
-
+    
     const handleFilterOpen = useCallback(column => {
         if (state.showFilter !== column.name) {
             // we could call dataView here to trigger build of filter data
@@ -241,23 +203,22 @@ export default function Grid({
 
     return (
         // we can roll context menu into the context once more of the child components are functions
-        <GridDispatch.Provider value={{dispatch, callbackPropsDispatch}}>
+        <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
             <div style={{ ...style, position: 'relative', height, width }} className={className}>
                 {showHeaders && headerHeight !== 0 &&
                     <Header ref={header}
                         height={headingHeight}
                         dispatch={dispatch}
                         gridModel={model}
-                        onToggleCollapse={handleToggleCollapseColumn}
                         onHeaderClick={props.onHeaderClick}
                         colHeaderRenderer={props.colHeaderRenderer}
-                        onContextMenu={showContextMenu} />}
+                    />}
 
                 {state.showFilters &&
                     <InlineFilter ref={inlineFilter}
                         dispatch={dispatch}
                         dataView={dataView}
-                        gridModel={model}
+                        model={model}
                         onFilterOpen={handleFilterOpen}
                         onFilterClose={handleFilterClose}
                         showFilter={state.showFilter}
@@ -269,15 +230,12 @@ export default function Grid({
                         <Viewport
                             dataView={dataView}
                             model={model}
-                            // selectedRows={data.selected}
                             style={interpolatingStyle}
                             height={height - totalHeaderHeight}
-                            onCellClick={onSelectCell}
-                            onContextMenu={showContextMenu}
                         />}
                 </Motion>
                 {emptyDisplay}
             </div>
-        </GridDispatch.Provider>
+        </GridContext.Provider>
     );
 }

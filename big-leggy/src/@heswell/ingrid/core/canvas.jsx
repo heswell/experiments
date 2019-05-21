@@ -1,194 +1,97 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
 import Row from './row';
+import GridContext from '../grid-context';
+
 import css from '../style/grid';
 
-const GROUP_LEVEL = 1;
+const byKey = ([key1], [key2]) => key1 - key2;
 
-const contains = (arr, val) => arr.indexOf(val) !== -1;
+export default forwardRef(Canvas)
 
-const byKey = ([key1],[key2]) => key1 - key2;
+export function Canvas ({
+  cellClass,
+  cellRenderer,
+  columnGroup,
+  firstVisibleRow,
+  gridModel,
+  height,
+  rowClass,
+  rows,
+  selectedRows,
+  onKeyDown
+}, ref) {
 
-export default class Canvas extends React.Component {
+  const contentEl = useRef(null);
+  const {showContextMenu} = useContext(GridContext);
 
-    static defaultProps = {
-        left: 0
-    };
-
-    constructor(props){
-      super(props);
-
-      this.contentEl = React.createRef();
-
-    }
-
-    render() {
-
-        const {
-          cellClass,
-          cellRenderer,
-          columnGroup,
-          firstVisibleRow,
-          focusedRow,
-          gridModel,
-          height,
-          rowClass,
-          rows,
-          selectedCells, // NOT PASSED
-          selectedRows,
-          onCellClick,
-          onDoubleClick,
-          onSelect,
-          onToggleGroup,
-          onKeyDown
-        } = this.props;
-
-        const focusCellRow = selectedCells ? selectedCells.rowIdx : -1;
-        const focusCell = selectedCells ? selectedCells.idx : -1;
-        const focusCellActive = focusCell !== -1 && selectedCells.active;
-        const {renderLeft: left, renderWidth: width} = columnGroup;
-
-        // console.log(`Canvas render for rows ${rows.map(r => [r[0]])}`);
-
-        const {RENDER_IDX} = gridModel.meta;
-        this.rowPositions = rows.map((row, idx) => {
-          const absIdx = firstVisibleRow + idx
-          return [row[RENDER_IDX], gridModel.rowHeight*absIdx, row, absIdx]
-        })
-        .filter(([key]) => key !== undefined)
-        .sort(byKey)
-
-        const gridRows = this.rowPositions
-        .map(([key, ,row, abs_idx]) => {
-
-        // with multiple canvases, this all has to be repeated for each canvas
-            const isFocused = focusedRow === abs_idx;
-            const isSelected = contains(selectedRows,abs_idx);
-            const isCellFocused = focusCellRow === abs_idx;
-            const isCellEdited = isCellFocused && focusCellActive;
-            const isLastSelected = isSelected && (abs_idx === rows.length-1 || !contains(selectedRows, abs_idx+1));
-
-            //onsole.log(`${pad(row[4],50)}  ${abs_idx} key:${keyMap[abs_idx]}`);
-
-            return this.renderRow({
-                key,
-                myKey: key,
-                idx: abs_idx,
-                row: row,
-                isFocused,
-                isSelected,
-                isLastSelected,
-                isCellEdited,
-                isCellFocused,
-                focusCellIdx: focusCell,
-                //somehow we need to merge meta into columns
-                meta: gridModel.meta,
-                columns: columnGroup.columns,
-                rowClass,
-                cellClass,
-                cellRenderer,
-                onCellClick,
-                onDoubleClick,
-                onSelect,
-                onToggle: onToggleGroup,
-                onContextMenu: this.handleContextMenuFromRow
-            });
-        });
-
-        // console.log(`%c[Canvas] rowsRendered = ${gridRows.length}`,'color: red; font-weight: bold;')
-
-        const className = cx('Canvas', {
-          fixed: columnGroup.locked
-        });
-
-        return (
-            <div style={{...css.Canvas,left,width,height}} className={className} 
-                onContextMenu={this.handleContextMenuFromCanvas}
-                onKeyDown={onKeyDown} >
-                <div ref={this.contentEl} 
-                    style={{...css.CanvasContent, width: Math.max(columnGroup.width,width), height}}>
-                    {gridRows}
-                </div>
-            </div>
-        );
-    }
-
-  renderRow(props) {
-
-    const {rowRenderer, groupRowRenderer} = this.props;
-    const groupLevel = props.row[GROUP_LEVEL];    
-    let rowElement;
-
-    if (groupLevel !== 0){
-      if (React.isValidElement(groupRowRenderer)){
-        return React.cloneElement(groupRowRenderer, props);
-      } else if (groupRowRenderer && (rowElement = groupRowRenderer(props))){
-        return rowElement;
-      }
-    }
-
-    if (React.isValidElement(rowRenderer)) {
-      return React.cloneElement(rowRenderer, props);
-    } else if (rowRenderer && (rowElement = rowRenderer(props))){
-      return rowElement;
-    }
-
-    return <Row {...props} />;
-  }
-
-  componentDidUpdate(){
-    if (this.props.scroll){
-      this.setScroll(this.props.scroll.scrollTop, this.props.scroll.scrollLeft);
-    }
-
-    const container = this.contentEl.current;
-    const {rowPositions} = this;
-    if (container){
-      const {children, childElementCount} = container;
-      for (let i=0;i<childElementCount;i++){
+  useEffect(() => {
+    const container = contentEl.current;
+    if (container) {
+      const {rowHeight} = gridModel
+      const { children, childElementCount } = container;
+      for (let i = 0; i < childElementCount; i++) {
         const child = children[i];
-        const [,offset] = rowPositions[i];
-        // console.log(`row key=${child.getAttribute('data_key')} css=${child.style.cssText} expect it to be key ${key} pos ${offset}`)
-        child.style.transform = `translate3d(0px, ${offset}px, 0px)`
+        const [absIdx] = rowPositions[i];
+        child.style.transform = `translate3d(0px, ${absIdx*rowHeight}px, 0px)`
       }
-
     }
-  }
+  }, [rows])
 
-  getScroll() {
-    // we never want to read the vertical scroll position here - that now belongs
-    // on the container.
-    const {scrollTop, scrollLeft} = ReactDOM.findDOMNode(this);
-    return {scrollTop, scrollLeft};
-  }
-
-  setScroll(scrollTop, scrollLeft){
-    const el = ReactDOM.findDOMNode(this);
-
-    if (typeof scrollTop === 'number'){
-      el.scrollTop = scrollTop;
+  useImperativeHandle(ref, () => ({
+    scrollLeft: scrollLeft => {
+      contentEl.current.style.left = `-${scrollLeft}px`;
     }
+  }))
 
-    if (typeof scrollLeft === 'number'){
-      el.scrollLeft = scrollLeft;
-    }
-
+  const handleContextMenuFromCanvas = (e) => {
+    showContextMenu(e, 'canvas')
   }
 
-  // called by viewserver
-  setScrollLeft(scrollLeft){
-    if (this.contentEl.current){
-      this.contentEl.current.style.left = -scrollLeft + 'px';
-    }
-  }
+  const { renderLeft: left, renderWidth: width } = columnGroup;
+  const { RENDER_IDX } = gridModel.meta;
+  const rowPositions = rows.map((row, idx) => {
+    const absIdx = firstVisibleRow + idx
+    const isSelected = selectedRows.includes(absIdx);
+    // TODO selected should be present in the row meta
+    const isLastSelected = isSelected && (absIdx === rows.length - 1 || !selectedRows.includes(absIdx + 1));
+    return [absIdx, row[RENDER_IDX], row, isSelected, isLastSelected]
+  })
+    .filter(([key]) => key !== undefined)
+    .sort(byKey)
 
-  handleContextMenuFromCanvas = (e) => {
-    this.props.onContextMenu(e, 'canvas');
-  }
+  const gridRows = rowPositions
+    .map(([abs_idx, key, row, isSelected, isLastSelected]) => {
 
-  handleContextMenuFromRow = (e, options) => {
-    this.props.onContextMenu(e, 'row', options);
-  }
+      return (
+        <Row key={key}
+          idx={abs_idx}
+          row={row}
+          isSelected={isSelected}
+          isLastSelected={isLastSelected}
+          meta={gridModel.meta}
+          columns={columnGroup.columns}
+          rowClass={rowClass}
+          cellClass={cellClass}
+          cellRenderer={cellRenderer}
+        />
+      )
+    });
 
+  // console.log(`%c[Canvas] rowsRendered = ${gridRows.length}`,'color: red; font-weight: bold;')
+
+  const className = cx('Canvas', {
+    fixed: columnGroup.locked
+  });
+
+  return (
+    <div style={{ ...css.Canvas, left, width, height }} className={className}
+      onContextMenu={handleContextMenuFromCanvas}
+      onKeyDown={onKeyDown} >
+      <div ref={contentEl}
+        style={{ ...css.CanvasContent, width: Math.max(columnGroup.width, width), height }}>
+        {gridRows}
+      </div>
+    </div>
+  );
 }

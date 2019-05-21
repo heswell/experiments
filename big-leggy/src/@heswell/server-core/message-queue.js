@@ -231,4 +231,5 @@ function extractMessages(queue, test) {
 }
 
 
-const formatMessage = msg => ` type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[7])}]`;
+const formatMessage = msg => ` type: ${msg.type} 
+    rows: [${msg.data && msg.data.rows && msg.data.rows.map(row => row[7])}]`;

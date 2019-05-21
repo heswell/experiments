@@ -28,6 +28,7 @@ function messageFromTheServer({ data: { type: msgType, ...message } }) {
       onConnected(message);
       break;
     case Msg.rowData:
+    case Msg.selected:
     case Msg.filterData:
       subscriptions[message.viewport].postMessageToClient(message);
       break;
@@ -41,7 +42,7 @@ function messageFromTheServer({ data: { type: msgType, ...message } }) {
     }
       break;
     default:
-      logger.log(`does not yet handle ${msgType}`);
+      logger.warn(`does not yet handle ${msgType}`);
   }
 }
 
@@ -117,14 +118,15 @@ export default class RemoteDataView extends BaseDataView {
       range
     }, (message) => {
 
-      const { rowData, filterData } = message;
+      const { rowData, filterData, data } = message;
       if (rowData) {
-        const { rows, size, offset, range } = rowData;
+        const { rows, size, offset, range, reset=false } = rowData;
 
         const { lo: _lo, hi: _hi } = this.range || { lo: -1, hi: -1 }
         console.log(`1.5) this.range = ${JSON.stringify(range)}`)
         logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi} size: ${size}`)
 
+        //TODO move murgeAndPurg to dataReducer
         const mergedRows = this.processData(rows, size, offset)
 
         callback(mergedRows, size);
@@ -134,6 +136,9 @@ export default class RemoteDataView extends BaseDataView {
       } else if (filterData) {
         // experiment - need to store the column as well
         this.filterDataMessage = message;
+      } else if (data && data.selected){
+        // TODO think about this
+        callback(null,null, data.selected, data.deselected);
       }
 
     });
@@ -159,6 +164,16 @@ export default class RemoteDataView extends BaseDataView {
     this.range = { lo, hi };
     console.log(`2) this.range = ${JSON.stringify(this.range)}`)
 
+  }
+
+  select(idx, rangeSelect, keepExistingSelection){
+    postMessageToServer({
+      viewport: this.viewport,
+      type: Msg.select,
+      idx,
+      rangeSelect,
+      keepExistingSelection
+    })
   }
 
   group(columns) {

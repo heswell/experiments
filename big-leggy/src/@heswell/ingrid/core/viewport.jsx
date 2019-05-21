@@ -1,13 +1,12 @@
-import React, { useState, useCallback, useContext, useRef, useEffect, useReducer } from 'react';
+import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
 import Canvas from './canvas';
 import ColumnBearer from '../core/ColumnBearer';
 import css from '../style/grid';
-import SelectionModel from '../model/selectionModel';
+// import SelectionModel from '../model/selectionModel';
 import * as Action from '../model/actions';
 import dataReducer from '..//model/dataReducer';
 import { getScrollbarSize } from '../utils/domUtils';
-import { groupHelpers } from '../../data';
-import {GridDispatch} from '../grid-context';
+import GridContext from '../grid-context';
 
 const scrollbarSize = getScrollbarSize();
 
@@ -16,9 +15,7 @@ export const Viewport = React.memo(({
     height,
     dataView,
     model,
-    selectedRows,
-    onCellClick, // will go when we pass callbackPropsDispatch down
-    onContextMenu
+    // selectedRows
 }) =>  {
 
     const scrollingCanvas = useRef(null);
@@ -28,9 +25,9 @@ export const Viewport = React.memo(({
     const firstVisibleRow = useRef(0);
     const groupBy = useRef(model.groupBy);
 
-    const {dispatch, callbackPropsDispatch} = useContext(GridDispatch);
+    const {dispatch, callbackPropsDispatch} = useContext(GridContext);
 
-    const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
+    // const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
     const [data, dispatchData] = useReducer(dataReducer(model), {
             rows: [],
@@ -45,11 +42,15 @@ export const Viewport = React.memo(({
         dataView.subscribe({
             columns: model.columns,
             range: { lo: 0, hi: rowCount }
-        }, (rows, rowCount) => {
-            if (rowCount !== model.rowCount){
+        }, (rows, rowCount, selected=null, deselected=null) => {
+            if (rowCount !== null && rowCount !== model.rowCount){
                 dispatch({type: Action.ROWCOUNT, rowCount})
             }
-            dispatchData({ rows, rowCount })
+            if (rows !== null){
+                dispatchData({ type: 'data', rows, rowCount })
+            } else if (selected !== null){
+                dispatchData({type: 'selected', selected, deselected})
+            }
         })
 
     }, [dataView]);
@@ -70,26 +71,21 @@ export const Viewport = React.memo(({
     const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {
             const scrollLeft = e.target.scrollLeft;
-            scrollingCanvas.current.setScrollLeft(scrollLeft);
+            scrollingCanvas.current.scrollLeft(scrollLeft);
             callbackPropsDispatch({type: 'scroll', scrollLeft})
         }
     },[])
 
     // should this be handled here or at the grid level ?
-    const selectionHandler = useCallback((idx, selectedItem, rangeSelect, incrementalSelection) => {
-        const { selectionModel } = model;
-        // we must also allow selected to be injected via props
-        setSelectionState(state => {
-            const { selected, lastTouchIdx } = SelectionModel.handleItemClick(selectionModel, state, idx, selectedItem, rangeSelect, incrementalSelection);
-            callbackPropsDispatch({type: 'selection', selected, idx, selectedItem})
-            return { focusedIdx: idx, selected, lastTouchIdx }
-        });
-    },[]);
-
-    const handleToggleGroup = useCallback(groupRow => {
-        const groupState = groupHelpers.toggleGroupState(groupRow, model);
-        dispatch({ type: Action.TOGGLE, groupState });
-    })
+    // const selectionHandler = useCallback((idx, selectedItem, rangeSelect, incrementalSelection) => {
+    //     const { selectionModel } = model;
+    //     // we must also allow selected to be injected via props
+    //     setSelectionState(state => {
+    //         const { selected, lastTouchIdx } = SelectionModel.handleItemClick(selectionModel, state, idx, selectedItem, rangeSelect, incrementalSelection);
+    //         callbackPropsDispatch({type: 'selection', selected, idx, selectedItem})
+    //         return { focusedIdx: idx, selected, lastTouchIdx }
+    //     });
+    // },[]);
 
     // all of these calculations belong in the modelReducer
     const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
@@ -136,16 +132,12 @@ export const Viewport = React.memo(({
                                 key={idx}
                                 gridModel={model}
                                 rows={emptyRows || data.rows}
-                                selectedRows={selectionState.selected}
+                                selectedRows={data.selected}
                                 firstVisibleRow={firstVisibleRow.current}
                                 height={contentHeight}
                                 ref={columnGroup.locked ? null : scrollingCanvas}
                                 columnGroup={columnGroup}
-                                // focusedRow={this.state.focusedIdx}
-                                onToggleGroup={handleToggleGroup}
-                                onCellClick={onCellClick}
-                                onContextMenu={onContextMenu}
-                                onSelect={selectionHandler} />
+                            />
                         )}
                 </div>
             </div>

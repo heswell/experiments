@@ -55,7 +55,7 @@ export function buildColumnMap(columns){
 export function projectColumns(map, columns, meta){
     const length = columns.length;
     const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
-    return startIdx => (row,i) => {
+    return (startIdx, selectedRows=[]) => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];

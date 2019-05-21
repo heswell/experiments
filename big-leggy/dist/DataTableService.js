@@ -527,7 +527,7 @@ function buildColumnMap(columns){
 function projectColumns(map, columns, meta){
     const length = columns.length;
     const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
-    return startIdx => (row,i) => {
+    return (startIdx, selectedRows=[]) => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
@@ -2024,6 +2024,235 @@ function byKey$1(col1, col2){
     return col1.key - col2.key;
 }
 
+const CHECKBOX = 'checkbox';
+const SINGLE_ROW = 'single-row';
+const MULTIPLE_ROW = 'multiple-row';
+
+const SelectionModelType = {
+  Checkbox: CHECKBOX,
+  SingleRow: SINGLE_ROW,
+  MultipleRow: MULTIPLE_ROW
+};
+
+const {Checkbox, SingleRow, MultipleRow} = SelectionModelType;
+
+const EMPTY$1 = [];
+
+class SelectionModel {
+
+    constructor(selectionModelType=MultipleRow){
+      this.modelType = selectionModelType;
+    }
+
+    select({rows:selection, lastTouchIdx}, idx, rangeSelect, keepExistingSelection){
+        
+        let selected, deselected;
+
+        if (this.modelType === SingleRow){
+            [selection, selected, deselected] = this.handleRegularSelection(selection, idx);
+            lastTouchIdx = idx;
+        } else if (rangeSelect){
+            [selection, selected, deselected] = this.handleRangeSelection(selection, lastTouchIdx, idx);
+        } else if (keepExistingSelection || this.modelType === Checkbox){
+            [selection, selected, deselected] = this.handleIncrementalSelection(selection, idx);
+            lastTouchIdx = idx;
+        } else {
+            [selection, selected, deselected] = this.handleRegularSelection(selection, idx);
+            lastTouchIdx = idx;
+        }
+
+        return {
+          focusedIdx: idx,
+          lastTouchIdx,
+          rows: selection,
+          selected,
+          deselected
+        };
+
+    }
+
+    handleRegularSelection(selected, idx){
+        const pos = selected.indexOf(idx);
+        if (pos === -1){
+            const selection = [idx];
+            return [selection, selection, selected];
+        } else if (selected.length === 1){
+            return [EMPTY$1, EMPTY$1, selected];
+        } else {
+          return [EMPTY$1, EMPTY$1, remove(selected,idx)];
+        }
+    }
+
+    handleIncrementalSelection(selected, idx){
+        const pos = selected.indexOf(idx);
+        const len = selected.length;
+        const selection = [idx];
+
+        if (pos === -1){
+          if (len === 0){
+              return [selection, selection,EMPTY$1];
+            } else {
+                return [insert(selected,idx), selection, EMPTY$1];
+            }
+        } else {
+            if (len === 1){
+                return [EMPTY$1, EMPTY$1, selected];
+            } else {
+                return [remove(selected,idx), EMPTY$1, selection];
+            }
+        }		
+    }
+
+    handleRangeSelection(selected, lastTouchIdx, idx){
+
+        const pos = selected.indexOf(idx);
+        const len = selected.length;
+
+        if (pos === -1){
+
+            if (len === 0){
+                const selection = makeRange(0,idx);
+                return [selection, selection, EMPTY$1];
+            } else if (len === 1){
+                const selection = makeRange(selected[0],idx);
+                selected = selected[0] < idx
+                  ? selection.slice(1)
+                  : selection.slice(0,-1);
+                return [selection, selected, EMPTY$1];
+            } else {
+                const selection = applyRange(selected,lastTouchIdx,idx);
+                return [selection, selection.filter(i => !selected.includes(i)), EMPTY$1];
+            }
+        }
+    }
+
+}
+function applyRange(arr, lo, hi){
+
+    if (lo > hi) {[lo, hi] = [hi, lo];}
+
+    const ranges = getRanges(arr);
+    const newRange = new Range(lo,hi);
+    let newRangeAdded = false;
+    const ret = [];
+
+    for (let i=0;i<ranges.length;i++){
+        const range = ranges[i];
+
+        if (!range.overlaps(newRange)){
+            if (range.start < newRange.start){
+                for (let idx=range.start;idx<=range.end;idx++){
+                    ret.push(idx);
+                }
+            } else {
+                for (let idx=newRange.start;idx<=newRange.end;idx++){
+                    ret.push(idx);
+                }
+                newRangeAdded = true;
+                for (let idx=range.start;idx<=range.end;idx++){
+                    ret.push(idx);
+                }
+            }
+        } else if (!newRangeAdded){
+            for (let idx=newRange.start;idx<=newRange.end;idx++){
+                ret.push(idx);
+            }
+            newRangeAdded = true;
+        }
+    }
+
+    if (!newRangeAdded){
+        for (let idx=newRange.start;idx<=newRange.end;idx++){
+            ret.push(idx);
+        }
+    }
+
+    return ret;
+}
+
+function getRanges(arr){
+
+    const ranges = [];
+    let range;
+
+    for (let i=0;i<arr.length;i++){
+        if (range && range.touches(arr[i])){
+            range.extend(arr[i]);
+        } else {
+            ranges.push(range = new Range(arr[i]));
+        }
+    }
+
+    return ranges;
+
+}
+
+class Range {
+
+    constructor(start, end=start){
+        this.start = start;
+        this.end = end;
+    }
+
+    extend(idx){
+        if (idx >= this.start && idx > this.end){
+            this.end = idx;
+        }
+    }
+
+    touches(idx){
+        return this.end === idx-1;
+    }
+
+    overlaps(that){
+        return !(this.end < that.start || this.start > that.end);
+    }
+
+    contains(idx){
+        return this.start <= idx && this.end >= idx;
+    }
+
+    toString(){
+        return `[${this.start}:${this.end}]`;
+    }
+}
+
+function makeRange(lo, hi){
+    if (lo > hi) {[lo, hi] = [hi, lo];}
+
+    const range = [];
+    for (let idx=lo;idx<=hi;idx++){
+        range.push(idx);
+    }
+    return range;
+}
+
+function remove(arr, idx){
+    const ret = [];
+    for (let i=0;i<arr.length;i++){
+        if (idx !== arr[i]){
+            ret.push(arr[i]);
+        }
+    }
+    return ret;
+}
+
+function insert(arr, idx){
+    const ret = [];
+    for (let i=0;i<arr.length;i++){
+        if (idx !== null && idx < arr[i]){
+            ret.push(idx);
+            idx = null;
+        }
+        ret.push(arr[i]);
+    }
+    if (idx !== null){
+        ret.push(idx);
+    }
+    return ret;
+
+}
+
 /**
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
@@ -2044,10 +2273,11 @@ class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
-        this.selectedSet = [];
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
+        this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+        this.selectionModel = new SelectionModel();
     }
 
     // used by binned rowset
@@ -2075,7 +2305,8 @@ class BaseRowSet {
             rows: resultset,
             range: range$$1,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            reset: useDelta === false
         };
     }
 
@@ -2088,6 +2319,21 @@ class BaseRowSet {
             size: this.size,
             offset: this.offset
         };
+    }
+
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`RowSet.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`);
+        
+        const {selected, deselected, ...selectionState} = this.selectionModel.select(
+            this.selected,
+            idx,
+            rangeSelect,
+            keepExistingSelection
+        );
+        
+        this.selected = selectionState;
+
+        return {selected, deselected};
     }
 
     selectNavigationSet(useFilter) {
@@ -2182,6 +2428,7 @@ class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
+
     }
 
     buildSortSet() {
@@ -2194,7 +2441,7 @@ class RowSet extends BaseRowSet {
     }
 
     slice(lo, hi) {
-
+        const {selectedSet} = this;
         if (this.filterSet) {
             const filteredData = this.filterSet.slice(lo, hi);
             const filterMapper = typeof filteredData[0] === 'number'
@@ -2202,7 +2449,7 @@ class RowSet extends BaseRowSet {
                 : ([idx]) => this.data[idx];
             return filteredData
                 .map(filterMapper)
-                .map(this.project(lo + this.offset));
+                .map(this.project(lo + this.offset, selectedSet));
         } else if (this.sortCols) {
             const sortSet = this.sortSet;
             const results = [];
@@ -2213,9 +2460,9 @@ class RowSet extends BaseRowSet {
                 const row = rows[idx];
                 results.push(row);
             }
-            return results.map(this.project(lo + this.offset));
+            return results.map(this.project(lo + this.offset, selectedSet));
         } else {
-            return this.data.slice(lo, hi).map(this.project(lo + this.offset));
+            return this.data.slice(lo, hi).map(this.project(lo + this.offset, selectedSet));
         }
     }
 
@@ -3957,9 +4204,17 @@ class InMemoryView {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`InMemoryView.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`);
+        return this.rowSet.select(idx, rangeSelect, keepExistingSelection);
+        //TODO eliminate rows not in range
+    
+    }
+
     sort(sortCriteria) {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);
+        // assuming the only time we would not useDelta is when we want to reset ?
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
@@ -4305,7 +4560,8 @@ const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',
     FilterData: 'filterData',
-    SearchData: 'searchData'
+    SearchData: 'searchData',
+    Selected: 'selected'
 };
 
 // need an API call to expose tables so extension services can manipulate data
@@ -4422,8 +4678,8 @@ function filter$1(clientId, {viewport, filter, dataType}, queue){
     _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
 }
 
-function select(clientId, {viewport, dataType, colName, filterMode}, queue){
-    _subscriptions[viewport].invoke('select', queue, DataType.Rowset, dataType, colName, filterMode);
+function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){
+    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection);
 }
 
 function groupBy(clientId, {viewport, groupBy}, queue){
