@@ -21,7 +21,6 @@ export function Canvas ({
   selectedRows,
   onKeyDown
 }, ref) {
-
   const contentEl = useRef(null);
   const {showContextMenu} = useContext(GridContext);
 

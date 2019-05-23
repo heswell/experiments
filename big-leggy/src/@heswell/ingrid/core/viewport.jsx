@@ -17,7 +17,7 @@ export const Viewport = React.memo(({
     model,
     // selectedRows
 }) =>  {
-
+console.log(`Render Viewport`)
     const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
     const verticalScrollContainer = useRef(null);
@@ -38,7 +38,6 @@ export const Viewport = React.memo(({
     useEffect(() => {
 
         const rowCount = Math.ceil(height / model.rowHeight) + 1
-
         dataView.subscribe({
             columns: model.columns,
             range: { lo: 0, hi: rowCount }
@@ -55,6 +54,17 @@ export const Viewport = React.memo(({
 
     }, [dataView]);
 
+    useEffect(() => {
+        const rowCount = Math.ceil(height / model.rowHeight) + 1;
+        if (rowCount !== model.rowCount){
+            dispatch({type: Action.ROWCOUNT, rowCount})
+            const firstRow = firstVisibleRow.current;
+            console.log(`dataview setrange ${firstRow} : ${firstRow+rowCount}`)
+            dataView.setRange(firstRow, firstRow + rowCount);
+        }
+
+    },[height])
+
     const handleVerticalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {
             scrollTop.current = e.target.scrollTop;
@@ -66,7 +76,7 @@ export const Viewport = React.memo(({
                 callbackPropsDispatch({type: 'scroll', scrollTop: scrollTop.current})
             }
         }
-    },[]);
+    },[height]);
 
     const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {
@@ -75,17 +85,6 @@ export const Viewport = React.memo(({
             callbackPropsDispatch({type: 'scroll', scrollLeft})
         }
     },[])
-
-    // should this be handled here or at the grid level ?
-    // const selectionHandler = useCallback((idx, selectedItem, rangeSelect, incrementalSelection) => {
-    //     const { selectionModel } = model;
-    //     // we must also allow selected to be injected via props
-    //     setSelectionState(state => {
-    //         const { selected, lastTouchIdx } = SelectionModel.handleItemClick(selectionModel, state, idx, selectedItem, rangeSelect, incrementalSelection);
-    //         callbackPropsDispatch({type: 'selection', selected, idx, selectedItem})
-    //         return { focusedIdx: idx, selected, lastTouchIdx }
-    //     });
-    // },[]);
 
     // all of these calculations belong in the modelReducer
     const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;

@@ -53,11 +53,12 @@ export default function Grid({
     // selectionModel
 }) {
 
-
     const header = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
     const overTheLine = useRef(0);
+    const inputWidth = props.width || style.width; 
+    const inputHeight = props.height || style.height; 
 
     const [state, setState] = useState({
         showFilters,
@@ -137,6 +138,11 @@ export default function Grid({
     }, [_overTheLine])
 
     useEffect(() => {
+        logger.log(`width has changed ${inputWidth}`)
+        dispatch({type: Action.GRID_RESIZE, width: inputWidth, height: inputHeight})
+    },[inputWidth, inputHeight])
+
+    useEffect(() => {
         if (sortBy !== undefined) {
             dataView.sort(sortBy);
         }
@@ -204,7 +210,7 @@ export default function Grid({
     return (
         // we can roll context menu into the context once more of the child components are functions
         <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
-            <div style={{ ...style, position: 'relative', height, width }} className={className}>
+            <div style={{ position: 'relative', height, width, ...style }} className={className}>
                 {showHeaders && headerHeight !== 0 &&
                     <Header ref={header}
                         height={headingHeight}

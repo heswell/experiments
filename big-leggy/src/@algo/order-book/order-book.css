@@ -1,0 +1,50 @@
+.Orderbook {
+  --orderbook-border-color: var(--app-cell-border-color,#ccc); 
+  --orderbook-row-height: 24px;
+
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 290px;
+  border: solid 1px var(--orderbook-border-color);
+
+}
+
+.Orderbook .toolbar {
+  background-color: var(--app-toolbar-bg);
+  flex: 0 0 24px;
+}
+
+.Orderbook .depth-view {
+  flex: 1 1 auto;
+}
+
+.Orderbook .Row {
+  height: var(--orderbook-row-height);
+  line-height: var(--orderbook-row-height);
+  display: flex;
+}
+
+.Orderbook .Header.Row {
+  background-color: #ccc;
+  font-weight: bold;
+  line-height: var(--orderbook-row-height);
+}
+
+.Orderbook .Cell {
+  flex: 1 1 100px;
+  padding-left: 3px;
+  border-bottom: 1px solid var(--orderbook-border-color);
+}
+
+.Orderbook .Cell:not(:last-child) {
+  border-right: 1px solid var(--orderbook-border-color);
+}
+
+.Orderbook .Cell.buy {
+  background-color: antiquewhite;
+}
+
+.Orderbook .Cell.sell {
+  background-color: lavender
+}

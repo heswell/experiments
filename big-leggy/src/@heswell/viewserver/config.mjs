@@ -1,4 +1,4 @@
-import { Instruments/*, InstrumentPrices, TestTable, CreditMatrix */} from './dataTables';
+import { Instruments, Sets, OrderBlotter, OrderBook /*, InstrumentPrices, TestTable, CreditMatrix */} from './dataTables';
 import DataTableService from './services/dataTableService';
 
 export const config = {
@@ -6,7 +6,10 @@ export const config = {
         DataTableService
     ],
     DataTables: [
-        Instruments
+        Instruments,
+        Sets,
+        OrderBlotter,
+        OrderBook
         // InstrumentPrices,
         // TestTable,
         // CreditMatrix

@@ -9,9 +9,10 @@ import {
     replace as replaceInLayout
 } from './redux/actions';
 import {getLayoutModel} from './redux/layoutReducer';
+import './application.css';
+
 const UUID = require('pure-uuid');
 
-import './application.css';
 
 // Redux -------------------------
 // import { createStore, combineReducers, applyMiddleware, compose } from 'redux';

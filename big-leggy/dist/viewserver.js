@@ -632,9 +632,105 @@ const path$2 = fs.realpathSync(process.cwd());
 //const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
 const path$3 = fs.realpathSync(process.cwd());
 
+const data_path$1 = fs.realpathSync(process.cwd());
+const project_path$1 = 'src/@heswell/viewserver/dataTables/sets';
+
+const config$4 = {
+    name: 'Sets',
+    dataPath: `${data_path$1}/${project_path$1}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'ISIN',
+    columns: [
+        {name: 'Segment'},
+        {name: 'Sector'},
+        {name: 'Issuer Name'},
+        {name: 'ISIN'},
+        {name: 'Sedol'},
+        {name: 'Security Type'},
+        {name: 'Currency'},
+        {name: 'Trading Parameter Code'},
+        {name: "Price Tick Table ID"},
+        {name: "Country of Register"},
+        {name: "Mnemonic"},
+        {name: "Short Name"},
+        {name: "Long Name"},
+        {name: "EMS"},
+        {name: "Max Spread Floor"},
+        {name: "Max Spread Perc."},
+        {name: "Issuer Version Start Date"}
+    
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
+const data_path$2 = fs.realpathSync(process.cwd());
+const project_path$2 = 'src/@heswell/viewserver/dataTables/order-blotter';
+
+const config$5 = {
+    name: 'order-blotter',
+    dataPath: `${data_path$2}/${project_path$2}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'OrderId',
+    columns: [
+        {name: 'OrderId'},
+        {name: 'Status'},
+        {name: 'Direction'},
+        {name: 'ISIN'},
+        {name: 'Quantity'},
+        {name: 'Price'},
+        {name: 'Currency'},
+        {name: 'timestamp'},
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
+const data_path$3 = fs.realpathSync(process.cwd());
+const project_path$3 = 'src/@heswell/viewserver/dataTables/order-book';
+
+const config$6 = {
+    name: 'order-book',
+    dataPath: `${data_path$3}/${project_path$3}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'Id',
+    columns: [
+        {name: 'Id'},
+        {name: 'ISIN'},
+        {name: 'Level'},
+        {name: 'Bid'},
+        {name: 'Bid Volume'},
+        {name: 'Bid Party'},
+        {name: 'Ask'},
+        {name: 'Ask Volume'},
+        {name: 'Ask Party'},
+        {name: 'timestamp'},
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
 /* global __dirname:false */
 
-const data_path$1 = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
+const data_path$4 = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
 
 // TODO unify these with server-api/messages
 const ServerApiMessageTypes = {
@@ -643,7 +739,7 @@ const ServerApiMessageTypes = {
   
 const ServiceDefinition = {
     name: 'DataTableService',
-    module: `${data_path$1}/DataTableService`,
+    module: `${data_path$4}/DataTableService`,
     API: [
         'GetTableList',
         'GetTableMeta',
@@ -665,12 +761,15 @@ const ServiceDefinition = {
     ]
 };
 
-const config$4 = {
+const config$7 = {
     services: [
         ServiceDefinition
     ],
     DataTables: [
-        config
+        config,
+        config$4,
+        config$5,
+        config$6
         // InstrumentPrices,
         // TestTable,
         // CreditMatrix
@@ -679,4 +778,4 @@ const config$4 = {
 
 console.log('server.mjs about to START SERVER');
 
-start(config$4);
+start(config$7);

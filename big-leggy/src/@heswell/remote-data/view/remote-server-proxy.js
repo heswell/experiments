@@ -24,13 +24,15 @@ export class ServerProxy {
         this.connectionStatus = 'not-connected';
 
         this.queuedRequests = [];
+        this.viewportStatus = {};
         this.pendingSubscriptionRequests = {};
         this.postMessageToClient = clientCallback;
 
     }
 
     handleMessageFromClient(message) {
-        this.sendIfReady(message, this.connectionStatus === 'ready');
+        console.log(`sendIfReady ${message.type}`)
+        this.sendIfReady(message, this.viewportStatus[message.viewport] === 'subscribed');
     }
 
     sendIfReady(message, isReady) {
@@ -61,6 +63,7 @@ export class ServerProxy {
         const [rangeMessages] = partition(this.queuedRequests, byTypeAndViewport);
 
         this.pendingSubscriptionRequests[viewport] = message;
+        this.viewportStatus[viewport] = 'subscribing';
 
         logger.log(`SUBSCRIBE to ${viewport} 
                 with range ${message.range.lo} = ${message.range.hi} sent to server
@@ -83,6 +86,7 @@ export class ServerProxy {
             logger.log(`<handleMessageFromServer> SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`)
 
             this.pendingSubscriptionRequests[viewport] = undefined;
+            this.viewportStatus[viewport] = 'subscribed';
 
             const byViewport = vp => item => item.viewport === vp;
             const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;

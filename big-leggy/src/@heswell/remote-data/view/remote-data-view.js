@@ -324,9 +324,9 @@ export function subscribe(options, clientCallback) {
   const viewport = options.viewport;
   const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback)
 
-  // blocks here until connection is resolved (to an instance of ServerApi)
+  // subscription blocks here until connection is resolved (to an instance of ServerApi)
   getDefaultConnection().then(remoteConnection => {
-    logger.log(`now we have a remoteConnection, we can subscribe`)
+    logger.log(`>>>>> now we have a remoteConnection, we can subscribe`)
     remoteConnection.subscribe(options, viewport);
   });
 
