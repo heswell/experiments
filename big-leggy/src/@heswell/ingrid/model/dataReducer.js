@@ -1,20 +1,61 @@
 
+export const initialData = {
+  rows: [],
+  rowCount: 0,
+  range: {lo:0,hi:0},
+  selected: [],
+  _keys: {
+    free: [],
+    used: {}
+  }
+}
+
 // This assumes model.meta never changes. If it does (columns etc)
 // we will need additional action types to update
 export default function (model) {
   return (state, action) => {
     console.log(`dataReducer`, action)
     const { IDX, SELECTED } = model.meta;
-    if (action.type === 'data'){
-      const { rows, rowCount } = action;
+    if (action.type === 'range'){
+      const {range} = action;
+      return {
+        ...state,
+        range,
+        _keys: setKeys(state._keys, range)
+      }
+    } else if (action.type === 'data'){
+      const { rows, rowCount, offset } = action;
+      const range = action.range.reset ? action.range : state.range;
+      const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, model.meta, state._keys)
+      
       const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
       return {
-        rows, rowCount, selected
+        rows: mergedRows,
+        rowCount,
+        range,
+        selected,
+        _keys
       }
     } else if (action.type === 'selected'){
       return applySelection(state, action, model.meta)
     }
   }
+}
+
+function setKeys(keys, {lo,hi}){
+  const free = [];
+  const keyCount = hi - lo;
+
+  for (let i=0;i<keyCount;i++){
+    if (keys.used[i] === undefined){
+      free.push(i);
+    }
+  }
+  return {
+    used: keys.used, 
+    free
+  }
+
 }
 
 function applySelection(state, {selected, deselected}, meta){
@@ -66,19 +107,17 @@ function emptyRow(idx, { IDX, count }) {
 }
 
 function mergeAndPurge({ lo, hi }, rows, offset = 0, newRows, size, meta, keys) {
-  // console.groupCollapsed(`mergeAndPurge range: ${lo} - ${hi} 
-  //  old   rows: [${rows.length ? rows[0][7]: null} - ${rows.length ? rows[rows.length-1][7]: null}]
-  //  new   rows: [${newRows.length ? newRows[0][7]: null} - ${newRows.length ? newRows[newRows.length-1][7]: null}]
-  //     `);
+
   const { IDX, RENDER_IDX } = meta;
-  const {free, used: usedKeys} = keys;
+  const {free: freeKeys, used: usedKeys} = keys;
   const low = lo + offset;
   const high = Math.min(hi + offset, size + offset);
   const rowCount = hi - lo;
 
   let pos, row, rowIdx, rowKey;
   const results = [];
-  let used = {};
+  const used = {};
+  const free = freeKeys.slice();
   // 1) iterate existing rows, copy to correct slot in results if still in range
   //    if not still in range, collect rowKey
   
@@ -131,9 +170,9 @@ function mergeAndPurge({ lo, hi }, rows, offset = 0, newRows, size, meta, keys) 
     }
   }
 
-  // console.table(results);
-  // console.groupEnd();
-  keys.used = used;
-  return results;
+  return [results,{
+    free,
+    used
+  }];
 
 }

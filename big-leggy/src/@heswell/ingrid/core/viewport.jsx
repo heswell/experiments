@@ -4,7 +4,7 @@ import ColumnBearer from '../core/ColumnBearer';
 import css from '../style/grid';
 // import SelectionModel from '../model/selectionModel';
 import * as Action from '../model/actions';
-import dataReducer from '..//model/dataReducer';
+import dataReducer, {initialData} from '..//model/dataReducer';
 import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
 
@@ -29,11 +29,7 @@ console.log(`Render Viewport`)
 
     // const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
-    const [data, dispatchData] = useReducer(dataReducer(model), {
-            rows: [],
-            rowCount: 0,
-            selected: []
-    });
+    const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
     useEffect(() => {
 
@@ -41,7 +37,7 @@ console.log(`Render Viewport`)
         dataView.subscribe({
             columns: model.columns,
             range: { lo: 0, hi: rowCount }
-        }, (rows, rowCount, range, selected=null, deselected=null) => {
+        }, (rows, rowCount, offset, range, selected=null, deselected=null) => {
             if (range.reset){
                 setSrollTop(0);
             }
@@ -49,7 +45,7 @@ console.log(`Render Viewport`)
                 dispatch({type: Action.ROWCOUNT, rowCount})
             }
             if (rows !== null){
-                dispatchData({ type: 'data', rows, rowCount })
+                dispatchData({ type: 'data', rows, rowCount, offset, range })
             } else if (selected !== null){
                 dispatchData({type: 'selected', selected, deselected})
             }
@@ -62,8 +58,7 @@ console.log(`Render Viewport`)
         if (rowCount !== model.rowCount){
             dispatch({type: Action.ROWCOUNT, rowCount})
             const firstRow = firstVisibleRow.current;
-            console.log(`dataview setrange ${firstRow} : ${firstRow+rowCount}`)
-            dataView.setRange(firstRow, firstRow + rowCount);
+            setRange(firstRow, firstRow + rowCount);
         }
 
     },[height])
@@ -74,7 +69,7 @@ console.log(`Render Viewport`)
             const firstRow = Math.floor(scrollTop.current / model.rowHeight)
             if (firstRow !== firstVisibleRow.current) {
                 const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
-                dataView.setRange(firstRow, firstRow + numberOfRowsInViewport);
+                setRange(firstRow, firstRow + numberOfRowsInViewport);
                 firstVisibleRow.current = firstRow;
                 callbackPropsDispatch({type: 'scroll', scrollTop: scrollTop.current})
             }
@@ -91,7 +86,13 @@ console.log(`Render Viewport`)
 
     const setSrollTop = useCallback((value) => {
         verticalScrollContainer.current.scrollTop = scrollTop.current = value;
-    })
+    },[])
+
+    const setRange = useCallback((lo, hi) => {
+        console.log(`viewport setrange ${lo} : ${hi}`)
+        dataView.setRange(lo, hi);
+        dispatchData({type: 'range', range:{lo, hi}});
+    },[])
 
     // all of these calculations belong in the modelReducer
     const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;

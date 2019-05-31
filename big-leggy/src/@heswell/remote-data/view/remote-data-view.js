@@ -108,7 +108,6 @@ export default class RemoteDataView extends BaseDataView {
     this.meta = metaData(columns);
     this.range = range;
     console.log(`1) this.range = ${JSON.stringify(range)}`)
-    this.keyCount = range.hi - range.lo;
 
     // logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
 
@@ -126,14 +125,7 @@ export default class RemoteDataView extends BaseDataView {
         const { lo: _lo, hi: _hi } = this.range || { lo: -1, hi: -1 }
         console.log(`1.5) this.range = ${JSON.stringify(range)}`)
         logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi} size: ${size}`)
-
-        if (range.reset){
-          this.range = range;
-        }
-        //TODO move murgeAndPurg to dataReducer
-        const mergedRows = this.processData(rows, size, offset)
-
-        callback(mergedRows, size, range);
+        callback(rows, size, offset, range);
 
       } else if (filterData && this.filterDataCallback) {
         this.filterDataCallback(message)
@@ -142,7 +134,7 @@ export default class RemoteDataView extends BaseDataView {
         this.filterDataMessage = message;
       } else if (data && data.selected){
         // TODO think about this
-        callback(null,null, range, data.selected, data.deselected);
+        callback(null,null, null, range, data.selected, data.deselected);
       }
 
     });
@@ -162,10 +154,7 @@ export default class RemoteDataView extends BaseDataView {
       dataType: DataTypes.ROW_DATA
     });
 
-    if (hi-lo !== this.range.hi - this.range.lo){
-      this.keyCount = hi - lo;
-    }
-    this.range = { lo, hi };
+    // this.range = { lo, hi };
     console.log(`2) this.range = ${JSON.stringify(this.range)}`)
 
   }
