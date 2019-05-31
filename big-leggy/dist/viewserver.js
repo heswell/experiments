@@ -126,7 +126,8 @@ function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
         hi: hi-lo,
-        bufferSize
+        bufferSize,
+        reset: true
     };
 }
 
@@ -659,8 +660,13 @@ const config$4 = {
         {name: "EMS"},
         {name: "Max Spread Floor"},
         {name: "Max Spread Perc."},
-        {name: "Issuer Version Start Date"}
-    
+        {name: "Issuer Version Start Date"},
+        {name: "Bid"},
+        {name: "Ask"},
+        {name: "Last"},
+        {name: "Bid Vol"},
+        {name: "Ask Vol"},
+   
     ],
     // updates: {
     //     interval: 100,

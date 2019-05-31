@@ -41,7 +41,10 @@ console.log(`Render Viewport`)
         dataView.subscribe({
             columns: model.columns,
             range: { lo: 0, hi: rowCount }
-        }, (rows, rowCount, selected=null, deselected=null) => {
+        }, (rows, rowCount, range, selected=null, deselected=null) => {
+            if (range.reset){
+                setSrollTop(0);
+            }
             if (rowCount !== null && rowCount !== model.rowCount){
                 dispatch({type: Action.ROWCOUNT, rowCount})
             }
@@ -85,6 +88,10 @@ console.log(`Render Viewport`)
             callbackPropsDispatch({type: 'scroll', scrollLeft})
         }
     },[])
+
+    const setSrollTop = useCallback((value) => {
+        verticalScrollContainer.current.scrollTop = scrollTop.current = value;
+    })
 
     // all of these calculations belong in the modelReducer
     const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;

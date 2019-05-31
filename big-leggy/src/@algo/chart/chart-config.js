@@ -1,196 +1,239 @@
+import {prices, orders, min, max, annotations} from './chart-data'
 
-import {data} from './chart-data';
-
-// const upColor = '#ec0000';
-// const upBorderColor = '#8A0000';
-// const downColor = '#00da3c';
-// const downBorderColor = '#008F28';
-
+const sellColor = '#c48f7e';
+// const buyColor = '#8ea363'
+const buyColor = 'limegreen'
 
 export const option = {
-  title: {
-      text: 'Sample',
-      left: 0
-  },
-  tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-          type: 'cross'
-      }
-  },
-  legend: {
-      data: ['Bid', 'Ask']
-  },
-  grid: {
-      left: '10%',
-      right: '3%',
-      bottom: '15%'
-  },
-  xAxis: {
-      type: 'category',
-      data: data.date,
-      scale: true,
-      boundaryGap : false,
-      axisLine: {onZero: false},
-      splitLine: {show: false},
-      splitNumber: 20,
-      min: 'dataMin',
-      max: 'dataMax'
-  },
-  yAxis: {
-      scale: true,
-      splitArea: {
-          show: true
-      }
-  },
-  dataZoom: [
-      {
-          type: 'inside',
-          start: 0,
-          end: 100
-      },
-      {
-          show: true,
-          type: 'slider',
-          y: '90%',
-          start: 0,
-          end: 100
-      }
-  ],
-  series: [
-      {
-          name: 'Bid',
-          type: 'line',
-          data: data.bid,
-          smooth: false,
-          lineStyle: {
-              normal: {opacity: 0.5}
-          }
-      },
-      {
-          name: 'Ask',
-          type: 'line',
-          data: data.ask,
-          smooth: false,
-          lineStyle: {
-              normal: {opacity: 0.5}
-          }
-      },
-      // {
-      //     name: 'MA20',
-      //     type: 'line',
-      //     data: calculateMA(20),
-      //     smooth: true,
-      //     lineStyle: {
-      //         normal: {opacity: 0.5}
-      //     }
-      // },
-      // {
-      //     name: 'MA30',
-      //     type: 'line',
-      //     data: calculateMA(30),
-      //     smooth: true,
-      //     lineStyle: {
-      //         normal: {opacity: 0.5}
-      //     }
-      // },
-
-  ]
+    animation: false,
+    grid : {
+        left: '5%',
+        right: '3%'
+    },
+    dataset: [
+        {
+            source: prices,
+            dimensions: ['timestamp', 'bid', 'ask']
+        }, {
+            source: orders,
+            dimensions: ['timestamp', 'price', 'direction', 'qty', 'status', 'completionTime']
+        }
+    ],
+    xAxis: {
+        type: 'time',
+        // min: 'dataMin',
+        // max: 'dataMax',
+        splitLine: {
+            show: false
+        }
+    },
+    yAxis: {
+        type: 'value',
+        min,
+        max,
+        splitLine: {
+            show: false
+        }
+    },
+    series: [
+        {
+            name: 'Bid',
+            type: 'line',
+            step: true,
+            showSymbol: false,
+            hoverAnimation: false,
+            datasetIndex: 0,
+            encode: {
+                x: 'timestamp',
+                y: 'bid'
+            },
+            itemStyle : {
+                color: 'green'
+            },
+            z: 1
+        },
+        {
+            name: 'Ask',
+            type: 'line',
+            step: true,
+            showSymbol: false,
+            hoverAnimation: false,
+            datasetIndex: 0,
+            encode: {
+                x: 'timestamp',
+                y: 'ask'
+            },
+            itemStyle : {
+                color: 'red'
+            },
+            z: 1
+        },
+        {
+            name: 'buy',
+            type: 'custom',
+            renderItem: renderCancelledOrder,
+            datasetIndex: 1,
+            z: 2
+        },
+        {
+            name: 'annotation',
+            type: 'custom',
+            renderItem: renderAnnotation,
+            data: annotations,
+            z: 0
+        }
+    ]
 };
 
+const radius = 5;
 
-/*
-      {
-          name: '日K',
-          type: 'candlestick',
-          data: data.values,
-          itemStyle: {
-              normal: {
-                  color: upColor,
-                  color0: downColor,
-                  borderColor: upBorderColor,
-                  borderColor0: downBorderColor
-              }
-          },
-          // circular icons at given locations
-          // markPoint: {
-          //     label: {
-          //         normal: {
-          //             formatter: function (param) {
-          //                 return param != null ? Math.round(param.value) : '';
-          //             }
-          //         }
-          //     },
-          //     data: [
-          //         {
-          //             name: 'XX标点',
-          //             coord: ['2013/5/31', 2300],
-          //             value: 2300,
-          //             itemStyle: {
-          //                 normal: {color: 'rgb(41,60,85)'}
-          //             }
-          //         },
-          //         {
-          //             name: 'highest value',
-          //             type: 'max',
-          //             valueDim: 'highest'
-          //         },
-          //         {
-          //             name: 'lowest value',
-          //             type: 'min',
-          //             valueDim: 'lowest'
-          //         },
-          //         {
-          //             name: 'average value on close',
-          //             type: 'average',
-          //             valueDim: 'close'
-          //         }
-          //     ],
-          //     tooltip: {
-          //         formatter: function (param) {
-          //             return param.name + '<br>' + (param.data.coord || '');
-          //         }
-          //     }
-          // },
-          // dashed straight red lines
-          // markLine: {
-          //     symbol: ['none', 'none'],
-          //     data: [
-          //         [
-          //             {
-          //                 name: 'from lowest to highest',
-          //                 type: 'min',
-          //                 valueDim: 'lowest',
-          //                 symbol: 'circle',
-          //                 symbolSize: 10,
-          //                 label: {
-          //                     normal: {show: false},
-          //                     emphasis: {show: false}
-          //                 }
-          //             },
-          //             {
-          //                 type: 'max',
-          //                 valueDim: 'highest',
-          //                 symbol: 'circle',
-          //                 symbolSize: 10,
-          //                 label: {
-          //                     normal: {show: false},
-          //                     emphasis: {show: false}
-          //                 }
-          //             }
-          //         ],
-          //         {
-          //             name: 'min line on close',
-          //             type: 'min',
-          //             valueDim: 'close'
-          //         },
-          //         {
-          //             name: 'max line on close',
-          //             type: 'max',
-          //             valueDim: 'close'
-          //         }
-          //     ]
-          // }
-      },
+function renderAnnotation(params, api){
+    console.log(`%cAnnotation ${api.value(0)} ${api.value(1)} ${api.value(2)}`, 'color:red;font-weight: bold;')
+    const timestamp = api.value(0);
+    const type = api.value(2);
 
-*/
+    if (type === 'momentum'){
+        const startPoint = api.coord([timestamp,240]);
+        const endPoint = api.coord([timestamp,280]);
+        console.log(`momentum at ${startPoint} - ${endPoint}`)
+        return {
+            type: 'group',
+            children: [
+                line(api, startPoint, endPoint, {
+                    stroke: 'orange',
+                    lineWidth: 3,
+                    shadowColor: 'orange',
+                    shadowBlur: 7,
+                    opacity: 0.4
+                }),
+                {
+                    type: 'text',
+                    style: {
+                        text: 'Momentum',
+                        x: startPoint[0] - 6,
+                        y: endPoint[1] - 15,
+                        fill: '#888'
+                    }
+                }
+            ]
+        }
+    } else if (type === 'layering'){
+        const price1 = api.value(1);
+        const ts2 = api.value(3);
+        const price2 = api.value(4);
+
+        const [x1,y1] = api.coord([timestamp,price1]);
+        const [x2, y2] = api.coord([ts2,price2]);
+        console.log(`rect ${x1} ${y1} ${x2} ${y2}`)
+        return {
+            type: 'group',
+            children: [
+                {
+                    type: 'rect',
+                    shape: {
+                        x: x1,
+                        y: y1,
+                        width: x2 - x1,
+                        height: y2 - y1
+                    },
+                    style: {
+                        fill: 'green',
+                        opacity: 0.1
+                    }
+                },
+                {
+                    type: 'text',
+                    style: {
+                        text: 'Layering',
+                        x: x1 + (x2-x1)/2 - 30,
+                        y: y2,
+                        fill: '#888'
+                    }
+                }
+            ] 
+        }
+    }
+
+}
+
+function renderCancelledOrder(params, api) {
+    const timestamp = api.value(0);
+    const price = api.value(1);
+    const direction = api.value(2);
+    const status = api.value(4);
+    const completionTime = api.value(5);
+
+    var startPoint = api.coord([timestamp, price]);
+    var endPoint = api.coord([completionTime, price]);
+
+    const color = direction === 'buy'
+        ? buyColor
+        : sellColor;
+
+    const finalFill = status === 'cancelled'
+        ? 'none'
+        : color;    
+
+    const children = [
+        circle(api, startPoint[0], startPoint[1],{
+            fill: color,
+            stroke: color,
+            opacity: .6
+        }),
+        line(api, startPoint, endPoint, {
+            stroke: color
+        }, radius),
+        circle(api, endPoint[0], endPoint[1],{
+            fill: finalFill,
+            stroke: color
+        })
+    ];
+
+    if (status === 'filled'){
+        children.push(diamond(api, endPoint[0],endPoint[1],{
+            fill: 'blue'
+        }))
+    }
+
+    return {
+        // 'rect' indicates that the graphic element is rectangular.
+        // Can also be 'circle', 'sector', 'polygon', ...
+        type: 'group',
+        children
+    };
+}
+
+
+const circle = (api, x, y, style) => ({
+    type: 'circle',
+    shape: {
+        cx: x,
+        cy: y,
+        r: radius
+    },
+    style: api.style(style)
+})
+
+const line = (api,startPoint, endPoint, style, offset=0) => ({
+    type: 'line',
+    shape: {
+        x1: startPoint[0] + offset,
+        y1: startPoint[1],
+        x2: endPoint[0] - offset,
+        y2: endPoint[1]
+    },
+    style: api.style(style)
+})
+
+const diamond = (api, x, y, style) => ({
+    type: 'polygon',
+    shape: {
+        points: [
+            [x,y-(radius+1)],
+            [x+(radius-1),y],
+            [x, y+(radius+1)],
+            [x-(radius-1),y]
+        ]
+    },
+    style: api.style(style)
+})

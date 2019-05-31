@@ -15,6 +15,7 @@ const logger = createLogger('RemoteDataView', logColor.blue);
 /*----------------------------------------------------------------
   Set up the Server Proxy
   ----------------------------------------------------------------*/
+  // TODO isn't it more natural to pass messageFromTheServer to subscribe ?
 const serverProxy = new ServerProxy(messageFromTheServer);
 
 const postMessageToServer = async (message) => {
@@ -32,6 +33,7 @@ function messageFromTheServer({ data: { type: msgType, ...message } }) {
     case Msg.filterData:
       subscriptions[message.viewport].postMessageToClient(message);
       break;
+    //TODO why is this different
     case Msg.rowSet: {
       const { viewport, data } = message;
       // logger.log(JSON.stringify(message,null,2))
@@ -120,16 +122,18 @@ export default class RemoteDataView extends BaseDataView {
 
       const { rowData, filterData, data } = message;
       if (rowData) {
-        const { rows, size, offset, range, reset=false } = rowData;
-
+        const { rows, size, offset, range } = rowData;
         const { lo: _lo, hi: _hi } = this.range || { lo: -1, hi: -1 }
         console.log(`1.5) this.range = ${JSON.stringify(range)}`)
         logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi} size: ${size}`)
 
+        if (range.reset){
+          this.range = range;
+        }
         //TODO move murgeAndPurg to dataReducer
         const mergedRows = this.processData(rows, size, offset)
 
-        callback(mergedRows, size);
+        callback(mergedRows, size, range);
 
       } else if (filterData && this.filterDataCallback) {
         this.filterDataCallback(message)
@@ -138,7 +142,7 @@ export default class RemoteDataView extends BaseDataView {
         this.filterDataMessage = message;
       } else if (data && data.selected){
         // TODO think about this
-        callback(null,null, data.selected, data.deselected);
+        callback(null,null, range, data.selected, data.deselected);
       }
 
     });

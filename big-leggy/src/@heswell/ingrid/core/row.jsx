@@ -8,11 +8,8 @@ export default React.memo(({
     row,
     isSelected,
     isLastSelected,
-    rowClass,
-    cellClass,
     idx,
     columns,
-    cellRenderer,
     meta
 }) => {
 
@@ -42,7 +39,6 @@ export default React.memo(({
         'GridRow',
         isSelected ? 'selected' : null,
         isLastSelected ? 'last-selected' : null,
-        rowClass ? rowClass(row) : null,
         isGroup ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}` : (idx % 2 === 0 ? 'even' : 'odd') 
     );
 
@@ -52,19 +48,15 @@ export default React.memo(({
         const props = {
             key: i,
             idx: i,
-            rowIdx: idx,
-            rowSelected: isSelected,
-            row,
             column,
-            cellClass,
-            onClick,
-            meta
+            meta,
+            row,
+            onClick
         }
 
-        const renderer = column.renderer || cellRenderer;
-        return React.isValidElement(renderer) 
-            ? React.cloneElement(renderer,props)
-            : (renderer && renderer(props)) || getCellRenderer(props); 
+        return React.isValidElement(column.renderer) 
+            ? React.cloneElement(column.renderer,props)
+            : (column.renderer && column.renderer(props)) || getCellRenderer(props); 
     });
 
     return (

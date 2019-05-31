@@ -835,7 +835,8 @@ function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
         hi: hi-lo,
-        bufferSize
+        bufferSize,
+        reset: true
     };
 }
 
@@ -2305,8 +2306,7 @@ class BaseRowSet {
             rows: resultset,
             range: range$$1,
             size: this.size,
-            offset: this.offset,
-            reset: useDelta === false
+            offset: this.offset
         };
     }
 

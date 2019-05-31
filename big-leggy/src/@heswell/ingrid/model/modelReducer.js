@@ -710,7 +710,7 @@ function getColumnPositions(groups, keys) {
 // TODO missing presenter/formatter etc details
 function toColumn(column) {
     //TODO roll cellCSS into className
-
+    const {name, label=name} = column;
     // >>>>> Don't like rolling functions into model, think about this
     // we should keep the model clean here and enrich it beofre passing into render tree
     // type is not sufficient, need to look at formatting metadata
@@ -719,7 +719,7 @@ function toColumn(column) {
         ...column, 
         label: column.heading 
             ? Array.isArray(column.heading) ? column.heading[0] : column.heading
-            : column.name,
+            : label,
         formatter: presenter.formatter, 
         cellCSS: presenter.cellCSS(column.type)            
     };
@@ -860,12 +860,13 @@ function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=nu
         // TODO for each collapsed heading, insert a placeholder
         if (groupByIdx === -1) {
             const sorted = sortMap[name];
+            //TODO headings are no longer being rendered
             addColumnToHeadings(maxHeadingDepth, columns[i], group.headings, collapsedColumns);
-            let hidden = false;
+            let {hidden} = columns[i];
             if (group.headings){
                 const lastColHeaders = group.headings.map(heading => heading[heading.length-1]);
                 const collapsedHeading = lastColHeaders.find(header => header.collapsed);
-                hidden = !!collapsedHeading;
+                hidden = hidden || !!collapsedHeading;
                 if (collapsedHeading && collapsedHeading.key === columnKey){
                     group.columns.push({ key: collapsedHeading.key, isPlaceHolder: true, width: 25 });
                 }
@@ -904,9 +905,10 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {
             firstColumn.width);
     }
 
-    const [unsizedCols, sizedCols] = partition(columns, col => col.width === undefined, col => !col.hidden);
+    const visibleColumns = columns.filter(col => !col.hidden);
+    const [unsizedCols, sizedCols] = partition(visibleColumns, col => col.width === undefined, col => !col.hidden);
     let totalColumnWidth = sumWidth(sizedCols);
-    const defaultCount = columns.length - sizedCols.length;
+    const defaultCount = visibleColumns.length - sizedCols.length;
     //TODO pluggable width assignment algo
     // default behaviour - give each columns at least the min col width. If there is surplus space,
     // divide it equally between the no-width columns. (this can leave a remainder)

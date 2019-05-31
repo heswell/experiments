@@ -37,10 +37,10 @@ function useDirection(key, value, column) {
 }
 
 export default React.memo(props => {
-
-  const { idx, column, row, cellClass, meta}  = props;
+  //TODO what baout click handling
+  const { column, row, meta}  = props;
   const { key, width, type: { renderer: { flashStyle } } } = column;
-  const value = row[key || idx];
+  const value = row[key];
 
   const direction = useDirection(row[meta.KEY], value, column)
 
@@ -55,7 +55,7 @@ export default React.memo(props => {
 
   return (
     <div
-      className={`${getGridCellClassName(column, value, cellClass)}${dirClass}${arrowClass}`}
+      className={`${getGridCellClassName(column, value)}${dirClass}${arrowClass}`}
       style={{ width }}>
       <div className='flasher'>{arrow}</div>
       {renderCellContent(props)}

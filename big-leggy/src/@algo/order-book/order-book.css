@@ -1,50 +1,86 @@
-.Orderbook {
-  --orderbook-border-color: var(--app-cell-border-color,#ccc); 
-  --orderbook-row-height: 24px;
+.OrderBook .Viewport {
+  border-bottom: solid #ccc 1px;
+}
 
-  flex: 1 1 auto;
+.OrderBook .GridCell.bid {
+  background-color: #a3d6a3;
+}
+
+.OrderBook .GridCell.ask {
+  background-color: #e99f9d;
+}
+
+.OrderBook .HeaderCell:first-child,
+.OrderBook .GridCell:first-child {
+  border-left: solid #ccc 1px;
+}
+
+
+.orderbook-header {
+  padding: 6px 6px 3px 6px;
+  display: flex;
+  height: 100%;
+  font-size: 12px;
+}
+
+.orderbook-header .col {
   display: flex;
   flex-direction: column;
-  max-height: 290px;
-  border: solid 1px var(--orderbook-border-color);
-
+  justify-content: flex-end;
 }
 
-.Orderbook .toolbar {
-  background-color: var(--app-toolbar-bg);
-  flex: 0 0 24px;
+.orderbook-header .col:first-child {
+  margin-right: auto;
 }
 
-.Orderbook .depth-view {
-  flex: 1 1 auto;
+.orderbook-header .col:last-child {
+  margin-left: auto;
 }
 
-.Orderbook .Row {
-  height: var(--orderbook-row-height);
-  line-height: var(--orderbook-row-height);
-  display: flex;
+.orderbook-header .col .instrument {
+  margin-bottom: auto;
 }
 
-.Orderbook .Header.Row {
-  background-color: #ccc;
+.orderbook-header .instrument span:not(.label),
+.orderbook-header .best-bid-ask,
+.orderbook-header .total-vol {
+  font-size: 14px;
   font-weight: bold;
-  line-height: var(--orderbook-row-height);
+  line-height: 20px;
 }
 
-.Orderbook .Cell {
-  flex: 1 1 100px;
-  padding-left: 3px;
-  border-bottom: 1px solid var(--orderbook-border-color);
+.orderbook-header .total-vol {
+  text-align: center;
+  margin-bottom: auto;
 }
 
-.Orderbook .Cell:not(:last-child) {
-  border-right: 1px solid var(--orderbook-border-color);
+.orderbook-header .data-row {
+  line-height: 20px;
+} 
+
+.orderbook-header .data-row span {
+  display: inline-block;
+  white-space: nowrap;
 }
 
-.Orderbook .Cell.buy {
-  background-color: antiquewhite;
+.orderbook-header .label {
+  width: 50px;
+  color: #666;
 }
 
-.Orderbook .Cell.sell {
-  background-color: lavender
+.orderbook-header .data-row :last-child {
+  text-align: left;
+  width: 70px;
+}
+
+.orderbook-header .separator {
+  margin: 0 3px;
+}
+
+.orderbook-header .positive {
+  color: green;
+}
+
+.orderbook-header .negative {
+  color: red;
 }

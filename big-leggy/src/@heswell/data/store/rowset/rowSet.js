@@ -68,8 +68,7 @@ export default class BaseRowSet {
             rows: resultset,
             range,
             size: this.size,
-            offset: this.offset,
-            reset: useDelta === false
+            offset: this.offset
         };
     }
 

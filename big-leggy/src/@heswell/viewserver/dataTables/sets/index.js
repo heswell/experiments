@@ -27,8 +27,13 @@ const config = {
         {name: "EMS"},
         {name: "Max Spread Floor"},
         {name: "Max Spread Perc."},
-        {name: "Issuer Version Start Date"}
-    
+        {name: "Issuer Version Start Date"},
+        {name: "Bid"},
+        {name: "Ask"},
+        {name: "Last"},
+        {name: "Bid Vol"},
+        {name: "Ask Vol"},
+   
     ],
     // updates: {
     //     interval: 100,

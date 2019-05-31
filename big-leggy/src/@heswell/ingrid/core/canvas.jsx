@@ -10,13 +10,10 @@ const byKey = ([key1], [key2]) => key1 - key2;
 export default forwardRef(Canvas)
 
 export function Canvas ({
-  cellClass,
-  cellRenderer,
   columnGroup,
   firstVisibleRow,
   gridModel,
   height,
-  rowClass,
   rows,
   selectedRows,
   onKeyDown
@@ -70,9 +67,6 @@ export function Canvas ({
           isLastSelected={isLastSelected}
           meta={gridModel.meta}
           columns={columnGroup.columns}
-          rowClass={rowClass}
-          cellClass={cellClass}
-          cellRenderer={cellRenderer}
         />
       )
     });
