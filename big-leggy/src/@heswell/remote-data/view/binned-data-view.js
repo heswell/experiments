@@ -2,17 +2,15 @@
 
 import { DataTypes } from '../../data/store/types';
 import { metaData } from '../../data/store/columnUtils';
-import BaseDataView from './base-data-view';
 import {
   createLogger, logColor
 } from '../constants';
 
 const logger = createLogger('BinnedDataView', logColor.brown);
 
-export default class BinnedDataView extends BaseDataView {
+export default class BinnedDataView {
 
   constructor(dataView, column) {
-    super();
     this.dataView = dataView;
     this.column = column;
     this.dataCountCallback = null;

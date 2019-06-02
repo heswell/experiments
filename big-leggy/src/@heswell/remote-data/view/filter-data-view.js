@@ -1,16 +1,14 @@
 import {DataTypes} from '../../data/store/types';
 import {metaData} from '../../data/store/columnUtils';
-import BaseDataView from './base-data-view';
 import {
   createLogger, logColor
 } from '../constants';
 
 const logger = createLogger('FilterDataView', logColor.brown);
 
-export default class FilterDataView extends BaseDataView {
+export default class FilterDataView {
 
   constructor(dataView, column){
-        super();
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;

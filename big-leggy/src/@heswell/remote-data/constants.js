@@ -48,6 +48,6 @@ export const logColor = {
 
 const {plain} = logColor;
 export const createLogger = (source, labelColor=plain, msgColor=plain) => ({
-  log: (msg, args='') => console.log(`%c[${source}] %c${msg}`,labelColor, msgColor, args),
+  log: (msg, args='') => console.log(`[${Date.now()}]%c[${source}] %c${msg}`,labelColor, msgColor, args),
   warn: (msg, args='') => console.warn(`[${source}] ${msg}`)
 })

@@ -35,7 +35,9 @@ export default class MessageQueue {
         } else {
             //onsole.log(`MessageQueue ${type} `);
         }
-
+        if (message.type === 'rowset'){
+            console.log(`[${Date.now()}] message queue push message ${JSON.stringify(message.data.range)}`)
+        }
         this._queue.push(message);
 
     }
@@ -44,16 +46,15 @@ export default class MessageQueue {
         this._queue = this._queue.filter(batch => batch.viewport !== viewport);
     }
 
-    currentRange(){
-        for (let i = 0; i<this._queue.length; i++){
-            const message = this._queue[i];
-            const {data} = message;
-            if (data){
-                console.log(`${message.type} ${JSON.stringify(data.range)}`)
-            }
-        }
-        console.log()
-    }
+    // currentRange(){
+    //     for (let i = 0; i<this._queue.length; i++){
+    //         const message = this._queue[i];
+    //         const {data} = message;
+    //         if (data){
+    //             console.log(`message-queue.currentRange ${message.type} ${JSON.stringify(data.range)}`)
+    //         }
+    //     }
+    // }
 
     extract(test) {
         if (this._queue.length === 0) {

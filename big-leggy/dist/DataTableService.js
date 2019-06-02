@@ -4662,9 +4662,8 @@ function setViewRange(clientId, request, queue){
         // should be purge the queue of any pending updates outside the requested range ?
 
     const now = new Date().getTime();
-    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`);
-    queue.currentRange();
     console.log(' ');
+    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`);
 
     _subscriptions[viewport].invoke('setRange', queue, type, range, useDelta, dataType);
 

@@ -39,7 +39,9 @@ export default React.memo(({
         'GridRow',
         isSelected ? 'selected' : null,
         isLastSelected ? 'last-selected' : null,
-        isGroup ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}` : (idx % 2 === 0 ? 'even' : 'odd') 
+        isGroup 
+            ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}`
+            : (idx % 2 === 0 ? 'even' : 'odd') 
     );
 
     //TODO load default formatters here and pass formatter/cellClass down to cell 

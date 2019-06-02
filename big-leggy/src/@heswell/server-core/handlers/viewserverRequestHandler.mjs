@@ -61,11 +61,15 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
 
     function PRIORITY1(msg) { return msg.priority === 1 }
 
-    function priorityQueueReader(PRI) {
+    function priorityQueueReader() {
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
+            queue.forEach(msg => {
+                if (msg.data && msg.data.range){
+                    console.log(`[${Date.now()}]<<<<<<<<< ${msg.type} ${JSON.stringify(msg.data.range)}`)
+                }
+            })
             const msg = JSON.stringify(queue);
-            //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;

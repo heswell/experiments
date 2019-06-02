@@ -1,5 +1,4 @@
 import uuid from '../../server-core/uuid';
-import BaseDataView from './base-data-view';
 import {
   msgType as Msg, createLogger, logColor,
   connectionId as _connectionId,
@@ -22,26 +21,18 @@ const postMessageToServer = async (message) => {
   serverProxy.handleMessageFromClient(message);
 }
 
-function messageFromTheServer({ data: { type: msgType, ...message } }) {
+function messageFromTheServer({ type: msgType, ...message }) {
   switch (msgType) {
     case Msg.connectionStatus:
       logger.log(`<==   ${msgType}`)
       onConnected(message);
       break;
-    case Msg.rowData:
+    case Msg.snapshot:
+    case Msg.rowSet: 
+    logger.log(`server rowset for range <===== ${message.data.range.lo} ${message.data.range.hi}`)
     case Msg.selected:
     case Msg.filterData:
       subscriptions[message.viewport].postMessageToClient(message);
-      break;
-    //TODO why is this different
-    case Msg.rowSet: {
-      const { viewport, data } = message;
-      // logger.log(JSON.stringify(message,null,2))
-      subscriptions[message.viewport].postMessageToClient({
-        viewport,
-        rowData: data
-      });
-    }
       break;
     default:
       logger.warn(`does not yet handle ${msgType}`);
@@ -69,25 +60,17 @@ const getDefaultConnection = () => pendingConnection;
 /*----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataView extends BaseDataView {
+export default class RemoteDataView  {
 
   constructor(url, tableName) {
-    super();
-
     connect(url);
+    this.columns = null;
+    this.meta = null;
 
     this.tableName = tableName;
-
     this.subscription = null;
-
     this.viewport = null;
-    this.groupBy = undefined;
-    this.groupState = undefined;
-    this.sortBy = undefined;
-    this.filterBy = undefined;
-    this.filterRange = null;
     this.filterDataCallback = null;
-
     this.filterDataMessage = null;
   }
 
@@ -106,10 +89,7 @@ export default class RemoteDataView extends BaseDataView {
     this.tableName = tableName;
     this.columns = columns;
     this.meta = metaData(columns);
-    this.range = range;
-    console.log(`1) this.range = ${JSON.stringify(range)}`)
-
-    // logger.log(`subscribe ${tableName} columns: \n${columns.map((c,i)=>`${i}\t${c.name}`).concat(Object.keys(this.meta).map(m=>`${this.meta[m]}\t${m}`)).join('\n')} `)
+    logger.log(`range = ${JSON.stringify(range)}`)
 
     this.subscription = subscribe({
       ...options,
@@ -117,16 +97,12 @@ export default class RemoteDataView extends BaseDataView {
       tablename: tableName,
       columns,
       range
-    }, (message) => {
+    }, /* postMessageToClient */(message) => {
 
-      const { rowData, filterData, data } = message;
-      if (rowData) {
-        const { rows, size, offset, range } = rowData;
-        const { lo: _lo, hi: _hi } = this.range || { lo: -1, hi: -1 }
-        console.log(`1.5) this.range = ${JSON.stringify(range)}`)
-        logger.log(`message => range ${range.lo}:${range.hi} current range ${_lo}:${_hi} size: ${size}`)
+      const { filterData, data } = message;
+      if (data && data.rows) {
+        const { rows, size, offset, range } = data;
         callback(rows, size, offset, range);
-
       } else if (filterData && this.filterDataCallback) {
         this.filterDataCallback(message)
       } else if (filterData) {
@@ -146,17 +122,12 @@ export default class RemoteDataView extends BaseDataView {
   }
 
   setRange(lo, hi) {
-
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.setViewRange,
       range: { lo, hi },
       dataType: DataTypes.ROW_DATA
     });
-
-    // this.range = { lo, hi };
-    console.log(`2) this.range = ${JSON.stringify(this.range)}`)
-
   }
 
   select(idx, rangeSelect, keepExistingSelection){
@@ -170,7 +141,6 @@ export default class RemoteDataView extends BaseDataView {
   }
 
   group(columns) {
-    this.groupBy = columns;
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.groupBy,
@@ -180,7 +150,6 @@ export default class RemoteDataView extends BaseDataView {
   }
 
   setGroupState(groupState) {
-    this.groupState = groupState;
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.setGroupState,
@@ -189,7 +158,6 @@ export default class RemoteDataView extends BaseDataView {
   }
 
   sort(columns) {
-    this.sortBy = columns;
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.sort,
@@ -199,7 +167,6 @@ export default class RemoteDataView extends BaseDataView {
   }
 
   filter(filter, dataType = DataTypes.ROW_DATA) {
-    this.filterBy = filter;
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.filter,
@@ -232,7 +199,6 @@ export default class RemoteDataView extends BaseDataView {
 
   // To support multiple open filters, we need a column here
   setFilterRange(lo, hi) {
-    this.filterRange = { lo, hi };
     console.log(`setFilerRange ${lo}:${hi}`)
     postMessageToServer({
       viewport: this.viewport,
@@ -315,6 +281,7 @@ function onConnected(message) {
 export function subscribe(options, clientCallback) {
   logger.log(`<subscribe> vp ${options.viewport} table ${options.tablename}`)
   const viewport = options.viewport;
+  // This remoteview is specific to this viewport, no need for mapping
   const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback)
 
   // subscription blocks here until connection is resolved (to an instance of ServerApi)

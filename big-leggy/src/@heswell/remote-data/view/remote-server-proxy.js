@@ -1,8 +1,7 @@
 import Connection from '../remote-websocket-connection';
 import * as Message from '../messages.js';
 import { ServerApiMessageTypes as API } from '../messages.js';
-import { DataTypes } from '../../data/store/types.js';
-import { msgType as Msg, createLogger, logColor } from '../constants';
+import { createLogger, logColor } from '../constants';
 
 const logger = createLogger('RemoteServerProxy', logColor.blue);
 
@@ -31,7 +30,6 @@ export class ServerProxy {
     }
 
     handleMessageFromClient(message) {
-        console.log(`sendIfReady ${message.type}`)
         this.sendIfReady(message, this.viewportStatus[message.viewport] === 'subscribed');
     }
 
@@ -59,21 +57,9 @@ export class ServerProxy {
     subscribe(message) {
         const isReady = this.connectionStatus === 'ready';
         const { viewport } = message;
-        const byTypeAndViewport = msg => msg.viewport === viewport && msg.type === Message.SET_VIEWPORT_RANGE;
-        const [rangeMessages] = partition(this.queuedRequests, byTypeAndViewport);
-
         this.pendingSubscriptionRequests[viewport] = message;
         this.viewportStatus[viewport] = 'subscribing';
-
-        logger.log(`SUBSCRIBE to ${viewport} 
-                with range ${message.range.lo} = ${message.range.hi} sent to server
-                        we have ${rangeMessages.length} range messages
-
-                ${JSON.stringify(this.queuedRequests, null, 2)}`)
-        logger.log(message)
-
         this.sendIfReady( message, isReady);
-
     }
 
     subscribed(/* server message */ message) {
@@ -118,14 +104,11 @@ export class ServerProxy {
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
         this.queuedRequests = remainingMessages;
-        this.postMessageToClient({ data: { type: 'connection-status', status: 'ready', connectionId } });
+        this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
     }
 
     sendMessageToServer(message) {
         const { clientId } = this.connection;
-        //const { requestId = this.connection.nextRequestId() } = message;
-        // TODO do we need the requestId ?
-        // const serverMessage = this.server.serialize(message, clientId, requestId);
         this.connection.send({ clientId, message });
     }
 
@@ -133,24 +116,6 @@ export class ServerProxy {
         const { type, viewport } = message;
 
         switch (type) {
-
-            case Message.SNAPSHOT:
-                logger.log(`<handleMessageFromServer>`, message)
-                const { data } = message;
-                // const rows = subscription.putSnapshot(data);
-                if (data.rows.length) {
-                    this.postMessageToClient({
-                        data: {
-                            type: DataTypes.ROW_DATA,
-                            viewport,
-                            rowData: {
-                                ...data,
-                                data: data.rows
-                            }
-                        }
-                    });
-                }
-                break;
 
             case Message.SUBSCRIBED:
                 this.subscribed(message);
@@ -163,18 +128,16 @@ export class ServerProxy {
 
                 // if (data.length || filterData.size === 0) {
                 this.postMessageToClient({
-                    data: {
-                        type,
-                        viewport,
-                        [type]: filterData
-                    },
+                    type,
+                    viewport,
+                    [type]: filterData
                 });
                 // }
 
                 break;
 
             default:
-                this.postMessageToClient({ data: message });
+                this.postMessageToClient(message);
 
         }
 

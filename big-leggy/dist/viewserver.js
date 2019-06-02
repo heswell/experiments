@@ -197,7 +197,9 @@ class MessageQueue {
         } else if (type === FILTER_DATA && data.type !== DataTypes$1.FILTER_BINS) {
             mergeAndPurgeFilterData(this._queue, message, meta);
         }
-
+        if (message.type === 'rowset'){
+            console.log(`[${Date.now()}] message queue push message ${JSON.stringify(message.data.range)}`);
+        }
         this._queue.push(message);
 
     }
@@ -206,16 +208,15 @@ class MessageQueue {
         this._queue = this._queue.filter(batch => batch.viewport !== viewport);
     }
 
-    currentRange(){
-        for (let i = 0; i<this._queue.length; i++){
-            const message = this._queue[i];
-            const {data} = message;
-            if (data){
-                console.log(`${message.type} ${JSON.stringify(data.range)}`);
-            }
-        }
-        console.log();
-    }
+    // currentRange(){
+    //     for (let i = 0; i<this._queue.length; i++){
+    //         const message = this._queue[i];
+    //         const {data} = message;
+    //         if (data){
+    //             console.log(`message-queue.currentRange ${message.type} ${JSON.stringify(data.range)}`)
+    //         }
+    //     }
+    // }
 
     extract(test) {
         if (this._queue.length === 0) {
@@ -480,11 +481,15 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
 
     function PRIORITY1(msg) { return msg.priority === 1 }
 
-    function priorityQueueReader(PRI) {
+    function priorityQueueReader() {
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
+            queue.forEach(msg => {
+                if (msg.data && msg.data.range){
+                    console.log(`[${Date.now()}]<<<<<<<<< ${msg.type} ${JSON.stringify(msg.data.range)}`);
+                }
+            });
             const msg = JSON.stringify(queue);
-            //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;
