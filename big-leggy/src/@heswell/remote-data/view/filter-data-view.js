@@ -1,5 +1,6 @@
 import {DataTypes} from '../../data/store/types';
 import {metaData} from '../../data/store/columnUtils';
+import { NOT_IN, IN } from '../../data/store/filter';
 import {
   createLogger, logColor
 } from '../constants';
@@ -26,13 +27,10 @@ export default class FilterDataView {
         this.dataView.subscribeToFilterData(this.column, this.range, message => {
 
             const {filterData} = message;
-            const {rows, size, range, dataCounts} = filterData;
+            const {rows, size, offset, range, dataCounts} = filterData;
 
             console.log(`receive rows ${rows.length} of ${size} range ${JSON.stringify(range)}`, message)
-
-            const mergedRows = this.processData(rows, size, 0)
-
-            callback(mergedRows, size);
+            callback(rows, size, offset, range);
 
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
@@ -54,13 +52,31 @@ export default class FilterDataView {
         this.dataView.unsubscribeFromFilterData(this.column);
     }
 
-    onFilterData = (_, rows, rowCount, totalCount, dataCounts) => {
-        this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, dataCounts);
+    // onFilterData = (_, rows, rowCount, totalCount, dataCounts) => {
+    //     this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, dataCounts);
+    // }
+
+    select(idx, row){
+        const {KEY, SELECTED} = this.meta;
+        const key = row[KEY];
+    
+        const filter = {
+            type: row[SELECTED] === 1 ? NOT_IN : IN,
+            colName: this.column.name,
+            values: [key]
+        }
+        // This is enough to filter rows and populate filter display - but how can we add filter markers to UI ?
+        this.dataView.filter(filter, DataTypes.ROW_DATA, true);
+    
     }
 
+    filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
+        this.dataView.filter(filter, dataType, incremental);
+    }
 
-    filter(filter){
-        this.dataView.filter(filter, DataTypes.FILTER_DATA);
+    getFilterData(column, searchText){
+        console.log(`FilterDataView.getFilterData ${JSON.stringify(column)} ${searchText}`)
+        this.dataView.getFilterData(column, searchText);
     }
 
     // TODO we need a filter method to filter results to omit zero value filterCount - call getFilterData on view, passing filter
@@ -71,16 +87,16 @@ export default class FilterDataView {
       this.dataView.setFilterRange(lo,hi);
     }
 
-    itemAtIdx(idx){
-        const {IDX} = this.meta;
-        return this.dataRows.find(r => r[IDX] === idx);
-    }
+    // itemAtIdx(idx){
+    //     const {IDX} = this.meta;
+    //     return this.dataRows.find(r => r[IDX] === idx);
+    // }
 
-    indexOf(value){
-        const {IDX, KEY} = this.meta;
-        const item = this.dataRows.find(r => r[KEY] === value);
-        return item ? item[IDX] : -1;
-    }
+    // indexOf(value){
+    //     const {IDX, KEY} = this.meta;
+    //     const item = this.dataRows.find(r => r[KEY] === value);
+    //     return item ? item[IDX] : -1;
+    // }
 
     sort(){
         

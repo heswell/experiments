@@ -3,6 +3,7 @@ import { RowSet, GroupRowSet } from './rowset';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
 import UpdateQueue from './updateQueue';
 import { DataTypes } from './types';
+import { addFilter } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
 
@@ -127,12 +128,17 @@ export default class InMemoryView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter, dataType=DataTypes.ROW_DATA) {
+    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
             return [undefined,this.filterFilterData(filter)];
         
         } else {
+            console.log(`filter ${JSON.stringify(filter)} incremental ${incremental} this._filter ${JSON.stringify(this._filter)}`)
+            if (incremental){
+                filter = addFilter(this._filter, filter);
+                console.log(`complete filter = ${JSON.stringify(filter)}`)
+            }
             const { rowSet, _filter, filterRowSet } = this;
             const { range } = rowSet;
             this._filter = filter;
@@ -205,8 +211,8 @@ export default class InMemoryView {
         return results;
     }
 
-    getFilterData(column, searchText = null, range = NULL_RANGE) {
-
+    getFilterData(column, searchText = null, range) {
+        console.log(`getFilterData searchText='${searchText}'`)
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -225,7 +231,6 @@ export default class InMemoryView {
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (searchText) {
-
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {

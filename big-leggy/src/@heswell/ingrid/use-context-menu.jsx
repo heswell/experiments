@@ -13,10 +13,6 @@ export const useContextMenu = (model, state, setState, dispatch) => {
         showFilters: state.showFilters === false
       }));
     }
-    //  else if (action === 'hide-filters') {
-    //   dispatch({ type: 'SAVE_CONFIG', config: { showFilters: false } });
-    // }
-
   }, [state.showFilters]);
 
   return useCallback((e, location, options) => {

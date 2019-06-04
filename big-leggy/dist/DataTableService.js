@@ -284,6 +284,19 @@ function testEQ(cols, f) {
     return row => row[cols[f.colName]] === f.value;
 }
 
+function includesNoValues(filter) {
+    // TODO make sure we catch all cases...
+    if (!filter){
+        return false;
+    } else if (filter.type === IN && filter.values.length === 0) {
+        return true;
+    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // does f2 only narrow the resultset from f1
 function extendsFilter(f1=null, f2=null) {
     // ignore filters which are identical
@@ -343,6 +356,133 @@ function extendsFilters(f1, f2) {
     }
 }
 
+function addFilter(existingFilter, filter) {
+
+    if (includesNoValues(filter)){
+        const {colName} = filter;
+        existingFilter = removeFilterForColumn(existingFilter, {name:colName});
+    }
+
+    if (!existingFilter) {
+        return filter;
+    } else if (!filter) {
+        return existingFilter;
+    }
+   
+    if (existingFilter.type === AND && filter.type === AND) {
+        return { type: 'AND', filters: combine(existingFilter.filters, filter.filters) };
+    } else if (existingFilter.type === 'AND') {
+        const filters = replaceOrInsert(existingFilter.filters, filter);
+        return filters.length > 1
+            ? { type: 'AND', filters  }
+            : filters[0];
+    } else if (filter.type === 'AND') {
+        return { type: 'AND', filters: filter.filters.concat(existingFilter) };
+    } else if (filterEquals(existingFilter, filter, true)) {
+        return filter;
+    } else if (sameColumn(existingFilter, filter)){
+        return merge$1(existingFilter, filter);
+    } else {
+        return { type: 'AND', filters: [existingFilter, filter] };
+    }
+}
+
+// If we add an IN filter and there is an existing NOT_IN, we would always expect the IN
+// values to exist in the NOT_IN set (as long as user interaction is driving the filtering)
+function replaceOrInsert(filters, filter) {
+    const {type, colName, values} = filter;
+    if (type === IN) {
+        // see if we have a NOT_IN entry
+        let idx = filters.findIndex(f => f.type === NOT_IN && f.colName === colName);
+        if (idx !== -1){
+            const {values: existingValues} = filters[idx];
+            if (values.every(value => existingValues.indexOf(value) !== -1)){
+                if (values.length === existingValues.length){
+                    // we simply remove the existing NOT_IN filter ...
+                    return filters.filter((f, i) => i !== idx);
+                } else {
+                    // ... or strip the IN values from the NOT_IN values
+                    let newValues = existingValues.filter(value => !values.includes(value));
+                    return filters.map((filter,i) => i === idx ? {...filter, values: newValues}: filter)
+
+                }
+            }
+            else if (values.some(value => existingValues.indexOf(value) !== -1)){
+                console.log(`partial overlap between IN and NOT_IN`);
+
+            }
+        }
+
+
+        idx = filters.findIndex(f => f.type === IN && f.colName === filter.colName);
+        if (idx !== -1) {
+            return filters.map((f, i) => i === idx ? merge$1(f, filter) : f);
+        }
+    }
+
+    return filters.concat(filter);
+}
+
+function merge$1(f1, f2){
+    const {type: t1} = f1;
+    const {type: t2} = f2;      
+    const sameType = t1 === t2 ? t1 : '';
+
+    if (includesNoValues(f2)){
+        return f2;
+    } else if ((t1 === IN && t2 === NOT_IN) || (t1 === NOT_IN && t2 === IN)){
+        // do the two sets cancel each other out ?
+        if (f1.values.length === f2.values.length && f1.values.every(v => f2.values.includes(v))){  
+            // DOn't think this is right
+            return null;
+        } else if (t1 === NOT_IN){
+            if (f2.values.every(v => f1.values.includes(v))){
+                return {
+                    ...f1,
+                    values: f1.values.filter(v => !f2.values.includes(v))
+                }
+            }
+        }
+    } else if (sameType === IN || sameType === NOT_IN){
+        return {
+            ...f1,
+            values: f1.values.concat(f2.values.filter(v => !f1.values.includes(v)))
+        }
+    } else if (sameType === STARTS_WITH){
+        return {
+            type: OR,
+            filters: [f1, f2]
+        }
+    } else if (sameType === NOT_STARTS_WITH){
+        return {
+            type: AND,
+            filters: [f1, f2]
+        }
+
+    }
+
+    return f2;
+
+}
+
+function combine(existingFilters, replacementFilters) {
+
+    // TODO need a safer REGEX here
+    function equivalentType({ type: t1 }, { type: t2 }) {
+        return (t1 === t2) || (t1[0] === t2[0]);
+    }
+
+    const replaces = (existingFilter, replacementFilter) => {
+        return existingFilter.colName === replacementFilter.colName &&
+            equivalentType(existingFilter, replacementFilter);
+    };
+
+    const stillApplicable = existingFilter => replacementFilters.some(
+        replacementFilter => replaces(existingFilter, replacementFilter)) === false;
+
+    return existingFilters.filter(stillApplicable).concat(replacementFilters);
+}
+
 function splitFilterOnColumn(filter, columnName) {
     if (!filter){
         return [null,null];
@@ -400,6 +540,25 @@ function collectFiltersForColumn(type, filters, columName){
             type,
             filters: results
         }
+    }
+}
+
+function removeFilterForColumn(sourceFilter, column) {
+    const colName = column.name;
+    if (!sourceFilter){
+        return null;
+    } else if (sourceFilter.colName === colName) {
+        return null;
+    } else if (sourceFilter.type === AND || sourceFilter.type === OR) {
+        const {type, filters} = sourceFilter;
+        const otherColFilters = filters.filter(f => f.colName !== colName);
+        switch(otherColFilters.length){
+            case 0: return null;
+            case 1: return otherColFilters[0];
+            default: return { type, otherColFilters } 
+        }
+    } else {
+        return sourceFilter;
     }
 }
 
@@ -2297,7 +2456,7 @@ class BaseRowSet {
             : this.data.length;
     }
 
-    setRange(range$$1, useDelta = true) {
+    setRange(range$$1=this.range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range$$1) : getFullRange(range$$1);
         const resultset = this.slice(lo, hi);
@@ -2706,6 +2865,8 @@ class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
+        debugger;
+        console.log(`FilterRowset set text = '${text}'`);
         this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;
         // let totalCount = 0;
@@ -4218,12 +4379,17 @@ class InMemoryView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter, dataType=DataTypes.ROW_DATA) {
+    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
             return [undefined,this.filterFilterData(filter)];
         
         } else {
+            console.log(`filter ${JSON.stringify(filter)} incremental ${incremental} this._filter ${JSON.stringify(this._filter)}`);
+            if (incremental){
+                filter = addFilter(this._filter, filter);
+                console.log(`complete filter = ${JSON.stringify(filter)}`);
+            }
             const { rowSet, _filter, filterRowSet } = this;
             const { range } = rowSet;
             this._filter = filter;
@@ -4296,8 +4462,8 @@ class InMemoryView {
         return results;
     }
 
-    getFilterData(column, searchText = null, range = NULL_RANGE) {
-
+    getFilterData(column, searchText = null, range) {
+        console.log(`getFilterData searchText='${searchText}'`);
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -4316,7 +4482,6 @@ class InMemoryView {
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (searchText) {
-
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {
@@ -4673,8 +4838,8 @@ function sort$1(clientId, {viewport, sortCriteria}, queue){
     _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
-function filter$1(clientId, {viewport, filter, dataType}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
+function filter$1(clientId, {viewport, filter, incremental, dataType}, queue){
+    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType, incremental);
 }
 
 function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){

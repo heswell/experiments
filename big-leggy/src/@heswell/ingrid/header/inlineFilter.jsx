@@ -57,10 +57,6 @@ export default forwardRef(({
         }
     }
 
-    const handleSearchText = ({ key, name }, text) => {
-        dataView.getFilterData({ key, name }, text);
-    }
-
     // // This is being used to handle selection in a set filter, need to consider how it will work
     // // with regular row selection
     const handleSelection = (dataType, colName, filterMode) => {
@@ -71,12 +67,12 @@ export default forwardRef(({
         <ColumnFilter key={key}
             column={column}
             dataView={dataView}
+            // TODO we use this to mark the column as filtered 
             filter={model.filter}
             onKeyDown={handleKeyDown}
             onClearFilter={handleClearFilter}
             onFilterOpen={onFilterOpen}
             onFilterClose={onFilterClose}
-            onSearchText={handleSearchText}
             showFilter={showFilter === column.name}
             onFilter={handleFilter}
             onSelect={handleSelection} />;

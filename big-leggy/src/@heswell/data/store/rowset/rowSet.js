@@ -59,7 +59,7 @@ export default class BaseRowSet {
             : this.data.length;
     }
 
-    setRange(range, useDelta = true) {
+    setRange(range=this.range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
         const resultset = this.slice(lo, hi);
@@ -468,6 +468,8 @@ export class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
+        debugger;
+        console.log(`FilterRowset set text = '${text}'`)
         this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;
         // let totalCount = 0;

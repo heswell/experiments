@@ -159,8 +159,8 @@ export function sort(clientId, {viewport, sortCriteria}, queue){
     _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
-export function filter(clientId, {viewport, filter, dataType}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
+export function filter(clientId, {viewport, filter, incremental, dataType}, queue){
+    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType, incremental);
 }
 
 export function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){

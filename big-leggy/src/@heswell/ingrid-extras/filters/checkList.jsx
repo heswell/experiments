@@ -18,26 +18,8 @@ export default class CheckList extends React.Component {
             width={this.props.width}
             style={this.props.style}
             dataView={this.props.dataView}
-            onSelectionChange={this.props.onSelectionChange}
-
         />;
     }
 
-    handleSelectionChange = (selectedIndices, idx) => {
-        const deselected = selectedIndices.indexOf(idx) === -1;
-        const filterMode = this.props.selectionDefault === true
-            ? EXCLUDE
-            : INCLUDE;
-            
-        const {meta} = this.props.dataView;
-
-        const value = this.props.dataView.itemAtIdx(idx)[meta.KEY];
-        const selectedValues = deselected
-            ? this.state.selectedValues.filter(v => v !== value)
-            : this.state.selectedValues.concat(value);
-        this.setState({selectedValues}, () => {
-            this.props.onSelectionChange(selectedValues, filterMode);
-        });
-    }
 
 }

@@ -15,7 +15,6 @@ export function Canvas ({
   gridModel,
   height,
   rows,
-  selectedRows,
   onKeyDown
 }, ref) {
   const contentEl = useRef(null);
@@ -28,7 +27,7 @@ export function Canvas ({
       const { children, childElementCount } = container;
       for (let i = 0; i < childElementCount; i++) {
         const child = children[i];
-        const [absIdx] = rowPositions[i];
+        const [,absIdx] = rowPositions[i];
         child.style.transform = `translate3d(0px, ${absIdx*rowHeight}px, 0px)`
       }
     }
@@ -48,23 +47,17 @@ export function Canvas ({
   const { RENDER_IDX } = gridModel.meta;
   const rowPositions = rows.map((row, idx) => {
     const absIdx = firstVisibleRow + idx
-    const isSelected = selectedRows.includes(absIdx);
-    // TODO selected should be present in the row meta
-    const isLastSelected = isSelected && (absIdx === rows.length - 1 || !selectedRows.includes(absIdx + 1));
-    return [absIdx, row[RENDER_IDX], row, isSelected, isLastSelected]
+    return [row[RENDER_IDX], absIdx, row]
   })
-    .filter(([key]) => key !== undefined)
-    .sort(byKey)
+  .sort(byKey)
 
   const gridRows = rowPositions
-    .map(([abs_idx, key, row, isSelected, isLastSelected]) => {
+    .map(([key, abs_idx, row]) => {
       // console.log(`Row ${row[gridModel.meta.KEY]} [${row[gridModel.meta.IDX]}] = ${key} absIdx=${abs_idx} firstVisibleRow=${firstVisibleRow}`)
       return (
         <Row key={key}
           idx={abs_idx}
           row={row}
-          isSelected={isSelected}
-          isLastSelected={isLastSelected}
           meta={gridModel.meta}
           columns={columnGroup.columns}
         />

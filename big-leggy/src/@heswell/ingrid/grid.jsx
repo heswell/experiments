@@ -5,6 +5,7 @@ import React, { useRef, useState, useReducer, useEffect, useCallback } from 'rea
 import cx from 'classnames';
 import * as Action from './model/actions';
 import { Motion, spring } from 'react-motion';
+// import { useAnimate } from 'react-simple-animate'
 import modelReducer, { initModel } from './model/modelReducer';
 import Header from './header/header';
 import InlineFilter from './header/inlineFilter';
@@ -52,7 +53,7 @@ export default function Grid({
     // collapsedColumns
     // selectionModel
 }) {
-
+    console.log(`Grid.render`)
     const header = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
@@ -82,9 +83,14 @@ export default function Grid({
     }
 
     const handleSelectionChange = useCallback((idx, row, rangeSelect, keepExistingSelection) => {
-       console.log(`Grid handleSelectionchange ${idx}`)
-        dataView.select(idx, rangeSelect,keepExistingSelection);
-       //   onSelectionChange()
+        console.log(`Grid handleSelectionchange ${idx} ${row}
+       call select on dataView`)
+        dataView.select(idx, row, rangeSelect,keepExistingSelection);
+        if (onSelectionChange){
+            const isSelected = row[model.meta.SELECTED] === 1;
+            // TODO what about range selections
+            onSelectionChange && onSelectionChange(idx, row, !isSelected)
+        }
       // if (selected.length === 1 && onSingleSelect) {
       //     onSingleSelect(selected[0], selectedItem);
       // }
@@ -93,12 +99,12 @@ export default function Grid({
 
     // this reducer is a no=op - always returns same state
     // TODO why not use existing reducer ?
-    const [, callbackPropsDispatch] = useReducer(gridReducer(
+    const [, callbackPropsDispatch] = useReducer(useCallback(gridReducer(
         handleScroll,
         handleSelectionChange,
         onSelectCell,
         onDoubleClick
-    ), null);
+    ),[]), null);
 
     const [model, dispatch] = useReducer(modelReducer, {
         //TODO which props exactly does the model still use ?
@@ -169,7 +175,12 @@ export default function Grid({
     const filterHeight = state.showFilters ? 24 : 0;
     const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
     const totalHeaderHeight = headingHeight + filterHeight;
-    
+
+    // const {play, style: viewportStyle, isPlaying} = useAnimate({
+    //     start : {top: headingHeight},
+    //     end: {top: totalHeaderHeight}
+    // })
+
     const handleFilterOpen = useCallback(column => {
         if (state.showFilter !== column.name) {
             // we could call dataView here to trigger build of filter data

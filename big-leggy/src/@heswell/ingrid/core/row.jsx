@@ -6,8 +6,6 @@ import * as Action from '../model/actions';
 
 export default React.memo(({
     row,
-    isSelected,
-    isLastSelected,
     idx,
     columns,
     meta
@@ -19,8 +17,8 @@ export default React.memo(({
     const handleClick = useCallback(e => {
         const rangeSelect = e.shiftKey;
         const keepExistingSelection = e.ctrlKey || e.metaKey /* mac only */;
+        console.log(`Row about to call callbackPropsDIspatch('selection')`);
         callbackPropsDispatch({type:'selection', idx, row, rangeSelect, keepExistingSelection})
-        // onSelect(idx, row, rangeSelect, keepExistingSelection);
     },[idx, row])
 
     const handleDoubleClick = useCallback(() => callbackPropsDispatch({type: 'double-click', idx, row}),[idx, row]);
@@ -34,11 +32,11 @@ export default React.memo(({
 
     const groupLevel = row[meta.DEPTH];
     const isGroup = groupLevel !== 0;
+    const isSelected = row[meta.SELECTED] === 1;
 
     const className = cx(
         'GridRow',
         isSelected ? 'selected' : null,
-        isLastSelected ? 'last-selected' : null,
         isGroup 
             ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}`
             : (idx % 2 === 0 ? 'even' : 'odd') 

@@ -200,7 +200,6 @@ export const Viewport = React.memo(({
                                     key={idx}
                                     gridModel={model}
                                     rows={emptyRows || data.rows}
-                                    selectedRows={data.selected}
                                     firstVisibleRow={firstVisibleRow.current}
                                     height={contentHeight}
                                     ref={columnGroup.locked ? null : scrollingCanvas}

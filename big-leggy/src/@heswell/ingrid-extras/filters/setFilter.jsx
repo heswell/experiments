@@ -1,7 +1,7 @@
 
 import React from 'react';
 import cx from 'classnames';
-import {filter as filterUtils} from '../../data';
+import {filter as filterUtils, DataTypes} from '../../data';
 import FilterView from '../../remote-data/view/filter-data-view';
 import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
@@ -72,9 +72,6 @@ export class SetFilter extends React.Component {
     static defaultProps = {
         onSelectionChange: (selected, filterMode) => {
             console.log(`SetFilter: no handler provided for onSelectionChange ${selected} ${filterMode}`)
-        },
-        onSearchText: (column, value) => {
-            console.log(`SetFilter: no handler provided for onSearchText ${column} ${value}`)
         }
     }
     
@@ -157,10 +154,8 @@ export class SetFilter extends React.Component {
                         onClickSelectionText={clickHandler}
                         onHide={this.props.onClose}/>}
                     <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}}
-                        selectionDefault={true}
                         columns={filterColumns}
-                        dataView={filterView}
-                        onSelectionChange={this.handleSelectionChange}/>
+                        dataView={filterView} />
                     <FilterCounts style={{height: 50}} column={column} dataCounts={dataCounts} searchText={this.searchText}/>  
                     {suppressFooter !== true &&
                     <div key='footer' className='footer' style={{height: 26}}>
@@ -189,7 +184,7 @@ export class SetFilter extends React.Component {
 
     handleSearchText = searchText => {
         this.searchText = searchText;
-        this.props.onSearchText(this.props.column, searchText);
+        this.state.filterView.getFilterData(this.props.column, searchText)
         // if we're removing searchtext to widen the search, we need to reevaluate the selectionDefault
 
     }
@@ -198,10 +193,15 @@ export class SetFilter extends React.Component {
         if (this.searchText){
             this.props.onSelectionChange(null, EXCLUDE, this.searchText);
         } else {
+            
+            this.state.filterView.filter({
+                type: IN,
+                colName: this.props.column.name,
+                values: []
+            }, DataTypes.ROW_DATA, true);
+            
             this.setState({
                 selectionDefault: SELECT_NONE
-            }, () => {
-                this.props.onSelectionChange(null, EXCLUDE);
             });
 
         }
@@ -211,23 +211,16 @@ export class SetFilter extends React.Component {
         if (this.searchText){
             this.props.onSelectionChange(null, INCLUDE, this.searchText);
         } else {
+            this.state.filterView.filter({
+                type: NOT_IN,
+                colName: this.props.column.name,
+                values: []
+            }, DataTypes.ROW_DATA, true);
+
             this.setState({
                 selectionDefault: SELECT_ALL
-            }, () => {
-                this.props.onSelectionChange(null, INCLUDE);
             });
         }
     }
 
-    handleSelectionChange = (selectedIndices, idx) => {
-        // what about range selections ?
-        const {filterView} = this.state;
-        const {KEY} = filterView.meta;
-
-        const selectionIncluded = selectedIndices.includes(idx);
-        const filterMode = selectionIncluded ? INCLUDE : EXCLUDE;
-        const value =  filterView.itemAtIdx(idx)[KEY];       
-
-        this.props.onSelectionChange(value, filterMode);
-    }
 }

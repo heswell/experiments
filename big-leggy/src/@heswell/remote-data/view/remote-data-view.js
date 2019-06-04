@@ -29,7 +29,6 @@ function messageFromTheServer({ type: msgType, ...message }) {
       break;
     case Msg.snapshot:
     case Msg.rowSet: 
-    logger.log(`server rowset for range <===== ${message.data.range.lo} ${message.data.range.hi}`)
     case Msg.selected:
     case Msg.filterData:
       subscriptions[message.viewport].postMessageToClient(message);
@@ -130,7 +129,7 @@ export default class RemoteDataView  {
     });
   }
 
-  select(idx, rangeSelect, keepExistingSelection){
+  select(idx, row, rangeSelect, keepExistingSelection){
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.select,
@@ -166,12 +165,13 @@ export default class RemoteDataView  {
     this.clearData();
   }
 
-  filter(filter, dataType = DataTypes.ROW_DATA) {
+  filter(filter, dataType = DataTypes.ROW_DATA, incremental=false) {
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.filter,
       dataType,
-      filter
+      filter,
+      incremental
     })
   }
 

@@ -7,6 +7,7 @@ export default (
 
 ) => (state, action) => {
   const { type, ...props } = action;
+  console.log(`%cgridReducer ${type}`,'color:blue;font-weight: bold;')
   if (type === 'scroll') {
       onScroll && onScroll(props);
   } else if (type === 'selection') {

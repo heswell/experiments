@@ -37,10 +37,12 @@ export default class ColumnFilter extends React.Component {
 
     clearFilter = () => {
         //TODO this will need wotk for a group column filter
-        this.props.onClearFilter(this.props.column);
+        // If we want this functionality we will have to call method on setFilter
+        // this.props.onClearFilter(this.props.column);
     }
 
     handleSetSelectionChange = (selected, filterMode, searchText) => {
+        console.log(`columnFilter sele tionchange - create  filter`)
         const {column, onFilter} = this.props;
         // same for an include filter that includes every value, but we don't normally represent it that way
         if (selected === null) {
@@ -51,17 +53,6 @@ export default class ColumnFilter extends React.Component {
                     value: searchText
                 });
     
-            } else {
-                if (filterMode === INCLUDE){
-                    this.props.onClearFilter(column);
-                } else {
-                    onFilter(column, {
-                        colName: column.name,
-                        type: IN,
-                        values: []
-                    });
-                }
-   
             }
 
         } else {
@@ -125,7 +116,7 @@ export default class ColumnFilter extends React.Component {
                             onHide={this.hideFilter}
                             onClose={this.closeFilter}
                             onSelectionChange={this.handleSetSelectionChange}
-                            onSearchText={this.props.onSearchText} />
+                        />
                     );
             }
 

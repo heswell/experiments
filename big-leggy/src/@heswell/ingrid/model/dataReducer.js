@@ -15,7 +15,6 @@ export const initialData = {
 // we will need additional action types to update
 export default function (model) {
   return (state, action) => {
-    console.log(`dataReducer ${action.type}`)
     if (action.type === 'range'){
       return setRange(state, action, model.meta)
     } else if (action.type === 'data'){
@@ -55,7 +54,6 @@ function setRange(state, {range}, meta){
   const keys = setKeys(state._keys, range)
   const [mergedRows, _keys] = mergeAndPurge(range, rows, offset, [], rowCount, meta, keys)
   const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-
   return {
     rows: mergedRows,
     rowCount,
@@ -74,6 +72,7 @@ function setData(state, action, meta){
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
   const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+
   return {
     rows: mergedRows,
     rowCount,
@@ -134,7 +133,6 @@ function emptyRow(idx, { IDX, count }) {
 }
 
 function mergeAndPurge({ lo, hi }, rows, offset = 0, incomingRows, size, meta, keys) {
-debugger;
   // console.log(`dataReducer.mergeAndPurge: entry
   //   range ${lo} - ${hi}
   //   keys: 
@@ -175,7 +173,6 @@ debugger;
 
   // 2) iterate new rows, if not already in results (shouldn't be) , move to correct slot in results
   //      assign rowKey from free values
-  debugger;
   for (let i = 0; i < incomingRows.length; i++) {
     if (row = incomingRows[i]) {
       rowIdx = row[IDX];
@@ -198,7 +195,6 @@ debugger;
   }
   // 3) assign empty row to any free slots in results
   // TODO make this more efficient
-  debugger;
   for (let i = 0, freeIdx=0; i < rowCount; i++) {
     if (results[i] === undefined) {
       const row = results[i] = emptyRow(i + low, meta);
