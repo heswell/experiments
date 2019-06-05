@@ -25,17 +25,11 @@ export default class FilterDataView {
         this.keyCount = range.hi - range.lo;
 
         this.dataView.subscribeToFilterData(this.column, this.range, message => {
-
-            const {filterData} = message;
-            const {rows, size, offset, range, dataCounts} = filterData;
-
-            console.log(`receive rows ${rows.length} of ${size} range ${JSON.stringify(range)}`, message)
-            callback(rows, size, offset, range);
-
+            const {filterData: {dataCounts, ...data}} = message;
+            callback(data);
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
             }    
-  
         })
     }
 
@@ -86,17 +80,6 @@ export default class FilterDataView {
       logger.log(`setRange ${lo} ${hi}`)
       this.dataView.setFilterRange(lo,hi);
     }
-
-    // itemAtIdx(idx){
-    //     const {IDX} = this.meta;
-    //     return this.dataRows.find(r => r[IDX] === idx);
-    // }
-
-    // indexOf(value){
-    //     const {IDX, KEY} = this.meta;
-    //     const item = this.dataRows.find(r => r[KEY] === value);
-    //     return item ? item[IDX] : -1;
-    // }
 
     sort(){
         

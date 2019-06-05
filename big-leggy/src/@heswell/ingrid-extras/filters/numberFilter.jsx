@@ -37,7 +37,7 @@ export class NumberFilter extends React.Component {
     }
 
     componentDidMount(){
-        this.filterView.subscribe(this.onFilterBins);
+        this.filterView.subscribe({range:{lo:-1,hi:-1}}, this.onFilterBins);
         this.createGraph();
     }
 

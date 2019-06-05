@@ -30,8 +30,7 @@ export default function Grid({
     style,
     showHeaders = true,
     headerHeight = showHeaders ? 24 : 0,
-    selected = [],
-    showFilters = false,
+    showFilters:initialShowFilters = false,
     onScroll,
     // TODO capture these as callbackProps
     onSelectCell=() => {},
@@ -53,7 +52,6 @@ export default function Grid({
     // collapsedColumns
     // selectionModel
 }) {
-    console.log(`Grid.render`)
     const header = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
@@ -61,12 +59,10 @@ export default function Grid({
     const inputWidth = props.width || style.width; 
     const inputHeight = props.height || style.height; 
 
-    const [state, setState] = useState({
-        showFilters,
-        showFilter: null
-    });
+    const [showFilters, setShowFilters] = useState(initialShowFilters);
+    const [filter, setFilter] = useState(null);
 
-    const handleScroll = params => {
+    const handleScroll = useCallback(params => {
         const { scrollLeft: pos = -1 } = params;
         if (pos !== -1) {
             if (scrollLeft.current !== pos) {
@@ -80,7 +76,7 @@ export default function Grid({
             }
         }
         onScroll && onScroll(params);
-    }
+    },[]);
 
     const handleSelectionChange = useCallback((idx, row, rangeSelect, keepExistingSelection) => {
         console.log(`Grid handleSelectionchange ${idx} ${row}
@@ -115,7 +111,7 @@ export default function Grid({
         headerHeight
     }, initModel);
 
-    const showContextMenu = useContextMenu(model, state, setState, dispatch);
+    const showContextMenu = useContextMenu(model, showFilters, setShowFilters, dispatch);
 
     const {
         height,
@@ -124,7 +120,6 @@ export default function Grid({
         groupBy,
         groupState,
         sortBy,
-        range,
         _overTheLine } = model;
 
     useEffect(() => {
@@ -144,7 +139,6 @@ export default function Grid({
     }, [_overTheLine])
 
     useEffect(() => {
-        logger.log(`width has changed ${inputWidth}`)
         dispatch({type: Action.GRID_RESIZE, width: inputWidth, height: inputHeight})
     },[inputWidth, inputHeight])
 
@@ -166,49 +160,9 @@ export default function Grid({
         }
     }, [dataView, groupState]);
 
-    useEffect(() => {
-        if (range !== undefined) {
-            dataView.setRange(range.lo, range.hi);
-        }
-    }, [dataView, range]);
-
-    const filterHeight = state.showFilters ? 24 : 0;
+    const filterHeight = showFilters ? 24 : 0;
     const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
     const totalHeaderHeight = headingHeight + filterHeight;
-
-    // const {play, style: viewportStyle, isPlaying} = useAnimate({
-    //     start : {top: headingHeight},
-    //     end: {top: totalHeaderHeight}
-    // })
-
-    const handleFilterOpen = useCallback(column => {
-        if (state.showFilter !== column.name) {
-            // we could call dataView here to trigger build of filter data
-            // this could be moved down to serverApi
-            const { key, name } = column.isGroup ? column.columns[0] : column;
-
-            dataView.getFilterData({
-                key, name
-            });
-
-            setTimeout(() => {
-                setState({
-                    ...state,
-                    showFilter: column.name
-                });
-            }, 50)
-        }
-    }, [dataView, state])
-
-    const handleFilterClose = useCallback((/*column*/) => {
-        setState(state => ({
-            ...state,
-            showFilter: null
-        }));
-        // I think we're doing this so that if same filter is opened again, dataView sends rows
-        dataView.setFilterRange(0, 0);
-    }, [dataView])
-
     const isEmpty = dataView.size <= 0;
     const emptyDisplay = (isEmpty && props.emptyDisplay) || null;
     const className = cx(
@@ -231,14 +185,12 @@ export default function Grid({
                         colHeaderRenderer={props.colHeaderRenderer}
                     />}
 
-                {state.showFilters &&
+                {showFilters &&
                     <InlineFilter ref={inlineFilter}
                         dispatch={dispatch}
                         dataView={dataView}
                         model={model}
-                        onFilterOpen={handleFilterOpen}
-                        onFilterClose={handleFilterClose}
-                        showFilter={state.showFilter}
+                        filter={filter}
                         height={filterHeight}
                         style={{ position: 'absolute', top: headerHeight, height: filterHeight, width }} />}
 
@@ -249,6 +201,7 @@ export default function Grid({
                             model={model}
                             style={interpolatingStyle}
                             height={height - totalHeaderHeight}
+                            onFilterChange={setFilter}
                         />}
                 </Motion>
                 {emptyDisplay}

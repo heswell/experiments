@@ -16,10 +16,10 @@ export default class BinnedDataView {
     this.dataCountCallback = null;
   }
 
-  subscribe(callback) {
+  subscribe({range}, callback) {
     logger.log(`<subscribe>`)
 
-    this.dataView.subscribeToFilterData(this.column, message => {
+    this.dataView.subscribeToFilterData(this.column, range, message => {
 
       logger.log(`callback ${JSON.stringify(message.null, 2)}`)
       const {filterData} = message;

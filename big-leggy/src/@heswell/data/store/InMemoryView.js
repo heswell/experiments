@@ -134,10 +134,8 @@ export default class InMemoryView {
             return [undefined,this.filterFilterData(filter)];
         
         } else {
-            console.log(`filter ${JSON.stringify(filter)} incremental ${incremental} this._filter ${JSON.stringify(this._filter)}`)
             if (incremental){
                 filter = addFilter(this._filter, filter);
-                console.log(`complete filter = ${JSON.stringify(filter)}`)
             }
             const { rowSet, _filter, filterRowSet } = this;
             const { range } = rowSet;
@@ -164,7 +162,10 @@ export default class InMemoryView {
                 }
             }
     
-            const resultSet = this.rowSet.setRange(resetRange(range), false);
+            const resultSet = {
+                ...(this.rowSet.setRange(resetRange(range), false)),
+                filter
+            }
     
             return filterResultset
                 ? [resultSet, filterResultset]

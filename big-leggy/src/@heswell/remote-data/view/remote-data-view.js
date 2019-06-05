@@ -100,8 +100,7 @@ export default class RemoteDataView  {
 
       const { filterData, data } = message;
       if (data && data.rows) {
-        const { rows, size, offset, range } = data;
-        callback(rows, size, offset, range);
+        callback(data);
       } else if (filterData && this.filterDataCallback) {
         this.filterDataCallback(message)
       } else if (filterData) {
@@ -109,7 +108,8 @@ export default class RemoteDataView  {
         this.filterDataMessage = message;
       } else if (data && data.selected){
         // TODO think about this
-        callback(null,null, null, range, data.selected, data.deselected);
+        const {selected, deselected} = data;
+        callback({range, selected, deselected});
       }
 
     });

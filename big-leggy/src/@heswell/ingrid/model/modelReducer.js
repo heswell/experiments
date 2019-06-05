@@ -62,7 +62,6 @@ const handlers = {
     [Action.INITIALIZE]: initialize,
     [Action.ROWCOUNT]: setRowCount,
     [Action.SORT]: sort,
-    [Action.FILTER]: applyFilter,
     [Action.SORT_GROUP]: sortGroup,
     [Action.GROUP]: setGroupBy,
     [Action.groupExtend]: extendGroup,
@@ -172,12 +171,6 @@ function sort(state, {column, direction, preserveExistingSort=false}) {
 
     // be careful - re-assigns keys to columns
     return initialize(state, {gridState: {sortBy}});
-}
-
-// This will cause entire grid to re-render when only headings need to,
-// might consider storing sort/filter separately
-function applyFilter(state, {filter}) {
-    return {...state, filter};
 }
 
 function sortGroup(state, {column}) {

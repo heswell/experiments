@@ -3,17 +3,14 @@ import { PopupService } from './services';
 import GridContextMenu from './context-menu/grid-context-menu';
 import * as Action from './model/actions';
 
-export const useContextMenu = (model, state, setState, dispatch) => {
+export const useContextMenu = (model, showFilters, setShowFilters, dispatch) => {
 
   const handleContextMenuAction = useCallback(action => {
 
     if (action === Action.TOGGLE_FILTERS) {
-      setState(state => ({
-        ...state,
-        showFilters: state.showFilters === false
-      }));
+      setShowFilters(state =>  !state);
     }
-  }, [state.showFilters]);
+  }, [showFilters]);
 
   return useCallback((e, location, options) => {
 
@@ -27,7 +24,7 @@ export const useContextMenu = (model, state, setState, dispatch) => {
         options={{
           ...options,
           model,
-          showFilters: state.showFilters
+          showFilters
         }}
         dispatch={dispatch}
         doAction={handleContextMenuAction}
@@ -36,7 +33,7 @@ export const useContextMenu = (model, state, setState, dispatch) => {
 
     PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component });
 
-  },[model, state])
+  },[model, showFilters])
 
 
 }

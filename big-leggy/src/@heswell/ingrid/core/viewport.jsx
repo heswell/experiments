@@ -60,6 +60,7 @@ export const Viewport = React.memo(({
     height,
     dataView,
     model,
+    onFilterChange
     // selectedRows
 }) => {
     const scrollingCanvas = useRef(null);
@@ -83,10 +84,23 @@ export const Viewport = React.memo(({
             range: { lo: 0, hi: rowCount }
         },
             /* postMessageToClient */
-            (rows, rowCount, offset, range, selected = null, deselected = null) => {
-                if (range.reset) {
+            ({
+                rows=null,
+                filter = undefined,
+                size: rowCount = null,
+                offset,
+                range,
+                selected = null,
+                deselected = null}) => {
+
+                if (range && range.reset) {
                     setSrollTop(0);
                 }
+
+                if (filter !== undefined){
+                    onFilterChange(filter);
+                }
+
                 if (rowCount !== null && rowCount !== model.rowCount) {
                     dispatch({ type: Action.ROWCOUNT, rowCount })
                 }

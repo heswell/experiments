@@ -7,7 +7,7 @@ import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
 import SearchBar from './filter-toolbar'
 import './setFilter.css';
-import { NOT_IN, SET_FILTER_DATA_COLUMNS as filterColumns } from '../../data/store/filter';
+import { NOT_IN, STARTS_WITH, NOT_STARTS_WITH, SET_FILTER_DATA_COLUMNS as filterColumns } from '../../data/store/filter';
 
 const {IN} = filterUtils;
 const NO_STYLE = {}
@@ -69,11 +69,6 @@ const FilterCounts = ({column, dataCounts=NO_COUNT/*, searchText*/}) => {
 } 
 
 export class SetFilter extends React.Component {
-    static defaultProps = {
-        onSelectionChange: (selected, filterMode) => {
-            console.log(`SetFilter: no handler provided for onSelectionChange ${selected} ${filterMode}`)
-        }
-    }
     
     constructor(props){
         super(props);
@@ -191,7 +186,16 @@ export class SetFilter extends React.Component {
 
     handleDeselectAll= () => {
         if (this.searchText){
-            this.props.onSelectionChange(null, EXCLUDE, this.searchText);
+            this.state.filterView.filter({
+                type: NOT_STARTS_WITH,
+                colName: this.props.column.name,
+                value: this.searchText
+            }, DataTypes.ROW_DATA, true);
+
+            this.setState({
+                selectionDefault: SELECT_NONE
+            });
+        
         } else {
             
             this.state.filterView.filter({
@@ -209,7 +213,16 @@ export class SetFilter extends React.Component {
 
     handleSelectAll= () => {
         if (this.searchText){
-            this.props.onSelectionChange(null, INCLUDE, this.searchText);
+            this.state.filterView.filter({
+                type: STARTS_WITH,
+                colName: this.props.column.name,
+                value: this.searchText
+            }, DataTypes.ROW_DATA, true);
+
+            this.setState({
+                selectionDefault: SELECT_ALL
+            });
+
         } else {
             this.state.filterView.filter({
                 type: NOT_IN,

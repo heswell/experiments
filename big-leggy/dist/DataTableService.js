@@ -297,6 +297,16 @@ function includesNoValues(filter) {
     }
 }
 
+function includesAllValues(filter) {
+    if (!filter){
+        return false;
+    } else if (filter.type === NOT_IN && filter.values.length === 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // does f2 only narrow the resultset from f1
 function extendsFilter(f1=null, f2=null) {
     // ignore filters which are identical
@@ -361,6 +371,9 @@ function addFilter(existingFilter, filter) {
     if (includesNoValues(filter)){
         const {colName} = filter;
         existingFilter = removeFilterForColumn(existingFilter, {name:colName});
+    } else if (includesAllValues(filter)){
+        // A filter that returns all values is a way to remove filtering for this column 
+        return removeFilterForColumn(existingFilter, {name: filter.colName});
     }
 
     if (!existingFilter) {
@@ -4385,10 +4398,8 @@ class InMemoryView {
             return [undefined,this.filterFilterData(filter)];
         
         } else {
-            console.log(`filter ${JSON.stringify(filter)} incremental ${incremental} this._filter ${JSON.stringify(this._filter)}`);
             if (incremental){
                 filter = addFilter(this._filter, filter);
-                console.log(`complete filter = ${JSON.stringify(filter)}`);
             }
             const { rowSet, _filter, filterRowSet } = this;
             const { range } = rowSet;
@@ -4415,7 +4426,10 @@ class InMemoryView {
                 }
             }
     
-            const resultSet = this.rowSet.setRange(resetRange(range), false);
+            const resultSet = {
+                ...(this.rowSet.setRange(resetRange(range), false)),
+                filter
+            };
     
             return filterResultset
                 ? [resultSet, filterResultset]

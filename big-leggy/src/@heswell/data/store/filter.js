@@ -133,6 +133,16 @@ export function includesNoValues(filter) {
     }
 }
 
+function includesAllValues(filter) {
+    if (!filter){
+        return false;
+    } else if (filter.type === NOT_IN && filter.values.length === 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // does f2 only narrow the resultset from f1
 export function extendsFilter(f1=null, f2=null) {
     // ignore filters which are identical
@@ -197,6 +207,9 @@ export function addFilter(existingFilter, filter) {
     if (includesNoValues(filter)){
         const {colName} = filter;
         existingFilter = removeFilterForColumn(existingFilter, {name:colName});
+    } else if (includesAllValues(filter)){
+        // A filter that returns all values is a way to remove filtering for this column 
+        return removeFilterForColumn(existingFilter, {name: filter.colName});
     }
 
     if (!existingFilter) {
