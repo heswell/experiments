@@ -5,12 +5,10 @@ import { SetFilter, NumberFilter, MultiColumnFilter } from '../../ingrid-extras'
 import { columnUtils, filter as filterUtils } from '../../data';
 import { PopupService } from '../services';
 
-//TODO how do we determine if filter is active sans filterData
 export default ({
     column,
     dataView,
     filter,
-    onKeyDown,
     onClearFilter,
     onFilterOpen,
     onFilterClose,
@@ -19,8 +17,6 @@ export default ({
 }) => {
 
     const rootEl = useRef(null);
-
-    const keyDown = e => onKeyDown(column, e);
 
     const toggleFilterDisplay = () => {
         onFilterOpen(column);
@@ -40,9 +36,19 @@ export default ({
         }, 50);
     },[]);
 
-    const clearFilter = () => {
+    const handleKeyDown = useCallback(e => {
+        if (e.keyCode === 13) { // ENTER
+            dataView.filter({
+                 type: filterUtils.STARTS_WITH,
+                 colName: column.name,
+                 value: e.target.value
+            })
+        }
+    },[]);
+
+    const clearFilter = useCallback(() => {
         onClearFilter(column);
-    }
+    },[])
 
     const handleNumberFilterChange = (column, filter) => {
         onFilter(column, filter);
@@ -54,7 +60,7 @@ export default ({
 
     useEffect(() => {
         if (showFilter){
-            const component = getFilter(column, filter, dataView);
+            const component = getFilter();
             const el = rootEl.current;
             const { left, top } = el.getBoundingClientRect();
             // TODO without the timeout, it does not render until next render cycle
@@ -64,9 +70,8 @@ export default ({
         }
     },[showFilter]);
 
-    const getFilter = (column, filter, dataView) => {
-        console.log(`ColumnFilter, extractFilterFromColumn ${column.name} ${JSON.stringify(filter)}`)
-
+    const getFilter = () => {
+        console.log(`getFilter ${JSON.stringify(column)}`)
         if (!column.isGroup || column.columns.length === 1) {
             switch (columnUtils.getFilterType(column)) {
                 case 'number':
@@ -117,7 +122,7 @@ export default ({
                 <i className="material-icons">filter_list</i>
             </div>
             <div className="filter-input-container">
-                <input className="filter-input" type='text' onKeyDown={keyDown} />
+                <input className="filter-input" type='text' onKeyDown={handleKeyDown} />
             </div>
             {isActive &&
                 <div className='filter-clear-button' onClick={clearFilter}>

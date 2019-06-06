@@ -1,14 +1,12 @@
-import React, { forwardRef, useRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
 import Header from './header';
 import ColumnFilter from './columnFilter';
 import { filter as filterUtils, DataTypes } from '../../data'
-import * as Action from '../model/actions';
 
 const { STARTS_WITH, NOT_IN } = filterUtils;
 
 export default forwardRef(({ 
     dataView,
-    dispatch,
     height,
     model,
     filter: serverFilter,
@@ -40,8 +38,8 @@ export default forwardRef(({
         dataView.setFilterRange(0, 0);
     }
 
+    // not used for setfilter any more
     const handleFilter = (column, newFilter) => {
-
         //TODO move this into model
         const filter = filterUtils.addFilter(serverFilter, newFilter);
         console.log(`
@@ -51,7 +49,6 @@ export default forwardRef(({
             `)
 
         dataView.filter(filter);
-        dispatch({ type: Action.FILTER, column, filter });
 
         if (newFilter.isNumeric) {
             // re-request the filterData, this will re-create bins on the filtered data
@@ -60,31 +57,20 @@ export default forwardRef(({
         }
     }
 
-    const handleClearFilter = column => {
+    const handleClearFilter = useCallback(column => {
         dataView.filter({
             type: NOT_IN,
             colName: column.name,
             values: []
         }, DataTypes.ROW_DATA, true);
-        // const filter = filterUtils.removeFilterForColumn(serverFilter, column);
-        // dataView.filter(filter);
-        // dispatch({ type: Action.FILTER, column, filter })
-    }
-
-    const handleKeyDown = (column, e) => {
-        if (e.keyCode === 13) { // ENTER
-            const value = e.target.value;
-            handleFilter(column, { type: STARTS_WITH, colName: column.name, value })
-        }
-    }
-
+    },[]);
+console.log(`render InlineFilter`)
     const colHeaderRenderer = ({ key, column }) =>
         <ColumnFilter key={key}
             column={column}
             dataView={dataView}
             // TODO we use this to mark the column as filtered 
             filter={serverFilter}
-            onKeyDown={handleKeyDown}
             onClearFilter={handleClearFilter}
             onFilterOpen={onFilterOpen}
             onFilterClose={onFilterClose}
@@ -95,10 +81,10 @@ export default forwardRef(({
     return (
         <Header className='InlineFilter'
             ref={header}
-            dispatch={dispatch}
-            gridModel={model}
+            model={model}
             height={height}
             style={style}
+            colGroupHeaderRenderer={colHeaderRenderer}
             colHeaderRenderer={colHeaderRenderer}
         />
     );

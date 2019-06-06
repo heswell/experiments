@@ -5,7 +5,6 @@ export const ROWCOUNT = 'ROWCOUNT';
 export const GROUP = 'GROUP';
 export const SORT = 'SORT';
 export const SORT_GROUP = 'SORT_GROUP';
-export const FILTER = 'FILTER';
 export const GRID_RESIZE = 'GRID_RESIZE';
 export const COLUMN_RESIZE_BEGIN = 'COLUMN_RESIZE_BEGIN';
 export const COLUMN_RESIZE = 'COLUMN_RESIZE';

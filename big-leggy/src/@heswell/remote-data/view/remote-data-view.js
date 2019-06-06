@@ -145,7 +145,6 @@ export default class RemoteDataView  {
       type: Msg.groupBy,
       groupBy: columns
     });
-    this.clearData();
   }
 
   setGroupState(groupState) {
@@ -162,7 +161,6 @@ export default class RemoteDataView  {
       type: Msg.sort,
       sortCriteria: columns
     });
-    this.clearData();
   }
 
   filter(filter, dataType = DataTypes.ROW_DATA, incremental=false) {

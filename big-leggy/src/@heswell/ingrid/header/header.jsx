@@ -1,8 +1,9 @@
 
-import React, { useRef, forwardRef, useImperativeHandle} from 'react';
+import React, { useRef, forwardRef, useContext, useImperativeHandle} from 'react';
 import cx from 'classnames';
 import ColumnGroupHeader from './columnGroupHeader';
 import * as Action from '../model/actions';
+import GridContext from '../grid-context';
 
 import css from '../style/grid';
 
@@ -10,13 +11,12 @@ export default forwardRef (({
     className: propClassName,
     colGroupHeaderRenderer,
     colHeaderRenderer,
-    dispatch,
-    gridModel: model,
+    model,
     height,
-    style: propStyle,
-    onHeaderClick
+    style: propStyle
 }, ref) => {
 
+    const { dispatch } = useContext(GridContext);
     const scrollingHeader = useRef(null);
     const scrollLeft = useRef(0);
 
@@ -55,7 +55,6 @@ export default forwardRef (({
                             columnGroup={group}
                             model={model}
                             onColumnMove={handleColumnMove}
-                            onHeaderClick={onHeaderClick}
                             colHeaderRenderer={colHeaderRenderer}
                             colGroupHeaderRenderer={colGroupHeaderRenderer}
                         />

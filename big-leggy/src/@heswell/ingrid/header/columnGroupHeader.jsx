@@ -14,8 +14,7 @@ export function ColumnGrouHeader({
     colGroupHeaderRenderer,
     colHeaderRenderer,
     model,
-    onColumnMove,
-    onHeaderClick
+    onColumnMove
 
 },ref) {
 
@@ -49,9 +48,6 @@ export function ColumnGrouHeader({
 
     const handleHeaderCellClick = column => {
         let result = true;
-        if (onHeaderClick) {
-            result = onHeaderClick(column);
-        }
         if (result !== false && column.sortable !== false) {
             // this will transform the columns which will cause whole grid to re-render down to cell level. All
             // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?

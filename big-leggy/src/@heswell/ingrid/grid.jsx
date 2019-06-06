@@ -179,15 +179,12 @@ export default function Grid({
                 {showHeaders && headerHeight !== 0 &&
                     <Header ref={header}
                         height={headingHeight}
-                        dispatch={dispatch}
-                        gridModel={model}
-                        onHeaderClick={props.onHeaderClick}
+                        model={model}
                         colHeaderRenderer={props.colHeaderRenderer}
                     />}
 
                 {showFilters &&
                     <InlineFilter ref={inlineFilter}
-                        dispatch={dispatch}
                         dataView={dataView}
                         model={model}
                         filter={filter}
