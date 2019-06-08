@@ -7,7 +7,7 @@ export const initialData = {
   rowCount: 0,
   range: INITIAL_RANGE,
   offset: 0,
-  selected: [],
+  // selected: [],
   _keys: {
     free: [],
     used: {}
@@ -52,39 +52,38 @@ function setRange(state, {range}, meta){
   //   _keys: setKeys(state._keys, range)
   // }
 
-  const { IDX, SELECTED } = meta;
+  // const { IDX, SELECTED } = meta;
   const {rows, rowCount, offset} = state;
   const keys = setKeys(state._keys, range)
   const [mergedRows, _keys] = mergeAndPurge(range, rows, offset, [], rowCount, meta, keys)
-  const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+  // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
   return {
     rows: mergedRows,
     rowCount,
     offset,
     range,
-    selected,
+    // selected,
     _keys
   }
 }
 
 function setData(state, action, meta){
-  const { IDX, SELECTED } = meta;
+  // const { IDX, SELECTED } = meta;
   const { rows, rowCount, offset } = action;
-  console.log(`dataReducer current range ${state.range.lo} - ${state.range.hi} incoming range ${action.range.lo} - ${action.range.hi}`)
   const range = action.range.reset || state.range === INITIAL_RANGE ?
     action.range
     : state.range;
     
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
-  const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
+  // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
 
   return {
     rows: mergedRows,
     rowCount,
     offset,
     range,
-    selected,
+    // selected,
     _keys
   }
 
@@ -126,7 +125,7 @@ function applySelection(state, {selected, deselected}, meta){
   return {
     rows,
     rowCount,
-    selected: results
+    // selected: results
   }
 }
 

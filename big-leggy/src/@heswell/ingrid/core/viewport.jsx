@@ -13,43 +13,30 @@ const logger = createLogger('Viewport', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
 
-function useThrottledScroll(callback, interval) {
+function useThrottledScroll(callback) {
 
     const timeoutHandler = useRef(null);
-    const lastTime = useRef(Date.now());
+    const prevValue = useRef(null);
     const value = useRef(null);
 
-    const cancelThrottledCallback = useCallback(() => {
-        clearTimeout(timeoutHandler.current);
-        timeoutHandler.current = null;
-    }, []);
+    const raf = () => {
+        if (value.current !== prevValue.current){
+            callback(value.current);
+            prevValue.current = value.current;
+            timeoutHandler.current = requestAnimationFrame(raf)
+        } else {
+            timeoutHandler.current = null;
+        }
+    }
 
     const throttledCallback = useCallback(
         e => {
-            const scrollTop = e.target.scrollTop;
-            const ts = Date.now();
-
-            if (ts - lastTime.current >= interval) {
-                cancelThrottledCallback();
-                lastTime.current = ts;
-                callback(scrollTop);
-                value.current = null;
-
-            } else {
-                value.current = scrollTop;
-                if (timeoutHandler.current === null){
-                    timeoutHandler.current = setTimeout(() => {
-                        cancelThrottledCallback();
-                        if (value.current !== null){
-                            callback(value.current);
-                            lastTime.current = Date.now();
-                            value.current = null;
-                        }
-                    }, interval);
-                }
+            value.current = e.target.scrollTop;
+            if (timeoutHandler.current === null){
+                timeoutHandler.current = requestAnimationFrame(raf);
             }
         },
-        [callback, interval, cancelThrottledCallback]
+        [callback]
     );
 
     return throttledCallback;
@@ -125,16 +112,18 @@ export const Viewport = React.memo(({
     }, [height])
 
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
+        // const handleVerticalScroll = useCallback(e => {
+        // const value = e.target.scrollTop;
         scrollTop.current = value;
         const firstRow = Math.floor(value / model.rowHeight)
         if (firstRow !== firstVisibleRow.current) {
             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
             firstVisibleRow.current = firstRow;
             setRange(firstRow, firstRow + numberOfRowsInViewport);
-            callbackPropsDispatch({ type: 'scroll', value })
+            // callbackPropsDispatch({ type: 'scroll', value })
         }
 
-    }, []), 30)
+    }, []), 30);
 
     // const handleVerticalScroll = useCallback(e => {
     //     if (e.target === e.currentTarget) {
@@ -164,7 +153,7 @@ export const Viewport = React.memo(({
     }, [])
 
     const setRange = useCallback((lo, hi) => {
-        logger.log(`setRange ===>  ${lo} : ${hi}`)
+        //logger.log(`setRange ===>  ${lo} : ${hi}`)
         dispatchData({ type: 'range', range: { lo, hi } });
         dataView.setRange(lo, hi);
     }, [])

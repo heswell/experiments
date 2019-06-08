@@ -1,5 +1,5 @@
 
-import React, { useRef, forwardRef, useContext, useImperativeHandle} from 'react';
+import React, { memo, useRef, forwardRef, useContext, useImperativeHandle} from 'react';
 import cx from 'classnames';
 import ColumnGroupHeader from './columnGroupHeader';
 import * as Action from '../model/actions';
@@ -7,7 +7,7 @@ import GridContext from '../grid-context';
 
 import css from '../style/grid';
 
-export default forwardRef (({
+export default memo(forwardRef(({
     className: propClassName,
     colGroupHeaderRenderer,
     colHeaderRenderer,
@@ -15,7 +15,7 @@ export default forwardRef (({
     height,
     style: propStyle
 }, ref) => {
-
+    console.log(`RENDER Header`)
     const { dispatch } = useContext(GridContext);
     const scrollingHeader = useRef(null);
     const scrollLeft = useRef(0);
@@ -65,4 +65,4 @@ export default forwardRef (({
         </div>
     );
 
-})
+}))

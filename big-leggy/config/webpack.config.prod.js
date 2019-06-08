@@ -105,7 +105,7 @@ module.exports = {
         .replace(/\\/g, '/'),
   },
   optimization: {
-    minimizer: [
+    minimizer: [/*
       new TerserPlugin({
         terserOptions: {
           ecma: 8,
@@ -146,7 +146,7 @@ module.exports = {
         // Enable file caching
         cache: true,
         sourceMap: shouldUseSourceMap,
-      }),
+      }),*/
       new OptimizeCSSAssetsPlugin({
         cssProcessorOptions: {
           map: shouldUseSourceMap

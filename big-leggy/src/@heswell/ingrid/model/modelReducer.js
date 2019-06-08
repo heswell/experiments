@@ -6,6 +6,10 @@ import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
 
+export default function reducer(state, action){
+    return (handlers[action.type] || MISSING_HANDLER)(state, action);
+}
+
 export const DEFAULT_MODEL_STATE = {
     width: 400,
     height: 300,
@@ -83,11 +87,6 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
-
-export default function reducer(state, action){
-    return (handlers[action.type] || MISSING_HANDLER)(state, action);
-}
-
 export const initModel = model =>
     initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
   
@@ -150,13 +149,17 @@ function initialize(state, action) {
 }
 
 function setRowCount(state, {rowCount}) {
-    const {height, headerHeight,rowHeight,width,totalColumnWidth,scrollbarSize} = state;
-    const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
-
-    if (displayWidth === state.displayWidth){
-        return { ...state, rowCount };
+    if (rowCount === state.rowCount){
+        return state;
     } else {
-        return initialize(state, {gridState: {rowCount}});
+        const {height, headerHeight,rowHeight,width,totalColumnWidth,scrollbarSize} = state;
+        const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
+    
+        if (displayWidth === state.displayWidth){
+            return { ...state, rowCount };
+        } else {
+            return initialize(state, {gridState: {rowCount}});
+        }
     }
 }
 

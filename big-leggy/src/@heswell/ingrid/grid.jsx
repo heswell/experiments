@@ -52,6 +52,7 @@ export default function Grid({
     // collapsedColumns
     // selectionModel
 }) {
+    console.log(`RENDER Grid`)
     const header = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
