@@ -260,21 +260,6 @@ class Connection extends EventEmitter {
 
 }
 
-function indexOf(arr, test){
-    for (let i=0;i<arr.length;i++){
-        if (test(arr[i])){
-            return i;
-        }
-    }
-    return -1;
-}
-
-function replace(arr,idx, value){
-    const result = arr.slice();
-    result[idx] = value;
-    return result;
-}
-
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
@@ -395,6 +380,12 @@ const rangeUtils = {
 };
 
 const DataTypes$1 = DataTypes;
+
+function replace(arr,idx, value){
+    const result = arr.slice();
+    result[idx] = value;
+    return result;
+}
 
 const {NULL_RANGE: NULL_RANGE$2} = rangeUtils;
 
@@ -658,7 +649,7 @@ class Subscription {
     // child contents of grouped data.
     toggleGroupNode(groupKey) {
         const { KEY, DEPTH } = this.meta;
-        const idx = indexOf(this._data.data, row => row[KEY] === groupKey);
+        const idx = this._data.data.findIndex(row => row[KEY] === groupKey);
         const groupRow = this._data.data[idx];
         return this._data.data[idx] = replace(groupRow, DEPTH, -groupRow[DEPTH]);
     }
@@ -691,8 +682,21 @@ const SNAPSHOT = 'snapshot';
 
 const RowData = 'rowData';
 
+const logColor = {
+  plain : 'color: black; font-weight: normal',
+  blue : 'color: blue; font-weight: bold',
+  brown : 'color: brown; font-weight: bold',
+};
+
+const {plain} = logColor;
+const createLogger = (source, labelColor=plain, msgColor=plain) => ({
+  log: (msg, args='') => console.log(`%c[${source}] %c${msg}`,labelColor, msgColor, args)
+});
+
+const logger = createLogger('ServerProxy', logColor.brown);
+
 const serverModule = "/viewserver.js";
-console.log(`[ServerProxy] serverModule = ${serverModule}`);
+logger.log(`serverModule = ${serverModule}`);
 const PLAIN = 'color: black; font-weight: normal';
 const BLUE = 'color: blue; font-weight: bold';
 const BROWN = 'color: brown; font-weight: bold';
@@ -734,7 +738,7 @@ class ServerProxy {
         this.pendingSubscriptionRequests = {};
 
         Promise.resolve().then(() => {
-            console.log(`[ServerProxy.constructor]   ==> identity`);
+            logger.log(`<constructor>   ==> identity`);
             postMessage({ data: { type: 'identify', clientId: windowId() } });
         });
 
@@ -877,16 +881,16 @@ class ServerProxy {
     }
 
     // if we're going to support multiple connections, we need to save them against connectionIs
-    connect({connectionString, connectionId=0}) {
+    connect({connectionString, connectionId: connectionId$$1=0}) {
 
-        console.log(`[ServerProxy.connect] connectionString: ${connectionString} connectionId: ${connectionId}`);
+        logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId$$1}`);
         this.connectionStatus = 'connecting';
 
         const module = asyncServerModule ||
             (asyncServerModule = import(/* webpackIgnore: true */ serverModule)
                 .catch(err => console.log(`failed to load server ${err}`)));
 
-        module.then(serverModule => {
+            module.then(serverModule => {
             const Server = serverModule.default;
             const server = this.server = new Server();
 
@@ -903,9 +907,9 @@ class ServerProxy {
                     const [first, ...rest] = server.connectionPipeline;
                     rest.reduce((result, next) => result
                         .then(next), first(connection))
-                        .then(() => this.onReady(connectionId));
+                        .then(() => this.onReady(connectionId$$1));
                 } else {
-                    this.onReady(connectionId);
+                    this.onReady(connectionId$$1);
                 }
 
             });
@@ -1000,7 +1004,7 @@ class ServerProxy {
 
     }
 
-    onReady(connectionId){
+    onReady(connectionId$$1){
         this.connectionStatus = 'ready';
         // messages which have no dependency on previous subscription
         console.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`,'background-color: brown;color: cyan');
@@ -1010,7 +1014,7 @@ class ServerProxy {
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
         this.queuedRequests = remainingMessages;
-        this.postMessage({ data: { type: 'connection-status', status: 'ready', connectionId } });
+        this.postMessage({ data: { type: 'connection-status', status: 'ready', connectionId: connectionId$$1 } });
     }
 
     sendMessageToServer(message) {

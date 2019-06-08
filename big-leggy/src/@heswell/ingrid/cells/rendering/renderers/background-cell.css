@@ -72,11 +72,6 @@
     z-index:-1;
 }
 
-.Grid .num {
-	font-family:arial;
-    color: black;
-}
-
 .GridCell .flasher { text-align:left; }
 .GridCell  .flasher + .num { padding-left: 8px; }
 

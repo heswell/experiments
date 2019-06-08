@@ -322,7 +322,7 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`);
+    console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}`);
     return extract;
 }
 

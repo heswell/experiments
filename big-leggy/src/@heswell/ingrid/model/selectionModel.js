@@ -2,9 +2,10 @@ import { Selection } from '../types';
 
 export default {
 
-    getInitialState(props){
+    getInitialState(selectedRows=[]){
+        console.log(`%cgetInitialSelectionModel state`,'color:red;font-weight:bold;')
         return {
-            selected: props.selectedRows || [],
+            selected: selectedRows,
             lastTouchIdx: -1,
             focusedIdx: -1
         };

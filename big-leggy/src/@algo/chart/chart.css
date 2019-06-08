@@ -1,0 +1,5 @@
+.Chart {
+  flex: 1 1 0;
+  box-shadow: inset 1px 1px 0 0 #ccc, inset -1px -1px 0 0 #ccc;
+}
+

@@ -1,263 +1,232 @@
-import React from 'react';
+import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
 import Canvas from './canvas';
+import ColumnBearer from '../core/ColumnBearer';
 import css from '../style/grid';
-import KeyMap from '../utils/keyMap';
-import SelectionModel from '../model/selectionModel';
+// import SelectionModel from '../model/selectionModel';
+import * as Action from '../model/actions';
+import dataReducer, { initialData } from '..//model/dataReducer';
+import { getScrollbarSize } from '../utils/domUtils';
+import GridContext from '../grid-context';
+import { createLogger, logColor } from '../../remote-data/constants';
 
-export default class Viewport extends React.Component {
+const logger = createLogger('Viewport', logColor.green)
 
-    static defaultProps = {
-        rowHeight: 30
-    };
+const scrollbarSize = getScrollbarSize();
 
-    verticalScrollContainer;
-    scrollableContainerEl;
-    scrollTop = 0;
-    viewState;
+function useThrottledScroll(callback, interval) {
 
-    constructor(props){
+    const timeoutHandler = useRef(null);
+    const lastTime = useRef(Date.now());
+    const value = useRef(null);
 
-        super(props);
+    const cancelThrottledCallback = useCallback(() => {
+        clearTimeout(timeoutHandler.current);
+        timeoutHandler.current = null;
+    }, []);
 
-        this.scrollingCanvas = React.createRef();
+    const throttledCallback = useCallback(
+        e => {
+            const scrollTop = e.target.scrollTop;
+            const ts = Date.now();
 
-        this.verticalScrollTimer = null;
+            if (ts - lastTime.current >= interval) {
+                cancelThrottledCallback();
+                lastTime.current = ts;
+                callback(scrollTop);
+                value.current = null;
 
-        const selectionState = SelectionModel.getInitialState(props);
+            } else {
+                value.current = scrollTop;
+                if (timeoutHandler.current === null){
+                    timeoutHandler.current = setTimeout(() => {
+                        cancelThrottledCallback();
+                        if (value.current !== null){
+                            callback(value.current);
+                            lastTime.current = Date.now();
+                            value.current = null;
+                        }
+                    }, interval);
+                }
+            }
+        },
+        [callback, interval, cancelThrottledCallback]
+    );
 
-        //TODO selectionModel needs to be configured with selectionMode and probably 
-        // passed down from grid or created here
-        this.state = {
-            ...selectionState
-        };
+    return throttledCallback;
+}
 
-        this.viewState = this.getState(props, props);
+export const Viewport = React.memo(({
+    style,
+    height,
+    dataView,
+    model,
+    onFilterChange
+    // selectedRows
+}) => {
+    const scrollingCanvas = useRef(null);
+    const scrollableContainerEl = useRef(null);
+    const verticalScrollContainer = useRef(null);
+    const scrollTop = useRef(0);
+    const firstVisibleRow = useRef(0);
+    const groupBy = useRef(model.groupBy);
 
-    }
+    const { dispatch, callbackPropsDispatch } = useContext(GridContext);
 
-    render() {
+    // const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
-        //TODO rowHeight is on the gridModel
-        const { gridModel: model, style,
-            /*onSetRange, onVerticalScroll, onHorizontalScroll, onSelectionChange,*/
-            ...props} = this.props;
-        const {height, width, rows} = props;
-        const { keyMap, firstVisibleRow } = this.viewState;
-        const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
-        const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
-        //TODO move contentHeight to model 
-        const contentHeight = Math.max(model.rowHeight * model.rowCount, maxContentHeight);
-        const commonSpec = {
-            rows,
-            rowHeight: model.rowHeight,
-            firstVisibleRow,
-            height: contentHeight,
-            selectedRows: this.state.selected
-        };
+    const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
-        // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
-        // displayed even when not needed, when grid is stretched.
-        const overflow = model.displayWidth === width ? 'hidden' : 'auto';
-        // onsole.log('Viewport.render KeyMap ' + JSON.stringify(keyMap,null,2));
+    useEffect(() => {
 
-        return (
-            <div className='Viewport' style={{...css.Viewport, ...style}}>
+        const rowCount = Math.ceil(height / model.rowHeight) + 1
+        dataView.subscribe({
+            columns: model.columns,
+            range: { lo: 0, hi: rowCount }
+        },
+            /* postMessageToClient */
+            ({
+                rows=null,
+                filter = undefined,
+                size: rowCount = null,
+                offset,
+                range,
+                selected = null,
+                deselected = null}) => {
 
-                { horizontalScrollingRequired &&
+                if (range && range.reset) {
+                    setSrollTop(0);
+                }
+
+                if (filter !== undefined){
+                    onFilterChange(filter);
+                }
+
+                if (rowCount !== null && rowCount !== model.rowCount) {
+                    dispatch({ type: Action.ROWCOUNT, rowCount })
+                }
+                if (rows !== null) {
+                    dispatchData({ type: 'data', rows, rowCount, offset, range })
+                } else if (selected !== null) {
+                    dispatchData({ type: 'selected', selected, deselected })
+                }
+            }
+        )
+
+    }, [dataView]);
+
+    useEffect(() => {
+        const rowCount = Math.ceil(height / model.rowHeight) + 1;
+        if (rowCount !== model.rowCount) {
+            dispatch({ type: Action.ROWCOUNT, rowCount })
+            const firstRow = firstVisibleRow.current;
+            setRange(firstRow, firstRow + rowCount);
+        }
+
+    }, [height])
+
+    const handleVerticalScroll = useThrottledScroll(useCallback(value => {
+        scrollTop.current = value;
+        const firstRow = Math.floor(value / model.rowHeight)
+        if (firstRow !== firstVisibleRow.current) {
+            const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
+            firstVisibleRow.current = firstRow;
+            setRange(firstRow, firstRow + numberOfRowsInViewport);
+            callbackPropsDispatch({ type: 'scroll', value })
+        }
+
+    }, []), 30)
+
+    // const handleVerticalScroll = useCallback(e => {
+    //     if (e.target === e.currentTarget) {
+    //         scrollTop.current = e.target.scrollTop;
+
+
+    //         const firstRow = Math.floor(scrollTop.current / model.rowHeight)
+    //         if (firstRow !== firstVisibleRow.current) {
+    //             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
+    //             setRange(firstRow, firstRow + numberOfRowsInViewport);
+    //             firstVisibleRow.current = firstRow;
+    //             callbackPropsDispatch({type: 'scroll', scrollTop: scrollTop.current})
+    //         }
+    //     }
+    // },[height]);
+
+    const handleHorizontalScroll = useCallback(e => {
+        if (e.target === e.currentTarget) {
+            const scrollLeft = e.target.scrollLeft;
+            scrollingCanvas.current.scrollLeft(scrollLeft);
+            callbackPropsDispatch({ type: 'scroll', scrollLeft })
+        }
+    }, [])
+
+    const setSrollTop = useCallback((value) => {
+        verticalScrollContainer.current.scrollTop = scrollTop.current = value;
+    }, [])
+
+    const setRange = useCallback((lo, hi) => {
+        logger.log(`setRange ===>  ${lo} : ${hi}`)
+        dispatchData({ type: 'range', range: { lo, hi } });
+        dataView.setRange(lo, hi);
+    }, [])
+
+    // all of these calculations belong in the modelReducer
+    const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
+    // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
+    // displayed even when not needed, when grid is stretched.
+    const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
+    const contentHeight = Math.max(model.rowHeight * data.rowCount, maxContentHeight);
+    const displayWidth = contentHeight > height
+        ? model.width - scrollbarSize
+        : model.width;
+    const overflow = displayWidth === model.width ? 'hidden' : 'auto';
+
+    let emptyRows = groupBy.current === model.groupBy
+        ? null
+        : ((groupBy.current = model.groupBy), []);
+
+
+    return (
+        <>
+            <div className='Viewport' style={{ ...css.Viewport, ...style }}>
+
+                {horizontalScrollingRequired &&
                     model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
                         <div className='CanvasScroller horizontal scrollable-content'
-                            ref={el => this.scrollableContainerEl = el}
-                            key={idx} style={{left: colGroup.renderLeft, width: colGroup.renderWidth}}
-                            onScroll={this.handleHorizontalScroll}>
+                            ref={scrollableContainerEl}
+                            key={idx} style={{ left: colGroup.renderLeft, width: colGroup.renderWidth }}
+                            onScroll={handleHorizontalScroll}>
 
-                            <div className='CanvasScroller-content' style={{width: colGroup.width, height: 15}} />
+                            <div className='CanvasScroller-content' style={{ width: colGroup.width, height: 15 }} />
                         </div>
                     )
                 }
 
                 <div className='ViewportContent scrollable-content'
-                    ref={el => this.verticalScrollContainer= el}
-                    style={{...css.ViewportContent, bottom: horizontalScrollingRequired ? 15 : 0, overflow}}
-                    onScroll={this.onVerticalScroll} >
+                    ref={verticalScrollContainer}
+                    style={{ ...css.ViewportContent, bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
+                    onScroll={handleVerticalScroll} >
 
                     <div className='scrolling-canvas-container'
-                        style={{width: model.displayWidth, height: contentHeight}}>
-
-                        {/* this.renderGutters(model, commonSpec)*/}
-
+                        style={{ width: model.displayWidth, height: contentHeight }}>
                         {
-                            // ideally, we want to give each Canvas a 'view' of the gridModel
-                            // that only allows it to see its own group - like a lens
-                            
                             model._groups.map((columnGroup, idx) =>
                                 <Canvas
                                     key={idx}
-                                    keyMap={keyMap}
-                                    {...props} /* onSelectionChange,onCellClick */
-                                    {...commonSpec}
                                     gridModel={model}
-                                    className={columnGroup.locked ? 'fixed' : undefined}
-                                    ref={columnGroup.locked ? null : this.scrollingCanvas}
+                                    rows={emptyRows || data.rows}
+                                    firstVisibleRow={firstVisibleRow.current}
+                                    height={contentHeight}
+                                    ref={columnGroup.locked ? null : scrollingCanvas}
                                     columnGroup={columnGroup}
-                                    left={columnGroup.renderLeft}
-                                    width={columnGroup.renderWidth}
-                                    focusedRow={this.state.focusedIdx}
-                                    onSelect={this.selectionHandler}/>
+                                />
                             )}
                     </div>
                 </div>
             </div>
-        );
-    }
+            {model._movingColumn &&
+                <ColumnBearer gridModel={model} rows={data.rows} />}
 
-    // should this be handled here or at the grid level ?
-    selectionHandler = (idx, selectedItem, rangeSelect, incrementalSelection) => {
-        const {selectionModel} = this.props.gridModel;
-        const {selected, lastTouchIdx} = SelectionModel.handleItemClick(selectionModel, this.state, idx, selectedItem, rangeSelect, incrementalSelection);
-        // we must also allow selected to be injected via props
-        this.setState({idx, selected, lastTouchIdx},() => {
-            if (this.props.onSelectionChange) {
-                this.props.onSelectionChange(selected, idx, selectedItem);
-            }
-        });
-    }
+        </>
+    );
 
-    componentWillMount(){
-
-        const {firstVisibleRow, numberOfRowsInViewport} = this.viewState;
-        this.props.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport, true);
-
-    }
-
-    componentWillReceiveProps(nextProps){
-
-        let rangeSet = false;
-        let viewState = this.viewState;
-
-        if (this.props.gridModel.rowHeight !== nextProps.gridModel.rowHeight ||
-            this.props.height !== nextProps.height ||
-            this.props.gridModel.rowCount !== nextProps.gridModel.rowCount){
-            //onsole.log(`Viewport.componentWillReceveProps call getState height:${nextProps.height} length:${nextProps.length}`);
-            const newState = this.getState(this.viewState, nextProps);
-            const {firstVisibleRow, numberOfRowsInViewport} = newState;
-            if (numberOfRowsInViewport !== viewState.numberOfRowsInViewport){
-                // This will escalate to Grid, which will reset rows, but viewport is going to re-render before that, potentially with
-                // invalid no of rows (i.e. mismatch between rows and keys)
-                nextProps.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport);
-                rangeSet = true;
-            }
-            this.viewState = viewState = newState;
-        }
-
-        if (nextProps.gridModel.rowCount !== this.props.gridModel.rowCount && !rangeSet){
-            const {firstVisibleRow, numberOfRowsInViewport} = viewState;
-            nextProps.onSetRange(firstVisibleRow,firstVisibleRow+numberOfRowsInViewport);
-            if (this.scrollTop !== 0){
-                console.log(`rowcount change and we're not at top of viewport, do we need to scroll down ?`)
-
-            }
-        }
-
-        if (SelectionModel.selectionDiffers(nextProps.selectedRows, this.state.selected)){
-            this.setState(SelectionModel.getInitialState(nextProps));
-        }
-
-    }
-
-    onVerticalScroll = (e) => {
-        if (e.target === e.currentTarget){
-
-            if (this.verticalScrollTimer){
-                console.log(`cancel animation frame`)
-                window.cancelAnimationFrame(this.scrollTimer);
-            }
-
-            this.scrollTop = e.target.scrollTop;
-
-            this.verticalScrollTimer = requestAnimationFrame(() => {
-                this.handleVerticalScroll();
-                this.verticalScrollTimer = null;
-            });
-        } else {
-            console.log(`what the hell is this`)
-        }
-    }
-
-    handleVerticalScroll = () => {
-
-        const scrollTop = this.scrollTop;
-
-        const { scrollLeft, firstVisibleRow: prevFirst } = this.viewState;
-        this.viewState = this.getState({ scrollTop, scrollLeft }, this.props);
-
-        if (this.viewState.firstVisibleRow !== prevFirst) {
-            const { firstVisibleRow, numberOfRowsInViewport } = this.viewState;
-            this.props.onSetRange(firstVisibleRow, firstVisibleRow + numberOfRowsInViewport);
-        }
-
-        if (this.props.onVerticalScroll) {
-            this.props.onVerticalScroll(scrollTop);
-        }
-
-    }
-
-    handleHorizontalScroll = e => {
-
-        if (e.target === e.currentTarget){
-
-            const scrollLeft = e.target.scrollLeft;
-
-            this.setScroll(null, scrollLeft);
-
-            if (this.props.onHorizontalScroll) {
-                this.props.onHorizontalScroll(scrollLeft);
-            }
-
-        }
-    }
-
-    scrollTo(scrollLeft){
-        this.scrollableContainerEl.scrollLeft = scrollLeft;
-    }
-
-    setScroll(scrollTop, scrollLeft) {
-        if (typeof scrollTop === 'number'){
-            this.verticalScrollContainer.scrollTop = scrollTop;
-        }
-
-        if (typeof scrollLeft === 'number' && this.scrollingCanvas.current){
-            this.scrollingCanvas.current.setScrollLeft(scrollLeft)
-        }
-    }
-    
-    getState({scrollTop=0, scrollLeft=0}, {rows, height, gridModel}){
-        const {IDX} = this.props.gridModel.meta;
-        const indexOfFirstRow = rows.length ? rows[0][IDX] : -1;
-        const {totalColumnWidth, displayWidth} = gridModel;
-        const numberOfRowsInViewport = visibleRows(height, gridModel.rowHeight, scrollTop, totalColumnWidth, displayWidth);
-        const firstVisibleRow = Math.floor(scrollTop / gridModel.rowHeight);
-        const keyMap = (this.viewState && this.viewState.keyMap)
-            ? this.viewState.keyMap.moveTo(firstVisibleRow, firstVisibleRow + numberOfRowsInViewport, indexOfFirstRow)
-            : new KeyMap(0, numberOfRowsInViewport, indexOfFirstRow);
-
-        return {
-            numberOfRowsInViewport,
-            firstVisibleRow,
-            scrollTop,
-            scrollLeft,
-            keyMap
-        };
-    }
-}
-
-function visibleRows(height, rowHeight, scrollTop, totalColumnWidth, displayWidth){
-    //TODO should not hard code the scrollbar height
-    // onsole.log(`visibleRows height=${height} rowHeight=${rowHeight} Math.ceil=${Math.ceil(height / rowHeight)} 
-    //     totalColumnWidth=${totalColumnWidth} displayWidth=${displayWidth} scrollTop=${scrollTop}`);
-
-    const offset = scrollTop % rowHeight ? 1 : 0;
-    return (totalColumnWidth > displayWidth)
-
-        ? Math.ceil((height-15) / rowHeight) + offset
-        : Math.ceil(height / rowHeight) + offset;
-}
+})

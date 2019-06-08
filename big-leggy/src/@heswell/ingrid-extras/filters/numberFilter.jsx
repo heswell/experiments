@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 
 import FlexBox from '../../inlay/flexBox';
-import { BinView } from '../../data/view';
-import {DataTypes} from '../../data/store/types';
+import BinView from '../../remote-data/view/binned-data-view';
 import {filter as filterUtils} from '../../data';
 
 import SearchBar from './filter-toolbar'
@@ -19,12 +18,12 @@ const NO_STYLE = {}
 
 export class NumberFilter extends React.Component {
 
-    _filterChart;
-
     constructor(props) {
         super(props);
 
         this.graph = null;
+        this._filterChart = null;
+        this.binnedValues = [];
 
         const { column, filter, dataView } = this.props;
         const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
@@ -35,25 +34,32 @@ export class NumberFilter extends React.Component {
             ...this.extractStateFromFilter(columnFilter)
         };
 
-        this.filterView.on(DataTypes.FILTER_DATA, this.onFilterBins);
+    }
+
+    componentDidMount(){
+        this.filterView.subscribe({range:{lo:-1,hi:-1}}, this.onFilterBins);
+        this.createGraph();
     }
 
     componentWillUnmount(){
-        this.filterView.removeListener(DataTypes.FILTER_DATA, this.onFilterBins);
         this.filterView.destroy();
         this.graph.destroy();
         this.props.onHide();
-
     }
 
-    onFilterBins = (_, values) => {
+    onFilterBins = (values) => {
         console.log(`onFilterBins`, values, this.graph)
-        this.graph.destroy()
-        if (values.length){
-            this.createGraph();
-            this.graph.updateOptions({
-                file: values.map(([x, y]) => [x, y]),
-            })
+        if (this.graph){
+            this.graph.destroy()
+            if (values.length){
+                this.binnedValues = values;
+                this.createGraph();
+                this.graph.updateOptions({
+                    file: values.map(([x, y]) => [x, y]),
+                })
+            }
+        } else {
+            this.binnedValues = values;
         }
     }
 
@@ -120,7 +126,7 @@ export class NumberFilter extends React.Component {
     selectRange(min, max) {
 
         console.log(`select range ${min} - ${max}`);
-        const values = this.filterView.getBins();
+        const values = this.binnedValues;
         const loIdx = Math.ceil(min);
         const hiIdx = Math.floor(max);
         const lo = values[loIdx - 1][2];
@@ -216,7 +222,7 @@ export class NumberFilter extends React.Component {
     // note this range, if not [0,0] will cause selection to be highlighted in graph
     getRangeFromState(){
         const {val1, val2} = this.state;
-        const values = this.filterView.getBins();
+        const values = this.binnedValues
         console.log(`getRange from state ${val1} ${val2}`,values)        
 
         if (val1 && val2){
@@ -232,12 +238,8 @@ export class NumberFilter extends React.Component {
         }
     }
 
-    componentDidMount() {
-        this.createGraph();
-    }
-
     createGraph(){
-        const values = this.filterView.getBins();
+        const values = this.binnedValues;
         if (!values || values.length === 0){
             return;
         }

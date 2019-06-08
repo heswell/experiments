@@ -2,12 +2,12 @@
 import React from 'react';
 import cx from 'classnames';
 import {filter as filterUtils, DataTypes} from '../../data';
-import {FilterView} from '../../data/view';
+import FilterView from '../../remote-data/view/filter-data-view';
 import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
 import SearchBar from './filter-toolbar'
 import './setFilter.css';
-import { NOT_IN } from '../../data/store/filter';
+import { NOT_IN, STARTS_WITH, NOT_STARTS_WITH, SET_FILTER_DATA_COLUMNS as filterColumns } from '../../data/store/filter';
 
 const {IN} = filterUtils;
 const NO_STYLE = {}
@@ -25,9 +25,8 @@ const ZeroRowFilter = {
     values: [0]
 }
 
-const FilterCounts = ({column, dataCounts=NO_COUNT, searchText}) => {
+const FilterCounts = ({column, dataCounts=NO_COUNT/*, searchText*/}) => {
     const {dataRowTotal, dataRowAllFilters, filterRowTotal, filterRowSelected} = dataCounts;
-    console.log(`FilterCount ${JSON.stringify(dataCounts,null,2)}`)
     return (
         <div className="filter-count-section">
             <div className="filter-row-counts">
@@ -70,14 +69,6 @@ const FilterCounts = ({column, dataCounts=NO_COUNT, searchText}) => {
 } 
 
 export class SetFilter extends React.Component {
-    static defaultProps = {
-        onSelectionChange: (selected, filterMode) => {
-            console.log(`SetFilter: no handler provided for onSelectionChange ${selected} ${filterMode}`)
-        },
-        onSearchText: (column, value) => {
-            console.log(`SetFilter: no handler provided for onSearchText ${column} ${value}`)
-        }
-    }
     
     constructor(props){
         super(props);
@@ -100,14 +91,15 @@ export class SetFilter extends React.Component {
 
         this.searchText = ''
 
-        this.handleFilterViewUpdate = this.handleFilterViewUpdate.bind(this);
+        this.handleDataCountUpdate = this.handleDataCountUpdate.bind(this);
         this.toggleZeroRows = this.toggleZeroRows.bind(this);
 
-        filterView.addListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate)
+        // TODO how do we add multiple subscriptions
+        filterView.subscribeToDataCounts(this.handleDataCountUpdate)
 
     }
 
-    handleFilterViewUpdate(_, rows, rowCount=null, dataCounts){
+    handleDataCountUpdate(dataCounts){
         this.setState({dataCounts})
     }
 
@@ -119,9 +111,9 @@ export class SetFilter extends React.Component {
         });
 
         if (showZeroRows){
-            filterView.removeFilter(ZeroRowFilter);
+            filterView.filter(null);
         } else {
-            filterView.addFilter(ZeroRowFilter);
+            filterView.filter(ZeroRowFilter);
         }
     }
 
@@ -136,13 +128,10 @@ export class SetFilter extends React.Component {
             suppressFooter=false
         } = this.props;
 
-        const {filterView, selectionDefault, otherFilters, dataCounts, showZeroRows} = this.state;
+        const {filterView, selectionDefault, dataCounts, showZeroRows} = this.state;
         const allSelected = selectionDefault === SELECT_ALL;
         const clickHandler = allSelected ? this.handleDeselectAll : this.handleSelectAll;
         const selectionText = allSelected ? 'DESELECT ALL' : 'SELECT ALL';
-        const columns = otherFilters
-            ? filterView.columns
-            : filterView.columns.filter(column => column.name !== 'count')
 
             return (
             <FlexBox className={cx('SetFilter','ColumnFilter', className)} style={{width: 300,height,visibility: style.visibility}}>
@@ -160,10 +149,8 @@ export class SetFilter extends React.Component {
                         onClickSelectionText={clickHandler}
                         onHide={this.props.onClose}/>}
                     <CheckList style={{flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray'}}
-                        selectionDefault={true}
-                        columns={columns}
-                        dataView={filterView}
-                        onSelectionChange={this.handleSelectionChange}/>
+                        columns={filterColumns}
+                        dataView={filterView} />
                     <FilterCounts style={{height: 50}} column={column} dataCounts={dataCounts} searchText={this.searchText}/>  
                     {suppressFooter !== true &&
                     <div key='footer' className='footer' style={{height: 26}}>
@@ -186,25 +173,39 @@ export class SetFilter extends React.Component {
             this.props.onHide();
         }
         const {filterView} = this.state;
-        filterView.removeListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate);
+        // filterView.removeListener(DataTypes.ROW_DATA, this.handleFilterViewUpdate);
         filterView.destroy();
     }
 
     handleSearchText = searchText => {
         this.searchText = searchText;
-        this.props.onSearchText(this.props.column, searchText);
+        this.state.filterView.getFilterData(this.props.column, searchText)
         // if we're removing searchtext to widen the search, we need to reevaluate the selectionDefault
 
     }
 
     handleDeselectAll= () => {
         if (this.searchText){
-            this.props.onSelectionChange(null, EXCLUDE, this.searchText);
-        } else {
+            this.state.filterView.filter({
+                type: NOT_STARTS_WITH,
+                colName: this.props.column.name,
+                value: this.searchText
+            }, DataTypes.ROW_DATA, true);
+
             this.setState({
                 selectionDefault: SELECT_NONE
-            }, () => {
-                this.props.onSelectionChange(null, EXCLUDE);
+            });
+        
+        } else {
+            
+            this.state.filterView.filter({
+                type: IN,
+                colName: this.props.column.name,
+                values: []
+            }, DataTypes.ROW_DATA, true);
+            
+            this.setState({
+                selectionDefault: SELECT_NONE
             });
 
         }
@@ -212,25 +213,27 @@ export class SetFilter extends React.Component {
 
     handleSelectAll= () => {
         if (this.searchText){
-            this.props.onSelectionChange(null, INCLUDE, this.searchText);
-        } else {
+            this.state.filterView.filter({
+                type: STARTS_WITH,
+                colName: this.props.column.name,
+                value: this.searchText
+            }, DataTypes.ROW_DATA, true);
+
             this.setState({
                 selectionDefault: SELECT_ALL
-            }, () => {
-                this.props.onSelectionChange(null, INCLUDE);
+            });
+
+        } else {
+            this.state.filterView.filter({
+                type: NOT_IN,
+                colName: this.props.column.name,
+                values: []
+            }, DataTypes.ROW_DATA, true);
+
+            this.setState({
+                selectionDefault: SELECT_ALL
             });
         }
     }
 
-    handleSelectionChange = (selectedIndices, idx) => {
-        // what about range selections ?
-        const {filterView} = this.state;
-        const {KEY} = filterView.meta;
-
-        const selectionIncluded = selectedIndices.includes(idx);
-        const filterMode = selectionIncluded ? INCLUDE : EXCLUDE;
-        const value =  filterView.itemAtIdx(idx)[KEY];       
-
-        this.props.onSelectionChange(value, filterMode);
-    }
 }

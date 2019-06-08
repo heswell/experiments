@@ -46,7 +46,8 @@ const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',
     FilterData: 'filterData',
-    SearchData: 'searchData'
+    SearchData: 'searchData',
+    Selected: 'selected'
 };
 
 // need an API call to expose tables so extension services can manipulate data
@@ -145,7 +146,11 @@ export function setViewRange(clientId, request, queue){
             ? DataType.FilterData
             : dataType === 'searchData' ? DataType.SearchData : null;
         // should be purge the queue of any pending updates outside the requested range ?
-    console.log(`DataTableService: setRange ${range.lo} - ${range.hi}`)
+
+    const now = new Date().getTime()
+    console.log(' ')
+    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`)
+
     _subscriptions[viewport].invoke('setRange', queue, type, range, useDelta, dataType);
 
 }
@@ -154,12 +159,12 @@ export function sort(clientId, {viewport, sortCriteria}, queue){
     _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
-export function filter(clientId, {viewport, filter, dataType}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
+export function filter(clientId, {viewport, filter, incremental, dataType}, queue){
+    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType, incremental);
 }
 
-export function select(clientId, {viewport, dataType, colName, filterMode}, queue){
-    _subscriptions[viewport].invoke('select', queue, DataType.Rowset, dataType, colName, filterMode);
+export function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){
+    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection);
 }
 
 export function groupBy(clientId, {viewport, groupBy}, queue){

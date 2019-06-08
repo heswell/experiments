@@ -84,6 +84,9 @@ module.exports = function(proxy, allowedHost) {
       //   { from: /^\/calendar.html/, to: '/build/calendar.html' },
       // ]
     },
+    // mimeTypes: {
+    //   'application/js' : ['js']
+    // },
     public: allowedHost,
     proxy,
     before(app, server) {

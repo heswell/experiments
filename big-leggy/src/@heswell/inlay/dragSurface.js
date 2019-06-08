@@ -11,7 +11,7 @@ export default function DragSurface(props) {
 
     if (child) {
 
-        let { style: childStyle, ...rest } = child.props;
+        let { style: childStyle/*, ...rest */} = child.props;
 
         var layoutModel = child.props.layoutModel;
 

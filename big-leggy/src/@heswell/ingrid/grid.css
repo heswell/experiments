@@ -5,7 +5,7 @@
 }
 
 .Grid {
-
+	--grid-row-selected: #2b8bf8;
 
 	color: #333;
 	font-size: 11px;
@@ -17,19 +17,9 @@
 	user-select: none;	
 }
 
-.GridCell .num {
-	display: inline-block;
-}
-
-.GridCell.center .num {
-    display: inline-block;
-    width: 60%;
-    max-width: 80px;
-}
 
 .Grid .num {
 	font-family:arial;
-    color: black;
 }
 
 .GridCell .flasher { text-align:left; }
@@ -37,66 +27,6 @@
 
 .GridCell.right .flasher { text-align: right;}
 .GridCell.right .flasher + .num { padding-right: 8px; }
-
-.up1 > .flasher {
-	animation-duration: 3s;
-	animation-name : reactbgup1;
-}
-
-.up2 > .flasher {
-	animation-duration: 3s;
-	animation-name : reactbgup2;
-}
-
-.down1 > .flasher {
-	animation-duration: 3s;
-	animation-name : reactbgdown1;
-}
-
-.down2 > .flasher {
-	animation-duration: 3s;
-	animation-name : reactbgdown2;
-}
-
-.up1.arrow-only > .flasher {
-	animation-duration: 30s;
-	animation-name : reactarrowup1;
-}
-
-.up2.arrow-only > .flasher {
-	animation-duration: 30s;
-	animation-name : reactarrowup2;
-}
-
-.down1.arrow-only > .flasher {
-	animation-duration: 30s;
-	animation-name : reactarrowdown1;
-}
-
-.down2.arrow-only > .flasher {
-	animation-duration: 30s;
-	animation-name : reactarrowdown2;
-}
-
-.up1.arrow > .flasher {
-	animation-duration: 30s;
-	animation-name : reactbgarrowup1;	
-}
-
-.up2.arrow > .flasher {
-	animation-duration: 30s;
-	animation-name : reactbgarrowup2;	
-}
-
-.down1.arrow > .flasher {
-	animation-duration: 30s;
-	animation-name : reactbgarrowdown1;	
-}
-
-.down2.arrow > .flasher {
-	animation-duration: 30s;
-	animation-name : reactbgarrowdown2;	
-}
 
 .Grid .loading-data-message {
 	height: 100%;
@@ -127,12 +57,6 @@
 .Header {
 	background: #eaeaea;
 }
-
-.GroupHeader {
-	height: 100%;
-	overflow: hidden;
-}
-
 
 .group-heading .InnerHeaderCell {
 	font-weight: normal;
@@ -240,11 +164,11 @@
 }
 
 .GridRow.selected {
-	background-color: rgb(46, 100, 139);
+	background-color: var(--grid-row-selected);
 	color: white;
 }
 
-.GridRow.selected:first-child,
+/* .GridRow.selected:first-child,
 .GridRow:not(.selected) + .GridRow.selected {
 	border-top-left-radius: 5px; 
 	border-top-right-radius: 5px; 
@@ -253,10 +177,10 @@
 .GridRow.last-selected {
 	border-bottom-left-radius: 5px; 
 	border-bottom-right-radius: 5px; 
-}
+} */
 
 .GridRow.selected .GridCell:not(.selected) {
-	border-right-color: rgb(46, 100, 139);
+	border-right-color: var(--grid-row-selected);
 	border-bottom-color: rgb(46, 100, 139);
 } 
 
@@ -268,103 +192,6 @@
 	border-right-color: rgba(0,0,0,0);
 }
 
-.GridCell {
-	position: relative;
-	display: inline-block;
-	vertical-align: top;
-	overflow:hidden;
-	white-space: nowrap;
-	padding: 0 12px;
-	text-overflow: ellipsis;
-	border-width: 0 1px 1px 0;
-	border-style: solid;
-	border-color: #d4d4d4;
-	font-weight: normal;
-	height: 100%;
-	line-height: 22px;
-	cursor: default;
-    z-index:0;
-}
-
-.GridCell.checkbox {
-	padding: 0 3px;
-}
-
-.GridCell.left { text-align:left; }
-.GridCell.right { text-align:right;}
-.GridCell.center { text-align:center; }
-.GridCell.uppercase { text-transform: uppercase; }
-.GridCell.lowercase { text-transform: lowercase; }
-.GridCell.capitalize { text-transform: capitalize; }
-
-
-.GridCell:focus{
-	outline: none;	
-}
-
-.GridCell.checked {
-	padding: 3px;
-}
-
-.GridCell.resizing {
-	background-color: rgba(66, 139,202, 0.5);
-}
-
-.fixed.Canvas .GridCell {
-	background-color: #f3f3f3;
-}
-
-.GridCell.selected:not(.bool) {
-	border: solid 2px rgb(82, 146, 247);
-	line-height: 18px;
-}
-
-.GridCell:focus {
-	outline: none;
-}
-
-.GridCell.selected:not(.bool):not(.editing) {
-	padding: 0 6px 0 4px;
-}
-
-.GridCell.selected.bool:not(.editing):before {
-	content : ' ';
-	position: absolute;
-	line-height:1;
-	text-align: center;
-	left: 3px;
-	top: 3px;
-	border-radius: 2px;
-	height: 13px;
-	width: 13px;
-	border: solid 2px rgb(82, 146, 247);
-	vertical-align: middle;
-}
-
-
-.GridCell.editable:focus {
-	outline: none;
-}
-
-.GridCell.editing {
-	padding:0;
-}
-
-.GridCell .Editor {
-	width: 100%;
-	height: 100%;
-	border:none;
-	margin:0;
-	padding:0;
-}
-
-.GridCell.editing input {
-	background-color: rgb(0,0,0);
-	line-height: 19px;
-	width: 100%;
-	color: white;
-	outline: none;
-}
 
 .Editor input[type='text'],
 .Editor .CheckBox {
@@ -462,11 +289,6 @@
 .checkbox-list .GridRow.selected {
 	background-color: inherit;
 	color:inherit;
-}
-
-.GridRow.selected .GridCell:not(.selected) {
-    border-right-color: #d4d4d4;
-    border-bottom-color: #d4d4d4;
 }
 
 .checkbox-list .GridCell {

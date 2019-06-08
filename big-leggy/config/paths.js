@@ -48,6 +48,7 @@ module.exports = {
   appIndexJs: resolveApp('src/main.js'),
   calendarJs: resolveApp('src/standalone-calendar.js'),
   listJs: resolveApp('src/standalone-list.js'),
+  algoJs: resolveApp('examples/algo-watch.jsx'),
   gridJs: resolveApp('examples/sample-grid.jsx'),
   commandJs: resolveApp('src/standalone-command-input.js'),
   appPackageJson: resolveApp('package.json'),

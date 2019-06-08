@@ -1,88 +1,68 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, forwardRef, useContext, useImperativeHandle} from 'react';
 import cx from 'classnames';
 import ColumnGroupHeader from './columnGroupHeader';
+import * as Action from '../model/actions';
+import GridContext from '../grid-context';
+
 import css from '../style/grid';
 
-const NULL_REF = () => {};
+export default forwardRef (({
+    className: propClassName,
+    colGroupHeaderRenderer,
+    colHeaderRenderer,
+    model,
+    height,
+    style: propStyle
+}, ref) => {
 
-export default class Header extends React.Component {
+    const { dispatch } = useContext(GridContext);
+    const scrollingHeader = useRef(null);
+    const scrollLeft = useRef(0);
 
-    static defaultProps = {
-        style: {height: 25}
-    };
-
-    scrollingHeader;
-
-    constructor(props){
-        super(props);
-        this.state = { scrollLeft: 0 };
+    useImperativeHandle(ref, () => ({
+        scrollLeft: pos => {
+            scrollLeft.current = pos;
+            scrollingHeader.current.scrollLeft(pos);
+        }
+      }))
+    
+    const handleColumnMove = (phase, column, distance) => {
+        if (!column.isHeading) {
+            const pos = scrollLeft.current;
+            if (phase === 'move' && distance !== 0) {
+                dispatch({ type: Action.MOVE, distance, scrollLeft: pos });
+            } else if (phase === 'begin') {
+                dispatch({ type: Action.MOVE_BEGIN, column, scrollLeft: pos });
+            } else if (phase === 'end') {
+                dispatch({ type: Action.MOVE_END, column });
+            }
+        }
     }
 
-    render() {
+    const className = cx('Header', propClassName);
+    const style = { ...css.Header, ...propStyle, height };
 
-        const className = cx('Header', this.props.className);
-        const {height,
-            gridModel: model,
-            onContextMenu,
-            onColumnResize,onColumnMove,onToggleCollapse,onToggleGroupState,
-            onSort,onSortGroup,onHeaderClick, onRemoveGroupbyColumn} = this.props;
-        const style = {...css.Header, ...this.props.style, height};
-        const {sortBy, headerHeight, groupState} = model;
-        const multiColumnSort = sortBy !== null && sortBy.length > 1;
-
-        return (
-            <div className={className} style={style}>
-
-                {
-                    model._groups.map((group, idx) => {
-
-                        const ref = group.locked ? NULL_REF : component => this.scrollingHeader = ReactDOM.findDOMNode(component);
-
-                        return (
-                        // note: filter is only included so that shouldComponentUpdate can take it into account  - this might be 
-                        // rendering InlineFiters
+    return (
+        <div className={className} style={style}>
+            {
+                model._groups.map((group, idx) => {
+                    return (
                         // TODO we should pass the whole model    
-                            <ColumnGroupHeader
-                                key={idx}
-                                ref={ref}
-                                width={group.width}
-                                headerHeight={headerHeight}
-                                groupState={groupState}
-                                columnGroup={group}
-                                filter={model.filter}
-                                multiColumnSort={multiColumnSort}
-                                onColumnResize={onColumnResize}
-                                onColumnMove={onColumnMove}
-                                onToggleCollapse={onToggleCollapse}
-                                onContextMenu={onContextMenu}
-                                onRemoveGroupbyColumn={onRemoveGroupbyColumn}
-                                onSort={onSort}
-                                onSortGroup={onSortGroup}
-                                onHeaderClick={onHeaderClick}
-                                onToggleGroupState={onToggleGroupState}
-                                colHeaderRenderer={this.props.colHeaderRenderer}
-                                colGroupHeaderRenderer={this.props.colGroupHeaderRenderer}
-                            />
+                        <ColumnGroupHeader
+                            key={idx}
+                            ref={group.locked ? null : scrollingHeader}
+                            columnGroup={group}
+                            model={model}
+                            onColumnMove={handleColumnMove}
+                            colHeaderRenderer={colHeaderRenderer}
+                            colGroupHeaderRenderer={colGroupHeaderRenderer}
+                        />
 
-                        );
+                    );
 
-                    })}
+                })}
+        </div>
+    );
 
-            </div>
-        );
-    }
-
-    componentDidUpdate(prevProps, prevState){
-        if (prevState.scrollLeft !== this.state.scrollLeft && this.scrollingHeader){
-            this.scrollingHeader.scrollLeft = this.state.scrollLeft;
-        }
-    }
-
-    setScrollLeft(scrollLeft){
-        if (scrollLeft !== this.state.scrollLeft){
-            this.setState({scrollLeft});
-        }
-    }
-}
+})

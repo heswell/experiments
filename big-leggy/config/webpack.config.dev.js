@@ -58,26 +58,30 @@ module.exports = {
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.appIndexJs,
     ],
-    calendar: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.calendarJs,
-    ],
-    list: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.listJs,
-    ],
+    // calendar: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.calendarJs,
+    // ],
+    // list: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.listJs,
+    // ],
     command: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.commandJs,
+    ],
+    algo: [
+      require.resolve('react-dev-utils/webpackHotDevClient'),
+      paths.algoJs,
     ],
     grid: [
       require.resolve('react-dev-utils/webpackHotDevClient'),
       paths.gridJs,
     ],
-    veryLargeList: [
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      paths.veryLargeList,
-    ],
+    // veryLargeList: [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   paths.veryLargeList,
+    // ],
   },
   output: {
     // Add /* filename */ comments to generated require()s in the output.
@@ -285,18 +289,18 @@ module.exports = {
       chunks: ['index'],
       template: paths.appHtml,
     }),
-    new HtmlWebpackPlugin({
-      inject: true,
-      chunks: ['calendar'],
-      template: paths.appHtml,
-      filename: 'calendar.html'
-    }),
-    new HtmlWebpackPlugin({
-      inject: true,
-      chunks: ['list'],
-      template: paths.appHtml,
-      filename: 'list.html'
-    }),
+    // new HtmlWebpackPlugin({
+    //   inject: true,
+    //   chunks: ['calendar'],
+    //   template: paths.appHtml,
+    //   filename: 'calendar.html'
+    // }),
+    // new HtmlWebpackPlugin({
+    //   inject: true,
+    //   chunks: ['list'],
+    //   template: paths.appHtml,
+    //   filename: 'list.html'
+    // }),
     new HtmlWebpackPlugin({
       inject: true,
       chunks: ['command'],
@@ -311,10 +315,16 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       inject: true,
-      chunks: ['veryLargeList'],
+      chunks: ['algo'],
       template: paths.appHtml,
-      filename: 'very-large-list.html'
+      filename: 'algo.html'
     }),
+    // new HtmlWebpackPlugin({
+    //   inject: true,
+    //   chunks: ['veryLargeList'],
+    //   template: paths.appHtml,
+    //   filename: 'very-large-list.html'
+    // }),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">

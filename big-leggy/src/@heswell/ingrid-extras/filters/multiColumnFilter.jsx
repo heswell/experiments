@@ -10,6 +10,7 @@ import cx from 'classnames';
 export class MultiColumnFilter extends React.Component{
 
     render(){
+        console.log(`RENDER MULTI COLUMN FILTER`)
         const {column, className, height, width, dataView, onSelectionChange} = this.props;
         const {columns, width: columnWidth} = column;
         return (

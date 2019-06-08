@@ -36,7 +36,8 @@ export function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
         hi: hi-lo,
-        bufferSize
+        bufferSize,
+        reset: true
     };
 }
 

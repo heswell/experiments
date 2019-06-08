@@ -83,9 +83,9 @@ function ascendingComparator(f) {
 var ascendingBisect = bisector(ascending);
 
 const SET_FILTER_DATA_COLUMNS = [
-    {name: 'value'}, 
-    {name: 'count'}, 
-    {name: 'totalCount'}
+    {name: 'name'}, 
+    {name: 'count', width: 40}, 
+    {name: 'totalCount', width: 40}
 ];
 
 const BIN_FILTER_DATA_COLUMNS = [
@@ -103,15 +103,16 @@ function metaData(columns){
     const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
-        DEPTH: start + 2,
-        COUNT: start + 3,
-        KEY: start + 4,
-        SELECTED: start + 5,
-        PARENT_IDX: start + 6,
-        IDX_POINTER: start + 7,
-        FILTER_COUNT: start + 8,
-        NEXT_FILTER_IDX: start + 9,
-        count: start + 10
+        RENDER_IDX: start + 2,
+        DEPTH: start + 3,
+        COUNT: start + 4,
+        KEY: start + 5,
+        SELECTED: start + 6,
+        PARENT_IDX: start + 7,
+        IDX_POINTER: start + 8,
+        FILTER_COUNT: start + 9,
+        NEXT_FILTER_IDX: start + 10,
+        count: start + 11
     }
 }
 
@@ -125,7 +126,8 @@ function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
         hi: hi-lo,
-        bufferSize
+        bufferSize,
+        reset: true
     };
 }
 
@@ -195,7 +197,9 @@ class MessageQueue {
         } else if (type === FILTER_DATA && data.type !== DataTypes$1.FILTER_BINS) {
             mergeAndPurgeFilterData(this._queue, message, meta);
         }
-
+        if (message.type === 'rowset'){
+            console.log(`[${Date.now()}] message queue push message ${JSON.stringify(message.data.range)}`);
+        }
         this._queue.push(message);
 
     }
@@ -203,6 +207,16 @@ class MessageQueue {
     purgeViewport(viewport) {
         this._queue = this._queue.filter(batch => batch.viewport !== viewport);
     }
+
+    // currentRange(){
+    //     for (let i = 0; i<this._queue.length; i++){
+    //         const message = this._queue[i];
+    //         const {data} = message;
+    //         if (data){
+    //             console.log(`message-queue.currentRange ${message.type} ${JSON.stringify(data.range)}`)
+    //         }
+    //     }
+    // }
 
     extract(test) {
         if (this._queue.length === 0) {
@@ -348,7 +362,7 @@ function mergeAndPurgeUpdates(queue, message) {
             //onsole.log(`we have a match for an update ${i} of ${queue.length}   ${JSON.stringify(queue[i].updates)}`)
 
             var { lo: lo1, hi: hi1 } = queue[i].updates;
-            //onsole.log(`merging rowset current range [${lo},${hi}] [${queue[i].rows.lo},${queue[i].rows.hi}]`);
+            console.log(`merging rowset current range [${lo},${hi}] [${queue[i].rows.lo},${queue[i].rows.hi}]`);
             queue.splice(i, 1);
         }
     }
@@ -364,11 +378,14 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    // console.log(`extracted messages ${JSON.stringify(extract.map(formatMessage))}\n\n`)
+    const now = new Date().getTime();
+    console.log(`[${now}] extracted messages ${extract.map(formatMessage)}\n\n`);
     return extract;
 }
 
-// const formatMessage = msg => `type: ${msg.type} rows: [${msg.data && msg.data.rows.map(row => row[0])}]`;
+
+const formatMessage = msg => ` type: ${msg.type} 
+    rows: [${msg.data && msg.data.rows && msg.data.rows.map(row => row[7])}]`;
 
 function updateLoop(name, connection, interval, fn){
   
@@ -464,11 +481,15 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
 
     function PRIORITY1(msg) { return msg.priority === 1 }
 
-    function priorityQueueReader(PRI) {
+    function priorityQueueReader() {
         const queue = _update_queue.extract(PRIORITY1);
         if (queue.length > 0) {
+            queue.forEach(msg => {
+                if (msg.data && msg.data.range){
+                    console.log(`[${Date.now()}]<<<<<<<<< ${msg.type} ${JSON.stringify(msg.data.range)}`);
+                }
+            });
             const msg = JSON.stringify(queue);
-            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<< PRI   ${msg}`);
             return msg;
         } else {
             return null;
@@ -478,7 +499,7 @@ const requestHandler = (options, logger) => (localWebsocketConnection) => {
     function queueReader() {
         if (_update_queue.length > 0) {
             const msg = JSON.stringify(_update_queue.queue);
-            console.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
+            //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
             return msg;
         } else {
             return null;
@@ -617,9 +638,110 @@ const path$2 = fs.realpathSync(process.cwd());
 //const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
 const path$3 = fs.realpathSync(process.cwd());
 
+const data_path$1 = fs.realpathSync(process.cwd());
+const project_path$1 = 'src/@heswell/viewserver/dataTables/sets';
+
+const config$4 = {
+    name: 'Sets',
+    dataPath: `${data_path$1}/${project_path$1}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'ISIN',
+    columns: [
+        {name: 'Segment'},
+        {name: 'Sector'},
+        {name: 'Issuer Name'},
+        {name: 'ISIN'},
+        {name: 'Sedol'},
+        {name: 'Security Type'},
+        {name: 'Currency'},
+        {name: 'Trading Parameter Code'},
+        {name: "Price Tick Table ID"},
+        {name: "Country of Register"},
+        {name: "Mnemonic"},
+        {name: "Short Name"},
+        {name: "Long Name"},
+        {name: "EMS"},
+        {name: "Max Spread Floor"},
+        {name: "Max Spread Perc."},
+        {name: "Issuer Version Start Date"},
+        {name: "Bid"},
+        {name: "Ask"},
+        {name: "Last"},
+        {name: "Bid Vol"},
+        {name: "Ask Vol"},
+   
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
+const data_path$2 = fs.realpathSync(process.cwd());
+const project_path$2 = 'src/@heswell/viewserver/dataTables/order-blotter';
+
+const config$5 = {
+    name: 'order-blotter',
+    dataPath: `${data_path$2}/${project_path$2}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'OrderId',
+    columns: [
+        {name: 'OrderId'},
+        {name: 'Status'},
+        {name: 'Direction'},
+        {name: 'ISIN'},
+        {name: 'Quantity'},
+        {name: 'Price'},
+        {name: 'Currency'},
+        {name: 'timestamp'},
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
+const data_path$3 = fs.realpathSync(process.cwd());
+const project_path$3 = 'src/@heswell/viewserver/dataTables/order-book';
+
+const config$6 = {
+    name: 'order-book',
+    dataPath: `${data_path$3}/${project_path$3}/dataset`,
+    // createPath: `${data_path}/${project_path}/create-row`,
+    // updatePath: `${data_path}/${project_path}/update-row`,
+    type: 'vs',
+    primaryKey: 'Id',
+    columns: [
+        {name: 'Id'},
+        {name: 'ISIN'},
+        {name: 'Level'},
+        {name: 'Bid'},
+        {name: 'Bid Volume'},
+        {name: 'Bid Party'},
+        {name: 'Ask'},
+        {name: 'Ask Volume'},
+        {name: 'Ask Party'},
+        {name: 'timestamp'},
+    ],
+    // updates: {
+    //     interval: 100,
+    //     fields: ['Price'],
+    //     applyInserts: false,
+    //     applyUpdates: false
+    // }
+};
+
 /* global __dirname:false */
 
-const data_path$1 = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
+const data_path$4 = path.dirname(new url.URL(new (typeof URL !== 'undefined' ? URL : require('ur'+'l').URL)((process.browser ? '' : 'file:') + __filename, process.browser && document.baseURI).href).pathname);
 
 // TODO unify these with server-api/messages
 const ServerApiMessageTypes = {
@@ -628,7 +750,7 @@ const ServerApiMessageTypes = {
   
 const ServiceDefinition = {
     name: 'DataTableService',
-    module: `${data_path$1}/DataTableService`,
+    module: `${data_path$4}/DataTableService`,
     API: [
         'GetTableList',
         'GetTableMeta',
@@ -650,12 +772,15 @@ const ServiceDefinition = {
     ]
 };
 
-const config$4 = {
+const config$7 = {
     services: [
         ServiceDefinition
     ],
     DataTables: [
-        config
+        config,
+        config$4,
+        config$5,
+        config$6
         // InstrumentPrices,
         // TestTable,
         // CreditMatrix
@@ -664,4 +789,4 @@ const config$4 = {
 
 console.log('server.mjs about to START SERVER');
 
-start(config$4);
+start(config$7);

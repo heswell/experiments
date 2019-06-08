@@ -21,7 +21,6 @@ import {
   NULL_RANGE as NULL } from './store/rangeUtils';
 
 import {
-  toggleGroupState,
   updateGroupBy,
   indexOfCol,
   groupbyExtendsExistingGroupby } from './store/groupUtils'
@@ -35,14 +34,13 @@ import {
 import * as types from './store/types';
 
 export const groupHelpers = {
-  toggleGroupState,
   updateGroupBy,
   indexOfCol,
   groupbyExtendsExistingGroupby
 }
 
 export {default as Table} from './store/table';
-export {default as InMemoryView} from './store/InMemoryView';
+export {default as DataView} from './store/DataView';
 
 export const sortUtils = {
   sortByToMap

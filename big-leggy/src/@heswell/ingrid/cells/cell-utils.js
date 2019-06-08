@@ -1,15 +1,17 @@
 import cx from 'classnames';
 
-export function getGridCellClassName(column, value, cellClass=null){
+const columnType = column =>
+  !column.type ? null
+    : typeof column.type === 'string' ? column.type
+    : column.type.name;
 
-  const type = (column.type && column.type.name) || null;
+// we want to allow css class to be determined by value
+export function getGridCellClassName(column, value){
 
   return cx(
       'GridCell',
       column.className,
-      column.cellCSS,
-      type,
-      cellClass ? cellClass(value, column) : null,
+      columnType(column),
       column.resizing ? 'resizing' : null,
       column.moving ? 'moving' : null
   );

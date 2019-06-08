@@ -5,7 +5,8 @@ import nodeResolve from 'rollup-plugin-node-resolve'
 import replace from 'rollup-plugin-replace'
 
 export default [{
-    input: './src/@heswell/server-api/web-worker.js',
+    // this is a client-hosted simulation of a web-worker
+    input: './src/@heswell/remote-data/client-hosted/web-worker.js',
     output: {
         file: 'public/web-worker.js',
         format: 'esm',
@@ -22,13 +23,13 @@ export default [{
         })
     ]
 },{
-    input: './src/@heswell/server-api/servers/viewserver.mjs',
+    input: './src/@heswell/remote-data/worker-hosted/servers/viewserver.mjs',
     output: {
         file: 'public/viewserver.js',
         format: 'esm'
     }
 },{
-    input: './src/@heswell/server-api/transports/websocket.js',
+    input: './src/@heswell/remote-data/worker-hosted/transports/websocket.js',
     output: {
         file: 'public/websocket.js',
         format: 'esm'

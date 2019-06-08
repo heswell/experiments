@@ -1,17 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Table from '../src/@heswell/data/store/table';
-import {LocalView} from '../src/@heswell/data/view';
-import RemoteView from '../src/@heswell/server-api/remote-view';
+// import RemoteView from '../src/@heswell/remote-data/remote-view';
 import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 //import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
-import { connect } from '../src/@heswell/server-api/server-api';
-const data= null;
+// import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
+//import View from '../src/@heswell/remote-data/view/remote-data-view';
+import View from '../src/@heswell/remote-data/view/local-data-view';
 
-const locked = true;
+const dataSource = 'local';
 
-const tablename = 'Instruments'
+const tableName = 'Instruments'
+const dataConfig = dataSource === 'remote'
+  ? {url: '127.0.0.1:9090', tableName}
+  : {url: '/data/instruments.js', tableName}
+
 const columns = [
   { name: 'Symbol', width: 120} ,
   { name: 'Name', width: 200} ,
@@ -29,16 +32,7 @@ const columns = [
   { name: 'Industry'}
 ];
 
-let view;
-
-if (data){
-  const table = new Table({data, columns});
-  // note, we can also pass groupBy, sortCriteria etc etc
-  view = new LocalView({table});
-} else {
-  view = new RemoteView({tablename, columns});
-  connect('127.0.0.1:9090');
-}
+const dataView = new View(dataConfig);
 
 class SampleGrid extends React.Component {
   render(){
@@ -47,7 +41,8 @@ class SampleGrid extends React.Component {
         <Grid
           height={600}
           width={800}
-          dataView={view} 
+          dataView={dataView}
+          onSelectCell={(rowIdx, idx) => console.log(`sample-grid onSelectCell ${rowIdx}* ${idx}`)}
           columns={columns}/>
       </div>
     )
@@ -66,3 +61,5 @@ ReactDOM.render(
     {/* <ColumnPicker availableColumns={columns} columns={columns} style={colPickerStyle}/> */}
   </>,
   document.getElementById('root'));
+
+

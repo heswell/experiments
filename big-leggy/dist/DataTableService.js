@@ -204,9 +204,9 @@ const IN = 'IN';
 const NOT_IN = 'NOT_IN';
 
 const SET_FILTER_DATA_COLUMNS = [
-    {name: 'value'}, 
-    {name: 'count'}, 
-    {name: 'totalCount'}
+    {name: 'name'}, 
+    {name: 'count', width: 40}, 
+    {name: 'totalCount', width: 40}
 ];
 
 const BIN_FILTER_DATA_COLUMNS = [
@@ -284,6 +284,29 @@ function testEQ(cols, f) {
     return row => row[cols[f.colName]] === f.value;
 }
 
+function includesNoValues(filter) {
+    // TODO make sure we catch all cases...
+    if (!filter){
+        return false;
+    } else if (filter.type === IN && filter.values.length === 0) {
+        return true;
+    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function includesAllValues(filter) {
+    if (!filter){
+        return false;
+    } else if (filter.type === NOT_IN && filter.values.length === 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // does f2 only narrow the resultset from f1
 function extendsFilter(f1=null, f2=null) {
     // ignore filters which are identical
@@ -343,6 +366,136 @@ function extendsFilters(f1, f2) {
     }
 }
 
+function addFilter(existingFilter, filter) {
+
+    if (includesNoValues(filter)){
+        const {colName} = filter;
+        existingFilter = removeFilterForColumn(existingFilter, {name:colName});
+    } else if (includesAllValues(filter)){
+        // A filter that returns all values is a way to remove filtering for this column 
+        return removeFilterForColumn(existingFilter, {name: filter.colName});
+    }
+
+    if (!existingFilter) {
+        return filter;
+    } else if (!filter) {
+        return existingFilter;
+    }
+   
+    if (existingFilter.type === AND && filter.type === AND) {
+        return { type: 'AND', filters: combine(existingFilter.filters, filter.filters) };
+    } else if (existingFilter.type === 'AND') {
+        const filters = replaceOrInsert(existingFilter.filters, filter);
+        return filters.length > 1
+            ? { type: 'AND', filters  }
+            : filters[0];
+    } else if (filter.type === 'AND') {
+        return { type: 'AND', filters: filter.filters.concat(existingFilter) };
+    } else if (filterEquals(existingFilter, filter, true)) {
+        return filter;
+    } else if (sameColumn(existingFilter, filter)){
+        return merge$1(existingFilter, filter);
+    } else {
+        return { type: 'AND', filters: [existingFilter, filter] };
+    }
+}
+
+// If we add an IN filter and there is an existing NOT_IN, we would always expect the IN
+// values to exist in the NOT_IN set (as long as user interaction is driving the filtering)
+function replaceOrInsert(filters, filter) {
+    const {type, colName, values} = filter;
+    if (type === IN) {
+        // see if we have a NOT_IN entry
+        let idx = filters.findIndex(f => f.type === NOT_IN && f.colName === colName);
+        if (idx !== -1){
+            const {values: existingValues} = filters[idx];
+            if (values.every(value => existingValues.indexOf(value) !== -1)){
+                if (values.length === existingValues.length){
+                    // we simply remove the existing NOT_IN filter ...
+                    return filters.filter((f, i) => i !== idx);
+                } else {
+                    // ... or strip the IN values from the NOT_IN values
+                    let newValues = existingValues.filter(value => !values.includes(value));
+                    return filters.map((filter,i) => i === idx ? {...filter, values: newValues}: filter)
+
+                }
+            }
+            else if (values.some(value => existingValues.indexOf(value) !== -1)){
+                console.log(`partial overlap between IN and NOT_IN`);
+
+            }
+        }
+
+
+        idx = filters.findIndex(f => f.type === IN && f.colName === filter.colName);
+        if (idx !== -1) {
+            return filters.map((f, i) => i === idx ? merge$1(f, filter) : f);
+        }
+    }
+
+    return filters.concat(filter);
+}
+
+function merge$1(f1, f2){
+    const {type: t1} = f1;
+    const {type: t2} = f2;      
+    const sameType = t1 === t2 ? t1 : '';
+
+    if (includesNoValues(f2)){
+        return f2;
+    } else if ((t1 === IN && t2 === NOT_IN) || (t1 === NOT_IN && t2 === IN)){
+        // do the two sets cancel each other out ?
+        if (f1.values.length === f2.values.length && f1.values.every(v => f2.values.includes(v))){  
+            // DOn't think this is right
+            return null;
+        } else if (t1 === NOT_IN){
+            if (f2.values.every(v => f1.values.includes(v))){
+                return {
+                    ...f1,
+                    values: f1.values.filter(v => !f2.values.includes(v))
+                }
+            }
+        }
+    } else if (sameType === IN || sameType === NOT_IN){
+        return {
+            ...f1,
+            values: f1.values.concat(f2.values.filter(v => !f1.values.includes(v)))
+        }
+    } else if (sameType === STARTS_WITH){
+        return {
+            type: OR,
+            filters: [f1, f2]
+        }
+    } else if (sameType === NOT_STARTS_WITH){
+        return {
+            type: AND,
+            filters: [f1, f2]
+        }
+
+    }
+
+    return f2;
+
+}
+
+function combine(existingFilters, replacementFilters) {
+
+    // TODO need a safer REGEX here
+    function equivalentType({ type: t1 }, { type: t2 }) {
+        return (t1 === t2) || (t1[0] === t2[0]);
+    }
+
+    const replaces = (existingFilter, replacementFilter) => {
+        return existingFilter.colName === replacementFilter.colName &&
+            equivalentType(existingFilter, replacementFilter);
+    };
+
+    const stillApplicable = existingFilter => replacementFilters.some(
+        replacementFilter => replaces(existingFilter, replacementFilter)) === false;
+
+    return existingFilters.filter(stillApplicable).concat(replacementFilters);
+}
+
 function splitFilterOnColumn(filter, columnName) {
     if (!filter){
         return [null,null];
@@ -400,6 +553,25 @@ function collectFiltersForColumn(type, filters, columName){
             type,
             filters: results
         }
+    }
+}
+
+function removeFilterForColumn(sourceFilter, column) {
+    const colName = column.name;
+    if (!sourceFilter){
+        return null;
+    } else if (sourceFilter.colName === colName) {
+        return null;
+    } else if (sourceFilter.type === AND || sourceFilter.type === OR) {
+        const {type, filters} = sourceFilter;
+        const otherColFilters = filters.filter(f => f.colName !== colName);
+        switch(otherColFilters.length){
+            case 0: return null;
+            case 1: return otherColFilters[0];
+            default: return { type, otherColFilters } 
+        }
+    } else {
+        return sourceFilter;
     }
 }
 
@@ -495,6 +667,18 @@ function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
+const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
+
+const toColumn = column =>
+    typeof column === 'string'
+        ? { name: column }
+        : column;
+
 function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
@@ -514,8 +698,8 @@ function buildColumnMap(columns){
 
 function projectColumns(map, columns, meta){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
-    return startIdx => (row,i) => {
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    return (startIdx, selectedRows=[]) => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
@@ -524,6 +708,7 @@ function projectColumns(map, columns, meta){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -534,10 +719,10 @@ function projectColumns(map, columns, meta){
 
 function projectColumnsFilter(map, columns, meta, filter){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = filter ? functor(map, overrideColName(filter, 'value'), true)  : () => true;
+    const fn = filter ? functor(map, overrideColName(filter, 'name'), true)  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -547,6 +732,7 @@ function projectColumnsFilter(map, columns, meta, filter){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -555,18 +741,6 @@ function projectColumnsFilter(map, columns, meta, filter){
         return out;
     }
 }
-
-const toKeyedColumn = (column, key) =>
-    typeof column === 'string'
-        ? { key, name: column }
-        : typeof column.key === 'number'
-            ? column
-            : {...column, key};
-
-const toColumn = column =>
-    typeof column === 'string'
-        ? { name: column }
-        : column;
 
 function getFilterType(column){
     return column.filter || getDataType(column);
@@ -596,15 +770,16 @@ function metaData(columns){
     const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
-        DEPTH: start + 2,
-        COUNT: start + 3,
-        KEY: start + 4,
-        SELECTED: start + 5,
-        PARENT_IDX: start + 6,
-        IDX_POINTER: start + 7,
-        FILTER_COUNT: start + 8,
-        NEXT_FILTER_IDX: start + 9,
-        count: start + 10
+        RENDER_IDX: start + 2,
+        DEPTH: start + 3,
+        COUNT: start + 4,
+        KEY: start + 5,
+        SELECTED: start + 6,
+        PARENT_IDX: start + 7,
+        IDX_POINTER: start + 8,
+        FILTER_COUNT: start + 9,
+        NEXT_FILTER_IDX: start + 10,
+        count: start + 11
     }
 }
 
@@ -832,7 +1007,8 @@ function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
         hi: hi-lo,
-        bufferSize
+        bufferSize,
+        reset: true
     };
 }
 
@@ -2021,6 +2197,235 @@ function byKey$1(col1, col2){
     return col1.key - col2.key;
 }
 
+const CHECKBOX = 'checkbox';
+const SINGLE_ROW = 'single-row';
+const MULTIPLE_ROW = 'multiple-row';
+
+const SelectionModelType = {
+  Checkbox: CHECKBOX,
+  SingleRow: SINGLE_ROW,
+  MultipleRow: MULTIPLE_ROW
+};
+
+const {Checkbox, SingleRow, MultipleRow} = SelectionModelType;
+
+const EMPTY$1 = [];
+
+class SelectionModel {
+
+    constructor(selectionModelType=MultipleRow){
+      this.modelType = selectionModelType;
+    }
+
+    select({rows:selection, lastTouchIdx}, idx, rangeSelect, keepExistingSelection){
+        
+        let selected, deselected;
+
+        if (this.modelType === SingleRow){
+            [selection, selected, deselected] = this.handleRegularSelection(selection, idx);
+            lastTouchIdx = idx;
+        } else if (rangeSelect){
+            [selection, selected, deselected] = this.handleRangeSelection(selection, lastTouchIdx, idx);
+        } else if (keepExistingSelection || this.modelType === Checkbox){
+            [selection, selected, deselected] = this.handleIncrementalSelection(selection, idx);
+            lastTouchIdx = idx;
+        } else {
+            [selection, selected, deselected] = this.handleRegularSelection(selection, idx);
+            lastTouchIdx = idx;
+        }
+
+        return {
+          focusedIdx: idx,
+          lastTouchIdx,
+          rows: selection,
+          selected,
+          deselected
+        };
+
+    }
+
+    handleRegularSelection(selected, idx){
+        const pos = selected.indexOf(idx);
+        if (pos === -1){
+            const selection = [idx];
+            return [selection, selection, selected];
+        } else if (selected.length === 1){
+            return [EMPTY$1, EMPTY$1, selected];
+        } else {
+          return [EMPTY$1, EMPTY$1, remove(selected,idx)];
+        }
+    }
+
+    handleIncrementalSelection(selected, idx){
+        const pos = selected.indexOf(idx);
+        const len = selected.length;
+        const selection = [idx];
+
+        if (pos === -1){
+          if (len === 0){
+              return [selection, selection,EMPTY$1];
+            } else {
+                return [insert(selected,idx), selection, EMPTY$1];
+            }
+        } else {
+            if (len === 1){
+                return [EMPTY$1, EMPTY$1, selected];
+            } else {
+                return [remove(selected,idx), EMPTY$1, selection];
+            }
+        }		
+    }
+
+    handleRangeSelection(selected, lastTouchIdx, idx){
+
+        const pos = selected.indexOf(idx);
+        const len = selected.length;
+
+        if (pos === -1){
+
+            if (len === 0){
+                const selection = makeRange(0,idx);
+                return [selection, selection, EMPTY$1];
+            } else if (len === 1){
+                const selection = makeRange(selected[0],idx);
+                selected = selected[0] < idx
+                  ? selection.slice(1)
+                  : selection.slice(0,-1);
+                return [selection, selected, EMPTY$1];
+            } else {
+                const selection = applyRange(selected,lastTouchIdx,idx);
+                return [selection, selection.filter(i => !selected.includes(i)), EMPTY$1];
+            }
+        }
+    }
+
+}
+function applyRange(arr, lo, hi){
+
+    if (lo > hi) {[lo, hi] = [hi, lo];}
+
+    const ranges = getRanges(arr);
+    const newRange = new Range(lo,hi);
+    let newRangeAdded = false;
+    const ret = [];
+
+    for (let i=0;i<ranges.length;i++){
+        const range = ranges[i];
+
+        if (!range.overlaps(newRange)){
+            if (range.start < newRange.start){
+                for (let idx=range.start;idx<=range.end;idx++){
+                    ret.push(idx);
+                }
+            } else {
+                for (let idx=newRange.start;idx<=newRange.end;idx++){
+                    ret.push(idx);
+                }
+                newRangeAdded = true;
+                for (let idx=range.start;idx<=range.end;idx++){
+                    ret.push(idx);
+                }
+            }
+        } else if (!newRangeAdded){
+            for (let idx=newRange.start;idx<=newRange.end;idx++){
+                ret.push(idx);
+            }
+            newRangeAdded = true;
+        }
+    }
+
+    if (!newRangeAdded){
+        for (let idx=newRange.start;idx<=newRange.end;idx++){
+            ret.push(idx);
+        }
+    }
+
+    return ret;
+}
+
+function getRanges(arr){
+
+    const ranges = [];
+    let range;
+
+    for (let i=0;i<arr.length;i++){
+        if (range && range.touches(arr[i])){
+            range.extend(arr[i]);
+        } else {
+            ranges.push(range = new Range(arr[i]));
+        }
+    }
+
+    return ranges;
+
+}
+
+class Range {
+
+    constructor(start, end=start){
+        this.start = start;
+        this.end = end;
+    }
+
+    extend(idx){
+        if (idx >= this.start && idx > this.end){
+            this.end = idx;
+        }
+    }
+
+    touches(idx){
+        return this.end === idx-1;
+    }
+
+    overlaps(that){
+        return !(this.end < that.start || this.start > that.end);
+    }
+
+    contains(idx){
+        return this.start <= idx && this.end >= idx;
+    }
+
+    toString(){
+        return `[${this.start}:${this.end}]`;
+    }
+}
+
+function makeRange(lo, hi){
+    if (lo > hi) {[lo, hi] = [hi, lo];}
+
+    const range = [];
+    for (let idx=lo;idx<=hi;idx++){
+        range.push(idx);
+    }
+    return range;
+}
+
+function remove(arr, idx){
+    const ret = [];
+    for (let i=0;i<arr.length;i++){
+        if (idx !== arr[i]){
+            ret.push(arr[i]);
+        }
+    }
+    return ret;
+}
+
+function insert(arr, idx){
+    const ret = [];
+    for (let i=0;i<arr.length;i++){
+        if (idx !== null && idx < arr[i]){
+            ret.push(idx);
+            idx = null;
+        }
+        ret.push(arr[i]);
+    }
+    if (idx !== null){
+        ret.push(idx);
+    }
+    return ret;
+
+}
+
 /**
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
@@ -2041,10 +2446,11 @@ class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
-        this.selectedSet = [];
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
+        this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+        this.selectionModel = new SelectionModel();
     }
 
     // used by binned rowset
@@ -2063,7 +2469,7 @@ class BaseRowSet {
             : this.data.length;
     }
 
-    setRange(range$$1, useDelta = true) {
+    setRange(range$$1=this.range, useDelta = true) {
 
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range$$1) : getFullRange(range$$1);
         const resultset = this.slice(lo, hi);
@@ -2085,6 +2491,21 @@ class BaseRowSet {
             size: this.size,
             offset: this.offset
         };
+    }
+
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`RowSet.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`);
+        
+        const {selected, deselected, ...selectionState} = this.selectionModel.select(
+            this.selected,
+            idx,
+            rangeSelect,
+            keepExistingSelection
+        );
+        
+        this.selected = selectionState;
+
+        return {selected, deselected};
     }
 
     selectNavigationSet(useFilter) {
@@ -2112,7 +2533,7 @@ class BaseRowSet {
         const resultMap = {};
         const data = [];
         const dataRowCount = rows.length;
-        const [columnFilter, otherFilters] = splitFilterOnColumn(currentFilter, column);
+        const [/*columnFilter*/, otherFilters] = splitFilterOnColumn(currentFilter, column);
         // this filter for column that we remove will provide our selected values   
         let dataRowAllFilters = 0;
 
@@ -2151,7 +2572,7 @@ class BaseRowSet {
         }
 
         //TODO primary key should be indicated in columns
-        const table = new Table({ data, primaryKey: 'value', columns: SET_FILTER_DATA_COLUMNS });
+        const table = new Table({ data, primaryKey: 'name', columns: SET_FILTER_DATA_COLUMNS });
         return new SetFilterRowSet(table, SET_FILTER_DATA_COLUMNS, column.name, dataRowAllFilters, dataRowCount);
 
     }
@@ -2179,6 +2600,7 @@ class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
+
     }
 
     buildSortSet() {
@@ -2191,7 +2613,7 @@ class RowSet extends BaseRowSet {
     }
 
     slice(lo, hi) {
-
+        const {selectedSet} = this;
         if (this.filterSet) {
             const filteredData = this.filterSet.slice(lo, hi);
             const filterMapper = typeof filteredData[0] === 'number'
@@ -2199,7 +2621,7 @@ class RowSet extends BaseRowSet {
                 : ([idx]) => this.data[idx];
             return filteredData
                 .map(filterMapper)
-                .map(this.project(lo + this.offset));
+                .map(this.project(lo + this.offset, selectedSet));
         } else if (this.sortCols) {
             const sortSet = this.sortSet;
             const results = [];
@@ -2210,9 +2632,9 @@ class RowSet extends BaseRowSet {
                 const row = rows[idx];
                 results.push(row);
             }
-            return results.map(this.project(lo + this.offset));
+            return results.map(this.project(lo + this.offset, selectedSet));
         } else {
-            return this.data.slice(lo, hi).map(this.project(lo + this.offset));
+            return this.data.slice(lo, hi).map(this.project(lo + this.offset, selectedSet));
         }
     }
 
@@ -2447,7 +2869,7 @@ class SetFilterRowSet extends RowSet {
             filterRowHidden : 0
         };
         this.setProjection();
-        this.sort([['value', 'asc']]);
+        this.sort([['name', 'asc']]);
     }
 
     get searchText() {
@@ -2456,7 +2878,9 @@ class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
-        this.selectedCount = this.filter({ type: 'SW', colName: 'value', value: text });
+        debugger;
+        console.log(`FilterRowset set text = '${text}'`);
+        this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;
         // let totalCount = 0;
         const colIdx = this.columnMap.totalCount;
@@ -2497,7 +2921,7 @@ class SetFilterRowSet extends RowSet {
 
         if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
             const columnMap = table.columnMap;
-            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = functor(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0); 
                 
         } else {
@@ -2515,7 +2939,7 @@ class SetFilterRowSet extends RowSet {
 
 
     get values() {
-        const key = this.columnMap['value'];
+        const key = this.columnMap['name'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
@@ -2528,7 +2952,7 @@ class SetFilterRowSet extends RowSet {
         this.dataRowFilter = dataRowFilter;
         
         if (columnFilter){
-            const fn = functor(columnMap, overrideColName(columnFilter, 'value'), true);
+            const fn = functor(columnMap, overrideColName(columnFilter, 'name'), true);
             dataCounts.filterRowSelected = filterSet
                 ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
                 : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0); 
@@ -2542,6 +2966,7 @@ class SetFilterRowSet extends RowSet {
 
         this.setProjection(columnFilter);
 
+        console.log(`SetFilterRowSet.setSelected selectedCount ${dataCounts.filterRowSelected} current range ${JSON.stringify(this.range)}`);
         return this.currentRange();
 
     }
@@ -3846,7 +4271,7 @@ function createBatch(type) {
 
 const DEFAULT_INDEX_OFFSET = 100;
 
-class InMemoryView {
+class DataView {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;
@@ -3953,18 +4378,29 @@ class InMemoryView {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
+    select(idx, rangeSelect, keepExistingSelection){
+        console.log(`InMemoryView.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`);
+        return this.rowSet.select(idx, rangeSelect, keepExistingSelection);
+        //TODO eliminate rows not in range
+    
+    }
+
     sort(sortCriteria) {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);
+        // assuming the only time we would not useDelta is when we want to reset ?
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter, dataType=DataTypes.ROW_DATA) {
+    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
-            return [,this.filterFilterData(filter)];
+            return [undefined,this.filterFilterData(filter)];
         
         } else {
+            if (incremental){
+                filter = addFilter(this._filter, filter);
+            }
             const { rowSet, _filter, filterRowSet } = this;
             const { range } = rowSet;
             this._filter = filter;
@@ -3990,7 +4426,10 @@ class InMemoryView {
                 }
             }
     
-            const resultSet = this.rowSet.setRange(resetRange(range), false);
+            const resultSet = {
+                ...(this.rowSet.setRange(resetRange(range), false)),
+                filter
+            };
     
             return filterResultset
                 ? [resultSet, filterResultset]
@@ -4037,8 +4476,8 @@ class InMemoryView {
         return results;
     }
 
-    getFilterData(column, searchText = null, range = NULL_RANGE) {
-
+    getFilterData(column, searchText = null, range) {
+        console.log(`getFilterData searchText='${searchText}'`);
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -4057,7 +4496,6 @@ class InMemoryView {
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (searchText) {
-
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {
@@ -4135,7 +4573,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
     const tablename = table.name;
     const {range, columns, sortCriteria, groupBy} = options;
 
-    let view = new InMemoryView(table, {columns, sortCriteria, groupBy});
+    let view = new DataView(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
 
     const tableMeta = columnUtils.metaData(columns);
@@ -4301,7 +4739,8 @@ const DataType = {
     Rowset: 'rowset',
     Snapshot: 'snapshot',
     FilterData: 'filterData',
-    SearchData: 'searchData'
+    SearchData: 'searchData',
+    Selected: 'selected'
 };
 
 // need an API call to expose tables so extension services can manipulate data
@@ -4400,7 +4839,11 @@ function setViewRange(clientId, request, queue){
             ? DataType.FilterData
             : dataType === 'searchData' ? DataType.SearchData : null;
         // should be purge the queue of any pending updates outside the requested range ?
-    console.log(`DataTableService: setRange ${range.lo} - ${range.hi}`);
+
+    const now = new Date().getTime();
+    console.log(' ');
+    console.log(`[${now}] DataTableService: setRange ${range.lo} - ${range.hi}`);
+
     _subscriptions[viewport].invoke('setRange', queue, type, range, useDelta, dataType);
 
 }
@@ -4409,12 +4852,12 @@ function sort$1(clientId, {viewport, sortCriteria}, queue){
     _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
-function filter$1(clientId, {viewport, filter, dataType}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType);
+function filter$1(clientId, {viewport, filter, incremental, dataType}, queue){
+    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType, incremental);
 }
 
-function select(clientId, {viewport, dataType, colName, filterMode}, queue){
-    _subscriptions[viewport].invoke('select', queue, DataType.Rowset, dataType, colName, filterMode);
+function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){
+    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection);
 }
 
 function groupBy(clientId, {viewport, groupBy}, queue){

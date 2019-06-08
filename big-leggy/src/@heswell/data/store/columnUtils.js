@@ -23,6 +23,18 @@ export function mapSortCriteria(sortCriteria, columnMap) {
     });
 }
 
+export const toKeyedColumn = (column, key) =>
+    typeof column === 'string'
+        ? { key, name: column }
+        : typeof column.key === 'number'
+            ? column
+            : {...column, key};
+
+export const toColumn = column =>
+    typeof column === 'string'
+        ? { name: column }
+        : column;
+
 export function buildColumnMap(columns){
     if (columns){
         return columns.reduce((map, column, i) => {
@@ -42,8 +54,8 @@ export function buildColumnMap(columns){
 
 export function projectColumns(map, columns, meta){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
-    return startIdx => (row,i) => {
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    return (startIdx, selectedRows=[]) => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
@@ -52,6 +64,7 @@ export function projectColumns(map, columns, meta){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -62,10 +75,10 @@ export function projectColumns(map, columns, meta){
 
 export function projectColumnsFilter(map, columns, meta, filter){
     const length = columns.length;
-    const {IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+    const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = filter ? functor(map, overrideColName(filter, 'value'), true)  : () => true;
+    const fn = filter ? functor(map, overrideColName(filter, 'name'), true)  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
@@ -75,6 +88,7 @@ export function projectColumnsFilter(map, columns, meta, filter){
         // assume row[0] is key for now
         // out.push(startIdx+i, 0, 0, row[0]);
         out[IDX] = startIdx+i;
+        out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         out[KEY] = row[0];
@@ -83,18 +97,6 @@ export function projectColumnsFilter(map, columns, meta, filter){
         return out;
     }
 }
-
-export const toKeyedColumn = (column, key) =>
-    typeof column === 'string'
-        ? { key, name: column }
-        : typeof column.key === 'number'
-            ? column
-            : {...column, key};
-
-export const toColumn = column =>
-    typeof column === 'string'
-        ? { name: column }
-        : column;
 
 export function getFilterType(column){
     return column.filter || getDataType(column);
@@ -124,14 +126,15 @@ export function metaData(columns){
     const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
-        DEPTH: start + 2,
-        COUNT: start + 3,
-        KEY: start + 4,
-        SELECTED: start + 5,
-        PARENT_IDX: start + 6,
-        IDX_POINTER: start + 7,
-        FILTER_COUNT: start + 8,
-        NEXT_FILTER_IDX: start + 9,
-        count: start + 10
+        RENDER_IDX: start + 2,
+        DEPTH: start + 3,
+        COUNT: start + 4,
+        KEY: start + 5,
+        SELECTED: start + 6,
+        PARENT_IDX: start + 7,
+        IDX_POINTER: start + 8,
+        FILTER_COUNT: start + 9,
+        NEXT_FILTER_IDX: start + 10,
+        count: start + 11
     }
 }
