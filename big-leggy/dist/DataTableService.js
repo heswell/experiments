@@ -4271,7 +4271,7 @@ function createBatch(type) {
 
 const DEFAULT_INDEX_OFFSET = 100;
 
-class InMemoryView {
+class DataView {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;
@@ -4573,7 +4573,7 @@ function Subscription (table, {viewport, requestId, ...options}, queue){
     const tablename = table.name;
     const {range, columns, sortCriteria, groupBy} = options;
 
-    let view = new InMemoryView(table, {columns, sortCriteria, groupBy});
+    let view = new DataView(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
 
     const tableMeta = columnUtils.metaData(columns);

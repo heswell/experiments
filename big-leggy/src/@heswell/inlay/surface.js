@@ -118,7 +118,7 @@ export default class Surface extends DynamicContainer {
         return null;
     }
 
-    getDragPermission(component) {
+    getDragPermission(/*component*/) {
         return { x: true, y: true }
     }
 
@@ -143,9 +143,6 @@ export default class Surface extends DynamicContainer {
             ? {width, height, ...modelLayout, top, left}
             : {top, left, width, height}
 
-        if (instructions.DoNotTransform){
-            dragTransform = {};
-        }
 
         var draggedIcon = dragAsIcon
             ? componentFromLayout({
@@ -161,7 +158,12 @@ export default class Surface extends DynamicContainer {
             ? {$id: new UUID(1), $path, layout, style, ...rest}
             : {
                 ...rest,
-                style: {...style, position: 'absolute', ...dragTransform, visibility: 'visible'},
+                style: {
+                    ...style,
+                    position: 'absolute',
+                    ...(!instructions.DoNotTransform && dragTransform),
+                    visibility: 'visible'
+                },
                 layout,
                 children: [{
                     type: 'layout', style: {}, layout: {...layout, top: 0, left: 0}

@@ -20,10 +20,11 @@ export default function layoutReducer(state=null, {type, ...action}){
     case LAYOUT_SWITCH_TAB : return handleLayout(state, 'switch-tab', action);
 
     case DROP : return handleLayout(state, 'drop', action); 	
+       
+    default:  return state;
 
-    }
+}
 
-    return state;
 
 }
 

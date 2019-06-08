@@ -1,4 +1,4 @@
-import {InMemoryView as View, columnUtils} from '../../data';
+import {DataView as View, columnUtils} from '../../data';
 import { DataTypes } from '../../data/store/types';
 import {setFilterColumnMeta} from '../../data/store/columnUtils';
 

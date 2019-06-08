@@ -1,6 +1,6 @@
 import {EventEmitter} from '@heswell/utils';
 import {DataTypes} from '../store/types';
-import InMemoryView from '../store/InMemoryView';
+import InMemoryView from '../store/DataView';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 import {NULL_RANGE} from '../store/rangeUtils';
 import {setFilterColumnMeta} from '../store/columnUtils';

@@ -61,7 +61,7 @@ const getDefaultConnection = () => pendingConnection;
   ----------------------------------------------------------------*/
 export default class RemoteDataView  {
 
-  constructor(url, tableName) {
+  constructor({url, tableName}) {
     connect(url);
     this.columns = null;
     this.meta = null;
@@ -129,7 +129,7 @@ export default class RemoteDataView  {
     });
   }
 
-  select(idx, row, rangeSelect, keepExistingSelection){
+  select(idx, rangeSelect, keepExistingSelection){
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.select,

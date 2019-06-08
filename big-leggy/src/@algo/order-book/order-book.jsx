@@ -35,7 +35,6 @@ const columns = [
 
 export default function ({
   style,
-  instrumentName,
   dataView
 }) {
 

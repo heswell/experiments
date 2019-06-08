@@ -7,7 +7,7 @@ import { addFilter } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
 
-export default class InMemoryView {
+export default class DataView {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;

@@ -165,8 +165,8 @@ export const Viewport = React.memo(({
 
     const setRange = useCallback((lo, hi) => {
         logger.log(`setRange ===>  ${lo} : ${hi}`)
-        dataView.setRange(lo, hi);
         dispatchData({ type: 'range', range: { lo, hi } });
+        dataView.setRange(lo, hi);
     }, [])
 
     // all of these calculations belong in the modelReducer

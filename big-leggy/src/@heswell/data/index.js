@@ -40,7 +40,7 @@ export const groupHelpers = {
 }
 
 export {default as Table} from './store/table';
-export {default as InMemoryView} from './store/InMemoryView';
+export {default as DataView} from './store/DataView';
 
 export const sortUtils = {
   sortByToMap
