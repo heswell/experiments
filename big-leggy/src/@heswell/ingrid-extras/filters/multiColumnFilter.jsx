@@ -1,7 +1,7 @@
 import React from 'react';
 import FlexBox from '../../inlay/flexBox';
 import TabbedContainer from '../../inlay/tabbedContainer';
-import {SetFilter} from './setFilter'
+import {SetFilter} from './set-filter'
 // import {NumberFilter} from './numberFilter'
 import './multiColumnFilter.css'
 

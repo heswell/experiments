@@ -6,7 +6,7 @@ import FilterView from '../../remote-data/view/filter-data-view';
 import FlexBox from '../../inlay/flexBox';
 import CheckList from './checkList';
 import SearchBar from './filter-toolbar'
-import './setFilter.css';
+import './set-filter.css';
 import { NOT_IN, STARTS_WITH, NOT_STARTS_WITH, SET_FILTER_DATA_COLUMNS as filterColumns } from '../../data/store/filter';
 
 const { IN } = filterUtils;

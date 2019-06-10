@@ -1,3 +1,3 @@
 export * from './multiColumnFilter';
 export * from './numberFilter';
-export * from './setFilter';
+export * from './set-filter';
