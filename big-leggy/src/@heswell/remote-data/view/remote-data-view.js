@@ -129,7 +129,7 @@ export default class RemoteDataView  {
     });
   }
 
-  select(idx, rangeSelect, keepExistingSelection){
+  select(idx, _row, rangeSelect, keepExistingSelection){
     postMessageToServer({
       viewport: this.viewport,
       type: Msg.select,

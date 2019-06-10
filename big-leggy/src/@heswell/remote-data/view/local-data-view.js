@@ -75,7 +75,7 @@ export default class LocalDataView {
     }
   }
 
-  select(idx, rangeSelect, keepExistingSelection) {
+  select(idx, _row, rangeSelect, keepExistingSelection) {
     this.clientCallback(this.dataView.select(idx, rangeSelect, keepExistingSelection))
   }
 
@@ -92,6 +92,7 @@ export default class LocalDataView {
   }
 
   filter(filter, dataType = DataTypes.ROW_DATA, incremental = false) {
+    // TODO filter call returns an array
     this.clientCallback(this.dataView.filter(filter, dataType, incremental));
   }
 

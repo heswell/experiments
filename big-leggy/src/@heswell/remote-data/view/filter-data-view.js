@@ -10,6 +10,7 @@ const logger = createLogger('FilterDataView', logColor.brown);
 export default class FilterDataView {
 
   constructor(dataView, column){
+      console.log(`create filterdataview`,dataView);
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;
