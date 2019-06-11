@@ -147,16 +147,19 @@ function mergeAndPurge({ lo, hi }, rows, offset = 0, incomingRows, size, meta, k
   //     incoming rows : ${incomingRows.map(r=>r[meta.IDX]-offset).join(',')}
   // `)
 
+
   const { IDX, RENDER_IDX } = meta;
   const {free: freeKeys, used: usedKeys} = keys;
   const low = lo + offset;
   const high = Math.min(hi + offset, size + offset);
-  const rowCount = hi - lo;
-
-  let pos, row, rowIdx, rowKey;
+  const rowCount = hi - lo;  
   const results = [];
   const used = {};
   const free = freeKeys.slice();
+  
+  let maxKey = rows.length;
+  let pos, row, rowIdx, rowKey;
+
   // 1) iterate existing rows, copy to correct slot in results if still in range
   //    if not still in range, collect rowKey
   
@@ -188,6 +191,9 @@ function mergeAndPurge({ lo, hi }, rows, offset = 0, incomingRows, size, meta, k
           rowKey = results[pos][RENDER_IDX]
         } else {
           rowKey = free.shift();
+          if (rowKey === undefined){
+            rowKey = maxKey++;
+          }
           used[rowKey] = 1;
         }
         results[pos] = row;

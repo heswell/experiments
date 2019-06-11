@@ -99,6 +99,8 @@ export const Viewport = React.memo(({
             }
         )
 
+        return () => dataView.unsubscribe();
+
     }, [dataView]);
 
     useEffect(() => {

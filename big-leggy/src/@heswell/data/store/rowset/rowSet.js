@@ -468,7 +468,6 @@ export class SetFilterRowSet extends RowSet {
 
     set searchText(text) {
         // TODO
-        debugger;
         console.log(`FilterRowset set text = '${text}'`)
         this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
         const {filterSet, data: rows} = this;

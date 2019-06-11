@@ -93,12 +93,25 @@ export default class LocalDataView {
 
   filter(filter, dataType = DataTypes.ROW_DATA, incremental = false) {
     // TODO filter call returns an array
-    this.clientCallback(this.dataView.filter(filter, dataType, incremental));
+    const [rowData, filterData] = this.dataView.filter(filter, dataType, incremental);
+    this.clientCallback(rowData);
+    if (filterData){
+      if (this.clientFilterCallback){
+        this.clientFilterCallback({filterData});
+      } else {
+        this.filterDataMessage = filterData;
+      }
+      }
   }
 
   getFilterData(column, searchText) {
-    this.dataView.getFilterData(column, searchText);
-  }
+      const filterData =  this.dataView.getFilterData(column, searchText)
+      if (this.clientFilterCallback){
+        this.clientFilterCallback({filterData});
+      } else {
+        this.filterDataMessage = {filterData};
+      }
+    }
 
   subscribeToFilterData(column, range, callback) {
     logger.log(`<subscribeToFilterData>`)
@@ -112,7 +125,7 @@ export default class LocalDataView {
 
   unsubscribeFromFilterData() {
     logger.log(`<unsubscribeFromFilterData>`)
-    // this.filterDataCallback = null;
+    this.clientFilterCallback = null;
   }
 
   // To support multiple open filters, we need a column here

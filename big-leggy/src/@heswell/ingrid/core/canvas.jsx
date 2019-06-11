@@ -53,7 +53,7 @@ export function Canvas ({
 
   const gridRows = rowPositions
     .map(([key, abs_idx, row]) => {
-      // console.log(`Row ${row[gridModel.meta.KEY]} [${row[gridModel.meta.IDX]}] = ${key} absIdx=${abs_idx} firstVisibleRow=${firstVisibleRow}`)
+      // onsole.log(`Row ${row[gridModel.meta.KEY]} [${row[gridModel.meta.IDX]}] = ${key} absIdx=${abs_idx} firstVisibleRow=${firstVisibleRow}`)
       return (
         <Row key={key}
           idx={abs_idx}

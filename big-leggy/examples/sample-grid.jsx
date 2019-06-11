@@ -5,10 +5,10 @@ import Grid from '../src/@heswell/ingrid/grid';
 import {ColumnPicker} from '../src/@heswell/ingrid-extras';
 //import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
 // import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
-import View from '../src/@heswell/remote-data/view/remote-data-view';
-//import View from '../src/@heswell/remote-data/view/local-data-view';
+// import View from '../src/@heswell/remote-data/view/remote-data-view';
+import View from '../src/@heswell/remote-data/view/local-data-view';
 
-const dataSource = 'remote';
+const dataSource = 'local';
 
 const tableName = 'Instruments'
 const dataConfig = dataSource === 'remote'

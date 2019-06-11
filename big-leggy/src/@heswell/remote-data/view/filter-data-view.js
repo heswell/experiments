@@ -10,14 +10,12 @@ const logger = createLogger('FilterDataView', logColor.brown);
 export default class FilterDataView {
 
   constructor(dataView, column){
-      console.log(`create filterdataview`,dataView);
         this.dataView = dataView;
         this.column = column;
         this.dataCountCallback = null;
     }
 
     subscribe({columns, range}, callback){
-        logger.log(`FilterView subscribe to ${JSON.stringify(columns)}`)
 
         this.columns = columns;
         this.meta = metaData(columns);
@@ -36,6 +34,9 @@ export default class FilterDataView {
 
     subscribeToDataCounts(callback){
         this.dataCountCallback = callback;
+    }
+    unsubscribeFromDataCounts(){
+        this.dataCountCallback = null;
     }
 
     unsubscribe(){
@@ -78,7 +79,6 @@ export default class FilterDataView {
 
     setRange(lo, hi){
       this.range = { lo, hi };
-      logger.log(`setRange ${lo} ${hi}`)
       this.dataView.setFilterRange(lo,hi);
     }
 
