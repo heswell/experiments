@@ -260,7 +260,7 @@ function setRange(state, {lo, hi}) {
     }
 }
 
-const splitKeys = compositeKey => compositeKey.split(':').map(k => parseInt(k,10));
+const splitKeys = compositeKey => `${compositeKey}`.split(':').map(k => parseInt(k,10));
 
 function columnResizeBegin(state, {column}) {
     const {updatedGroups: _groups} = column.isHeading
@@ -765,7 +765,7 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
             ? heading[heading.length-1]
             : null;
 
-        if (colHeaderLabel){
+        if (colHeaderLabel !== undefined){
 
             if (lastHeading && lastHeading.label === colHeader[depth]){
                 lastHeading.width += width;
@@ -921,6 +921,7 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {
             lockedGroupWidth += group.width;
         }
         if (group.headings){
+            console.log(`group headings ${JSON.stringify(group.headings,null,2)}`)
             group.headings.forEach(heading =>
                 heading.forEach(colHeading => {
                     colHeading.width = sumWidth(columnKeysToColumns(splitKeys(colHeading.key),group.columns).filter(col => !col.hidden));

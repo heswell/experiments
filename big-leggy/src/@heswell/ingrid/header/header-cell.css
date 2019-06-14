@@ -1,11 +1,11 @@
 .HeaderCell {
 	--header-cell-highlight-bg: rgb(66, 139, 202);
-
+	--header-height: 24px;
 
 	font-weight: bold;
 	border-right: 1px solid #333;
 	line-height: 24px;
-	height: 100%;
+	height: var(--header-height);
 	display: inline-flex;
 	align-items: stretch;
 	position: relative;

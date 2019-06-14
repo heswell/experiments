@@ -12,7 +12,6 @@ export default memo(forwardRef(({
     colGroupHeaderRenderer,
     colHeaderRenderer,
     model,
-    height,
     style: propStyle
 }, ref) => {
     console.log(`RENDER Header`)
@@ -41,7 +40,11 @@ export default memo(forwardRef(({
     }
 
     const className = cx('Header', propClassName);
-    const style = { ...css.Header, ...propStyle, height };
+    const style = { 
+        ...css.Header,
+        ...propStyle, 
+        height: model.headerHeight * model._headingDepth
+    };
 
     return (
         <div className={className} style={style}>

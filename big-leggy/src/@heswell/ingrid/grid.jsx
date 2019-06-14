@@ -23,6 +23,8 @@ import './grid.css';
 const logger = createLogger('Grid', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
+//TODO 
+// 1) how do we assign extra horizontal space
 
 export default function Grid({
     dataView,
@@ -176,7 +178,6 @@ export default function Grid({
             <div style={{ position: 'relative', height, width, ...style }} className={className}>
                 {showHeaders && headerHeight !== 0 &&
                     <Header ref={header}
-                        height={headingHeight}
                         model={model}
                         colHeaderRenderer={props.colHeaderRenderer}
                     />}

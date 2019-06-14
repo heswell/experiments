@@ -144,7 +144,7 @@ export function ColumnGrouHeader({
     const { width, renderWidth, renderLeft, headings = [] } = columnGroup;
 
     return (
-        <div ref={containerEl} className='GroupHeader' style={{ height: '100%', width: renderWidth, left: renderLeft }}>
+        <div ref={containerEl} className='GroupHeader' style={{ width: renderWidth, left: renderLeft }}>
 
             {headings.map((heading, idx) =>
                 <div className='group-heading' key={idx} style={{ width }}>
@@ -152,7 +152,7 @@ export function ColumnGrouHeader({
                 </div>
             ).reverse()}
 
-            <div style={{ whiteSpace: 'nowrap', height: '100%', width, position: 'relative' }}>
+            <div style={{ whiteSpace: 'nowrap', width, position: 'relative' }}>
                 {renderHeaderCells()}
             </div>
         </div>

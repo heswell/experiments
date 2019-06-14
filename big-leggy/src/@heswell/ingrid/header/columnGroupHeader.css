@@ -1,7 +1,15 @@
 .GroupHeader {
   position: absolute;
   top: 0;
-  height: 100%;
 	overflow: hidden;
 }
 
+.colgroup-header {
+	text-align: center;
+	border-right: solid 1px #333;
+	line-height: 24px;
+}
+
+.colgroup-header:not(.bottomless) {
+	border-bottom: solid 1px #333;
+}
