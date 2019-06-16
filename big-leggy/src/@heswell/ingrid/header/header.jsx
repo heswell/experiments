@@ -11,6 +11,8 @@ export default memo(forwardRef(({
     className: propClassName,
     colGroupHeaderRenderer,
     colHeaderRenderer,
+    height,
+    ignoreHeadings=false,
     model,
     style: propStyle
 }, ref) => {
@@ -43,7 +45,7 @@ export default memo(forwardRef(({
     const style = { 
         ...css.Header,
         ...propStyle, 
-        height: model.headerHeight * model._headingDepth
+        height
     };
 
     return (
@@ -51,12 +53,12 @@ export default memo(forwardRef(({
             {
                 model._groups.map((group, idx) => {
                     return (
-                        // TODO we should pass the whole model    
                         <ColumnGroupHeader
                             key={idx}
                             ref={group.locked ? null : scrollingHeader}
                             columnGroup={group}
                             model={model}
+                            ignoreHeadings={ignoreHeadings}
                             onColumnMove={handleColumnMove}
                             colHeaderRenderer={colHeaderRenderer}
                             colGroupHeaderRenderer={colGroupHeaderRenderer}

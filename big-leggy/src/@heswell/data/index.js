@@ -12,6 +12,7 @@ import {
   extractFilterForColumn,
   getFilterColumn,
   includesColumn,
+  partition,
   removeFilterForColumn,
   shouldShowFilter } from './store/filter';
 
@@ -76,6 +77,10 @@ export const filter = {
 export const rangeUtils = {
   getFullRange,
   resetRange
+}
+
+export const arrayUtils = {
+  partition
 }
 
 export const DataTypes = types.DataTypes;

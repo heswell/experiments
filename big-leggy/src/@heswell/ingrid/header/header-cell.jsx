@@ -18,6 +18,20 @@ const Direction = {
     DSC: 'desc'
 }
 
+export const _HeaderCell = ({
+    className,
+    column,
+    multiColumnSort,
+    onClick,
+    onResize,
+    onMove,
+    onContextMenu,
+    onToggleCollapse,
+    value
+}) => {
+
+}
+
 export default class HeaderCell extends React.Component {
 
     static defaultProps = {
@@ -64,11 +78,10 @@ export default class HeaderCell extends React.Component {
             <div className={className} style={style}
                 onClick={this.handleClick} onMouseDown={this.handleMouseDown} onContextMenu={this.handleContextMenu}>
                 {this.getSortIndicator(column, this.props.multiColumnSort)}
+                {isCollapsible && !isHidden && // arrow-drop-down
+                    <i className='material-icons toggle-icon' onClick={this.handleToggleCollapse}>{'arrow_right'}</i>}
                 <div className='InnerHeaderCell'>
                     <div className='cell-wrapper'>
-                        {isCollapsible && !isHidden
-                            ? <i className='fa fa-caret' onClick={this.handleToggleCollapse}></i>
-                            : null}
                         {this.props.renderer({ column })}
                     </div>
                 </div>

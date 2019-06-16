@@ -1,7 +1,7 @@
 import * as Action from './actions';
 import {Selection} from '../types';
 import {getFormatter} from '../registry/dataTypeRegistry';
-import { groupHelpers, ASC, DSC, sortUtils } from '../../data';
+import { groupHelpers, ASC, DSC, sortUtils, arrayUtils } from '../../data';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
 import {metaData} from '../../data/store/columnUtils'
@@ -752,6 +752,86 @@ function replaceColumnHeadings(groups,maxHeadingDepth){
     return maxHeadingDepth;
 }
 
+function endsWith(string, subString){
+    const str = typeof string === 'string'
+        ? string
+        : string.toString();
+    
+    return subString.length >= str.length
+        ? false
+        : str.slice(-subString.length) === subString;    
+
+}
+
+function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=null, minColumnWidth) {
+    const sortMap = sortUtils.sortByToMap(sortBy);
+    const groups = [];
+    const maxHeadingDepth = Math.max(...columns.map(({heading}) => Array.isArray(heading) ? heading.length: 1));
+
+    let group = null;
+
+    const [groupColumn, nonGroupedColumns] = extractGroupColumn(columns, groupBy, minColumnWidth);
+    if (groupColumn){
+        const headings = maxHeadingDepth > 1 ? [] : undefined;
+        groups.push(group = { locked: false, columns: [groupColumn], headings, width:0, renderWidth:0, renderLeft:0 });
+        addColumnToHeadings(maxHeadingDepth, groupColumn, group.headings);
+    }
+
+    for (let i = 0; i < nonGroupedColumns.length; i++) {
+        const column = nonGroupedColumns[i];
+        const {key: columnKey, name, locked=false} = column;
+
+        if (group === null || group.locked !== locked) {
+            const headings = maxHeadingDepth > 1 ? [] : undefined;
+            groups.push(group = { locked, columns: [], headings, width:0, renderWidth:0, renderLeft:0 });
+        }
+
+        // TODO for each collapsed heading, insert a placeholder
+        const sorted = sortMap[name];
+        addColumnToHeadings(maxHeadingDepth, column, group.headings, collapsedColumns);
+        let {hidden} = column;
+        if (group.headings){
+            const lastColHeaders = group.headings.map(heading => heading[heading.length-1]);
+            const collapsedHeading = lastColHeaders.find(header => header.collapsed);
+            hidden = hidden || !!collapsedHeading;
+            if (collapsedHeading && collapsedHeading.key === columnKey){
+                group.columns.push({ key: collapsedHeading.key, isPlaceHolder: true, width: 25 });
+            }
+        }
+        group.columns.push({ ...column, sorted, hidden });
+          
+    }
+
+    return [groups, maxHeadingDepth];
+}
+
+function extractGroupColumn(columns, groupBy, minColumnWidth){
+    if (groupBy){
+        const isGroup = ({name}) => groupHelpers.indexOfCol(name, groupBy) !== -1
+        const [groupedColumns, rest] = arrayUtils.partition(columns, isGroup);
+        const groupCount = groupBy.length;
+
+        if (groupedColumns.length){
+            const groupCols = groupedColumns.map(column => {
+                const idx = groupHelpers.indexOfCol(column.name, groupBy);
+                return {
+                    ...column,
+                    groupLevel: groupCount - idx
+                }
+            })
+            const groupCol = {
+                key: -1,
+                name: 'group-col',
+                isGroup: true,
+                columns: groupCols,
+                width: Math.max(...groupCols.map(col => col.width || minColumnWidth)) + 50
+            };
+            return [groupCol, rest];
+        }
+    }
+    return [null, columns]
+}
+
 function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns=null){
     const sortable = false;
     const collapsible = true;
@@ -759,6 +839,7 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
 
     const {key, heading: colHeader=[column.name], width} = column;
     for (let depth = 1; depth < maxHeadingDepth; depth++) {
+
         const heading = headings[depth-1] || (headings[depth-1] = []);
         const colHeaderLabel = colHeader[depth];
         const lastHeading = heading.length > 0
@@ -819,73 +900,6 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
         }
     }
 
-}
-
-function endsWith(string, subString){
-    const str = typeof string === 'string'
-        ? string
-        : string.toString();
-    
-    return subString.length >= str.length
-        ? false
-        : str.slice(-subString.length) === subString;    
-
-}
-
-function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=null, minColumnWidth) {
-    const sortMap = sortUtils.sortByToMap(sortBy);
-    const groupByCount = groupBy === null ? 0 : groupBy.length;
-    const groups = [];
-    const maxHeadingDepth = Math.max(...columns.map(({heading}) => Array.isArray(heading) ? heading.length: 1));
-
-    let group = null;
-    let groupCols = [];
-
-    for (let i = 0; i < columns.length; i++) {
-        const {key: columnKey, name, locked=false} = columns[i];
-        const groupByIdx = groupHelpers.indexOfCol(name, groupBy);
-
-        if (group === null || group.locked !== locked) {
-            const headings = maxHeadingDepth > 1 ? [] : undefined;
-            groups.push(group = { locked, columns: [], headings, width:0, renderWidth:0, renderLeft:0 });
-        }
-
-        // TODO for each collapsed heading, insert a placeholder
-        if (groupByIdx === -1) {
-            const sorted = sortMap[name];
-            //TODO headings are no longer being rendered
-            addColumnToHeadings(maxHeadingDepth, columns[i], group.headings, collapsedColumns);
-            let {hidden} = columns[i];
-            if (group.headings){
-                const lastColHeaders = group.headings.map(heading => heading[heading.length-1]);
-                const collapsedHeading = lastColHeaders.find(header => header.collapsed);
-                hidden = hidden || !!collapsedHeading;
-                if (collapsedHeading && collapsedHeading.key === columnKey){
-                    group.columns.push({ key: collapsedHeading.key, isPlaceHolder: true, width: 25 });
-                }
-            }
-            group.columns.push({ ...columns[i], sorted, hidden });
-          
-        } else {
-            let groupLevel = groupByCount - groupByIdx;
-            const [, sortDirection] = groupBy[groupByIdx];
-            const sorted = sortDirection === ASC ? 1 : -1;
-            groupCols[groupByIdx] = { ...columns[i], sorted, groupLevel };
-        }
-    }
-
-    if (groupByCount) {
-        // TODO make sure we found all the groupBy cols in the columns
-        groups[0].columns.unshift({
-            key: -1,
-            name: 'group-col',
-            isGroup: true,
-            columns: groupCols,
-            width: Math.max(...groupCols.map(col => col.width || minColumnWidth)) + 50
-        });
-    }
-
-    return [groups, maxHeadingDepth];
 }
 
 function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {

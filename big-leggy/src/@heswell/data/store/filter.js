@@ -502,7 +502,7 @@ function sameValues(arr1, arr2) {
     return false;
 }
 
-function partition(list, test1, test2=null) {
+export function partition(list, test1, test2=null) {
     const results1 = [];
     const misses = [];
     const results2 = test2===null ? null : [];

@@ -178,6 +178,7 @@ export default function Grid({
             <div style={{ position: 'relative', height, width, ...style }} className={className}>
                 {showHeaders && headerHeight !== 0 &&
                     <Header ref={header}
+                        height={headingHeight}
                         model={model}
                         colHeaderRenderer={props.colHeaderRenderer}
                     />}
@@ -188,7 +189,7 @@ export default function Grid({
                         model={model}
                         filter={filter}
                         height={filterHeight}
-                        style={{ position: 'absolute', top: headerHeight, height: filterHeight, width }} />}
+                        style={{ position: 'absolute', top: headingHeight, height: filterHeight, width }} />}
 
                 <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
                     {interpolatingStyle =>

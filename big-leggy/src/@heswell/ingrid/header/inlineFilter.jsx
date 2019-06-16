@@ -64,7 +64,7 @@ export default forwardRef(({
             values: []
         }, DataTypes.ROW_DATA, true);
     },[]);
-console.log(`render InlineFilter`)
+
     const colHeaderRenderer = ({ key, column }) =>
         <ColumnFilter key={key}
             column={column}
@@ -84,6 +84,7 @@ console.log(`render InlineFilter`)
             model={model}
             height={height}
             style={style}
+            ignoreHeadings={true}
             colGroupHeaderRenderer={colHeaderRenderer}
             colHeaderRenderer={colHeaderRenderer}
         />

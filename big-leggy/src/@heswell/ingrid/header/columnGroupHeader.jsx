@@ -13,6 +13,7 @@ export function ColumnGrouHeader({
     columnGroup,
     colGroupHeaderRenderer,
     colHeaderRenderer,
+    ignoreHeadings,
     model,
     onColumnMove
 
@@ -70,10 +71,12 @@ export function ColumnGrouHeader({
     const renderColHeadings = heading =>
         heading.map((item, idx) =>
             <HeaderCell
-                key={idx} className={cx('colgroup-header', { bottomless: item.label === '' })}
+                key={idx}
+                className={cx('colgroup-header', { bottomless: item.label === '' })}
                 column={item}
                 onResize={handleColumnResize}
                 onMove={onColumnMove}
+                onContextMenu={showContextMenu}
                 onToggleCollapse={handleToggleCollapseColumn}
             />
         )
@@ -146,7 +149,7 @@ export function ColumnGrouHeader({
     return (
         <div ref={containerEl} className='GroupHeader' style={{ width: renderWidth, left: renderLeft }}>
 
-            {headings.map((heading, idx) =>
+            {!ignoreHeadings && headings.map((heading, idx) =>
                 <div className='group-heading' key={idx} style={{ width }}>
                     {renderColHeadings(heading)}
                 </div>
