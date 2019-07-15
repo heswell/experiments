@@ -1,13 +1,5 @@
 
 const styles = {
-    Header : {
-        position: 'absolute',
-        top:0,
-        left:0,
-        right:0,
-        cursor: 'default',
-        borderBottom: 'solid 1px rgb(41,41,41)'
-    },
 
     Viewport : {
         position: 'absolute',

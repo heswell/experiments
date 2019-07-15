@@ -3,7 +3,6 @@
     line-height: 24px;
     padding-left: 12px;
     box-sizing: border-box;
-    border-left: solid 1px black;
     border-bottom: solid 1px black;
     position: relative;
     background-color: var(--header-cell-highlight-bg);

@@ -3,13 +3,18 @@
 	--header-height: 24px;
 
 	font-weight: bold;
-	border-right: 1px solid #333;
+	border-right: 1px solid var(--grid-heading-border-color);
 	line-height: 24px;
 	height: var(--header-height);
 	display: inline-flex;
+	vertical-align:top;
 	align-items: stretch;
 	position: relative;
 
+}
+
+.header-cells .HeaderCell {
+	border-bottom: solid 1px var(--grid-heading-border-color);
 }
 
 .HeaderCell.right {
@@ -75,3 +80,16 @@
 	padding: 0 12px;
 	
 }
+
+.HeaderCell .filter-input-container {
+	flex: 1 1 auto;
+	padding: 0 6px;
+}
+
+.HeaderCell .filter-input {
+	width: 100%;
+	height: 100%;
+	border: none;
+	padding: 0;
+}
+

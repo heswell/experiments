@@ -65,7 +65,7 @@ export default ({
             const { left, top } = el.getBoundingClientRect();
             // TODO without the timeout, it does not render until next render cycle
             requestAnimationFrame(() => {
-                PopupService.showPopup({ left: Math.round(left)-1, top: top - 26, component });
+                PopupService.showPopup({ left: Math.round(left), top: top - 26, component });
             })
         }
     },[showFilter]);

@@ -1,3 +1,13 @@
+
+.Header {
+	background: #eaeaea;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	cursor: default;
+}
+
 .GroupbyHeaderCell {
 	overflow:hidden;
 }

@@ -6,6 +6,8 @@
 
 .Grid {
 	--grid-row-selected: #2b8bf8;
+	--grid-heading-border-color: #bbb;
+	--grid-cell-border-color: #d4d4d4;
 
 	color: #333;
 	font-size: 11px;
@@ -52,10 +54,6 @@
 
 .Grid.empty.no-header .Header {
 	display: none;
-}
-
-.Header {
-	background: #eaeaea;
 }
 
 .group-heading .InnerHeaderCell {
@@ -248,27 +246,6 @@
 	color: black;
 }
 
-.HeaderCell .filter-input-container {
-	flex: 1 1 auto;
-}
-
-.HeaderCell .filter-input {
-	width: 100%;
-	height: 100%;
-	border: none;
-}
-
-.InlineFilter .filter-clear-button {
-	flex: 0 0 18px;
-	cursor: pointer;
-	background-color: white;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	justify-content: center;
-	color: #888;
-}
-
 .filter-clear-button .material-icons {
 	font-size: 14px;
 }
@@ -292,11 +269,13 @@
 .scrolling-canvas-container { 
 	 transform: translate3d(0,0,0);
 
-    /*background: repeating-linear-gradient(white 0px, white 22px,
-      #d4d4d4 22px,
+    background: repeating-linear-gradient(
+			white 0px, 
+			white 22px,
+      var(--grid-cell-border-color) 22px,
       #f3f3f3 23px,
       #f3f3f3 45px,
-      white 46px);*/
+      white 46px);
 
 
 }

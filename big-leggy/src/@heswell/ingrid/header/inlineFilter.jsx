@@ -3,6 +3,8 @@ import Header from './header';
 import ColumnFilter from './columnFilter';
 import { filter as filterUtils, DataTypes } from '../../data'
 
+import './inline-filter.css';
+
 const { STARTS_WITH, NOT_IN } = filterUtils;
 
 export default forwardRef(({ 

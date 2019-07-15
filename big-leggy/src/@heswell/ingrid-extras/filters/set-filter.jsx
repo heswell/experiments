@@ -95,6 +95,7 @@ export const SetFilter = ({
     const allSelected = selectionDefault === SELECT_ALL;
     const clickHandler = allSelected ? handleDeselectAll : handleSelectAll;
 
+    // TODO envelope should be part of columnFilter
     return (
         <FlexBox className={cx('SetFilter', 'ColumnFilter', className)} style={{ width: 300, height, visibility: style.visibility }}>
             {suppressHeader !== true &&

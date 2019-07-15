@@ -1,15 +1,16 @@
-.GroupHeader {
+.ColumnGroupHeader {
   position: absolute;
-  top: 0;
+	top: 0;
+	bottom:0;
 	overflow: hidden;
 }
 
 .colgroup-header {
 	text-align: center;
-	border-right: solid 1px #333;
+	border-right: solid 1px var(--grid-heading-border-color);
 	line-height: 24px;
 }
 
 .colgroup-header:not(.bottomless) {
-	border-bottom: solid 1px #333;
+	border-bottom: solid 1px var(--grid-heading-border-color);
 }
