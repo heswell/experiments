@@ -63,11 +63,6 @@ export function ColumnGrouHeader({
         dispatch({ type: Action.TOGGLE, groupState })
     },[]);
 
-    const handleToggleCollapseColumn = useCallback(column => {
-        const action = column.collapsed ? Action.COLUMN_EXPAND : Action.COLUMN_COLLAPSE;
-        dispatch({ type: action, column });
-    }, [])
-
     const renderColHeadings = heading =>
         heading.map((item, idx) =>
             <HeaderCell
@@ -77,7 +72,6 @@ export function ColumnGrouHeader({
                 onResize={handleColumnResize}
                 onMove={onColumnMove}
                 onContextMenu={showContextMenu}
-                onToggleCollapse={handleToggleCollapseColumn}
             />
         )
 

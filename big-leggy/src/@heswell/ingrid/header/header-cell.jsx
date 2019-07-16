@@ -3,20 +3,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import Draggable from '../draggable/draggable';
+import SortIndicator from './sort-indicator';
+import ToggleIcon from './toggle-icon';
 
 import './header-cell.css';
-
-const NOOP = () => { };
 
 const defaultRenderer = ({ column }) =>
     column.collapsed || column.hidden
         ? ''
         : column.label;
-
-const Direction = {
-    ASC: 'asc',
-    DSC: 'desc'
-}
 
 export const _HeaderCell = ({
     className,
@@ -26,7 +21,6 @@ export const _HeaderCell = ({
     onResize,
     onMove,
     onContextMenu,
-    onToggleCollapse,
     value
 }) => {
 
@@ -35,9 +29,8 @@ export const _HeaderCell = ({
 export default class HeaderCell extends React.Component {
 
     static defaultProps = {
-        renderer: defaultRenderer,
-        onSort: NOOP,
-        onToggleCollapse: NOOP
+        // TODO how do we make this configurable
+        renderer: defaultRenderer
     };
 
     wasDragging;
@@ -53,7 +46,7 @@ export default class HeaderCell extends React.Component {
 
     render() {
 
-        const { column } = this.props;
+        const { column, multiColumnSort } = this.props;
 
         const className = cx(
             'HeaderCell',
@@ -66,7 +59,6 @@ export default class HeaderCell extends React.Component {
             });
 
         const isResizeable = column.resizeable !== false;
-        const isCollapsible = column.collapsible === true;
         const isHidden = column.hidden === true;
         const style = { width: column.width };
 
@@ -77,9 +69,8 @@ export default class HeaderCell extends React.Component {
         return (
             <div className={className} style={style}
                 onClick={this.handleClick} onMouseDown={this.handleMouseDown} onContextMenu={this.handleContextMenu}>
-                {this.getSortIndicator(column, this.props.multiColumnSort)}
-                {isCollapsible && !isHidden && // arrow-drop-down
-                    <i className='material-icons toggle-icon' onClick={this.handleToggleCollapse}>{'arrow_right'}</i>}
+                <SortIndicator column={column} multiColumnSort={multiColumnSort}/>
+                <ToggleIcon column={column}/>
                 <div className='InnerHeaderCell'>
                     <div className='cell-wrapper'>
                         {this.props.renderer({ column })}
@@ -101,32 +92,6 @@ export default class HeaderCell extends React.Component {
         node.style.webkitTransform = `translate3d(${scrollLeft}px, 0px, 0px)`;
     }
 
-    getSortIndicator = (column, multiColumnSort) => {
-        if (column.sortable === false || column.isPlaceHolder) {
-            return null;
-        } else if (column.sorted) {
-            const direction = column.sorted < 0 ? 'desc' : 'asc';
-            if (multiColumnSort) {
-                return <div className={`sort-col multi-col ${direction}`}>
-                    {this.sortIcon(direction)}
-                    <span className='sort-col-num'>{Math.abs(column.sorted)}</span>
-                </div>;
-            } else {
-                return <div className="sort-col single-col">
-                    {this.sortIcon(direction)}
-                </div>;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    sortIcon(direction){
-        return direction === Direction.ASC
-            ? <i className="material-icons">arrow_drop_up</i>
-            : <i className="material-icons">arrow_drop_down</i>
-    }
-
     handleResizeStart = () => {
         this.props.onResize('begin', this.props.column);
     }
@@ -146,10 +111,6 @@ export default class HeaderCell extends React.Component {
 
     handleContextMenu = e => {
         this.props.onContextMenu(e, 'header', { column: this.props.column });
-    }
-
-    handleToggleCollapse = () => {
-        this.props.onToggleCollapse(this.props.column);
     }
 
     handleClick = () => {

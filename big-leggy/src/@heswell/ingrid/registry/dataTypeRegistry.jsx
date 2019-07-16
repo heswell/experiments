@@ -32,6 +32,8 @@ export function getFormatter(type=null){
     return FormatRegistry[t] ? FormatRegistry[t] : defaultFormatter;
 }
 
+// is getCellRenderer the most appropriate name here, as what we return is a
+// JSX element, not a renderer
 export function getCellRenderer(props){
     const {column} = props;
     const type = column && column.type && 
