@@ -79,7 +79,7 @@ const handlers = {
     [Action.MOVE_END]: moveEnd,
     [Action.TOGGLE]: toggle,
     [Action.RANGE]: setRange,
-    [Action.SCROLLLEFT]: setScrollLeft,
+    // [Action.SCROLLLEFT]: setScrollLeft,
     [Action.SCROLL_LEFT]: autoScrollLeft,
     [Action.SCROLL_RIGHT]: autoScrollRight,
     [Action.COLUMN_COLLAPSE]: collapseColumn,
@@ -370,9 +370,9 @@ function columnResizeEnd(state, {column}) {
     return {...state, columns, _groups, groupColumnWidth, _headingResize: undefined};
 }
 
-function setScrollLeft(state, {scrollLeft}) {
-    return {...state,scrollLeft};
-}
+// function setScrollLeft(state, {scrollLeft}) {
+//     return {...state,scrollLeft};
+// }
 
 function autoScrollLeft(state, {scrollDistance}) {
     const {_overTheLine,  _movingColumn: column} = state;

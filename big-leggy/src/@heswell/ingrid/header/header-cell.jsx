@@ -1,6 +1,5 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useRef, useCallback} from 'react';
 import cx from 'classnames';
 import Draggable from '../draggable/draggable';
 import SortIndicator from './sort-indicator';
@@ -8,146 +7,48 @@ import ToggleIcon from './toggle-icon';
 
 import './header-cell.css';
 
-const defaultRenderer = ({ column }) =>
+const Label = ({ column }) =>
     column.collapsed || column.hidden
         ? ''
-        : column.label;
+        : column.label || '';
 
-export const _HeaderCell = ({
-    className,
+export default ({
+    className: propClassName,
     column,
     multiColumnSort,
-    onClick,
+    onClick=() => {},
     onResize,
     onMove,
-    onContextMenu,
-    value
+    onContextMenu
 }) => {
 
-}
+    const dragging = useRef(false);
+    const wasDragging = useRef(false);
+    const el = useRef(null);
+    const position = useRef({x:0,y:0})
 
-export default class HeaderCell extends React.Component {
+    const handleClick = () => {
 
-    static defaultProps = {
-        // TODO how do we make this configurable
-        renderer: defaultRenderer
-    };
-
-    wasDragging;
-    x;
-    y;
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            dragging: null
-        };
-    }
-
-    render() {
-
-        const { column, multiColumnSort } = this.props;
-
-        const className = cx(
-            'HeaderCell',
-            column.className,
-            column.cellCSS,
-            this.props.className, {
-                'HeaderCell--resizing': column.resizing,
-                'hidden': column.hidden,
-                'collapsed': column.collapsed
-            });
-
-        const isResizeable = column.resizeable !== false;
-        const isHidden = column.hidden === true;
-        const style = { width: column.width };
-
-        if (isHidden && column.width === 0) {
-            style.display = 'none';
-        }
-
-        return (
-            <div className={className} style={style}
-                onClick={this.handleClick} onMouseDown={this.handleMouseDown} onContextMenu={this.handleContextMenu}>
-                <SortIndicator column={column} multiColumnSort={multiColumnSort}/>
-                <ToggleIcon column={column}/>
-                <div className='InnerHeaderCell'>
-                    <div className='cell-wrapper'>
-                        {this.props.renderer({ column })}
-                    </div>
-                </div>
-                {isResizeable
-                    ? <Draggable className='resizeHandle'
-                        onDrag={this.handleResize}
-                        onDragStart={this.handleResizeStart}
-                        onDragEnd={this.handleResizeEnd} />
-                    : null}
-            </div>
-        );
-
-    }
-
-    setScrollLeft(scrollLeft) {
-        const node = ReactDOM.findDOMNode(this);
-        node.style.webkitTransform = `translate3d(${scrollLeft}px, 0px, 0px)`;
-    }
-
-    handleResizeStart = () => {
-        this.props.onResize('begin', this.props.column);
-    }
-
-    handleResize = (e) => {
-        const width = this.getWidthFromMouseEvent(e);
-        if (width > 0 && this.props.onResize) {
-            this.props.onResize('resize', this.props.column, width);
-        }
-    }
-
-    handleResizeEnd = (e) => {
-        this.wasDragging = true;
-        const width = this.getWidthFromMouseEvent(e);
-        this.props.onResize('end', this.props.column, width);
-    }
-
-    handleContextMenu = e => {
-        this.props.onContextMenu(e, 'header', { column: this.props.column });
-    }
-
-    handleClick = () => {
-
-        if (this.wasDragging) {
-            this.wasDragging = false;
+        if (wasDragging.current) {
+            wasDragging.current = false;
         } else {
-            this.clickColumn(this.props.column);
+            onClick(column);
         }
     }
 
-    clickColumn = column => {
-        if (this.props.onClick) {
-            this.props.onClick(column);
+    const onMouseUp = useCallback(() => {
+        cleanUp();
+        if (dragging.current) {
+
+            wasDragging.current = true;
+            // shouldn't we set dragging to false ?
+            onMove('end', column);
+        } else {
+            // drag aborted
         }
-    }
+    },[column])
 
-    getWidthFromMouseEvent(e) {
-        const right = e.pageX;
-        const left = ReactDOM.findDOMNode(this).getBoundingClientRect().left;
-        return right - left;
-    }
-
-    // ------ Draggable
-    handleMouseDown = e => {
-
-        this.x = e.clientX;
-        this.y = e.clientY;
-
-        window.addEventListener('mouseup', this.onMouseUp);
-        window.addEventListener('mousemove', this.onMouseMove);
-    }
-
-    // wasDragging
-
-    onMouseMove = e => {
-        const dragging = this.state.dragging;
+    const onMouseMove = useCallback(e => {
 
         if (e.stopPropagation) {
             e.stopPropagation();
@@ -159,38 +60,95 @@ export default class HeaderCell extends React.Component {
 
         const x = e.clientX;
         const y = e.clientY;
-        const deltaX = x - this.x;
-        // const deltaY = y - this.y;
+        const deltaX = x - position.current.x;
 
-        if (dragging) {
-            this.x = x;
-            this.y = y;
-            this.props.onMove('move', this.props.column, deltaX);
+        if (dragging.current) {
+            position.current.x = x;
+            position.current.y = y;
+            onMove('move', column, deltaX);
+
         } else {
             if (Math.abs(deltaX) > 3) {
-                this.setState({ dragging: true });
-                this.x = x;
-                this.y = y;
-                this.props.onMove('begin', this.props.column, deltaX);
+
+                dragging.current = true;
+                position.current.x = x;
+                position.current.y = y;
+                onMove('begin', column, deltaX);
             }
         }
+    },[column])
+
+    const handleMouseDown = e => {
+        position.current = {x: e.clientX, y: e.clientY};
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('mousemove', onMouseMove);
     }
 
-    onMouseUp = () => {
-        this.cleanUp();
-        if (this.state.dragging) {
-            this.wasDragging = true;
-            this.props.onMove('end', this.props.column);
-        } else {
-            // drag aborted
+    const cleanUp = () => {
+        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('mousemove', onMouseMove);
+    }
+
+    const handleContextMenu = e => {
+        onContextMenu(e, 'header', { column });
+    }
+
+    const handleResizeStart = () => onResize('begin', column);
+
+    const handleResize = (e) => {
+        const width = getWidthFromMouseEvent(e);
+        if (width > 0) {
+            onResize('resize', column, width);
         }
     }
 
-    cleanUp() {
-        window.removeEventListener('mouseup', this.onMouseUp);
-        window.removeEventListener('mousemove', this.onMouseMove);
+    const handleResizeEnd = (e) => {
+        wasDragging.current = true; // is this right ?
+        const width = getWidthFromMouseEvent(e);
+        onResize('end', column, width);
     }
 
+    const getWidthFromMouseEvent = e => {
+        const right = e.pageX;
+        const left = el.current.getBoundingClientRect().left;
+        return right - left;
+    }
 
+    const className = cx(
+        'HeaderCell',
+        column.className,
+        column.cellCSS,
+        propClassName, {
+            'HeaderCell--resizing': column.resizing,
+            'hidden': column.hidden,
+            'collapsed': column.collapsed
+        });
+
+    const isResizeable = column.resizeable !== false;
+    const isHidden = column.hidden === true;
+    const style = { width: column.width };
+
+    if (isHidden && column.width === 0) {
+        style.display = 'none';
+    }
+
+    return (
+        <div ref={el} className={className} style={style}
+            onClick={handleClick} onMouseDown={handleMouseDown} onContextMenu={handleContextMenu}>
+            <SortIndicator column={column} multiColumnSort={multiColumnSort}/>
+            <ToggleIcon column={column}/>
+            <div className='InnerHeaderCell'>
+                <div className='cell-wrapper'>
+                    <Label column={column}/>
+                </div>
+            </div>
+            {isResizeable &&
+                <Draggable className='resizeHandle'
+                    onDrag={handleResize}
+                    onDragStart={handleResizeStart}
+                    onDragEnd={handleResizeEnd} />
+                }
+        </div>
+    );
 }
 

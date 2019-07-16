@@ -2,6 +2,8 @@ import React from 'react';
 import HeaderCell from '../header/header-cell';
 import {getCellRenderer} from '../registry/dataTypeRegistry';
 
+import './column-bearer.css';
+
 const NULL_FORMATTER = () => {};
 
 const ColumnBearer = (props) => {
@@ -11,7 +13,7 @@ const ColumnBearer = (props) => {
 
     const {left,width} = column;
     const top = (headingDepth - 1) * headerHeight; 
-
+    console.log(`render ColumnBearer`)
     return (
         <div className='ColumnBearer' style={{top,left,width}}>
             <div className='Header' style={{height:headerHeight}}> 
