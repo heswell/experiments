@@ -16,7 +16,7 @@ export default memo(forwardRef(({
     model,
     style: propStyle
 }, ref) => {
-    console.log(`RENDER Header`)
+
     const { dispatch } = useContext(GridContext);
     const scrollingHeader = useRef(null);
     const scrollLeft = useRef(0);

@@ -1,49 +1,46 @@
-import React from 'react';
+import React, {useRef, useCallback} from 'react';
 
-export default class Draggable extends React.Component {
+export default allProps => {
+    const {
+        component:Component,
+        ...props
+    } = allProps;
 
-    static defaultProps = {
-        onDragStart: () => true,
-        onDragEnd: () => {},
-        onDrag: () => {}
-    };
+    const {onDrag, onDragStart, onDragEnd} = allProps;
+    const position = useRef({x:0,y:0});
+    const dragState = useRef(null);
 
-    x;
-    y;
-
-    constructor(props){
-        super(props);
-        this.state = {
-        drag: null
-        };
-
-    }
-
-    render() {
-        const {component:Component, ...props} = this.props;
-
-        if (Component){
-            return <Component onMouseDown={this.handleMouseDown} {...props}/>;
-        } else {
-            return <div onMouseDown={this.handleMouseDown} {...props}/>;
-        }
-    }
-
-
-    handleMouseDown = e => {
-        const drag = this.props.onDragStart(e);
-
-        if (drag === null && e.button !== 0) {
+    const handleMouseDown = e => {
+        // what is dragState supposed to be exactly ?
+        const newDragState = onDragStart(e);
+        console.log(`handleMouseDown ${newDragState}`)
+        if (newDragState === null && e.button !== 0) {
             return;
         }
 
-        this.x = e.clientX;
-        this.y = e.clientY;
+        position.current.x = e.clientX;
+        position.current.y = e.clientY;
 
-        window.addEventListener('mouseup', this.onMouseUp);
-        window.addEventListener('mousemove', this.onMouseMove);
+        console.log(`REGISTER LISTENERS`)
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('mousemove', onMouseMove);
 
-        this.setState({drag});
+        dragState.current = newDragState;
+
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+
+        if (e.preventDefault) {
+            e.preventDefault();
+        }        
+    }
+
+    const onMouseMove = useCallback(e => {
+        console.log(`onMouseMove ${dragState.drag}`)
+        if (dragState.current === null) {
+            return;
+        }
 
         if (e.stopPropagation) {
             e.stopPropagation();
@@ -52,45 +49,35 @@ export default class Draggable extends React.Component {
         if (e.preventDefault) {
             e.preventDefault();
         }
-        
-    }
-
-    onMouseMove = e => {
-        if (this.state.drag === null) {
-        return;
-        }
-
-        if (e.stopPropagation) {
-        e.stopPropagation();
-        }
-
-        if (e.preventDefault) {
-        e.preventDefault();
-        }
 
         const x = e.clientX;
         const y = e.clientY;
-        const deltaX = x - this.x;
-        const deltaY = y - this.y;
 
-        this.x = x;
-        this.y = y;
+        const deltaX = x - position.current.x;
+        const deltaY = y - position.current.y;
 
-        this.props.onDrag(e, deltaX, deltaY);
+        position.current.x = x;
+        position.current.y = y;
+
+        console.log(`drag by ${deltaX}`)
+        onDrag(e, deltaX, deltaY);
+    },[])
+
+    const onMouseUp = useCallback(e => {
+        console.log(`onMouseUp`)
+        cleanUp();
+        onDragEnd(e, dragState.drag);
+        dragState.current = null;
+    },[]);
+
+    const cleanUp = () => {
+        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('mousemove', onMouseMove);
     }
 
-    onMouseUp = e => {
-        this.cleanUp();
-        this.props.onDragEnd(e, this.state.drag);
-        this.setState({drag: null});
-    }
-
-    componentWillUnmount() {
-        this.cleanUp();
-    }
-
-    cleanUp() {
-        window.removeEventListener('mouseup', this.onMouseUp);
-        window.removeEventListener('mousemove', this.onMouseMove);
+    if (Component){
+        return <Component onMouseDown={handleMouseDown} {...props}/>;
+    } else {
+        return <div onMouseDown={handleMouseDown} {...props}/>;
     }
 }

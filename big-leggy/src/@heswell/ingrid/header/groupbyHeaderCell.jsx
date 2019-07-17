@@ -1,6 +1,5 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import cx from 'classnames';
-import HeaderCell from './header-cell';
 import Draggable from '../draggable/draggable';
 import {expandStatesfromGroupState} from '../model/utils';
 import css from '../style/grid';
@@ -22,37 +21,73 @@ const ColHeader = (props) => {
     );
 };
 
-export default class GroupbyHeaderCell extends HeaderCell {
+export default ({
+    className: propClassName,
+    column: groupCol,
+    groupState,
+    onClick,
+    onContextMenu,
+    onRemoveColumn,
+    onResize,
+    onToggleGroupState}) => {
 
-    render() {
-        const {column: groupCol, groupState, onRemoveColumn} = this.props;
+    const el = useRef(null);
+
+    const handleClick = () => {
+        onClick(groupCol);
+    }
+
+    // All duplicated in header-cell
+    const handleResizeStart = () => onResize('begin', groupCol);
+
+    const handleResize = (e) => {
+        const width = getWidthFromMouseEvent(e);
+        if (width > 0) {
+            onResize('resize', groupCol, width);
+        }
+    }
+
+    const handleResizeEnd = (e) => {
+        const width = getWidthFromMouseEvent(e);
+        onResize('end', groupCol, width);
+    }
+
+    const getWidthFromMouseEvent = e => {
+        const right = e.pageX;
+        const left = el.current.getBoundingClientRect().left;
+        return right - left;
+    }
+
+    const handleContextMenu = e => {
+        onContextMenu(e, 'header', { column: groupCol });
+    }
+
         const {columns, resizing, width} = groupCol;
         const className = cx(
             styles.groupByHeaderCell,
             'HeaderCell group',
-            this.props.className,
+            propClassName,
             resizing ? 'HeaderCell--resizing': ''
         );
         const expandStates = expandStatesfromGroupState(groupCol, groupState);
         return (
-            <div className={className} style={{...css.HeaderCell, paddingLeft: 0,width: width}}
-                onContextMenu={this.handleContextMenu}>
+            <div ref={el} className={className} style={{...css.HeaderCell, paddingLeft: 0,width: width}}
+                onContextMenu={handleContextMenu}>
                 <div className='inner-container'>
                     {columns.map(
                         (column,idx) => <ColHeader
                             key={column.key}
                             column={column}
                             expandState={expandStates[idx]}
-                            onClick={this.clickColumn}
+                            onClick={handleClick}
                             onRemoveColumn={onRemoveColumn}
-                            onToggle={this.props.onToggleGroupState}
+                            onToggle={onToggleGroupState}
                             className={columnClassName(columns, idx, column)}
                         />)}
                 </div>
-                <Draggable className='resizeHandle' onDrag={this.handleResize} onDragStart={this.handleResizeStart} onDragEnd={this.handleResizeEnd} />
+                <Draggable className='resizeHandle' onDrag={handleResize} onDragStart={handleResizeStart} onDragEnd={handleResizeEnd} />
             </div>
         );
-    }
 }
 
 function columnClassName(columns, idx/*, column*/){
