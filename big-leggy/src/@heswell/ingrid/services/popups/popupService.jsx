@@ -95,7 +95,7 @@ function popupClosed(name/*, group=null*/) {
 
 export class PopupService {
 
-    static showPopup({name='anon', group='all'/*, depth=0*/, position='', left, top, width='auto', component}) {
+    static showPopup({name='anon', group='all'/*, depth=0*/, position='', left=0, top=0, width='auto', component}) {
 
         // onsole.log(`PopupService.showPopup ${name} in ${group} ${left} ${top} ${width} depth ${depth}`);
 
@@ -123,6 +123,12 @@ export class PopupService {
             popupClosed(name, group);
             ReactDOM.unmountComponentAtNode(document.body.querySelector(`.react-popup.${group}`));
         }
+    }
+
+    static movePopup(x, y, name='anon', group='all'){
+        const container = document.querySelector(`.react-popup.${group} .popup-container`);
+        container.style.top = (parseInt(container.style.top,10) + y) + 'px';
+        container.style.left = (parseInt(container.style.left,10) + x) + 'px';
     }
 
     static keepWithinThePage(el) {

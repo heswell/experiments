@@ -50,6 +50,10 @@ export default class Container extends React.Component {
         return {};
     }
 
+    isLayoutRoot(){
+        return this.props.layoutModel === undefined;
+    }
+
     render(){
         var {style} = this.props;
         var layoutModel = this.getLayoutModel();
@@ -104,42 +108,48 @@ export default class Container extends React.Component {
 
     getLayoutModel(){
 
-        let {layoutModel/*,style*/} = this.props;
-
-        if (layoutModel === undefined){
-            // console.log(`getRootLayoutModel for ${typeOf(this)}`);
+        if (this.isLayoutRoot()){
             return applyLayout(getLayoutModel(this));
-        } /*else if (layoutModel.children && layoutModel.children.length === 0){
-            alert('it happens')
-            console.log(`mutating (appending) layoutModel children. Can this be avoided ?`)
-            var children = getLayoutModelChildren(this);
+        } else {
+            return this.props.layoutModel;
+        }
+        
+        // let {layoutModel/*,style*/} = this.props;
 
-            [].push.apply(layoutModel.children, children);
+        // if (layoutModel === undefined){
+        //     // console.log(`getRootLayoutModel for ${typeOf(this)}`);
+        //     return applyLayout(getLayoutModel(this));
+        // } /*else if (layoutModel.children && layoutModel.children.length === 0){
+        //     alert('it happens')
+        //     console.log(`mutating (appending) layoutModel children. Can this be avoided ?`)
+        //     var children = getLayoutModelChildren(this);
 
-            var VISIBLE = style.visibility || 'visible';
-            var FORCE_LAYOUT = true;
+        //     [].push.apply(layoutModel.children, children);
 
-            var width;
-            var height;
-            var $position = layoutModel.$position;
+        //     var VISIBLE = style.visibility || 'visible';
+        //     var FORCE_LAYOUT = true;
 
-            if (typeof style.width === 'number' && typeof style.height === 'number'){
-                width = style.width;
-                height = style.height;
-            } else if ($position && $position.width !== undefined && $position.height !== undefined){
-                width = $position.width;
-                height = $position.height;
-            } else {
-                console.error(`Container.getLayoutModel attempting to initialize a ${layoutModel.type} layoutModel with no sizing attributes`)
-            }
-            console.log(`apply layout, WITH CHILDREN`)
-            var layoutModel2 = applyLayout(layoutModel, {width,height}, layoutModel.$path, VISIBLE, FORCE_LAYOUT);
+        //     var width;
+        //     var height;
+        //     var $position = layoutModel.$position;
 
-            layoutModel.children = layoutModel2.children;
+        //     if (typeof style.width === 'number' && typeof style.height === 'number'){
+        //         width = style.width;
+        //         height = style.height;
+        //     } else if ($position && $position.width !== undefined && $position.height !== undefined){
+        //         width = $position.width;
+        //         height = $position.height;
+        //     } else {
+        //         console.error(`Container.getLayoutModel attempting to initialize a ${layoutModel.type} layoutModel with no sizing attributes`)
+        //     }
+        //     console.log(`apply layout, WITH CHILDREN`)
+        //     var layoutModel2 = applyLayout(layoutModel, {width,height}, layoutModel.$path, VISIBLE, FORCE_LAYOUT);
 
-        } */
+        //     layoutModel.children = layoutModel2.children;
 
-        return layoutModel;
+        // } */
+
+        // return layoutModel;
 
     }
 

@@ -33,6 +33,7 @@ export const SetFilter = ({
     height,
     onClose,
     onHide,
+    onMouseDown,
     style=NO_STYLE,
     suppressHeader = false,
     suppressSearch = false,
@@ -95,11 +96,17 @@ export const SetFilter = ({
     const allSelected = selectionDefault === SELECT_ALL;
     const clickHandler = allSelected ? handleDeselectAll : handleSelectAll;
 
+    const handleMouseDown = e => {
+        console.log('onMouseDown')
+        onMouseDown(e)
+    }
+
+
     // TODO envelope should be part of columnFilter
     return (
         <FlexBox className={cx('SetFilter', 'ColumnFilter', className)} style={{ width: 300, height, visibility: style.visibility }}>
             {suppressHeader !== true &&
-                <div className='col-header HeaderCell' style={{ height: 25 }}>
+                <div className='col-header HeaderCell' style={{ height: 25 }} onMouseDown={handleMouseDown}>
                     <div className='col-header-inner' style={{ width: column.width - 1 }}>{column.name}</div>
                 </div>}
             <FlexBox className='filter-inner' style={{ flex: 1 }}>

@@ -37,9 +37,12 @@ export default class FlexBox extends Container {
         if (visibility === 'hidden') {
             return null;
         }
+        const position = this.isLayoutRoot()
+            ? 'relative'
+            : 'absolute'; 
 
         return (
-            <div className={className} style={{ position: 'absolute', ...layout, backgroundColor, boxShadow }}>
+            <div className={className} style={{ position, ...layout, backgroundColor, boxShadow }}>
                 {header &&
                      <ComponentHeader
                          title={`${title}`}

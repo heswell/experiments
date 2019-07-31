@@ -1,7 +1,7 @@
 import React, {useContext, useCallback, useRef, useImperativeHandle, forwardRef} from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell';
-import GroupbyHeaderCell from './groupbyHeaderCell';
+import GroupbyHeaderCell from './group-header-cell';
 import * as Action from '../model/actions';
 import GridContext from '../grid-context';
 

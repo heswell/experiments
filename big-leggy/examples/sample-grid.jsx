@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 // import RemoteView from '../src/@heswell/remote-data/remote-view';
+import { PopupService } from '../src/@heswell/ingrid';
+
 import Grid from '../src/@heswell/ingrid/grid';
-import {ColumnPicker} from '../src/@heswell/ingrid-extras';
+import {ColumnPicker, Dialog} from '../src/@heswell/ingrid-extras';
 //import data from '../src/@heswell/viewserver/dataTables/instruments/dataset';
 // import { connect as connectServerApi} from '../src/@heswell/remote-data/client-hosted/server-api';
 //import View from '../src/@heswell/remote-data/view/remote-data-view';
 import View from '../src/@heswell/remote-data/view/local-data-view';
+import { relative } from 'path';
 
 const dataSource = 'local';
 
@@ -74,8 +77,30 @@ const colPickerStyle = {
 ReactDOM.render(
   <>
     <SampleGrid />
-    {/* <ColumnPicker availableColumns={columns} columns={columns} style={colPickerStyle}/> */}
   </>,
   document.getElementById('root'));
 
+  PopupService.showPopup({
+    component: (
+      <Dialog title='Grid Columns' buttons={['Cancel', 'OK']} onButtonClick={columnPickerButton}>
+        <ColumnPicker
+          availableColumns={columns}
+          columns={columns} style={colPickerStyle}
+          onChange={handleColumnChange}
+          />
+      </Dialog>
+    )
+  })
 
+  function columnPickerButton(key){
+    console.log(`key = ${key}`)
+    if (key === 'OK'){
+      console.log(`Apply changes`)
+    }
+    PopupService.hidePopup();
+  }
+
+  function handleColumnChange({columns}){
+    console.log(`handleColumnChange ${JSON.stringify(columns,null,2)}`)
+  }
+  

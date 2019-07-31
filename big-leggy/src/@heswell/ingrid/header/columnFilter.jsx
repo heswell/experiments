@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import cx from 'classnames';
+import Draggable from '../draggable/draggable';
 
 import { SetFilter, NumberFilter, MultiColumnFilter } from '../../ingrid-extras';
 import { columnUtils, filter as filterUtils } from '../../data';
@@ -70,6 +71,11 @@ export default ({
         }
     },[showFilter]);
 
+    const moveFilter = (e, deltaX, deltaY) => {
+        console.log(`move Filter by ${deltaX} ${deltaY}`)
+        PopupService.movePopup(deltaX, deltaY);
+    }
+
     const getFilter = () => {
         console.log(`getFilter ${JSON.stringify(column)}`)
         if (!column.isGroup || column.columns.length === 1) {
@@ -86,15 +92,17 @@ export default ({
                     );
                 default:
                     return (
-                        <SetFilter className='FilterPanel'
-                            column={column}
-                            filter={filter}
-                            height={350}
-                            width={column.width + 120}
-                            dataView={dataView}
-                            onHide={hideFilter}
-                            onClose={closeFilter}
-                        />
+                        <Draggable onDrag={moveFilter}>
+                            <SetFilter className='FilterPanel'
+                                column={column}
+                                filter={filter}
+                                height={350}
+                                width={column.width + 120}
+                                dataView={dataView}
+                                onHide={hideFilter}
+                                onClose={closeFilter}
+                            />
+                        </Draggable>
                     );
             }
 

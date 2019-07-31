@@ -51,10 +51,10 @@ export default ({
         } else {
             // drag aborted
         }
-    },[column])
+    },[])
 
     const onMouseMove = useCallback(e => {
-
+        console.log(`onMouseMove`)
         if (e.stopPropagation) {
             e.stopPropagation();
         }
@@ -81,7 +81,7 @@ export default ({
                 onMove('begin', column.current, deltaX);
             }
         }
-    },[col])
+    },[])
 
     const handleMouseDown = e => {
         position.current = {x: e.clientX, y: e.clientY};
@@ -98,9 +98,8 @@ export default ({
         onContextMenu(e, 'header', { column: column.current });
     }
 
-    const handleResizeStart = () => {
-        onResize('begin', column.current);
-    }
+    const handleResizeStart = () => onResize('begin', column.current);
+    
 
     const handleResize = useCallback((e) => {
         const width = getWidthFromMouseEvent(e);
@@ -108,7 +107,7 @@ export default ({
             console.log(`resize ${width} resizing ? ${column.resizing}`)
             onResize('resize', column.current, width);
         }
-    },[column])
+    },[])
 
     const handleResizeEnd = (e) => {
         wasDragging.current = true; // is this right ?

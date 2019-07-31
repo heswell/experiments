@@ -1,19 +1,20 @@
 import React, {useRef, useCallback} from 'react';
 
+const NOOP = () => {}
+
 export default allProps => {
     const {
         component:Component,
         ...props
     } = allProps;
 
-    const {onDrag, onDragStart, onDragEnd} = allProps;
+    const {onDrag, onDragStart=NOOP, onDragEnd=NOOP, children: child} = allProps;
     const position = useRef({x:0,y:0});
     const dragState = useRef(null);
 
     const handleMouseDown = e => {
         // what is dragState supposed to be exactly ?
         const newDragState = onDragStart(e);
-        console.log(`handleMouseDown ${newDragState}`)
         if (newDragState === null && e.button !== 0) {
             return;
         }
@@ -21,7 +22,6 @@ export default allProps => {
         position.current.x = e.clientX;
         position.current.y = e.clientY;
 
-        console.log(`REGISTER LISTENERS`)
         window.addEventListener('mouseup', onMouseUp);
         window.addEventListener('mousemove', onMouseMove);
 
@@ -37,7 +37,6 @@ export default allProps => {
     }
 
     const onMouseMove = useCallback(e => {
-        console.log(`onMouseMove ${dragState.drag}`)
         if (dragState.current === null) {
             return;
         }
@@ -59,12 +58,10 @@ export default allProps => {
         position.current.x = x;
         position.current.y = y;
 
-        console.log(`drag by ${deltaX}`)
         onDrag(e, deltaX, deltaY);
     },[])
 
     const onMouseUp = useCallback(e => {
-        console.log(`onMouseUp`)
         cleanUp();
         onDragEnd(e, dragState.drag);
         dragState.current = null;
@@ -75,6 +72,9 @@ export default allProps => {
         window.removeEventListener('mousemove', onMouseMove);
     }
 
+    if (child && !Array.isArray(child)){
+        return React.cloneElement(child, {...props, onMouseDown: handleMouseDown});
+    } else 
     if (Component){
         return <Component onMouseDown={handleMouseDown} {...props}/>;
     } else {

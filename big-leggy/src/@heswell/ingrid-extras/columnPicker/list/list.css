@@ -1,0 +1,8 @@
+.List .ListItem .remove {
+  position: absolute;
+  right: 5px;
+  top:5px;
+  height: 13px;
+  width:13px;
+  background-color: blue;
+}

@@ -1,12 +1,10 @@
 import React, {Component} from 'react';
 import cx from 'classnames';
 import AvailableList from './availableList'; 
-import List from './list'; 
+import List from './list/list'; 
 
 // don't like this ...
 import FlexBox from '../../inlay/flexBox';
-import {followPath} from '../../inlay/util/pathUtils';
-import {handleLayout} from '../../inlay/model/layoutModel';
 
 const uuid = require('uuid');
 
@@ -28,8 +26,6 @@ export class ColumnPicker extends Component {
             layoutModel: this.getLayoutModel(),
             selectedColumns: this.props.columns
         };
-
-        this.handleLayout = this.handleLayout.bind(this);
     }
 
     render(){
@@ -48,24 +44,24 @@ export class ColumnPicker extends Component {
         );
 
         return (
-            <FlexBox className={className} style={this.props.style} XXlayoutModel={this.state.layoutModel} xxonLayout={this.handleLayout}>
+            <FlexBox className={className} style={this.props.style}>
                 <FlexBox style={{flex: 1, flexDirection: 'row', paddingLeft: 12,paddingRight: 12, paddingTop: 15, paddingBottom: 9}}>
                     <AvailableList style={{flex: 1}} items={availableItems} 
                         onItemAdded={this.handleItemAdded}
                         onMouseDown={this.handleDragStartAvailableItem}/>
                     <List style={{flex: 1, backgroundColor: 'white'}} 
                         items={selectedColumns}
-                        dragged={dragged} dragging={dragging}
-                        pageX={pageX} pageY={pageY} onTarget={onTarget}
-                        mouseMoveX={mouseMoveX} mouseMoveY={mouseMoveY}
+                        dragged={dragged}
+                        dragging={dragging}
+                        pageX={pageX}
+                        pageY={pageY}
+                        onTarget={onTarget}
+                        mouseMoveX={mouseMoveX}
+                        mouseMoveY={mouseMoveY}
                         onItemRemoved={this.handleItemRemoved}
                         onMeasure={this.handleMeasure}
                         onReorder={this.handleReorder} />
                 </FlexBox>
-                <div style={{height: 32, backgroundColor: 'white'}}>
-                    <button onClick={this.submit}>OK</button>
-                    <button onClick={this.cancel}>Cancel</button>
-                </div>
             </FlexBox>
         );
     }
@@ -95,23 +91,6 @@ export class ColumnPicker extends Component {
 
     cancel = () => {
         this.props.onCancel();
-    };
-
-
-	//TODO how do we re-use this functionality
-    handleLayout(command, options){
-
-        var layoutModel = this.state.layoutModel;
-
-        if (command === 'replace'){
-            layoutModel = handleLayout(layoutModel, command, {
-                targetNode: followPath(layoutModel, options.model.$path),
-                replacementNode:options.model});
-
-            this.setState({layoutModel});
-
-        }
-
     };
 
     handleMeasure = rect => {

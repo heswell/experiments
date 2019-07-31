@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
 import Row from './row';
 import GridContext from '../grid-context';
@@ -20,19 +20,6 @@ export function Canvas ({
   const contentEl = useRef(null);
   const {showContextMenu} = useContext(GridContext);
 
-  useEffect(() => {
-    const container = contentEl.current;
-    if (container) {
-      const {rowHeight} = gridModel
-      const { children, childElementCount } = container;
-      for (let i = 0; i < childElementCount; i++) {
-        const child = children[i];
-        const [,absIdx] = rowPositions[i];
-        child.style.transform = `translate3d(0px, ${absIdx*rowHeight}px, 0px)`
-      }
-    }
-  }, [rows])
-
   useImperativeHandle(ref, () => ({
     scrollLeft: scrollLeft => {
       contentEl.current.style.left = `-${scrollLeft}px`;
@@ -53,18 +40,15 @@ export function Canvas ({
 
   const gridRows = rowPositions
     .map(([key, abs_idx, row]) => {
-      // onsole.log(`Row ${row[gridModel.meta.KEY]} [${row[gridModel.meta.IDX]}] = ${key} absIdx=${abs_idx} firstVisibleRow=${firstVisibleRow}`)
       return (
         <Row key={key}
           idx={abs_idx}
           row={row}
-          meta={gridModel.meta}
+          gridModel={gridModel}
           columns={columnGroup.columns}
         />
       )
     });
-
-  // console.log(`%c[Canvas] rowsRendered = ${gridRows.length}`,'color: red; font-weight: bold;')
 
   const className = cx('Canvas', {
     fixed: columnGroup.locked

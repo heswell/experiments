@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import {Motion, spring} from 'react-motion';
+import cx from 'classnames';
+
+import './list.css';
 
 const springConfig = {stiffness: 300, damping: 50};
 
@@ -15,12 +18,6 @@ function reinsert(arr, from, to) {
     _arr.splice(to, 0, val);
     return _arr;
 }
-
-
-const Style = {
-    button : {position:'absolute', right: 5, top:5, height: 13, width:13, backgroundColor:'blue'}
-};
-
 
 export default class List extends Component {
 
@@ -92,7 +89,7 @@ export default class List extends Component {
                         <span>{`${order.indexOf(idx) + 1}  ${item.name}`}</span>
                         { dragging && item === dragged.item 
                             ? null 
-                            : <div className="remove" style={Style.button} onClick={this.removeItem.bind(this,item)}/> }
+                            : <div className="remove" onClick={this.removeItem.bind(this,item)}/> }
                     </div>
                     }
                 </Motion>
@@ -137,13 +134,11 @@ export default class List extends Component {
         }
 
         return (
-            <div className={className} style={style}>
+            <div className={cx('List',className)} style={style}>
                 {content}
             </div>
 
         );
-
-
     }
 
     componentDidMount(){
@@ -173,7 +168,6 @@ export default class List extends Component {
             });
 
         }
-
     }
 
     removeItem(item){
@@ -214,9 +208,7 @@ export default class List extends Component {
         window.removeEventListener('mousemove', this.handleMouseMove);
         window.removeEventListener('mouseup', this.handleMouseUp);
 
-
     }
-
 } 
 
 List.defaultProps = {

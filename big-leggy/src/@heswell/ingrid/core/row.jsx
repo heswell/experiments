@@ -8,9 +8,10 @@ export default React.memo(({
     row,
     idx,
     columns,
-    meta
+    gridModel
 }) => {
 
+    const {meta, rowHeight} = gridModel;
     const handleContextMenu = useCallback(e => showContextMenu(e, 'row', {idx, row}),[idx, row]);
     const {dispatch, callbackPropsDispatch, showContextMenu} = useContext(GridContext);
 
@@ -62,6 +63,7 @@ export default React.memo(({
     return (
         <div className={className}
             tabIndex={0}
+            style={{transform: `translate3d(0px, ${idx*rowHeight}px, 0px)`}}
             onClick={handleClick} 
             onDoubleClick={handleDoubleClick} 
             onContextMenu={handleContextMenu}>

@@ -114,33 +114,15 @@ export const Viewport = React.memo(({
     }, [height])
 
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
-        // const handleVerticalScroll = useCallback(e => {
-        // const value = e.target.scrollTop;
         scrollTop.current = value;
         const firstRow = Math.floor(value / model.rowHeight)
         if (firstRow !== firstVisibleRow.current) {
             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
             firstVisibleRow.current = firstRow;
             setRange(firstRow, firstRow + numberOfRowsInViewport);
-            // callbackPropsDispatch({ type: 'scroll', value })
         }
 
     }, []), 30);
-
-    // const handleVerticalScroll = useCallback(e => {
-    //     if (e.target === e.currentTarget) {
-    //         scrollTop.current = e.target.scrollTop;
-
-
-    //         const firstRow = Math.floor(scrollTop.current / model.rowHeight)
-    //         if (firstRow !== firstVisibleRow.current) {
-    //             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
-    //             setRange(firstRow, firstRow + numberOfRowsInViewport);
-    //             firstVisibleRow.current = firstRow;
-    //             callbackPropsDispatch({type: 'scroll', scrollTop: scrollTop.current})
-    //         }
-    //     }
-    // },[height]);
 
     const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {

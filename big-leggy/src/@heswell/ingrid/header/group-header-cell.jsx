@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useEffect, useCallback} from 'react';
 import cx from 'classnames';
 import Draggable from '../draggable/draggable';
 import {expandStatesfromGroupState} from '../model/utils';
@@ -32,24 +32,29 @@ export default ({
     onToggleGroupState}) => {
 
     const el = useRef(null);
+    const column = useRef(groupCol);
+
+    useEffect(() => {
+        column.current = groupCol;
+    }, [groupCol])
 
     const handleClick = () => {
         onClick(groupCol);
     }
 
     // All duplicated in header-cell
-    const handleResizeStart = () => onResize('begin', groupCol);
+    const handleResizeStart = () => onResize('begin', column.current);
 
-    const handleResize = (e) => {
+    const handleResize = useCallback((e) => {
         const width = getWidthFromMouseEvent(e);
         if (width > 0) {
-            onResize('resize', groupCol, width);
+            onResize('resize', column.current, width);
         }
-    }
+    },[])
 
     const handleResizeEnd = (e) => {
         const width = getWidthFromMouseEvent(e);
-        onResize('end', groupCol, width);
+        onResize('end', column.current, width);
     }
 
     const getWidthFromMouseEvent = e => {
