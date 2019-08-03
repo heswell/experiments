@@ -101,14 +101,14 @@ export class ColumnPicker extends Component {
     };
 
     handleReorder = order => {
-
+        console.log(`handleReorder ${JSON.stringify(order)}`)
         var {selectedColumns} = this.state;
         var columns = [];
 
         order.forEach((idx,i) => {
             columns[i] = selectedColumns[idx];
         });
-
+        this.setState({selectedColumns: columns})
         this.props.onChange({columns});
     };
 

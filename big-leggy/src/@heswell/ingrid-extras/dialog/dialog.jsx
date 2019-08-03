@@ -19,7 +19,10 @@ export default ({
   return (
     <div className='dialog'>
       <Draggable onDrag={moveFilter}>
-        <div className='title'>{title}</div>
+        <div className='title'>
+          <span>{title}</span>
+          <i className="material-icons">clear</i>
+        </div>
       </Draggable>
       <div className='content-container'>
       {children}

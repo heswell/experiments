@@ -1,8 +1,15 @@
-.List .ListItem .remove {
+.List .ListItem {
+  position: absolute;
+  cursor: pointer;
+  background-color: white;
+  user-select: none;
+}
+
+.ListItem .button {
   position: absolute;
   right: 5px;
   top:5px;
   height: 13px;
   width:13px;
-  background-color: blue;
+
 }

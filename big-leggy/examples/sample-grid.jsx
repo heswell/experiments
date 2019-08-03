@@ -53,9 +53,9 @@ const columns = instrumentColumns;
 
 const dataView = new View(dataConfig);
 
-class SampleGrid extends React.Component {
-  render(){
-    return (
+const SampleGrid = () => {
+
+  return (
       <div className='sample-grid'>
         <Grid
           height={600}
@@ -65,7 +65,6 @@ class SampleGrid extends React.Component {
           columns={columns}/>
       </div>
     )
-  }
 }
 
 const colPickerStyle = {
@@ -101,6 +100,6 @@ ReactDOM.render(
   }
 
   function handleColumnChange({columns}){
-    console.log(`handleColumnChange ${JSON.stringify(columns,null,2)}`)
+    console.log(`Sample Grid >> handleColumnChange ${JSON.stringify(columns,null,2)}`)
   }
   
