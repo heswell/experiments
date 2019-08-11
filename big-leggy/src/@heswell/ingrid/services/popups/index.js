@@ -1,2 +1,2 @@
-export * from './popupService';
+export * from './popup-service';
 export * from './contextMenu/contextMenu';

@@ -1,0 +1,24 @@
+{
+  "name": "@heswell/server-core",
+  "version": "1.0.7",
+  "description": "Heswell websocket server",
+  "main": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "heswell",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^1.19.3",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  },
+  "dependencies": {
+    "@heswell/data": "^1.0.0",
+    "@heswell/utils": "^1.0.0",
+    "d3-array": "^2.2.0"
+  }
+}

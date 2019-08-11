@@ -1,0 +1,11 @@
+// transpiling to es2015 so jest can import
+{
+  "presets": [
+    [
+      "es2015",
+      {
+        "modules": false
+      }
+    ]
+  ]
+}

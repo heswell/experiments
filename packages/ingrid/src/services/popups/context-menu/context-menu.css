@@ -34,6 +34,9 @@
 	white-space: nowrap;
 	text-decoration: none;
 	cursor: pointer;
+	border: none;
+	width: 100%;
+	text-align: left;
 }
 
 .popup-menu .menu-item.showing > button,
@@ -42,6 +45,10 @@
 	text-decoration: none;
 	color : rgb(0, 0, 0);
 	background-color: rgb(220, 220, 220);
+}
+
+button:active, button:hover {
+	outline: 0;
 }
 
 .popup-menu .divider {
@@ -77,18 +84,13 @@
 }
 
 .root.menu-item:after {
-	font-family: 'Elusive-Icons';
+	content :"\f0da";
+	font: normal normal normal 14px/1 FontAwesome;
 	position: absolute;
 	top:3px;
 	right: 6px;
 	width: 12px;
 	height: 20px;
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
 	-webkit-font-smoothing: antialiased;
-	content :"\e118";
-	font-size: 13px;
 	color: rgb(0, 0, 0);
 }

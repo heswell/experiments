@@ -1,0 +1,52 @@
+.MultiColumnFilter {
+    font-size: 12px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.MultiColumnFilter .footer {
+    background-color:white;
+    box-shadow: 1px 2px 5px -1px rgba(0,0,0,0.52);    
+}
+
+.MultiColumnFilter .set-filter-inner {
+   box-shadow: none;
+}
+
+.tabbed-filters .Tabstrip .tabstrip-inner-sleeve {
+    border-bottom: solid 1px black;
+    box-sizing: border-box;
+}
+.tabbed-filters .Tabstrip .tabstrip-inner-sleeve .tabstrip-inner {
+    padding: 0;
+}
+
+.tabbed-filters .Tabstrip .Tab {
+    margin: 0;
+    padding-right: 26px;
+    background-color: #ccc;
+}
+
+.tabbed-filters .Tabstrip .Tab.active {
+    background-color: cornflowerblue;
+}
+
+.tabbed-filters .Tabstrip .Tab.active .Tab-caption,
+.tabbed-filters .Tabstrip .Tab .Tab-caption {
+    border-radius: 0;
+    background-color: inherit;
+    border: none;
+    transition: none;
+    padding-left: 20px;
+    line-height: 20px;
+}
+
+.tabbed-filters .Tab:first-child {
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100% );
+	z-index:1;
+}
+
+.tabbed-filters .Tab:not(:first-child) {
+	margin-left: -6px;
+	padding-left: 6px;
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50% );    
+}

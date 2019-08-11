@@ -1,0 +1,28 @@
+{
+  "name": "@heswell/inlay",
+  "version": "1.0.3",
+  "description": "Heswell Layout Components",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "heswell",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-plugin-transform-jsx": "^2.0.0",
+    "rollup": "^1.18.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-postcss": "^2.0.3"
+  },
+  "dependencies": {
+    "konva": "^3.4.1",
+    "yoga-layout": "^1.9.3"
+  }
+}

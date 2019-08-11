@@ -1,0 +1,80 @@
+
+.Header {
+	background: #eaeaea;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	cursor: default;
+}
+
+.GroupbyHeaderCell {
+	overflow:hidden;
+}
+
+.GroupbyHeaderCell .inner-container {
+  overflow: hidden;
+	height: 100%;
+	width: 100%;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.ColHeader {
+  display:inline-block;
+  background-color: inherit;
+  position: relative;
+  padding-right: 8px;
+  flex: 0 1 auto;
+}
+
+.first.ColHeader {
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100% );
+	z-index:1;
+}
+
+
+.ColHeader:not(.first){
+	margin-left: -6px;
+	padding-left: 6px;
+	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50% );
+}
+
+.ColHeader:nth-child(odd) {
+	background-color: rgba(136, 136, 136,.5);
+}
+.ColHeader:nth-child(even) {
+	background-color: rgba(160,160,160,.3);
+}
+
+.ColHeaderLabel {
+	display: inline-block;
+	height: 100%;
+}
+
+.ColHeader .toggle-icon,
+.ColHeader .remove-icon {
+	height: 100%;
+	line-height: 24px;
+	cursor: pointer;
+}
+
+.ColHeader .remove-icon {
+	visibility:hidden;
+	font-size: 16px;
+	padding-left: 3px;
+}
+
+.ColHeader:hover .remove-icon {
+	visibility: visible;
+} 
+
+.ColHeader:hover {
+  background-color: rgb(66, 139, 202);
+  color: white;
+}
+
+.ColHeader:hover .groupby-remove {
+	visibility: visible;
+}
+
