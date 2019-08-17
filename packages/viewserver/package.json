@@ -1,14 +1,18 @@
 {
   "name": "@heswell/viewserver",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
   "files": [
     "dist"
   ],
+  "bin": {
+    "viewserver": "./server-cli.js"
+  },
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build && npm version patch"
   },
   "author": "heswell",
   "license": "MIT",

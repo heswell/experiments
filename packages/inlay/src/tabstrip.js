@@ -1,7 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { PopupService } from './popup';
-import { ContextMenu, MenuItem } from './context-menu';
+import { PopupService, ContextMenu, MenuItem } from '@heswell/ui-controls';
 import './tabstrip.css';
 
 const OVERFLOW_WIDTH = 24;

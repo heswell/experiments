@@ -15,7 +15,7 @@ import { Viewport } from './core/viewport.jsx';
 import { getScrollbarSize } from './utils/domUtils';
 import GridContext from './grid-context';
 import gridReducer from './grid-reducer';
-import {useContextMenu} from './use-context-menu.jsx';
+import {useContextMenu} from './context-menu/use-context-menu.jsx';
 
 import './grid.css';
 

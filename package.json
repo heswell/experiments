@@ -2,7 +2,8 @@
   "name": "root",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.16.4"
+    "lerna": "^3.16.4",
+    "source-map-loader": "^0.2.4"
   },
   "dependencies": {
     "@heswell/utils": "^1.0.0"

@@ -1,5 +1,7 @@
 import React from 'react';
-import { ContextMenu, MenuItem, Separator } from '../services/popups/index';
+// import { ContextMenu, MenuItem, Separator } from '../services/popups/index';
+import { ContextMenu, MenuItem, Separator } from '@heswell/ui-controls';
+
 import * as Action from '../model/actions';
 
 export const ContextMenuActions = {

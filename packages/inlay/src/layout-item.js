@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
+import { PopupService } from '@heswell/ui-controls';
 import ComponentHeader from './component-header';
 import ComponentContextMenu from './componentContextMenu';
-import { PopupService } from './popup';
 import { remove as removeFromLayout } from './redux/actions';
 import {
     layout as applyLayout,

@@ -1,5 +1,6 @@
 import React from 'react';
-import {Draggable, PopupService} from '@heswell/ingrid';
+import {Draggable} from '@heswell/ingrid';
+import {PopupService} from '@heswell/ui-controls';
 
 import './dialog.css';
 

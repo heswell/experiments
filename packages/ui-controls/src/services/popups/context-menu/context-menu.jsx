@@ -21,16 +21,20 @@ export class MenuItem extends React.Component {
             null;
 
         const className = cx(
-            'menu-item',
-            this.props.disabled ? 'disabled' : null,
-            this.state.hasChildMenuItems ? 'root' : null,
-            this.props.submenuShowing ? 'showing' : null
+            'menu-item', {
+                disabled: this.props.disabled,
+                root: this.state.hasChildMenuItems,
+                showing: this.props.submenuShowing
+            }
         );
 
         return (
             <li className={className}>
                 <button tabIndex={-1} onClick={e => this.handleClick(e)}
-                    onMouseOver={() => this.handleMouseOver()}>{this.props.label}</button>
+                    onMouseOver={() => this.handleMouseOver()}>
+                    <span className="menu-label">{this.props.label}</span>
+                    <i className='material-icons'>{this.state.hasChildMenuItems ? 'arrow_right' : ''}</i>
+                </button>
                 {nestedMenu}
             </li>
         );

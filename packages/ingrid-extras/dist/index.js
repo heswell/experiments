@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect, useCallback, Component } from 'reac
 import cx from 'classnames';
 import { filter, FilterDataView, DataTypes, BinnedDataView } from '@heswell/data';
 import { FlexBox, TabbedContainer } from '@heswell/inlay';
-import { Grid, Selection, Draggable, PopupService } from '@heswell/ingrid';
+import { Grid, Selection, Draggable } from '@heswell/ingrid';
 import ReactDOM from 'react-dom';
 import Dygraph from 'dygraphs';
 import { spring, Motion } from 'react-motion';
+import { PopupService } from '@heswell/ui-controls';
 
 class CheckList extends React.Component {
   render() {

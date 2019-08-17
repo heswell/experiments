@@ -1,7 +1,7 @@
 {
-  "name": "@heswell/ingrid",
-  "version": "1.0.12",
-  "description": "Heswell data grid",
+  "name": "@heswell/ui-controls",
+  "version": "1.0.6",
+  "description": "UI Controls",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "files": [
@@ -13,13 +13,7 @@
   },
   "author": "heswell",
   "license": "MIT",
-  "peerDependencies": {
-    "@heswell/data": "^1.0.0",
-    "@heswell/ingrid-extras": "^1.0.0",
-    "@heswell/ui-controls": "^1.0.0",
-    "@heswell/utils": "^1.0.0",
-    "react-motion": "0.5.2"
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",

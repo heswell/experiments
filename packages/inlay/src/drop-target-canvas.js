@@ -1,6 +1,6 @@
 import { Position } from './model/index';
+import { PopupService } from '@heswell/ui-controls';
 import DropMenu from './drop-menu';
-import { PopupService } from './popup';
 import Konva from 'konva';
 
 import './drop-target-canvas.css';

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { PopupService } from './services/index';
-import GridContextMenu from './context-menu/grid-context-menu.jsx';
-import * as Action from './model/actions';
+import { PopupService } from '@heswell/ui-controls';
+import GridContextMenu from './grid-context-menu.jsx';
+import * as Action from '../model/actions';
 
 export const useContextMenu = (model, showFilters, setShowFilters, dispatch) => {
 

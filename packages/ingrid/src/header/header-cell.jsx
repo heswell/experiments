@@ -140,7 +140,7 @@ export default ({
     return (
         <div ref={el} className={className} style={style}
             onClick={handleClick} onMouseDown={handleMouseDown} onContextMenu={handleContextMenu}>
-            <SortIndicator column={column} multiColumnSort={multiColumnSort}/>
+            <SortIndicator column={col} multiColumnSort={multiColumnSort}/>
             <ToggleIcon column={col}/>
             <div className='InnerHeaderCell'>
                 <div className='cell-wrapper'>

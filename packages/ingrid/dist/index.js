@@ -1,10 +1,11 @@
-import React__default, { isValidElement, cloneElement, useCallback, useRef, useEffect, createElement, useContext, forwardRef, useImperativeHandle, memo, Component, useState, useReducer } from 'react';
+import React__default, { isValidElement, cloneElement, useCallback, useRef, useEffect, createElement, useContext, forwardRef, useImperativeHandle, memo, useState, useReducer } from 'react';
 import cx from 'classnames';
 import { rowUtils, DSC, ASC, groupHelpers, sortUtils, arrayUtils, columnUtils, filter, DataTypes } from '@heswell/data';
 import { createLogger, logColor } from '@heswell/utils';
 import { Motion, spring } from 'react-motion';
 import { NumberFilter, SetFilter, MultiColumnFilter } from '@heswell/ingrid-extras';
 import ReactDOM from 'react-dom';
+import { ContextMenu, MenuItem, Separator, PopupService as PopupService$1 } from '@heswell/ui-controls';
 
 const COLUMN_COLLAPSE = 'COLUMN_COLLAPSE';
 const COLUMN_EXPAND = 'COLUMN_EXPAND';
@@ -2211,7 +2212,7 @@ var HeaderCell = (({
     onMouseDown: handleMouseDown,
     onContextMenu: handleContextMenu
   }, React__default.createElement(SortIndicator, {
-    column: column,
+    column: col,
     multiColumnSort: multiColumnSort
   }), React__default.createElement(ToggleIcon, {
     column: col
@@ -2649,22 +2650,6 @@ function closeAllPopups() {
   }
 }
 
-function dialogOpened() {
-  if (_dialogOpen === false) {
-    console.log('PopupService, dialog opened');
-    _dialogOpen = true;
-    window.addEventListener('keydown', specialKeyHandler, true);
-  }
-}
-
-function dialogClosed() {
-  if (_dialogOpen) {
-    console.log('PopupService, dialog closed');
-    _dialogOpen = false;
-    window.removeEventListener('keydown', specialKeyHandler, true);
-  }
-}
-
 function popupOpened(name
 /*, group*/
 ) {
@@ -2776,29 +2761,6 @@ class PopupService {
   }
 
 }
-class DialogService {
-  static showDialog(dialog) {
-    const containerEl = '.react-dialog';
-    const onClose = dialog.props.onClose;
-    dialogOpened();
-    ReactDOM.render(React__default.cloneElement(dialog, {
-      container: containerEl,
-      onClose: () => {
-        DialogService.closeDialog();
-
-        if (onClose) {
-          onClose();
-        }
-      }
-    }), document.body.querySelector(containerEl));
-  }
-
-  static closeDialog() {
-    dialogClosed();
-    ReactDOM.unmountComponentAtNode(document.body.querySelector('.react-dialog'));
-  }
-
-}
 class Popup extends React__default.Component {
   constructor(props) {
     super(props);
@@ -2892,148 +2854,6 @@ class Popup extends React__default.Component {
   }
 
 }
-
-let subMenuTimeout = null;
-class MenuItem extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hasChildMenuItems: props.children && props.children.length > 0
-    };
-  }
-
-  render() {
-    const nestedMenu = this.props.submenuShowing ? createElement(ContextMenu, {
-      doAction: this.props.doAction
-    }, this.props.children) : null;
-    const className = cx('menu-item', this.props.disabled ? 'disabled' : null, this.state.hasChildMenuItems ? 'root' : null, this.props.submenuShowing ? 'showing' : null);
-    return createElement("li", {
-      className: className
-    }, createElement("button", {
-      tabIndex: -1,
-      onClick: e => this.handleClick(e),
-      onMouseOver: () => this.handleMouseOver()
-    }, this.props.label), nestedMenu);
-  }
-
-  handleClick(e) {
-    e.preventDefault();
-
-    if (this.props.disabled !== true) {
-      this.props.doAction(this.props.action, this.props.data);
-    }
-  }
-
-  handleMouseOver() {
-    this.props.onMouseOver(this.props.idx, this.state.hasChildMenuItems, this.props.submenuShowing);
-  }
-
-}
-const Separator = () => createElement("li", {
-  className: "divider"
-});
-class ContextMenu extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      left: props.left,
-      top: props.top,
-      bottom: props.bottom,
-      submenuShowing: false,
-      submenuIdx: null
-    };
-  }
-
-  render() {
-    const {
-      top,
-      left,
-      bottom
-    } = this.state;
-    const children = this.props.children;
-    const style = {
-      position: 'absolute',
-      top,
-      left,
-      bottom
-    };
-    const submenuIdx = this.state.submenuShowing ? this.state.submenuIdx : -1;
-    const menuItems = children ? children.map((menuItem, idx) => cloneElement(menuItem, {
-      key: String(idx),
-      idx,
-      action: menuItem.props.action,
-      doAction: (key, data) => this.handleMenuAction(key, data),
-      onMouseOver: (idx, hasChildMenuItems) => this.handleMenuItemMouseOver(idx, hasChildMenuItems),
-      submenuShowing: submenuIdx === idx
-    })) : null;
-    return createElement("ul", {
-      className: "popup-menu",
-      style: style
-    }, menuItems);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.left !== '100%' && nextProps.top !== 0) {
-      if (nextProps.left !== this.state.left || nextProps.top !== this.state.top) {
-        this.setState({
-          left: nextProps.left,
-          top: nextProps.top,
-          submenuShowing: false,
-          submenuIdx: null
-        });
-      }
-    }
-  }
-
-  handleMenuAction(key, data) {
-    if (this.props.doAction) {
-      this.props.doAction(key, data);
-    } else if (this.props.onAction) {
-      this.props.onAction(key, data);
-    }
-
-    this.close();
-  }
-
-  handleMenuItemMouseOver(idx, hasChildMenuItems) {
-    if (subMenuTimeout) {
-      clearTimeout(subMenuTimeout);
-      subMenuTimeout = null;
-    }
-
-    if (hasChildMenuItems) {
-      if (this.state.submenuShowing !== true) {
-        subMenuTimeout = setTimeout(() => this.showSubmenu(), 400);
-      }
-
-      this.setState({
-        submenuIdx: idx
-      });
-    } else if (this.state.submenuIdx !== null) {
-      this.setState({
-        submenuIdx: null,
-        submenuShowing: false
-      });
-    }
-  }
-
-  showSubmenu() {
-    subMenuTimeout = null;
-    this.setState({
-      submenuShowing: true
-    });
-  }
-
-  close() {
-    PopupService.hidePopup();
-  }
-
-}
-ContextMenu.defaultProps = {
-  left: '100%',
-  top: 0,
-  bottom: 'auto'
-};
 
 var ColumnFilter = (({
   column,
@@ -4224,7 +4044,7 @@ const useContextMenu = (model, showFilters, setShowFilters, dispatch) => {
       dispatch: dispatch,
       doAction: handleContextMenuAction
     });
-    PopupService.showPopup({
+    PopupService$1.showPopup({
       left: Math.round(left),
       top: Math.round(top),
       component
@@ -4421,5 +4241,5 @@ function Grid({
   );
 }
 
-export { DialogService, Draggable, Grid, Popup, PopupService, Selection };
+export { Draggable, Grid, Selection };
 //# sourceMappingURL=index.js.map

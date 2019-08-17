@@ -1,5 +1,5 @@
 import React from 'react';
-import {ContextMenu, MenuItem, Separator} from './context-menu';
+import {ContextMenu, MenuItem, Separator} from '@heswell/ui-controls';
 
 export default class ComponentContextMenu extends React.Component {
 
