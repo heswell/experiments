@@ -13,7 +13,7 @@
   },
   "author": "heswell",
   "license": "MIT",
-  "peerDependencies": {
+  "dependencies": {
     "@heswell/utils": "1.0.0",
     "d3-array": "2.2.0"
   },

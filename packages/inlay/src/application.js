@@ -1,5 +1,7 @@
 
 import React from 'react';
+import {uuid} from '@heswell/utils';
+
 import {Surface} from './layoutContainers';
 import './components/ComponentIcon';
 import {followPath} from './model/index';
@@ -10,8 +12,6 @@ import {
 } from './redux/actions';
 import {getLayoutModel} from './redux/layoutReducer';
 import './application.css';
-
-const UUID = require('pure-uuid');
 
 
 // Redux -------------------------
@@ -130,7 +130,7 @@ export default class Application extends React.Component {
     //     }
     // }
 
-    getLayoutModel(width, height, id=new UUID(1)){
+    getLayoutModel(width, height, id=uuid()){
 
         console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`,'color:blue;font-weight:bold');
         return {

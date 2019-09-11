@@ -1,13 +1,14 @@
 {
   "name": "@heswell/server-core",
-  "version": "1.0.7",
+  "version": "1.0.13",
   "description": "Heswell websocket server",
-  "main": "dist/index.mjs",
+  "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
+    "prepublishOnly": "npm run build && npm version patch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "heswell",
@@ -18,7 +19,8 @@
   },
   "dependencies": {
     "@heswell/data": "^1.0.0",
-    "@heswell/utils": "^1.0.0",
-    "d3-array": "^2.2.0"
+    "@heswell/utils": "^1.0.2",
+    "d3-array": "^2.2.0",
+    "ws": "6.2.1"
   }
 }

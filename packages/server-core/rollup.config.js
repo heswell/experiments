@@ -1,9 +1,9 @@
 import resolve from 'rollup-plugin-node-resolve'
 
 export default {
-    input: 'index.mjs',
+    input: 'index.js',
     output: {
-        file: 'dist/index.mjs',
+        file: 'dist/index.js',
         format: 'cjs',
         sourcemap: true
     },

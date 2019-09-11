@@ -1,18 +1,16 @@
 {
   "name": "@heswell/viewserver",
-  "version": "1.0.9",
+  "version": "1.0.18",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
   "files": [
     "dist"
   ],
-  "bin": {
-    "viewserver": "./server-cli.js"
-  },
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "npm run build && npm version patch"
+    "publish:local": "npm run build && npm version patch && npm publish",
+    "publish:npm": "npm publish --registry=https://registry.npmjs.org"
   },
   "author": "heswell",
   "license": "MIT",

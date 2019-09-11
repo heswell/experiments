@@ -1,5 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
+import {uuid} from '@heswell/utils';
 import LayoutItem from './layout-item';
 import DynamicContainer from './dynamic-container';
 import {isLayout} from './util/component-utils';
@@ -7,7 +8,6 @@ import { handleLayout } from './model/index';
 import {componentFromLayout} from './util/componentFromLayout';
 import { registerClass } from './componentRegistry';
 import { Draggable } from './draggable';
-const UUID = require('pure-uuid');
 
 
 const NO_CHILDREN = [];
@@ -162,7 +162,7 @@ export default class Surface extends DynamicContainer {
 
         // what if draggedComponent is a Layout ?    
         var draggedComponent = dragAsIcon
-            ? {$id: new UUID(1), $path, layout, style, ...rest}
+            ? {$id: uuid(), $path, layout, style, ...rest}
             : {
                 ...rest,
                 style: {

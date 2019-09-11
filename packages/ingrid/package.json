@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ingrid",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -16,15 +16,18 @@
   "peerDependencies": {
     "@heswell/data": "^1.0.0",
     "@heswell/ingrid-extras": "^1.0.0",
-    "@heswell/ui-controls": "^1.0.0",
     "@heswell/utils": "^1.0.0",
+    "@heswell/ui-controls": "^1.0.0",
+    "classnames": "^2.2.6",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
     "react-motion": "0.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-plugin-transform-jsx": "^2.0.0",
-    "rollup": "^1.18.0",
+    "rollup": "^1.20.3",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-postcss": "^2.0.3"
   }

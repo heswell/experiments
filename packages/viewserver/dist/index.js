@@ -5,21 +5,18 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var path$3 = _interopDefault(require('path'));
-var url = _interopDefault(require('url'));
 var fs = _interopDefault(require('fs'));
+var url = _interopDefault(require('url'));
 
 //import fs from 'fs';
 
-// const data_path = fs.realpathSync(process.cwd());
-const project_path = 'dataTables/instruments';
-
-const data_path = path$3.dirname(new url.URL((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('index.js', document.baseURI).href))).pathname);
+const project_path = path$3.resolve(__dirname, 'dataTables/instruments');
 
 const config = {
     name: 'Instruments',
-    dataPath: `${data_path}/${project_path}/dataset`,
-    createPath: `${data_path}/${project_path}/create-row`,
-    updatePath: `${data_path}/${project_path}/update-row`,
+    dataPath: `${project_path}/dataset`,
+    createPath: `${project_path}/create-row`,
+    updatePath: `${project_path}/update-row`,
     type: 'vs',
     primaryKey: 'Symbol',
     columns: [
@@ -53,12 +50,12 @@ const path$1 = fs.realpathSync(process.cwd());
 //const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
 const path$2 = fs.realpathSync(process.cwd());
 
-const data_path$1 = fs.realpathSync(process.cwd());
+const data_path = fs.realpathSync(process.cwd());
 const project_path$1 = 'src/@heswell/viewserver/dataTables/sets';
 
 const config$1 = {
     name: 'Sets',
-    dataPath: `${data_path$1}/${project_path$1}/dataset`,
+    dataPath: `${data_path}/${project_path$1}/dataset`,
     // createPath: `${data_path}/${project_path}/create-row`,
     // updatePath: `${data_path}/${project_path}/update-row`,
     type: 'vs',
@@ -96,12 +93,12 @@ const config$1 = {
     // }
 };
 
-const data_path$2 = fs.realpathSync(process.cwd());
+const data_path$1 = fs.realpathSync(process.cwd());
 const project_path$2 = 'src/@heswell/viewserver/dataTables/order-blotter';
 
 const config$2 = {
     name: 'order-blotter',
-    dataPath: `${data_path$2}/${project_path$2}/dataset`,
+    dataPath: `${data_path$1}/${project_path$2}/dataset`,
     // createPath: `${data_path}/${project_path}/create-row`,
     // updatePath: `${data_path}/${project_path}/update-row`,
     type: 'vs',
@@ -124,12 +121,12 @@ const config$2 = {
     // }
 };
 
-const data_path$3 = fs.realpathSync(process.cwd());
+const data_path$2 = fs.realpathSync(process.cwd());
 const project_path$3 = 'src/@heswell/viewserver/dataTables/order-book';
 
 const config$3 = {
     name: 'order-book',
-    dataPath: `${data_path$3}/${project_path$3}/dataset`,
+    dataPath: `${data_path$2}/${project_path$3}/dataset`,
     // createPath: `${data_path}/${project_path}/create-row`,
     // updatePath: `${data_path}/${project_path}/update-row`,
     type: 'vs',
@@ -159,11 +156,11 @@ const ServerApiMessageTypes = {
   addSubscription: 'AddSubscription'
 };
 
-const data_path$4 = path$3.dirname(new url.URL((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('index.js', document.baseURI).href))).pathname);
+const data_path$3 = path$3.dirname(new url.URL((typeof document === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : (document.currentScript && document.currentScript.src || new URL('index.js', document.baseURI).href))).pathname);
 
 const ServiceDefinition = {
   name: 'DataTableService',
-  module: `${data_path$4}/DataTableService`,
+  module: `${data_path$3}/DataTableService`,
   API: [
       'GetTableList',
       'GetTableMeta',

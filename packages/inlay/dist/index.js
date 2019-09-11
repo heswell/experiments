@@ -1,4 +1,5 @@
 import React, { Component as Component$1 } from 'react';
+import { uuid } from '@heswell/utils';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import { ContextMenu, MenuItem, Separator, PopupService } from '@heswell/ui-controls';
@@ -36,7 +37,6 @@ function registerClass(className, component, isContainer) {
   }
 }
 
-const UUID = require('pure-uuid');
 function typeOf(element) {
   var type;
 
@@ -76,7 +76,7 @@ function layoutProps({
 
 const getLayoutModel = component => ({
   type: typeOf(component),
-  $id: component.props.id || new UUID(1),
+  $id: component.props.id || uuid(),
   ...layoutProps(component),
   style: component.props.style,
   children: isLayout$1(component) ? getLayoutModelChildren(component) : []
@@ -1119,8 +1119,6 @@ function setCSSMeasure(node, style, measure) {
   }
 }
 
-const UUID$1 = require('pure-uuid');
-
 const EMPTY_OBJECT = {};
 function containerOf(layout, target) {
   if (target === layout) {
@@ -1509,7 +1507,7 @@ function wrap(model, source, target, pos) {
       type,
       $path,
       active,
-      $id: new UUID$1(1),
+      $id: uuid(),
       style: wrapperStyle,
       layout: target.layout,
       resizeable: target.resizeable,
@@ -4409,8 +4407,6 @@ DynamicContainer.defaultProps = {
 };
 registerClass('DynamicContainer', DynamicContainer, true);
 
-const UUID$2 = require('pure-uuid');
-
 const NO_CHILDREN$1 = [];
 const EMPTY_OBJECT$1 = {};
 class Surface extends DynamicContainer {
@@ -4551,7 +4547,7 @@ class Surface extends DynamicContainer {
     }) : undefined; // what if draggedComponent is a Layout ?    
 
     var draggedComponent = dragAsIcon ? {
-      $id: new UUID$2(1),
+      $id: uuid(),
       $path,
       layout,
       style,
@@ -4724,11 +4720,9 @@ registerClass('ComponentIcon', ComponentIcon);
 
 const getLayoutModel$1 = state => state.layoutModel;
 
-const UUID$3 = require('pure-uuid'); // Redux -------------------------
 // import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 // import componentState from './redux/componentReducer';
 // import thunk from 'redux-thunk';
-
 
 const NO_STYLE$2 = {};
 class Application extends React.Component {
@@ -4855,7 +4849,7 @@ class Application extends React.Component {
   // }
 
 
-  getLayoutModel(width, height, id = new UUID$3(1)) {
+  getLayoutModel(width, height, id = uuid()) {
     console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`, 'color:blue;font-weight:bold');
     return {
       type: 'Surface',

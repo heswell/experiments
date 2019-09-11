@@ -2,10 +2,20 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/preset-react": "^7.0.0",
+    "copy-webpack-plugin": "^5.0.4",
     "lerna": "^3.16.4",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-sizes": "^0.5.1",
     "source-map-loader": "^0.2.4"
   },
   "dependencies": {
-    "@heswell/utils": "^1.0.0"
+    "classnames": "^2.2.6",
+    "dygraphs": "^2.1.0",
+    "material-design-icons": "^3.0.1",
+    "react-motion": "^0.5.2"
   }
 }

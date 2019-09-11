@@ -24,5 +24,8 @@
   "dependencies": {
     "konva": "^3.4.1",
     "yoga-layout": "^1.9.3"
+  },
+  "peerDependencies": {
+    "@heswell/utils": "^1.0.0"
   }
 }

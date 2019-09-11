@@ -1,7 +1,7 @@
 import React from 'react';
+import {uuid} from '@heswell/utils';
 
 import shallowCloneObject from './shallowCloneObject';
-const UUID = require('pure-uuid');
 import {isContainer} from '../componentRegistry';
 
 export function typeOf(element){
@@ -50,7 +50,7 @@ function layoutProps({props}){
 
 export const getLayoutModel = (component) => ({
 	type: typeOf(component),
-	$id: component.props.id || new UUID(1),
+	$id: component.props.id || uuid(),
 	...layoutProps(component),
 	style: component.props.style,
 	children: isLayout(component) ? getLayoutModelChildren(component) : []
@@ -109,7 +109,7 @@ export function JSONfromComponent(component, parent, ignoreChildren){
 	}
 
 
-	var json = { type, id: new UUID(1), flexDirection};
+	var json = { type, id: uuid(), flexDirection};
 
 	// var props = component.props;
 	var propertyNames = Object.getOwnPropertyNames(props);

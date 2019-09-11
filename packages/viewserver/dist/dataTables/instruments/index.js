@@ -1,17 +1,13 @@
 //import fs from 'fs';
 import path from 'path';
-import url from 'url';
 
-// const data_path = fs.realpathSync(process.cwd());
-const project_path = 'dataTables/instruments'
-
-const data_path = path.dirname(new url.URL(import.meta.url).pathname);
+const project_path = path.resolve(__dirname, 'dataTables/instruments');
 
 const config = {
     name: 'Instruments',
-    dataPath: `${data_path}/${project_path}/dataset`,
-    createPath: `${data_path}/${project_path}/create-row`,
-    updatePath: `${data_path}/${project_path}/update-row`,
+    dataPath: `${project_path}/dataset`,
+    createPath: `${project_path}/create-row`,
+    updatePath: `${project_path}/update-row`,
     type: 'vs',
     primaryKey: 'Symbol',
     columns: [

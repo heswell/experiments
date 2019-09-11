@@ -1,7 +1,7 @@
 
+import {uuid} from '@heswell/utils';
 import { followPath, followPathToParent, nextStep } from './pathUtils';
 import { computeLayout as computeLayoutYoga } from './layoutUtils';
-const UUID = require('pure-uuid');
 
 const EMPTY_OBJECT = {};
 
@@ -310,7 +310,7 @@ function wrap(model, source, target, pos) {
             type,
             $path,
             active,
-            $id: new UUID(1),
+            $id: uuid(),
             style: wrapperStyle,
             layout: target.layout,
             resizeable: target.resizeable,

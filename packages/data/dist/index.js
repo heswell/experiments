@@ -3,26 +3,207 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopNamespace(e) {
-   if (e && e.__esModule) { return e; } else {
-      var n = {};
-      if (e) {
-         Object.keys(e).forEach(function (k) {
-            var d = Object.getOwnPropertyDescriptor(e, k);
-            Object.defineProperty(n, k, d.get ? d : {
-               enumerable: true,
-               get: function () {
-                  return e[k];
-               }
-            });
-         });
-      }
-      n['default'] = e;
-      return n;
-   }
+  if (e && e.__esModule) { return e; } else {
+    var n = {};
+    if (e) {
+      Object.keys(e).forEach(function (k) {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () {
+            return e[k];
+          }
+        });
+      });
+    }
+    n['default'] = e;
+    return n;
+  }
 }
 
-var d3 = require('d3-array');
-var utils = require('@heswell/utils');
+function ascending(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+function bisector(compare) {
+  if (compare.length === 1) compare = ascendingComparator(compare);
+  return {
+    left: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) < 0) lo = mid + 1;
+        else hi = mid;
+      }
+      return lo;
+    },
+    right: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) > 0) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+  };
+}
+
+function ascendingComparator(f) {
+  return function(d, x) {
+    return ascending(f(d), x);
+  };
+}
+
+var ascendingBisect = bisector(ascending);
+var bisectRight = ascendingBisect.right;
+
+function extent(values, valueof) {
+  let min;
+  let max;
+  if (valueof === undefined) {
+    for (const value of values) {
+      if (value != null) {
+        if (min === undefined) {
+          if (value >= value) min = max = value;
+        } else {
+          if (min > value) min = value;
+          if (max < value) max = value;
+        }
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null) {
+        if (min === undefined) {
+          if (value >= value) min = max = value;
+        } else {
+          if (min > value) min = value;
+          if (max < value) max = value;
+        }
+      }
+    }
+  }
+  return [min, max];
+}
+
+function identity(x) {
+  return x;
+}
+
+var array = Array.prototype;
+
+var slice = array.slice;
+
+function constant(x) {
+  return function() {
+    return x;
+  };
+}
+
+function range(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
+
+var e10 = Math.sqrt(50),
+    e5 = Math.sqrt(10),
+    e2 = Math.sqrt(2);
+
+function tickStep(start, stop, count) {
+  var step0 = Math.abs(stop - start) / Math.max(0, count),
+      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+      error = step0 / step1;
+  if (error >= e10) step1 *= 10;
+  else if (error >= e5) step1 *= 5;
+  else if (error >= e2) step1 *= 2;
+  return stop < start ? -step1 : step1;
+}
+
+function sturges(values) {
+  return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
+}
+
+function bin() {
+  var value = identity,
+      domain = extent,
+      threshold = sturges;
+
+  function histogram(data) {
+    if (!Array.isArray(data)) data = Array.from(data);
+
+    var i,
+        n = data.length,
+        x,
+        values = new Array(n);
+
+    for (i = 0; i < n; ++i) {
+      values[i] = value(data[i], i, data);
+    }
+
+    var xz = domain(values),
+        x0 = xz[0],
+        x1 = xz[1],
+        tz = threshold(values, x0, x1);
+
+    // Convert number of thresholds into uniform thresholds.
+    if (!Array.isArray(tz)) {
+      tz = tickStep(x0, x1, tz);
+      tz = range(Math.ceil(x0 / tz) * tz, x1, tz); // exclusive
+    }
+
+    // Remove any thresholds outside the domain.
+    var m = tz.length;
+    while (tz[0] <= x0) tz.shift(), --m;
+    while (tz[m - 1] > x1) tz.pop(), --m;
+
+    var bins = new Array(m + 1),
+        bin;
+
+    // Initialize bins.
+    for (i = 0; i <= m; ++i) {
+      bin = bins[i] = [];
+      bin.x0 = i > 0 ? tz[i - 1] : x0;
+      bin.x1 = i < m ? tz[i] : x1;
+    }
+
+    // Assign data to bins by value, ignoring any outside the domain.
+    for (i = 0; i < n; ++i) {
+      x = values[i];
+      if (x0 <= x && x <= x1) {
+        bins[bisectRight(tz, x, 0, m)].push(data[i]);
+      }
+    }
+
+    return bins;
+  }
+
+  histogram.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant(_), histogram) : value;
+  };
+
+  histogram.domain = function(_) {
+    return arguments.length ? (domain = typeof _ === "function" ? _ : constant([_[0], _[1]]), histogram) : domain;
+  };
+
+  histogram.thresholds = function(_) {
+    return arguments.length ? (threshold = typeof _ === "function" ? _ : Array.isArray(_) ? constant(slice.call(_)) : constant(_), histogram) : threshold;
+  };
+
+  return histogram;
+}
 
 const EQUALS = 'EQ';
 const GREATER_THAN = 'GT';
@@ -1781,6 +1962,229 @@ function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size, meta) 
 
 }
 
+const MAX_LISTENERS = 10;
+
+class EventEmitter {
+
+    constructor() {
+        this._events = {};
+        this._maxListeners = MAX_LISTENERS;
+    }
+
+    addListener(type, listener) {
+        let m;
+
+        if (!isFunction(listener)) {
+            throw TypeError('listener must be a function');
+        }
+
+        if (!this._events) {
+            this._events = {};
+        }
+
+        // To avoid recursion in the case that type === "newListener"! Before
+        // adding it to the listeners, first emit "newListener".
+        if (this._events.newListener) {
+            this.emit('newListener', type, listener);
+        }
+
+        if (!this._events[type]) {
+            // Optimize the case of one listener. Don't need the extra array object.
+            this._events[type] = listener;
+        } else if (Array.isArray(this._events[type])) {
+            // If we've already got an array, just append.
+            this._events[type].push(listener);
+        } else {
+            // Adding the second element, need to change to array.
+            this._events[type] = [this._events[type], listener];
+        }
+
+        // Check for listener leak
+        if (Array.isArray(this._events[type]) && !this._events[type].warned) {
+            if (!isUndefined(this._maxListeners)) {
+                m = this._maxListeners;
+            } else {
+                m = MAX_LISTENERS;
+            }
+
+            if (m && m > 0 && this._events[type].length > m) {
+                this._events[type].warned = true;
+                console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                this._events[type].length);
+            }
+        }
+
+        return this;
+
+    }
+
+    removeListener(type, listener) {
+        let list, position, length, i;
+
+        if (!isFunction(listener)) {
+            throw TypeError('listener must be a function');
+        }
+
+        if (!this._events || !this._events[type]) {
+            return this;
+        }
+
+        list = this._events[type];
+        length = list.length;
+        position = -1;
+
+        if (list === listener ||
+            (isFunction(list.listener) && list.listener === listener)) {
+            delete this._events[type];
+            if (this._events.removeListener) {
+                this.emit('removeListener', type, listener);
+            }
+
+        } else if (Array.isArray(list)) {
+            for (i = length; i-- > 0;) {
+                if (list[i] === listener ||
+                    (list[i].listener && list[i].listener === listener)) {
+                    position = i;
+                    break;
+                }
+            }
+
+            if (position < 0) {
+                return this;
+            }
+
+            if (list.length === 1) {
+                list.length = 0;
+                delete this._events[type];
+            } else {
+                list.splice(position, 1);
+            }
+
+            if (this._events.removeListener) {
+                this.emit('removeListener', type, listener);
+            }
+        }
+
+        return this;
+
+    }
+
+    removeAllListeners(type) {
+
+        if (!this._events) {
+            return this;
+        }
+
+        const listeners = this._events[type];
+
+        if (isFunction(listeners)) {
+            this.removeListener(type, listeners);
+        } else if (listeners) {
+            // LIFO order
+            while (listeners.length) {
+                this.removeListener(type, listeners[listeners.length - 1]);
+            }
+        }
+        delete this._events[type];
+
+        return this;
+
+    }
+
+    emit(type, ...args) {
+
+        if (!this._events) {
+            this._events = {};
+        }
+
+        // If there is no 'error' event listener then throw.
+        if (type === 'error') {
+            if (!this._events.error ||
+                (isObject(this._events.error) && !this._events.error.length)) {
+                const err = arguments[1];
+                if (err instanceof Error) {
+                    throw err; // Unhandled 'error' event
+                } else {
+                    // At least give some kind of context to the user
+                    throw new Error('Uncaught, unspecified "error" event. (' + err + ')');
+                }
+            }
+        }
+
+        const handler = this._events[type];
+
+        if (isUndefined(handler)) {
+            return false;
+        }
+
+        if (isFunction(handler)) {
+            switch (args.length) {
+                // fast cases
+                case 0:
+                    handler.call(this);
+                    break;
+                case 1:
+                    handler.call(this, type, args[0]);
+                    break;
+                case 2:
+                    handler.call(this, type, args[0], args[1]);
+                    break;
+                // slower
+                default:
+                    handler.call(this, type, ...args);
+            }
+        } else if (Array.isArray(handler)) {
+            handler.slice().forEach(listener => listener.call(this, type, ...args));
+        }
+
+        return true;
+
+    }
+
+    once(type, listener) {
+
+        const handler = (evtName, message) => {
+            this.removeListener(evtName, handler);
+            listener(evtName, message);
+        };
+
+        this.on(type, handler);
+
+    }
+
+    on(type, listener) {
+        return this.addListener(type, listener);
+    }
+
+}
+
+function isFunction(arg) {
+    return typeof arg === 'function';
+}
+
+function isObject(arg) {
+    return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+    return arg === void 0;
+}
+
+const logColor = {
+  plain : 'color: black; font-weight: normal',
+  blue : 'color: blue; font-weight: bold',
+  brown : 'color: brown; font-weight: bold',
+  green : 'color: green; font-weight: bold',
+};
+
+const {plain} = logColor;
+const createLogger = (source, labelColor=plain, msgColor=plain) => ({
+  log: (msg, args='') => console.log(`[${Date.now()}]%c[${source}] %c${msg}`,labelColor, msgColor, args),
+  warn: (msg) => console.warn(`[${source}] ${msg}`)
+});
+
 /*global fetch */
 
 const defaultUpdateConfig = {
@@ -1789,7 +2193,7 @@ const defaultUpdateConfig = {
     interval: 500
 };
 
-class Table extends utils.EventEmitter {
+class Table extends EventEmitter {
 
     constructor(config){
         super();
@@ -2343,7 +2747,7 @@ class BaseRowSet {
         const key = this.columnMap[column.name];
         const { data: rows, filteredData } = this;
         const numbers = filteredData.map(rowIdx => rows[rowIdx][key]);
-        const data = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
+        const data = bin().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
 
         const table = new Table({ data, primaryKey: 'bin', columns: BIN_FILTER_DATA_COLUMNS });
         const filterRowset = new BinFilterRowSet(table, BIN_FILTER_DATA_COLUMNS, column.name);
@@ -4361,7 +4765,7 @@ class DataView {
   See UpdateQueue
 */
 
-class UpdateQueue$1 extends utils.EventEmitter {
+class UpdateQueue$1 extends EventEmitter {
 
     update(update) {
         this.emit('update', [update]);
@@ -4389,7 +4793,7 @@ const buildDataView = async url =>
   new Promise(function (resolve) { resolve(_interopNamespace(require(/* webpackIgnore: true */ url))); })
     .catch(err => console.log(`failed to load data at ${url} ${err}`));
 
-const logger = utils.createLogger('LocalDataView', utils.logColor.blue);
+const logger = createLogger('LocalDataView', logColor.blue);
 
 class LocalDataView {
   constructor({
@@ -4521,7 +4925,7 @@ class LocalDataView {
 
 //TODO neither this file nor filter-data-view belong here - thye are not specific to remote views
 
-const logger$1 = utils.createLogger('BinnedDataView', utils.logColor.brown);
+const logger$1 = createLogger('BinnedDataView', logColor.brown);
 
 class BinnedDataView {
 
@@ -4562,7 +4966,7 @@ class BinnedDataView {
 
 }
 
-const logger$2 = utils.createLogger('FilterDataView', utils.logColor.brown);
+const logger$2 = createLogger('FilterDataView', logColor.brown);
 
 class FilterDataView {
 

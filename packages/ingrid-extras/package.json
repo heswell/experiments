@@ -14,9 +14,11 @@
   "author": "heswell",
   "license": "MIT",
   "peerDependencies": {
-    "@heswell/data": "1.0.0",
-    "@heswell/ingrid": "1.0.0",
-    "@heswell/inlay": "1.0.0"
+    "@heswell/data": "^1.0.0",
+    "@heswell/ingrid": "^1.0.0",
+    "@heswell/inlay": "^1.0.0",
+    "@heswell/ui-controls": "^1.0.0",
+    "@heswell/utils": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -27,5 +29,9 @@
     "rollup": "^1.18.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-postcss": "^2.0.3"
+  },
+  "dependencies": {
+    "dygraphs": "^2.1.0",
+    "react-motion": "^0.5.2"
   }
 }

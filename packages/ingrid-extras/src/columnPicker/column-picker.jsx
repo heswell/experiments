@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import cx from 'classnames';
 import {FlexBox} from '@heswell/inlay';
+import { uuid } from '@heswell/utils';
 import AvailableList from './available-list.jsx'; 
 import List from './list/list.jsx'; 
 
 
-const uuid = require('uuid');
 
 export class ColumnPicker extends Component {
 
@@ -67,7 +67,7 @@ export class ColumnPicker extends Component {
             var {top=0,left=0, width, height} = this.props.style;
             return {
                 type: 'FlexBox',
-                $id: this.props.id || uuid.v1(),
+                $id: this.props.id || uuid(),
                 $path: '0',
                 $version: 1,
                 style: {position: 'absolute', width, height, flexDirection:'column'},
