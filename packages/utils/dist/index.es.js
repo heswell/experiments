@@ -1138,7 +1138,7 @@ var uuid = createCommonjsModule(function (module) {
 });
 
 function uuid$1(){
-  return new uuid(1)
+  return new uuid(1).format();
 }
 
 export { EventEmitter, createLogger, logColor, uuid$1 as uuid };

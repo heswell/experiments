@@ -1,5 +1,5 @@
 import React from 'react';
-import Component from '../component';
+import Component from '../component/component';
 import LayoutItem from '../layout-item';
 import PlaceHolder from '../placeHolder';
 

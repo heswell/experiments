@@ -81,7 +81,13 @@ export default class Container extends React.Component {
     getLayoutModel(){
 
         if (this.isLayoutRoot()){
-            return applyLayout(getLayoutModel(this));
+            const layoutModel = getLayoutModel(this);
+            console.log(`%c${JSON.stringify(layoutModel,null,2)}`,'color:blue;font-weight: bold;')
+            const l = applyLayout(layoutModel);
+            console.log(`%c${JSON.stringify(l,null,2)}`,'color:brown;font-weight: bold;')
+            return l;
+
+            // return applyLayout(getLayoutModel(this));
         } else {
             return this.props.layoutModel;
         }

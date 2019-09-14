@@ -1142,7 +1142,7 @@ var uuid = createCommonjsModule(function (module) {
 });
 
 function uuid$1(){
-  return new uuid(1)
+  return new uuid(1).format();
 }
 
 exports.EventEmitter = EventEmitter;

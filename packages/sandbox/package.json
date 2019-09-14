@@ -47,6 +47,7 @@
     "serve": "^11.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.0.0",
+    "terser-webpack-plugin": "^2.0.1",
     "url-loader": "^2.1.0",
     "webpack": "^4.39.2",
     "webpack-cli": "^3.3.7",
@@ -68,4 +69,5 @@
     },
     "extends": "react-app"
   }
+
 }

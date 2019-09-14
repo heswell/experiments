@@ -1,3 +1,4 @@
-import './ingrid/local/index.jsx';
+//import './ingrid/local/index.jsx';
+import './inlay/index.jsx';
 
 import './style/material-design.css';

@@ -1,23 +1,17 @@
 
 import React from 'react';
+import cx from 'classnames';
 import {uuid} from '@heswell/utils';
 
-import {Surface} from './layoutContainers';
-import './components/ComponentIcon';
-import {followPath} from './model/index';
-import cx from 'classnames';
+import {Surface} from '../layoutContainers';
+import '../components/ComponentIcon';
+import {followPath} from '../model/index';
 import {
     switchTab,
     replace as replaceInLayout
-} from './redux/actions';
-import {getLayoutModel} from './redux/layoutReducer';
+} from '../redux/actions';
+import {getLayoutModel} from '../redux/layoutReducer';
 import './application.css';
-
-
-// Redux -------------------------
-// import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
-// import componentState from './redux/componentReducer';
-// import thunk from 'redux-thunk';
 
 const NO_STYLE = {}
 
@@ -29,20 +23,8 @@ export default class Application extends React.Component {
         var {width: appWidth, height: appHeight, dialogs=[], style: {width=appWidth, height=appHeight, backgroundColor}=NO_STYLE} = props;
 
         this.resizeListener = this.resizeListener.bind(this);
-        // const reduxDevTools = window.devToolsExtension ? window.devToolsExtension() : f => f;
 
-        // const reducers = combineReducers({
-        //     ...this.props.reducers,
-        //     componentState,
-        //     layoutModel
-        // });
-
-        // this.store = createStore(
-        //     reducers,
-        //     compose(applyMiddleware(thunk/*, logger*/), reduxDevTools)
-        // );
-
-        // this.store.subscribe(this.handleChange);
+        this.el = React.createRef();
 
         this.state = {
             height,
@@ -52,10 +34,8 @@ export default class Application extends React.Component {
             draggedComponent: null,
             dialogs,
             hasError: false
-            // layoutModel: this.getLayoutModel(width, height)
         };
 
-        // this.props.bootstrap(this.store.dispatch);
     }
 
     componentDidCatch(error, info){
@@ -63,31 +43,44 @@ export default class Application extends React.Component {
         this.setState({hasError: true})
     }
 
+    componentDidMount(){
+
+        let {width, height} = this.state;
+        
+        if (width === undefined || height === undefined){
+            const {height: clientHeight, width: clientWidth} = this.el.current.getBoundingClientRect();
+            if (height === undefined){
+                height = clientHeight;
+            }
+            if (width === undefined){
+                width = clientWidth;
+            }
+            this.setState({height, width})
+        }
+
+        window.addEventListener('resize', this.resizeListener, false);
+        // this.store.dispatch(initializeLayoutModel(this.state.layoutModel));
+    }
+
+    componentWillUnmount(){
+        window.removeEventListener('resize', this.resizeListener, false);
+    }
+
     render(){
-        // dragging will suppress render in all children except the DragSurface
+
         const {width, height, backgroundColor, dragging, hasError} = this.state;
         const style = {position: 'absolute', top: 0, left: 0,width,height, backgroundColor};
         const className = cx('Application', this.props.className);
 
-        //TODO make the default Container a Surface, which can host dialogs/popups as well
-        // as root layout. Default style will be 100% x 100%
-        //TODO maybe DragSurface should be part of Surface ?
-
-        // TRY scrap the DragSurface. pass dragging to each child. If it is set and they do not
-        // match do not render. So dialogs can be moved without dom removal. Layout items 
-        // will be transplanted to Surface. Means every container and LayoutItem will have to
-        // implement this in shouldComponentUpdate
-        // if (nextProps.dragOperation && nextProps.dragOperation.draggedComponent !== this)
-
-        // we want something like 
-        // <Surface dragOperation={{draggedComponent,x,y}}
-
-        if (hasError){
+        if (width === undefined || height === undefined){
+            return <div style={{height: '100%'}} ref={this.el}/>;
+        }
+        else if (hasError){
             return <div style={style} className={className}>Error</div>
         }
 
         return (
-            <div style={style} className={className}>
+            <div style={style} className={className} ref={this.el}>
                 <Surface layoutModel={this.props.layoutModel}
                     style={{width,height}}
                     dragging={dragging}
@@ -117,19 +110,6 @@ export default class Application extends React.Component {
 
     }
 
-    // handleChange = () => {
-    //     const layoutModel = getLayoutModel(this.store.getState());
-
-    //     // console.log(`Application.handleChange 
-    //     // 	state version ${this.state ? this.state.layoutModel.$version : 'null'}
-    //     // 	store version ${layoutModel ? layoutModel.$version : 'null'}`);
-
-    //     if (layoutModel !== null && layoutModel !== this.state.layoutModel){
-    //         //onsole.log(`Application:store change triggers setState EXPECT RENDER`);
-    //         this.setState({layoutModel});
-    //     }
-    // }
-
     getLayoutModel(width, height, id=uuid()){
 
         console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`,'color:blue;font-weight:bold');
@@ -143,15 +123,6 @@ export default class Application extends React.Component {
             children: []
         };
 
-    }
-
-    componentDidMount(){
-        window.addEventListener('resize', this.resizeListener, false);
-        // this.store.dispatch(initializeLayoutModel(this.state.layoutModel));
-    }
-
-    componentWillUnmount(){
-        window.removeEventListener('resize', this.resizeListener, false);
     }
 
     componentWillReceiveProps(nextProps){

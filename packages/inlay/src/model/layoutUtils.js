@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import yoga, { Node } from 'yoga-layout';
 import {TABBED_CONTAINER, SURFACE} from './layoutTypes'
 import { isContainer } from '../componentRegistry';

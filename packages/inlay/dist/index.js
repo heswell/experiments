@@ -1882,6 +1882,13 @@ class LayoutItem extends React.Component {
       // ...childStyle,
       ...childLayout
     };
+    console.log(`LayoutItem
+            style ${JSON.stringify(componentStyle)}
+        
+            props.style ${JSON.stringify(this.props.style)}
+            layout.style ${JSON.stringify(layoutModel.style)}
+        
+        `);
     return React.createElement("div", {
       id: $path,
       className: className,
@@ -3328,7 +3335,11 @@ class Container extends React.Component {
 
   getLayoutModel() {
     if (this.isLayoutRoot()) {
-      return layout(getLayoutModel(this));
+      const layoutModel = getLayoutModel(this);
+      console.log(`%c${JSON.stringify(layoutModel, null, 2)}`, 'color:blue;font-weight: bold;');
+      const l = layout(layoutModel);
+      console.log(`%c${JSON.stringify(l, null, 2)}`, 'color:brown;font-weight: bold;');
+      return l; // return applyLayout(getLayoutModel(this));
     } else {
       return this.props.layoutModel;
     } // let {layoutModel/*,style*/} = this.props;

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import { PopupService } from '@heswell/ui-controls';
-import ComponentHeader from './component-header';
+import ComponentHeader from './component/component-header';
 import ComponentContextMenu from './componentContextMenu';
 import { remove as removeFromLayout } from './redux/actions';
 import {
@@ -77,6 +77,15 @@ export default class LayoutItem extends React.Component {
             // ...childStyle,
             ...childLayout
         };
+
+        console.log(`LayoutItem
+            style ${JSON.stringify(componentStyle)}
+        
+            props.style ${JSON.stringify(this.props.style)}
+            layout.style ${JSON.stringify(layoutModel.style)}
+        
+        `)
+
 
         return (
             <div id={$path} className={className} style={{ position: 'absolute', ...style, ...layout }}>
