@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
-import Splitter from './splitter';
+import Splitter from '../splitter';
 import LayoutItem from './layout-item';
-import ComponentHeader from './component/component-header';
+import ComponentHeader from '../component/component-header';
 import Container from './container';
-import {isLayout} from './util/component-utils'
-import { registerClass } from './componentRegistry';
+import {isLayout} from '../util/component-utils'
+import { registerClass } from '../componentRegistry';
 import {
     handleLayout as handleModelLayout,
     layout as applyLayout,
     layoutStyleDiff
-} from './model/index';
+} from '../model/index';
 
 const NO_STYLE = {}
 

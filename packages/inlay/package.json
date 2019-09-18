@@ -25,6 +25,7 @@
     "rollup-plugin-postcss": "^2.0.3"
   },
   "dependencies": {
+    "d3-selection": "^1.4.0",
     "konva": "^3.4.1",
     "react": "^16.9.0",
     "yoga-layout": "^1.9.3"

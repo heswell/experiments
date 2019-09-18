@@ -131,7 +131,7 @@ function drop(layoutModel, options) {
     if (pos.position.Header) {
         if (target.type === 'TabbedContainer') { //onsole.log('CASE 2 Works)');
             let before, after;
-            if (tabIndex === -1) {
+            if (tabIndex === -1 || tabIndex >= target.children.length) {
                 after = target.children[target.children.length - 1];
             } else {
                 before = target.children[tabIndex];

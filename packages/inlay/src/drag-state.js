@@ -1,5 +1,5 @@
 
-import {BoxModel} from './model/index';
+import {pointPositionWithinRect} from './model/index';
 
 var SCALE_FACTOR = 0.4;
 
@@ -13,7 +13,7 @@ export default class DragState {
         
         var {left: x, top: y} = rect;
 
-        var mousePosition = BoxModel.pointPositionWithinRect(mouseX,mouseY,rect);
+        var mousePosition = pointPositionWithinRect(mouseX,mouseY,rect);
 
         // We are applying a scale factor of 0.4 to the draggee. This is purely a visual
         // effect - the actual box size remains the original size. The 'leading' values 

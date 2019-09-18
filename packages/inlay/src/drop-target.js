@@ -1,63 +1,145 @@
 
 
-import {BoxModel, positionValues} from './model/boxModel';
+import {BoxModel, positionValues, pointPositionWithinRect} from './model/boxModel';
 import {containerOf} from './model/layoutModel';
+import { Position } from './model/index';
 
-export default class DropTarget {
+export class DropTarget {
 
-	constructor({component, pos/*, closeToTheEdge*/, nextDropTarget}){
+	constructor({component, pos, clientRect/*, closeToTheEdge*/, nextDropTarget}){
 	    this.component = component; 
-	    this.pos = pos;
+        this.pos = pos;
+        this.clientRect = clientRect;
 	    this.nextDropTarget = nextDropTarget;
 	    this.active = false;       
-	}
+    }
+
+    targetTabRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
+
+        const {clientRect: {top,left,right,bottom,header}, pos: {tab}} = this; 
+        const inset = 0;
+        const gap = Math.round(lineWidth / 2) + inset;
+
+        const t = Math.round(top - offsetTop);
+        const l = Math.round(left - offsetLeft + gap);
+        const r = Math.round(right - offsetLeft - gap);
+        const b = Math.round(bottom - offsetTop - gap);
+        const tabLeft = Math.round(tab.left - offsetLeft + gap);
+        const tabWidth = 60;
+        const tabHeight = header.bottom - header.top;
+
+        return [l,t, r,b,tabLeft, tabWidth, tabHeight];
+    }
+    
+    targetRect(lineWidth, offsetTop = 0, offsetLeft = 0){
+
+        const {pos: {width, height, position}, clientRect: rect} = this;
+        let size = null;
+
+        if (width) {
+            size = { width }
+        }
+        else if (height) {
+            size = { height }
+        }
+ 
+        const t = Math.round(rect.top - offsetTop);
+        const l = Math.round(rect.left - offsetLeft);
+        const r = Math.round(rect.right - offsetLeft);
+        const b = Math.round(rect.bottom - offsetTop);
+
+        const inset = 0;
+        const gap = Math.round(lineWidth / 2) + inset;
+    
+        switch (position){
+            case Position.North:
+            case Position.Header: {
+                const halfHeight = Math.round((b - t) / 2);
+                const sizeHeight = (size && size.height) ? size.height : 0;
+                const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+                return  [l+gap, t+gap, r-gap, t+gap+height];
+            }                                    
+            case Position.West: {
+                const halfWidth = Math.round((r - l) / 2);
+                const sizeWidth = (size && size.width) ? size.width : 0;
+                const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+                return [l+gap, t+gap, l+gap+width, b-gap];
+            }
+            case Position.East: {
+                const halfWidth = Math.round((r - l) / 2);
+                const sizeWidth = (size && size.width) ? size.width : 0;
+                const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+                return [(r-gap)-width, t+gap, r-gap, b-gap];
+            }
+            case Position.South: {
+                const halfHeight = Math.round((b - t) / 2);
+                const sizeHeight = (size && size.height) ? size.height : 0;
+                const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+                return [l+gap, (b-gap)-height, r-gap, b-gap];
+                    
+            }
+            default:
+                console.warn(`DropTarget does not recognize position ${position}`);
+                return null;
+        }
+    }
 
 	activate(){
 	    this.active=true;
 	    return this;
-	}
+    }
+    
+    toArray(){
+        let dropTarget = this;
+        const dropTargets = [dropTarget];
+        while (dropTarget = dropTarget.nextDropTarget) {
+            dropTargets.push(dropTarget);
+        }
+        return dropTargets;
+    }
 
 	static getActiveDropTarget(dropTarget){
 	    return dropTarget.active ? dropTarget : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
 	}
 
-	    // Initial entry to this method is always via the app (may be it should be *on* the app)
-	static identifyDropTarget(x, y, model, dragState, measurements){
-
-	     let dropTarget = null;
-	   
-	    //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
-        // this could return all boxes containing point, which would make getNextDropTarget almost free
-        // Also, if we are over  atabstrip, it could include the actual tab
-	    var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
-	    
-	    if (component){
-	        // onsole.log(`%cidentifyDropTarget target path ${component.$path}
-	        //     position: ${JSON.stringify(component.$position)}
-	        //     measurements : ${JSON.stringify(_measurements[component.$path])}
-	        //     `,'color:cornflowerblue;font-weight:bold;');
-	        const pos = BoxModel.pointPositionWithinRect(x,y,measurements[component.$path]);
-            const nextDropTarget = getNextDropTarget(model, component, pos, dragState.constraint.zone, measurements, x, y);
-	        dropTarget = new DropTarget({component, pos, nextDropTarget}).activate()
-	    
-	        // onsole.log('%c'+printDropTarget(dropTarget),'color:green');
-
-	    }
-
-	    //onsole.log(`\n${printDropTarget(dropTarget)}`);
-
-	    return dropTarget;
-	}
-
 }
 
+	    // Initial entry to this method is always via the app (may be it should be *on* the app)
+export function identifyDropTarget(x, y, model, measurements){
+
+    let dropTarget = null;
+    
+    //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
+    // this could return all boxes containing point, which would make getNextDropTarget almost free
+    // Also, if we are over  atabstrip, it could include the actual tab
+    var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
+    
+    if (component){
+        // onsole.log(`%cidentifyDropTarget target path ${component.$path}
+        //     position: ${JSON.stringify(component.$position)}
+        //     measurements : ${JSON.stringify(_measurements[component.$path])}
+        //     `,'color:cornflowerblue;font-weight:bold;');
+        const clientRect = measurements[component.$path];
+        const pos = pointPositionWithinRect(x,y,clientRect);
+        const nextDropTarget = getNextDropTarget(model, component, pos, measurements, x, y);
+        dropTarget = new DropTarget({component, pos, clientRect, nextDropTarget}).activate()
+    
+        // onsole.log('%c'+printDropTarget(dropTarget),'color:green');
+
+    }
+
+    //onsole.log(`\n${printDropTarget(dropTarget)}`);
+
+    return dropTarget;
+}
+   
 // must be cleared when we end the drag
 // layout never changes
 // component never changes
 // pos neve changes
-// zone enver changes
+// zone never changes
 // measurements never change
-export function getNextDropTarget(layout, component, pos, zone, measurements, x, y){
+export function getNextDropTarget(layout, component, pos, measurements, x, y){
 
 	const {north, south, east, west} = positionValues;
 	const eastwest = east+west;
@@ -72,7 +154,8 @@ export function getNextDropTarget(layout, component, pos, zone, measurements, x,
             let nextDropTarget = false;
 
             // experiment...
-            let containerPos = BoxModel.pointPositionWithinRect(x,y,measurements[container.$path]);
+            const clientRect = measurements[container.$path];
+            let containerPos = pointPositionWithinRect(x,y,clientRect);
 
             while (container && positionedAtOuterContainerEdge(container, pos, component, measurements)){               
                 //onsole.log(`${component.type} positioned at outer edge of container ${container.type}`);
@@ -92,8 +175,9 @@ export function getNextDropTarget(layout, component, pos, zone, measurements, x,
                     }
                     // For each DropTarget, specify which drop operations are appropriate
                     return new DropTarget({
-                        component:container, 
+                        component:container,
                         pos: containerPos, // <<<<  a local pos for each container
+                        clientRect,
                         nextDropTarget: next(containerOf(layout, container))
                     });
                 }

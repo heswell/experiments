@@ -19,3 +19,7 @@ body, div {
 * {
 	box-sizing: border-box;
 }
+
+.Application {
+	background-color: #000;
+}

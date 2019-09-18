@@ -1,0 +1,7 @@
+.LayoutItem {
+    background-color: #fff;
+}
+
+.LayoutItem.dragging {
+    opacity: .5;
+}

@@ -1,9 +1,9 @@
 import React from 'react';
-import {registerClass} from './componentRegistry';
-import {getLayoutModel} from './util/component-utils';
+import {registerClass} from '../componentRegistry';
+import {getLayoutModel} from '../util/component-utils';
 import LayoutItem from './layout-item';
-import {Draggable} from './draggable';
-import {layout as applyLayout, handleLayout,followPath} from './model/index';
+import {Draggable} from '../draggable';
+import {layout as applyLayout, handleLayout,followPath} from '../model/index';
 
 export default class Container extends React.Component {
 
@@ -81,13 +81,7 @@ export default class Container extends React.Component {
     getLayoutModel(){
 
         if (this.isLayoutRoot()){
-            const layoutModel = getLayoutModel(this);
-            console.log(`%c${JSON.stringify(layoutModel,null,2)}`,'color:blue;font-weight: bold;')
-            const l = applyLayout(layoutModel);
-            console.log(`%c${JSON.stringify(l,null,2)}`,'color:brown;font-weight: bold;')
-            return l;
-
-            // return applyLayout(getLayoutModel(this));
+            return applyLayout(getLayoutModel(this));
         } else {
             return this.props.layoutModel;
         }

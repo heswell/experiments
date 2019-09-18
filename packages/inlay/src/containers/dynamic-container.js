@@ -1,10 +1,10 @@
 import React from 'react';
 import Container from './container';
-import { DragContainer } from './draggable';
 import LayoutItem from './layout-item';
-import { renderDynamicLayout } from './util/componentFromLayout';
-import {isLayout} from './util/component-utils'
-import { registerClass } from './componentRegistry';
+import { DragContainer } from '../draggable';
+import { renderDynamicLayout } from '../util/componentFromLayout';
+import {isLayout} from '../util/component-utils'
+import { registerClass } from '../componentRegistry';
 
 export default class DynamicContainer extends Container {
 

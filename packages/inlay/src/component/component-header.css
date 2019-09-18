@@ -1,10 +1,14 @@
+.ComponentHeader {
+	--component-header-background: #ccc;
+	--component-header-color: #000;
+}
+
 .Tower > .ComponentHeader,
 .LayoutItem > .ComponentHeader {
-	background-color: #1a4e95;
+	background-color: var(--component-header-background);
+	color:var(--component-header-color);
 	display: flex;
 	align-items: center;
-	background-color: black;
-	color:white;
 }
 
 .Tower > .ComponentHeader button,

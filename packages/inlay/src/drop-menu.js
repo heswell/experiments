@@ -31,12 +31,12 @@ export default class DropMenu {
 
     }
 
-    computeMenuPosition(dropTarget, measurements, offsetTop = 0, offsetLeft = 0) {
+    computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
 
         const { component, pos } = dropTarget;
-        const box = measurements[component.$path];
+        const box = dropTarget.clientRect;
 
-        const dropTargets = getDropTargets(dropTarget);
+        const dropTargets = dropTarget.toArray()
 
         const [x, y] = menuPosition(pos, box, dropTargets.length, offsetTop, offsetLeft);
 
@@ -85,19 +85,6 @@ function menuPosition(pos, box, count, offsetTop, offsetLeft) {
         : pos.position.South ? [pos.x - offsetLeft, box.bottom - offsetTop - 26]
             : pos.position.East ? [box.right - offsetLeft - 26, pos.y - offsetTop]
         /* North | Header*/ : [pos.x - offsetLeft, box.top - offsetTop + 26];
-
-}
-
-// This might be a method on dropTarget ?
-function getDropTargets(dropTarget) {
-
-    const dropTargets = [dropTarget];
-
-    while (dropTarget = dropTarget.nextDropTarget) {
-        dropTargets.push(dropTarget);
-    }
-
-    return dropTargets;
 
 }
 

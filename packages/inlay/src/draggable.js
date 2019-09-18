@@ -1,7 +1,7 @@
 
 import ReactDOM from 'react-dom';
 import DropTargetCanvas from './drop-target-canvas';
-import DropTarget from './drop-target';
+import {DropTarget, identifyDropTarget} from './drop-target';
 import DragState from './drag-state';
 import { followPath, BoxModel, Position } from './model/index';
 
@@ -220,9 +220,9 @@ function dragMousemoveHandler(evt) {
     }
 
     if (dragState.inBounds()) {
-        dropTarget = DropTarget.identifyDropTarget(x, y, _dragContainer, dragState, _measurements);
+        dropTarget = identifyDropTarget(x, y, _dragContainer, _measurements);
     } else {
-        dropTarget = DropTarget.identifyDropTarget(dragState.dropX(), dragState.dropY(), _dragContainer, dragState, _measurements);
+        dropTarget = identifyDropTarget(dragState.dropX(), dragState.dropY(), _dragContainer, _measurements);
     }
 
     // did we have an existing droptarget which is no longer such ...
@@ -234,9 +234,15 @@ function dragMousemoveHandler(evt) {
 
     if (dropTarget) {
 
-        _dropTargetCanvas.draw(dropTarget, _measurements, x, y);
+        const sameDropTarget = currentDropTarget && 
+            currentDropTarget.component === dropTarget.component &&
+            currentDropTarget.pos.position === dropTarget.pos.position &&
+            currentDropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
+
+        _dropTargetCanvas.draw(dropTarget, x, y);
 
         _dropTarget = dropTarget;
+    
 
         // if (currentDropTarget && 
         //     currentDropTarget.component === dropTarget.component &&
@@ -270,7 +276,7 @@ function dragMouseupHandler(evt) {
 function onDragEnd() {
 
     if (_dropTarget) {
-
+        // why wouldn't the active dropTarget be the hover target
         const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
         if (_dropTargetCanvas.dropTargetIsTabstrip) {
             dropTarget.tabIndex = _dropTargetCanvas.currentTabIndex;

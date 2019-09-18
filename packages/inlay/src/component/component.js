@@ -1,6 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 
+import './component.css';
+
 // need a layout prop and layout state. That way we can accept layout data both via json
 // and vis managing Flexible container
 export default class Component extends React.Component {

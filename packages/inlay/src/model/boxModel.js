@@ -58,62 +58,87 @@ export class BoxModel {
         return smallestBoxContainingPoint(layout, measurements, x, y);
     }
 
-    static pointPositionWithinRect(x, y, rect) {
 
-        const width = rect.right - rect.left;
-        const height = rect.bottom - rect.top;
-        const posX = x - rect.left;
-        const posY = y - rect.top;
-        const pctX = posX / width;
-        const pctY = posY / height;
+}
 
-        var closeToTheEdge;
-        var position;
 
-        const borderZone = 30;
+export function pointPositionWithinRect(x, y, rect) {
 
-        if (rect.header && containsPoint(rect.header, x, y)) {
-            position = HEADER;
-        }
-        else {
-            const w = width * 0.4;
-            const h = height * 0.4;
-            const centerBox = { left: rect.left + w, top: rect.top + h, right: rect.right - w, bottom: rect.bottom - h }
+    const width = rect.right - rect.left;
+    const height = rect.bottom - rect.top;
+    const posX = x - rect.left;
+    const posY = y - rect.top;
+    const pctX = posX / width;
+    const pctY = posY / height;
 
-            if (containsPoint(centerBox, x, y)) {
-                position = CENTRE;
+    let closeToTheEdge;
+    let position;
+    let tab;
+
+    const borderZone = 30;
+
+    if (rect.header && containsPoint(rect.header, x, y)) {
+        position = HEADER;
+
+        if (rect.tabs){
+            const tabCount = rect.tabs.length;
+            const targetTab = rect.tabs.find(({ left, right }) => x >= left && x <= right);
+            if (targetTab){
+                tab = {
+                    left: targetTab.left,
+                    index: rect.tabs.indexOf(targetTab)
+                };
             } else {
-
-                const quadrant = (pctY < 0.5 ? 'north' : 'south') + (pctX < 0.5 ? 'west' : 'east');
-
-                switch (quadrant) {
-                case 'northwest': position = (pctX > pctY) ? NORTH : WEST; break;
-                case 'northeast': position = ((1 - pctX) > pctY) ? NORTH : EAST; break;
-                case 'southeast': position = (pctX > pctY) ? EAST : SOUTH; break;
-                case 'southwest': position = ((1 - pctX) > pctY) ? WEST : SOUTH; break;
-                default:
-                }
+                const lastTab = rect.tabs[tabCount - 1];
+                tab = {
+                    left: lastTab.right,
+                    index: tabCount
+                };
+            }
+        } else {
+            tab = { 
+                left: rect.left,
+                index: -1
             }
         }
-
-        // Set closeToTheEdge even when we have already established that we are in a Header.
-        // When we use position to walk the containment hierarchy, building the chain of
-        // dropTargets, the Header loses significance after the first dropTarget, but
-        // closeToTheEdge remains meaningful.
-        if (typeof borderZone === 'number') {
-            // var closeToTheEdge = 0;
-            if (posX < borderZone) closeToTheEdge += 8;
-            if (posX > width - borderZone) closeToTheEdge += 2;
-            if (posY < borderZone) closeToTheEdge += 1;
-            if (posY > height - borderZone) closeToTheEdge += 4;
-        }
-
-        // we might want to also know if we are in the center - this will be used to allow
-        // stack default option
-
-        return { position, x, y, pctX, pctY, closeToTheEdge };
-
     }
+    else {
+        const w = width * 0.4;
+        const h = height * 0.4;
+        const centerBox = { left: rect.left + w, top: rect.top + h, right: rect.right - w, bottom: rect.bottom - h }
+
+        if (containsPoint(centerBox, x, y)) {
+            position = CENTRE;
+        } else {
+
+            const quadrant = (pctY < 0.5 ? 'north' : 'south') + (pctX < 0.5 ? 'west' : 'east');
+
+            switch (quadrant) {
+            case 'northwest': position = (pctX > pctY) ? NORTH : WEST; break;
+            case 'northeast': position = ((1 - pctX) > pctY) ? NORTH : EAST; break;
+            case 'southeast': position = (pctX > pctY) ? EAST : SOUTH; break;
+            case 'southwest': position = ((1 - pctX) > pctY) ? WEST : SOUTH; break;
+            default:
+            }
+        }
+    }
+
+    // Set closeToTheEdge even when we have already established that we are in a Header.
+    // When we use position to walk the containment hierarchy, building the chain of
+    // dropTargets, the Header loses significance after the first dropTarget, but
+    // closeToTheEdge remains meaningful.
+    if (typeof borderZone === 'number') {
+        // var closeToTheEdge = 0;
+        if (posX < borderZone) closeToTheEdge += 8;
+        if (posX > width - borderZone) closeToTheEdge += 2;
+        if (posY < borderZone) closeToTheEdge += 1;
+        if (posY > height - borderZone) closeToTheEdge += 4;
+    }
+
+    // we might want to also know if we are in the center - this will be used to allow
+    // stack default option
+
+    return { position, x, y, pctX, pctY, closeToTheEdge, tab };
 
 }
 

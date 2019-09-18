@@ -3,11 +3,11 @@ import cx from 'classnames';
 import {uuid} from '@heswell/utils';
 import LayoutItem from './layout-item';
 import DynamicContainer from './dynamic-container';
-import {isLayout} from './util/component-utils';
-import { handleLayout } from './model/index';
-import {componentFromLayout} from './util/componentFromLayout';
-import { registerClass } from './componentRegistry';
-import { Draggable } from './draggable';
+import {isLayout} from '../util/component-utils';
+import { handleLayout } from '../model/index';
+import {componentFromLayout} from '../util/componentFromLayout';
+import { registerClass } from '../componentRegistry';
+import { Draggable } from '../draggable';
 
 
 const NO_CHILDREN = [];
