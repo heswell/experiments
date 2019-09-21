@@ -27,6 +27,7 @@ export default class LayoutItem extends React.Component {
                 applyLayout(getLayoutModel(this),{width: props.style.width, height: props.style.height})
         };
 
+        this.el = React.createRef();
         this.handleLayout = this.handleLayout.bind(this);
     }
 
@@ -80,7 +81,7 @@ export default class LayoutItem extends React.Component {
         };
 
         return (
-            <div id={$path} className={className} style={{ position: 'absolute', ...style, ...layout }}>
+            <div id={$path} className={className} style={{ position: 'absolute', ...style, ...layout }} ref={this.el}>
                 {header &&
                     <ComponentHeader ref='header'
                         title={`${title}`}
@@ -231,18 +232,21 @@ export default class LayoutItem extends React.Component {
     }
 
     handleMousedown(e){
+        
+        const position = this.el.current.getBoundingClientRect();
+
         if (this.props.onMouseDown) {
             this.props.onMouseDown({
                 model: this.props.layoutModel,
                 evt: e,
-                position: ReactDOM.findDOMNode(this).getBoundingClientRect()
+                position
             });
         }
         else {
             this.props.onLayout('drag-start', {
                 model: this.props.layoutModel,
                 evt: e,
-                position: ReactDOM.findDOMNode(this).getBoundingClientRect()
+                position
             });
         }
     }

@@ -1,7 +1,7 @@
 import React from 'react';
 import Container from './container';
 import LayoutItem from './layout-item';
-import { DragContainer } from '../draggable';
+import { DragContainer } from '../drag-drop/draggable';
 import { renderDynamicLayout } from '../util/componentFromLayout';
 import {isLayout} from '../util/component-utils'
 import { registerClass } from '../componentRegistry';

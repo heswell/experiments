@@ -104,45 +104,18 @@
   margin-left: -50%;
   margin-bottom: -50%; 
   background-color: rgba(255,255,0,.5);
-}
-
-.DropMenu {
-	position: absolute;
-	width: 0px;
-	height: 0px;
-	overflow: visible;
-	z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
 .drop-menu-item {
-	position: absolute;
-	cursor: pointer;
+  width: 32px;
+  background-color: rgba(255,0,0,06);
+  cursor: pointer;
+  border: solid 1px rebeccapurple;
+  margin: 0 1px;
 }
-
-.drop-menu-item {
-	border-radius: 7px;
-	cursor: default;
-	padding:0;
-	left: 2px;
-}
-
-.drop-menu-item:nth-child(1){ background-color: rgb(140,140,140);border: solid yellow 4px; left:0; border-radius: 10px;} 
-.drop-menu-item:nth-child(2){ background-color: rgb(130,130,130);} 
-.drop-menu-item:nth-child(3){ background-color: rgb(120,120,120);} 
-.drop-menu-item:nth-child(4){ background-color: rgb(110,110,110);} 
-
-.drop-menu-item:last-child:not(.hover){
-	border-left:none;
-}
-
-.drop-menu-item.hover {
-	background-color: yellow;
-}
-
-.drop-menu-item.hover + .drop-menu-item {
-	border-left: none;
-}
-
 
 
 #sketchpad {

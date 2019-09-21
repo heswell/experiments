@@ -3,7 +3,7 @@ import React from 'react';
 import cx from 'classnames';
 import {uuid} from '@heswell/utils';
 
-import {Surface} from '../layoutContainers';
+import Surface from '../containers/surface';
 import '../components/ComponentIcon';
 import {followPath} from '../model/index';
 import {

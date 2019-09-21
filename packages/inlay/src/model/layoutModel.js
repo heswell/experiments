@@ -30,8 +30,7 @@ export function handleLayout(model, command, options) {
     } else if (command === 'replace') {
         return replaceChild(model, options.targetNode, options.replacementNode);
     } else if (command === 'remove') {
-        const result = removeChild(model, options.targetNode);
-        return result;
+        return removeChild(model, options.targetNode);
     }
     // else if (command === 'config-change'){
     //     return Layout.config(layout, options);

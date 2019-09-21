@@ -2,9 +2,8 @@ import React, { Component as Component$1 } from 'react';
 import cx from 'classnames';
 import { uuid } from '@heswell/utils';
 import ReactDOM from 'react-dom';
-import { ContextMenu, MenuItem, Separator, PopupService, PopupPosition } from '@heswell/ui-controls';
+import { ContextMenu, MenuItem, Separator, PopupService } from '@heswell/ui-controls';
 import yoga, { Node } from 'yoga-layout';
-import Konva from 'konva';
 import { select } from 'd3-selection';
 import 'd3-transition';
 
@@ -306,7 +305,7 @@ function pointPositionWithinRect(x, y, rect) {
   const posY = y - rect.top;
   const pctX = posX / width;
   const pctY = posY / height;
-  let closeToTheEdge;
+  let closeToTheEdge = 0;
   let position;
   let tab;
   const borderZone = 30;
@@ -381,7 +380,6 @@ function pointPositionWithinRect(x, y, rect) {
 
 
   {
-    // var closeToTheEdge = 0;
     if (posX < borderZone) closeToTheEdge += 8;
     if (posX > width - borderZone) closeToTheEdge += 2;
     if (posY < borderZone) closeToTheEdge += 1;
@@ -1268,8 +1266,7 @@ function drop(layoutModel, options) {
     draggedComponent: source,
     dropTarget: {
       component: target,
-      pos,
-      tabIndex = -1
+      pos
     }
   } = options;
 
@@ -1277,8 +1274,9 @@ function drop(layoutModel, options) {
     if (target.type === 'TabbedContainer') {
       //onsole.log('CASE 2 Works)');
       let before, after;
+      const tabIndex = pos.tab.index;
 
-      if (tabIndex === -1 || tabIndex >= target.children.length) {
+      if (pos.tab.index === -1 || tabIndex >= target.children.length) {
         after = target.children[target.children.length - 1];
       } else {
         before = target.children[tabIndex];
@@ -2163,293 +2161,28 @@ function computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
   const {
     pos,
     clientRect: box
-  } = dropTarget; // const dropTargets = dropTarget.toArray()
-
-  return menuPosition(pos, box, offsetTop, offsetLeft); // this._group.position({ x, y });
-  // const paths = dropTargets.map((dropTarget, i) => ({
-  //     path: new Konva.Path({
-  //         strokeWidth: 0,
-  //         fill: COLOURS[i],
-  //         data: pathPosition(pos, i)
-  //     }),
-  //     dropTarget
-  // }));
-  // do we have to care about removing eventlisteners ? Probably not
-  // this._group.removeChildren();
-  // this.addPaths(paths);
-}
-
-function menuPosition(pos, box, offsetTop, offsetLeft) {
+  } = dropTarget;
   return pos.position.West ? [box.left - offsetLeft + 26, pos.y - offsetTop] : pos.position.South ? [pos.x - offsetLeft, box.bottom - offsetTop - 26] : pos.position.East ? [box.right - offsetLeft - 26, pos.y - offsetTop]
   /* North | Header*/
   : [pos.x - offsetLeft, box.top - offsetTop + 26];
-} // function pathPosition(pos, idx) {
-//   const unit = 30;
-//   const depth = 32;
-//   const lo = i => i === 0 ? -unit / 2
-//       : i > 0 ? -1 * (unit / 2 + (idx * unit))
-//           : unit / 2 + ((-idx - 1) * unit);
-//   const [top, left, width, height] =
-//       pos.position.West ? [lo(idx), 0, depth, unit] :
-//           pos.position.East ? [lo(idx), -depth, depth, unit] :
-//               pos.position.South ? [-depth, lo(idx), unit, depth] :
-//     /* North | Header */[0, lo(idx), unit, depth];
-//   // For pos 0 we draw just one item (the central item), for others we double up	
-//   return `M${left},${top}h${width}v${height}h-${width}v-${height}${idx > 0 ? pathPosition(pos, -idx) : ''}`;
-// }
+}
 
-
-const DropMenu = () => {
+const DropMenu = ({
+  dropTarget,
+  onHover
+}) => {
+  const dropTargets = dropTarget.toArray();
   return React.createElement("div", {
-    className: "drop-menu"
-  });
+    className: "drop-menu",
+    onMouseLeave: () => onHover(null)
+  }, dropTargets.map((target, i) => React.createElement("div", {
+    key: i,
+    className: "drop-menu-item",
+    onMouseEnter: () => onHover(target)
+  })));
 };
 
-const COLOURS = ['red', 'green', 'blue', 'yellow']; // Konva properties
-class DropMenu$1 {
-  constructor({
-    layer,
-    hover
-  }) {
-    this._group = new Konva.Group();
-
-    this._group.on('mouseleave', () => hover(null));
-
-    layer.add(this._group);
-
-    this.visible = isVisible => this._group.visible(isVisible);
-
-    this.addPaths = paths => {
-      paths.forEach(({
-        path,
-        dropTarget
-      }) => {
-        this._group.add(path);
-
-        path.on('mouseenter', () => hover(dropTarget));
-      });
-    };
-  }
-
-  computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
-    const {
-      component,
-      pos
-    } = dropTarget;
-    const box = dropTarget.clientRect;
-    const dropTargets = dropTarget.toArray();
-    const [x, y] = menuPosition$1(pos, box, dropTargets.length, offsetTop, offsetLeft);
-
-    this._group.position({
-      x,
-      y
-    });
-
-    const paths = dropTargets.map((dropTarget, i) => ({
-      path: new Konva.Path({
-        strokeWidth: 0,
-        fill: COLOURS[i],
-        data: pathPosition(pos, i)
-      }),
-      dropTarget
-    })); // do we have to care about removing eventlisteners ? Probably not
-
-    this._group.removeChildren();
-
-    this.addPaths(paths);
-  }
-
-}
-
-function pathPosition(pos, idx) {
-  const unit = 30;
-  const depth = 32;
-
-  const lo = i => i === 0 ? -unit / 2 : i > 0 ? -1 * (unit / 2 + idx * unit) : unit / 2 + (-idx - 1) * unit;
-
-  const [top, left, width, height] = pos.position.West ? [lo(idx), 0, depth, unit] : pos.position.East ? [lo(idx), -depth, depth, unit] : pos.position.South ? [-depth, lo(idx), unit, depth] :
-  /* North | Header */
-  [0, lo(idx), unit, depth]; // For pos 0 we draw just one item (the central item), for others we double up	
-
-  return `M${left},${top}h${width}v${height}h-${width}v-${height}${idx > 0 ? pathPosition(pos, -idx) : ''}`;
-}
-
-function menuPosition$1(pos, box, count, offsetTop, offsetLeft) {
-  return pos.position.West ? [box.left - offsetLeft + 26, pos.y - offsetTop] : pos.position.South ? [pos.x - offsetLeft, box.bottom - offsetTop - 26] : pos.position.East ? [box.right - offsetLeft - 26, pos.y - offsetTop]
-  /* North | Header*/
-  : [pos.x - offsetLeft, box.top - offsetTop + 26];
-}
-
-const TheCanvas = 'thecanvas';
-const SketchPad = 'sketchpad';
-let _dropTarget = null;
-let _multiDropOptions = false;
-
-let _stage;
-
-let _layer;
-
-let _konvaDropMenu;
-
-let _hoverDropTarget = null;
-let _dropTargetIsTabstrip = false;
-
-let _currentTabIndex = -1;
-
-function insertIntoRoot(id) {
-  const root = document.getElementById('root');
-  const container = document.createElement('div');
-  container.id = id;
-  document.body.insertBefore(container, root);
-  return container;
-}
-
-function insertSVGRoot() {
-  const root = document.getElementById('root');
-  const container = document.createElement('div');
-  container.id = 'drag-canvas';
-  container.innerHTML = '<svg width="100%" height="100%"></svg>';
-  document.body.insertBefore(container, root);
-}
-
-const drawTabPath = ([l, t, w, h, tl = 0, tw = 0, th = 0]) => `M${l},${t + th}l${tl},0l0,-${th}l${tw},0l0,${th}l${w - (tl + tw)},0l0,${h - th}l-${w},0l0,-${h - th}`;
-
-class DropTargetCanvas {
-  constructor() {
-    let container = document.getElementById(TheCanvas);
-
-    if (!container) {
-      this.sketchpad = insertIntoRoot(SketchPad);
-      insertSVGRoot();
-    }
-
-    this.t = 0;
-    this.l = 0;
-    this.w = document.body.clientWidth;
-    this.h = document.body.clientHeight;
-    window.addEventListener('resize', () => {
-      this.w = document.body.clientWidth;
-      this.h = document.body.clientHeight;
-    });
-    _stage = new Konva.Stage({
-      container: SketchPad,
-      // id of container <div>
-      width: this.w,
-      height: this.h
-    }); //then create layer
-
-    _layer = new Konva.Layer();
-    _konvaDropMenu = new DropMenu$1({
-      layer: _layer,
-      hover: dropTarget => _hoverDropTarget = dropTarget
-    });
-
-    _stage.add(_layer);
-  }
-
-  prepare(position) {
-    if (position) {
-      const {
-        left: l,
-        top: t,
-        right: r,
-        bottom: b
-      } = position;
-      const w = r - l;
-      const h = b - t;
-      this.t = t;
-      this.l = l;
-      this.w = w;
-      this.h = h;
-      const cssText = `top:${t}px;left:${l}px;width:${w}px;height:${h}px;z-index:100`;
-      this.sketchpad.style.cssText = cssText;
-
-      _stage.setWidth(w);
-
-      _stage.setHeight(h);
-    } // don't do this on body
-
-
-    document.body.classList.add("drawing");
-  }
-
-  clear() {
-    // don't do this on body
-    document.body.classList.remove("drawing"); //PopupService.hidePopup();
-  }
-
-  get hoverDropTarget() {
-    return _hoverDropTarget;
-  }
-
-  get dropTargetIsTabstrip() {
-    return _dropTargetIsTabstrip;
-  }
-
-  get currentTabIndex() {
-    return _currentTabIndex;
-  }
-
-  draw(dropTarget, x, y) {
-    const SameDropTarget = _dropTarget !== null && // !_dropTargetIsTabstrip &&
-    _dropTarget.component === dropTarget.component && _dropTarget.pos.position === dropTarget.pos.position && _dropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
-    const wasMultiDrop = _multiDropOptions;
-
-    if (_hoverDropTarget !== null) {
-      this.drawTargetSVG(_hoverDropTarget);
-    } else if (SameDropTarget === false) {
-      _dropTarget = dropTarget;
-      _multiDropOptions = dropTarget.nextDropTarget != null;
-      this.drawTargetSVG(dropTarget);
-    }
-
-    if (_hoverDropTarget !== null) ; else if (_multiDropOptions) {
-      // compute menu position
-      const [left, top] = computeMenuPosition(dropTarget);
-
-      if (!wasMultiDrop) {
-        // onsole.log('show the drop menu');
-        const component = React.createElement(DropMenu, null);
-        PopupService.showPopup({
-          left,
-          top,
-          position: PopupPosition.CenteredOnPosition,
-          component
-        });
-
-        _konvaDropMenu.visible(true);
-      } else {
-        PopupService.movePopupTo(left, top);
-      }
-    } else if (_konvaDropMenu.visible()) {
-      // onsole.log('clear the drop menu');
-      _konvaDropMenu.visible(false);
-
-      _layer.draw();
-    }
-  }
-
-  drawTargetSVG(dropTarget, offsetTop = 0, offsetLeft = 0) {
-    const lineWidth = 6;
-    const targetRect = dropTarget.pos.tab ? dropTarget.targetTabRect(lineWidth, offsetTop, offsetLeft) : dropTarget.targetRect(lineWidth, offsetTop, offsetLeft);
-    console.log(`targetRect ${targetRect}`);
-
-    if (targetRect) {
-      const [l, t, r, b, tl = 0, tw = 0, th = 0] = targetRect;
-      const w = r - l;
-      const h = b - t;
-      const tabLeftOffset = tl === 0 ? 0 : tl - l;
-      const data = [l, t, w, h, tabLeftOffset, tw, th];
-      const svg = select('#drag-canvas > svg');
-      const path = svg.selectAll("path.drop-target").data([data]);
-      const d = drawTabPath(data);
-      path.transition().duration(200).attr('d', d);
-      const p = path.enter().append("path").attr("class", "drop-target").style("stroke", "blue").style("fill", "transparent").style("stroke-width", 4).attr('d', d);
-    }
-  }
-
-}
-
+const isTabstrip = dropTarget => dropTarget.pos.tab && dropTarget.component.type === 'TabbedContainer' && dropTarget.pos.position.Header;
 class DropTarget {
   constructor({
     component,
@@ -2589,9 +2322,9 @@ function identifyDropTarget(x, y, model, measurements) {
   var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
 
   if (component) {
-    // onsole.log(`%cidentifyDropTarget target path ${component.$path}
+    // console.log(`%cidentifyDropTarget target path ${component.$path}
     //     position: ${JSON.stringify(component.$position)}
-    //     measurements : ${JSON.stringify(_measurements[component.$path])}
+    //     measurements : ${JSON.stringify(measurements[component.$path])}
     //     `,'color:cornflowerblue;font-weight:bold;');
     const clientRect = measurements[component.$path];
     const pos = pointPositionWithinRect(x, y, clientRect);
@@ -2724,6 +2457,142 @@ function isHBox({
 // 	if (val & 8) s += 'W';
 // 	return s;
 // }
+
+let _dropTarget = null;
+let _multiDropOptions = false;
+let _hoverDropTarget = null;
+
+let _currentTabIndex = -1;
+
+let _shiftedTab = null;
+
+const onHoverDropTarget = dropTarget => _hoverDropTarget = dropTarget;
+
+function insertSVGRoot() {
+  const root = document.getElementById('root');
+  const container = document.createElement('div');
+  container.id = 'drag-canvas';
+  container.innerHTML = '<svg width="100%" height="100%"></svg>';
+  document.body.insertBefore(container, root);
+}
+
+const drawTabPath = ([l, t, w, h, tl = 0, tw = 0, th = 0]) => `M${l},${t + th}l${tl},0l0,-${th}l${tw},0l0,${th}l${w - (tl + tw)},0l0,${h - th}l-${w},0l0,-${h - th}`;
+
+class DropTargetCanvas {
+  constructor() {
+    insertSVGRoot();
+  }
+
+  prepare(position) {
+    // don't do this on body
+    document.body.classList.add("drawing");
+  }
+
+  clear() {
+    // don't do this on body
+    clearShiftedTab();
+    document.body.classList.remove("drawing");
+    PopupService.hidePopup();
+  }
+
+  get hoverDropTarget() {
+    return _hoverDropTarget;
+  }
+
+  draw(dropTarget) {
+    const sameDropTarget = _dropTarget !== null && !isTabstrip(dropTarget) && _dropTarget.component === dropTarget.component && _dropTarget.pos.position === dropTarget.pos.position && _dropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
+    const wasMultiDrop = _multiDropOptions;
+
+    if (_hoverDropTarget !== null) {
+      this.drawTargetSVG(_hoverDropTarget);
+    } else {
+      if (sameDropTarget === false) {
+        _dropTarget = dropTarget;
+        _multiDropOptions = dropTarget.nextDropTarget != null;
+
+        if (isTabstrip(dropTarget)) {
+          moveExistingTabs(dropTarget);
+        } else {
+          clearShiftedTab();
+        }
+
+        this.drawTargetSVG(dropTarget);
+      }
+
+      if (_multiDropOptions) {
+        const [left, top] = computeMenuPosition(dropTarget);
+
+        if (!wasMultiDrop || !sameDropTarget) {
+          const component = React.createElement(DropMenu, {
+            dropTarget: dropTarget,
+            onHover: onHoverDropTarget
+          });
+          PopupService.showPopup({
+            left,
+            top,
+            component
+          });
+        } else {
+          PopupService.movePopupTo(left, top);
+        }
+      } else {
+        PopupService.hidePopup();
+      }
+    }
+  }
+
+  drawTargetSVG(dropTarget, offsetTop = 0, offsetLeft = 0) {
+    const lineWidth = 6;
+    const targetRect = dropTarget.pos.tab ? dropTarget.targetTabRect(lineWidth, offsetTop, offsetLeft) : dropTarget.targetRect(lineWidth, offsetTop, offsetLeft);
+
+    if (targetRect) {
+      const [l, t, r, b, tl = 0, tw = 0, th = 0] = targetRect;
+      const w = r - l;
+      const h = b - t;
+      const tabLeftOffset = tl === 0 ? 0 : tl - l;
+      const data = [l, t, w, h, tabLeftOffset, tw, th];
+      const svg = select('#drag-canvas > svg');
+      const path = svg.selectAll("path.drop-target").data([data]);
+      const d = drawTabPath(data);
+      path.transition().duration(200).attr('d', d);
+      path.enter().append("path").attr("class", "drop-target").style("stroke", "blue").style("fill", "transparent").style("stroke-width", 4).attr('d', d);
+    }
+  }
+
+}
+
+function moveExistingTabs(dropTarget) {
+  const rect = dropTarget.clientRect;
+  const {
+    tabs
+  } = rect;
+  const tabCount = tabs ? tabs.length : 0;
+  _currentTabIndex = dropTarget.pos.tab.index;
+
+  if (_currentTabIndex > -1 && _currentTabIndex < tabCount) {
+    const $id = dropTarget.component.$path;
+    const selector = `:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab:nth-child(${_currentTabIndex + 1})`;
+    const tabEl = document.getElementById($id).querySelector(selector);
+
+    if (tabEl && tabEl !== _shiftedTab) {
+      if (_shiftedTab) {
+        _shiftedTab.style.cssText = '';
+      }
+
+      tabEl.style.cssText = 'transition:margin-left .4s ease-out;margin-left: 63px';
+      _shiftedTab = tabEl;
+    }
+  } else {
+    clearShiftedTab();
+  }
+}
+
+function clearShiftedTab() {
+  if (_shiftedTab) {
+    _shiftedTab.style.cssText = '';
+    _shiftedTab = null;
+  }
+}
 
 var SCALE_FACTOR = 0.4;
 class DragState {
@@ -3131,27 +3000,8 @@ function dragMouseupHandler(evt) {
 function onDragEnd() {
   if (_dropTarget$1) {
     // why wouldn't the active dropTarget be the hover target
-    const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget$1);
-
-    if (_dropTargetCanvas.dropTargetIsTabstrip) {
-      dropTarget.tabIndex = _dropTargetCanvas.currentTabIndex; // EXPERIMENT ----------- What is this trying to do ? (cos it's not working)
-
-      const selector = `:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab:nth-child(${dropTarget.tabIndex + 1})`;
-      const tabstrip = document.getElementById(dropTarget.component.$path);
-
-      if (tabstrip) {
-        const tab = tabstrip.querySelector(selector);
-
-        if (tab) {
-          tab.style.cssText = '';
-        }
-      } else {
-        console.log(`dropTarget indicated to be Tabstrip, but is not`);
-      } //----------------------
-
-    } // looking into eliminating this call altogether. We don't need it if we set the dragging index via
+    const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget$1); // looking into eliminating this call altogether. We don't need it if we set the dragging index via
     // top-level layout state
-
 
     _dragCallback.drop(dropTarget, _measurements);
 

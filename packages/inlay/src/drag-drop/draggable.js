@@ -1,22 +1,21 @@
-
 import ReactDOM from 'react-dom';
-import DropTargetCanvas from './components/drop-target/drop-target-renderer';
-import {DropTarget, identifyDropTarget} from './model/drop-target';
+import DropTargetRenderer from '../components/drop-target/drop-target-renderer';
 import DragState from './drag-state';
-import { followPath, BoxModel, Position } from './model/index';
+import { followPath, BoxModel, Position, DropTarget, identifyDropTarget } from '../model';
 
-var _dragCallback;
-var _dragStartX;
-var _dragStartY;
-var _dragContainer;
-var _dragState;
-var _dragThreshold = 5;
-var _dropTarget = null;
-var _measurements;
-var _simpleDrag;
-var _dropTargetCanvas = new DropTargetCanvas();
-var _dragContainers = [];
-var SCALE_FACTOR = 0.4;
+let _dragCallback;
+let _dragStartX;
+let _dragStartY;
+let _dragContainer;
+let _dragState;
+let _dropTarget = null;
+let _measurements;
+let _simpleDrag;
+
+const _dragThreshold = 5;
+const _dropTargetRenderer = new DropTargetRenderer();
+const _dragContainers = [];
+const SCALE_FACTOR = 0.4;
 
 export class DragContainer {
 
@@ -40,86 +39,6 @@ function getDraggable(component) {
         target = component;
     }
     return target;
-}
-
-export var Draggable = {
-
-    // bound to target components when called
-    componentDidMount() {
-
-        // // can we always rely on dragContainer being available at this point ?
-        // // Might we have to wait for layout ?
-        // if (this.props.dragContainer === true){
-        //     DragContainer.register(this);
-        // }
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            this.mouseDownHandler = Draggable.handleMousedown.bind(this);
-            ReactDOM.findDOMNode(draggable).addEventListener('mousedown', this.mouseDownHandler, false);
-        }
-    },
-
-    componentWillUnmount() {
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            ReactDOM.findDOMNode(draggable).removeEventListener('mousedown', this.mouseDownHandler, false);
-            this.mouseDownHandler = null;
-        }
-    },
-
-    // bound to Draggable Component
-    handleMousedown(e, dragStartCallback) {
-
-        _dragCallback = dragStartCallback;
-
-        _dragStartX = e.clientX;
-        _dragStartY = e.clientY;
-
-        window.addEventListener('mousemove', preDragMousemoveHandler, false);
-        window.addEventListener('mouseup', preDragMouseupHandler, false);
-
-        e.preventDefault();
-    },
-
-    initDrag(e, layoutModel, path, { top, left, right, bottom }, dragHandler) {
-
-        _dragCallback = dragHandler;
-
-        return initDrag(e, layoutModel, path, { top, left, right, bottom });
-
-    }
-};
-
-function preDragMousemoveHandler(e) {
-
-    var x = true;
-    var y = true;
-
-    let x_diff = x ? e.clientX - _dragStartX : 0;
-    let y_diff = y ? e.clientY - _dragStartY : 0;
-    let mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
-
-    // when we do finally move the draggee, we are going to 'jump' by the amount of the drag threshold, should we
-    // attempt to animate this ?    
-    if (mouseMoveDistance > _dragThreshold) {
-
-        window.removeEventListener('mousemove', preDragMousemoveHandler, false);
-        window.removeEventListener('mouseup', preDragMouseupHandler, false);
-
-        if (_dragCallback(e, x_diff, y_diff) !== false) {
-            window.addEventListener('mousemove', dragMousemoveHandler, false);
-            window.addEventListener('mouseup', dragMouseupHandler, false);
-        }
-    }
-}
-
-function preDragMouseupHandler() {
-
-    window.removeEventListener('mousemove', preDragMousemoveHandler, false);
-    window.removeEventListener('mouseup', preDragMouseupHandler, false);
-
 }
 
 function getDragContainer(layoutModel, path) {
@@ -146,6 +65,84 @@ function getDragContainer(layoutModel, path) {
     }
 
     return followPath(layoutModel, pathToContainer);
+
+}
+
+export const Draggable = {
+
+    // bound to target components when called
+    componentDidMount() {
+
+        // // can we always rely on dragContainer being available at this point ?
+        // // Might we have to wait for layout ?
+        // if (this.props.dragContainer === true){
+        //     DragContainer.register(this);
+        // }
+
+        var draggable = getDraggable(this);
+        if (draggable) {
+            this.mouseDownHandler = Draggable.handleMousedown.bind(this);
+            ReactDOM.findDOMNode(draggable).addEventListener('mousedown', this.mouseDownHandler, false);
+        }
+    },
+
+    componentWillUnmount() {
+
+        var draggable = getDraggable(this);
+        if (draggable) {
+            ReactDOM.findDOMNode(draggable).removeEventListener('mousedown', this.mouseDownHandler, false);
+            this.mouseDownHandler = null;
+        }
+    },
+
+    handleMousedown(e, dragStartCallback) {
+        _dragCallback = dragStartCallback;
+
+        _dragStartX = e.clientX;
+        _dragStartY = e.clientY;
+
+        window.addEventListener('mousemove', preDragMousemoveHandler, false);
+        window.addEventListener('mouseup', preDragMouseupHandler, false);
+
+        e.preventDefault();
+    },
+
+    // called from surface handleDragSTart (_dragCallback)
+    initDrag(e, layoutModel, path, { top, left, right, bottom }, dragHandler) {
+
+        _dragCallback = dragHandler;
+
+        return initDrag(e, layoutModel, path, { top, left, right, bottom });
+
+    }
+};
+
+function preDragMousemoveHandler(e) {
+    var x = true;
+    var y = true;
+
+    let x_diff = x ? e.clientX - _dragStartX : 0;
+    let y_diff = y ? e.clientY - _dragStartY : 0;
+    let mouseMoveDistance = Math.max(Math.abs(x_diff), Math.abs(y_diff));
+
+    // when we do finally move the draggee, we are going to 'jump' by the amount of the drag threshold, should we
+    // attempt to animate this ?    
+    if (mouseMoveDistance > _dragThreshold) {
+
+        window.removeEventListener('mousemove', preDragMousemoveHandler, false);
+        window.removeEventListener('mouseup', preDragMouseupHandler, false);
+
+        if (_dragCallback(e, x_diff, y_diff) !== false) {
+            window.addEventListener('mousemove', dragMousemoveHandler, false);
+            window.addEventListener('mouseup', dragMouseupHandler, false);
+        }
+    }
+}
+
+function preDragMouseupHandler() {
+
+    window.removeEventListener('mousemove', preDragMousemoveHandler, false);
+    window.removeEventListener('mouseup', preDragMouseupHandler, false);
 
 }
 
@@ -180,7 +177,7 @@ function initDrag(evt, layoutModel, path, dragRect) {
 
         _simpleDrag = false;
 
-        _dropTargetCanvas.prepare(dragZone);
+        _dropTargetRenderer.prepare(dragZone);
 
         return {
             draggableWidth: dragRect.right - dragRect.left,
@@ -239,7 +236,7 @@ function dragMousemoveHandler(evt) {
             currentDropTarget.pos.position === dropTarget.pos.position &&
             currentDropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
 
-        _dropTargetCanvas.draw(dropTarget, x, y);
+        _dropTargetRenderer.draw(dropTarget, x, y);
 
         _dropTarget = dropTarget;
     
@@ -277,7 +274,7 @@ function onDragEnd() {
 
     if (_dropTarget) {
         // why wouldn't the active dropTarget be the hover target
-        const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
+        const dropTarget = _dropTargetRenderer.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
 
         // looking into eliminating this call altogether. We don't need it if we set the dragging index via
         // top-level layout state
@@ -292,7 +289,7 @@ function onDragEnd() {
 
     _dragCallback = null;
     _dragContainer = null;
-    _dropTargetCanvas.clear();
+    _dropTargetRenderer.clear();
 
     window.removeEventListener('mousemove', dragMousemoveHandler, false);
     window.removeEventListener('mouseup', dragMouseupHandler, false);

@@ -7,7 +7,7 @@ import {isLayout} from '../util/component-utils';
 import { handleLayout } from '../model/index';
 import {componentFromLayout} from '../util/componentFromLayout';
 import { registerClass } from '../componentRegistry';
-import { Draggable } from '../draggable';
+import { Draggable } from '../drag-drop/draggable';
 
 
 const NO_CHILDREN = [];
@@ -88,34 +88,6 @@ export default class Surface extends DynamicContainer {
         if (layoutModel && layoutModel !== this.state.layoutModel) {
             this.setState({layoutModel});
         } else {
-        // QUESTION: is this reliable ? WOn't the children be different array/
-        // instances, even though nothing has changed ?
-        // how do we update the layoutModel if we aquire/lose children in mid-flight ?
-            // const { children } = nextProps;
-
-            // if (differentChildren(children, this.props.children) && Array.isArray(children)) {
-
-            //     const { layoutModel } = this.state;
-
-            //     // temp hardcoding to test the principal - we need to be able to map 
-            //     // children to layoutModel.children
-            //     // this works because sample surface gives ID to all children
-            //     // and new child is aways last
-
-            //     const idx = children.length - 1;
-            //     const lastChild = children[idx];
-
-            //     this.setState({
-            //         layoutModel: {
-            //             ...layoutModel,
-            //             children: [
-            //                 ...layoutModel.children,
-            //                 layout(this.getLayoutModelChild(lastChild), {}, `${layoutModel.$path}.${idx}`)
-            //             ]
-            //         }
-
-            //     });
-            // }
 
         }
 
@@ -129,6 +101,7 @@ export default class Surface extends DynamicContainer {
         return { x: true, y: true }
     }
 
+    // _dragCallback from draggable, but bound to original handleLayout 'options' in container
     handleDragStart({model, position, instructions=EMPTY_OBJECT}, e){
         var {top,left} = position;
 
@@ -138,9 +111,7 @@ export default class Surface extends DynamicContainer {
             ? handleLayout(this.state.layoutModel,'remove', {targetNode: model})
             : this.state.layoutModel;
 
-        const {draggableWidth: width,
-            draggableHeight: height,
-            ...dragTransform} = Draggable.initDrag(e, layoutModel, model.$path, position, {
+        const {draggableWidth: width, draggableHeight: height, ...dragTransform} = Draggable.initDrag(e, layoutModel, model.$path, position, {
             drag: this.handleDrag,
             drop: this.handleDrop
         });

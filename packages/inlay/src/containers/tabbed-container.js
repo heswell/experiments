@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
-import Tabstrip, {Tab} from '../tabstrip';
+import Tabstrip, {Tab} from '../components/tabstrip';
 import LayoutItem from './layout-item';
 import Container from './container';
 import {registerClass} from '../componentRegistry';

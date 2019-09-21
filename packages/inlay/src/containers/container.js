@@ -2,7 +2,7 @@ import React from 'react';
 import {registerClass} from '../componentRegistry';
 import {getLayoutModel} from '../util/component-utils';
 import LayoutItem from './layout-item';
-import {Draggable} from '../draggable';
+import {Draggable} from '../drag-drop/draggable';
 import {layout as applyLayout, handleLayout,followPath} from '../model/index';
 
 export default class Container extends React.Component {
@@ -70,11 +70,6 @@ export default class Container extends React.Component {
     }
 
     shouldComponentUpdate(nextProps){
-        // if the Application passes down the dragging flag, do not render, the only rendering
-        // to take place happens on the DragSurface.
-        // if (nextProps.dragging){
-        // onsole.log(`Container ${this.props.layoutModel.type} dragging  so don't update`);
-        // }
         return nextProps.dragging !== true;
     }
 
@@ -85,43 +80,6 @@ export default class Container extends React.Component {
         } else {
             return this.props.layoutModel;
         }
-        
-        // let {layoutModel/*,style*/} = this.props;
-
-        // if (layoutModel === undefined){
-        //     // console.log(`getRootLayoutModel for ${typeOf(this)}`);
-        //     return applyLayout(getLayoutModel(this));
-        // } /*else if (layoutModel.children && layoutModel.children.length === 0){
-        //     alert('it happens')
-        //     console.log(`mutating (appending) layoutModel children. Can this be avoided ?`)
-        //     var children = getLayoutModelChildren(this);
-
-        //     [].push.apply(layoutModel.children, children);
-
-        //     var VISIBLE = style.visibility || 'visible';
-        //     var FORCE_LAYOUT = true;
-
-        //     var width;
-        //     var height;
-        //     var $position = layoutModel.$position;
-
-        //     if (typeof style.width === 'number' && typeof style.height === 'number'){
-        //         width = style.width;
-        //         height = style.height;
-        //     } else if ($position && $position.width !== undefined && $position.height !== undefined){
-        //         width = $position.width;
-        //         height = $position.height;
-        //     } else {
-        //         console.error(`Container.getLayoutModel attempting to initialize a ${layoutModel.type} layoutModel with no sizing attributes`)
-        //     }
-        //     console.log(`apply layout, WITH CHILDREN`)
-        //     var layoutModel2 = applyLayout(layoutModel, {width,height}, layoutModel.$path, VISIBLE, FORCE_LAYOUT);
-
-        //     layoutModel.children = layoutModel2.children;
-
-        // } */
-
-        // return layoutModel;
 
     }
 
