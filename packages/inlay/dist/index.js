@@ -1,10 +1,12 @@
 import React, { Component as Component$1 } from 'react';
+import cx from 'classnames';
 import { uuid } from '@heswell/utils';
 import ReactDOM from 'react-dom';
-import cx from 'classnames';
-import { ContextMenu, MenuItem, Separator, PopupService } from '@heswell/ui-controls';
+import { ContextMenu, MenuItem, Separator, PopupService, PopupPosition } from '@heswell/ui-controls';
 import yoga, { Node } from 'yoga-layout';
 import Konva from 'konva';
+import { select } from 'd3-selection';
+import 'd3-transition';
 
 function _extends() {
   _extends = Object.assign || function (target) {
@@ -296,80 +298,107 @@ class BoxModel {
     return smallestBoxContainingPoint(layout, measurements, x, y);
   }
 
-  static pointPositionWithinRect(x, y, rect) {
-    const width = rect.right - rect.left;
-    const height = rect.bottom - rect.top;
-    const posX = x - rect.left;
-    const posY = y - rect.top;
-    const pctX = posX / width;
-    const pctY = posY / height;
-    var closeToTheEdge;
-    var position;
-    const borderZone = 30;
+}
+function pointPositionWithinRect(x, y, rect) {
+  const width = rect.right - rect.left;
+  const height = rect.bottom - rect.top;
+  const posX = x - rect.left;
+  const posY = y - rect.top;
+  const pctX = posX / width;
+  const pctY = posY / height;
+  let closeToTheEdge;
+  let position;
+  let tab;
+  const borderZone = 30;
 
-    if (rect.header && containsPoint(rect.header, x, y)) {
-      position = HEADER;
-    } else {
-      const w = width * 0.4;
-      const h = height * 0.4;
-      const centerBox = {
-        left: rect.left + w,
-        top: rect.top + h,
-        right: rect.right - w,
-        bottom: rect.bottom - h
-      };
+  if (rect.header && containsPoint(rect.header, x, y)) {
+    position = HEADER;
 
-      if (containsPoint(centerBox, x, y)) {
-        position = CENTRE;
+    if (rect.tabs) {
+      const tabCount = rect.tabs.length;
+      const targetTab = rect.tabs.find(({
+        left,
+        right
+      }) => x >= left && x <= right);
+
+      if (targetTab) {
+        tab = {
+          left: targetTab.left,
+          index: rect.tabs.indexOf(targetTab)
+        };
       } else {
-        const quadrant = (pctY < 0.5 ? 'north' : 'south') + (pctX < 0.5 ? 'west' : 'east');
-
-        switch (quadrant) {
-          case 'northwest':
-            position = pctX > pctY ? NORTH : WEST;
-            break;
-
-          case 'northeast':
-            position = 1 - pctX > pctY ? NORTH : EAST;
-            break;
-
-          case 'southeast':
-            position = pctX > pctY ? EAST : SOUTH;
-            break;
-
-          case 'southwest':
-            position = 1 - pctX > pctY ? WEST : SOUTH;
-            break;
-
-          default:
-        }
+        const lastTab = rect.tabs[tabCount - 1];
+        tab = {
+          left: lastTab.right,
+          index: tabCount
+        };
       }
-    } // Set closeToTheEdge even when we have already established that we are in a Header.
-    // When we use position to walk the containment hierarchy, building the chain of
-    // dropTargets, the Header loses significance after the first dropTarget, but
-    // closeToTheEdge remains meaningful.
-
-
-    {
-      // var closeToTheEdge = 0;
-      if (posX < borderZone) closeToTheEdge += 8;
-      if (posX > width - borderZone) closeToTheEdge += 2;
-      if (posY < borderZone) closeToTheEdge += 1;
-      if (posY > height - borderZone) closeToTheEdge += 4;
-    } // we might want to also know if we are in the center - this will be used to allow
-    // stack default option
-
-
-    return {
-      position,
-      x,
-      y,
-      pctX,
-      pctY,
-      closeToTheEdge
+    } else {
+      tab = {
+        left: rect.left,
+        index: -1
+      };
+    }
+  } else {
+    const w = width * 0.4;
+    const h = height * 0.4;
+    const centerBox = {
+      left: rect.left + w,
+      top: rect.top + h,
+      right: rect.right - w,
+      bottom: rect.bottom - h
     };
-  }
 
+    if (containsPoint(centerBox, x, y)) {
+      position = CENTRE;
+    } else {
+      const quadrant = (pctY < 0.5 ? 'north' : 'south') + (pctX < 0.5 ? 'west' : 'east');
+
+      switch (quadrant) {
+        case 'northwest':
+          position = pctX > pctY ? NORTH : WEST;
+          break;
+
+        case 'northeast':
+          position = 1 - pctX > pctY ? NORTH : EAST;
+          break;
+
+        case 'southeast':
+          position = pctX > pctY ? EAST : SOUTH;
+          break;
+
+        case 'southwest':
+          position = 1 - pctX > pctY ? WEST : SOUTH;
+          break;
+
+        default:
+      }
+    }
+  } // Set closeToTheEdge even when we have already established that we are in a Header.
+  // When we use position to walk the containment hierarchy, building the chain of
+  // dropTargets, the Header loses significance after the first dropTarget, but
+  // closeToTheEdge remains meaningful.
+
+
+  {
+    // var closeToTheEdge = 0;
+    if (posX < borderZone) closeToTheEdge += 8;
+    if (posX > width - borderZone) closeToTheEdge += 2;
+    if (posY < borderZone) closeToTheEdge += 1;
+    if (posY > height - borderZone) closeToTheEdge += 4;
+  } // we might want to also know if we are in the center - this will be used to allow
+  // stack default option
+
+
+  return {
+    position,
+    x,
+    y,
+    pctX,
+    pctY,
+    closeToTheEdge,
+    tab
+  };
 }
 
 function addMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
@@ -1249,7 +1278,7 @@ function drop(layoutModel, options) {
       //onsole.log('CASE 2 Works)');
       let before, after;
 
-      if (tabIndex === -1) {
+      if (tabIndex === -1 || tabIndex >= target.children.length) {
         after = target.children[target.children.length - 1];
       } else {
         before = target.children[tabIndex];
@@ -1882,13 +1911,6 @@ class LayoutItem extends React.Component {
       // ...childStyle,
       ...childLayout
     };
-    console.log(`LayoutItem
-            style ${JSON.stringify(componentStyle)}
-        
-            props.style ${JSON.stringify(this.props.style)}
-            layout.style ${JSON.stringify(layoutModel.style)}
-        
-        `);
     return React.createElement("div", {
       id: $path,
       className: className,
@@ -2137,8 +2159,54 @@ LayoutItem.defaultProps = {
   visibility: 'visible'
 };
 
+function computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
+  const {
+    pos,
+    clientRect: box
+  } = dropTarget; // const dropTargets = dropTarget.toArray()
+
+  return menuPosition(pos, box, offsetTop, offsetLeft); // this._group.position({ x, y });
+  // const paths = dropTargets.map((dropTarget, i) => ({
+  //     path: new Konva.Path({
+  //         strokeWidth: 0,
+  //         fill: COLOURS[i],
+  //         data: pathPosition(pos, i)
+  //     }),
+  //     dropTarget
+  // }));
+  // do we have to care about removing eventlisteners ? Probably not
+  // this._group.removeChildren();
+  // this.addPaths(paths);
+}
+
+function menuPosition(pos, box, offsetTop, offsetLeft) {
+  return pos.position.West ? [box.left - offsetLeft + 26, pos.y - offsetTop] : pos.position.South ? [pos.x - offsetLeft, box.bottom - offsetTop - 26] : pos.position.East ? [box.right - offsetLeft - 26, pos.y - offsetTop]
+  /* North | Header*/
+  : [pos.x - offsetLeft, box.top - offsetTop + 26];
+} // function pathPosition(pos, idx) {
+//   const unit = 30;
+//   const depth = 32;
+//   const lo = i => i === 0 ? -unit / 2
+//       : i > 0 ? -1 * (unit / 2 + (idx * unit))
+//           : unit / 2 + ((-idx - 1) * unit);
+//   const [top, left, width, height] =
+//       pos.position.West ? [lo(idx), 0, depth, unit] :
+//           pos.position.East ? [lo(idx), -depth, depth, unit] :
+//               pos.position.South ? [-depth, lo(idx), unit, depth] :
+//     /* North | Header */[0, lo(idx), unit, depth];
+//   // For pos 0 we draw just one item (the central item), for others we double up	
+//   return `M${left},${top}h${width}v${height}h-${width}v-${height}${idx > 0 ? pathPosition(pos, -idx) : ''}`;
+// }
+
+
+const DropMenu = () => {
+  return React.createElement("div", {
+    className: "drop-menu"
+  });
+};
+
 const COLOURS = ['red', 'green', 'blue', 'yellow']; // Konva properties
-class DropMenu {
+class DropMenu$1 {
   constructor({
     layer,
     hover
@@ -2163,14 +2231,14 @@ class DropMenu {
     };
   }
 
-  computeMenuPosition(dropTarget, measurements, offsetTop = 0, offsetLeft = 0) {
+  computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
     const {
       component,
       pos
     } = dropTarget;
-    const box = measurements[component.$path];
-    const dropTargets = getDropTargets(dropTarget);
-    const [x, y] = menuPosition(pos, box, dropTargets.length, offsetTop, offsetLeft);
+    const box = dropTarget.clientRect;
+    const dropTargets = dropTarget.toArray();
+    const [x, y] = menuPosition$1(pos, box, dropTargets.length, offsetTop, offsetLeft);
 
     this._group.position({
       x,
@@ -2206,34 +2274,16 @@ function pathPosition(pos, idx) {
   return `M${left},${top}h${width}v${height}h-${width}v-${height}${idx > 0 ? pathPosition(pos, -idx) : ''}`;
 }
 
-function menuPosition(pos, box, count, offsetTop, offsetLeft) {
+function menuPosition$1(pos, box, count, offsetTop, offsetLeft) {
   return pos.position.West ? [box.left - offsetLeft + 26, pos.y - offsetTop] : pos.position.South ? [pos.x - offsetLeft, box.bottom - offsetTop - 26] : pos.position.East ? [box.right - offsetLeft - 26, pos.y - offsetTop]
   /* North | Header*/
   : [pos.x - offsetLeft, box.top - offsetTop + 26];
-} // This might be a method on dropTarget ?
-
-
-function getDropTargets(dropTarget) {
-  const dropTargets = [dropTarget];
-
-  while (dropTarget = dropTarget.nextDropTarget) {
-    dropTargets.push(dropTarget);
-  }
-
-  return dropTargets;
 }
 
-const NORTH$1 = Position.North;
-const SOUTH$1 = Position.South;
-const EAST$1 = Position.East;
-const WEST$1 = Position.West;
-const HEADER$1 = Position.Header;
+const TheCanvas = 'thecanvas';
+const SketchPad = 'sketchpad';
 let _dropTarget = null;
 let _multiDropOptions = false;
-
-let _currentDropTarget;
-
-let _dropMenu = false;
 
 let _stage;
 
@@ -2246,27 +2296,33 @@ let _dropTargetIsTabstrip = false;
 
 let _currentTabIndex = -1;
 
-let _shiftedTab = null;
+function insertIntoRoot(id) {
+  const root = document.getElementById('root');
+  const container = document.createElement('div');
+  container.id = id;
+  document.body.insertBefore(container, root);
+  return container;
+}
+
+function insertSVGRoot() {
+  const root = document.getElementById('root');
+  const container = document.createElement('div');
+  container.id = 'drag-canvas';
+  container.innerHTML = '<svg width="100%" height="100%"></svg>';
+  document.body.insertBefore(container, root);
+}
+
+const drawTabPath = ([l, t, w, h, tl = 0, tw = 0, th = 0]) => `M${l},${t + th}l${tl},0l0,-${th}l${tw},0l0,${th}l${w - (tl + tw)},0l0,${h - th}l-${w},0l0,-${h - th}`;
+
 class DropTargetCanvas {
   constructor() {
-    const canvas = document.createElement('canvas');
-    canvas.className = 'fullscreen';
-    let container = document.getElementById('thecanvas');
-    let sketchpad;
+    let container = document.getElementById(TheCanvas);
 
     if (!container) {
-      const root = document.getElementById('root');
-      container = document.createElement('div');
-      container.id = 'thecanvas';
-      document.body.insertBefore(container, root);
-      sketchpad = document.createElement('div');
-      sketchpad.id = 'sketchpad';
-      this.sketchpad = sketchpad;
-      document.body.insertBefore(sketchpad, root);
+      this.sketchpad = insertIntoRoot(SketchPad);
+      insertSVGRoot();
     }
 
-    container.appendChild(canvas);
-    this.canvas = canvas;
     this.t = 0;
     this.l = 0;
     this.w = document.body.clientWidth;
@@ -2276,14 +2332,14 @@ class DropTargetCanvas {
       this.h = document.body.clientHeight;
     });
     _stage = new Konva.Stage({
-      container: 'sketchpad',
+      container: SketchPad,
       // id of container <div>
       width: this.w,
       height: this.h
     }); //then create layer
 
     _layer = new Konva.Layer();
-    _konvaDropMenu = new DropMenu({
+    _konvaDropMenu = new DropMenu$1({
       layer: _layer,
       hover: dropTarget => _hoverDropTarget = dropTarget
     });
@@ -2306,27 +2362,20 @@ class DropTargetCanvas {
       this.w = w;
       this.h = h;
       const cssText = `top:${t}px;left:${l}px;width:${w}px;height:${h}px;z-index:100`;
-      this.canvas.style.cssText = cssText;
       this.sketchpad.style.cssText = cssText;
 
       _stage.setWidth(w);
 
       _stage.setHeight(h);
-    }
+    } // don't do this on body
 
-    this.canvas.classList.add("ready");
+
     document.body.classList.add("drawing");
-    _currentDropTarget = null;
   }
 
   clear() {
-    document.body.classList.remove("drawing");
-    this.canvas.classList.remove("ready");
-
-    if (_dropMenu) {
-      PopupService.hidePopup();
-      _dropMenu = false;
-    }
+    // don't do this on body
+    document.body.classList.remove("drawing"); //PopupService.hidePopup();
   }
 
   get hoverDropTarget() {
@@ -2341,31 +2390,37 @@ class DropTargetCanvas {
     return _currentTabIndex;
   }
 
-  draw(dropTarget, measurements, x, y) {
-    const SameDropTarget = _dropTarget !== null && !_dropTargetIsTabstrip && _dropTarget.component === dropTarget.component && _dropTarget.pos.position === dropTarget.pos.position && _dropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
+  draw(dropTarget, x, y) {
+    const SameDropTarget = _dropTarget !== null && // !_dropTargetIsTabstrip &&
+    _dropTarget.component === dropTarget.component && _dropTarget.pos.position === dropTarget.pos.position && _dropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
     const wasMultiDrop = _multiDropOptions;
 
     if (_hoverDropTarget !== null) {
-      this.drawTarget(_hoverDropTarget, measurements, x, y);
+      this.drawTargetSVG(_hoverDropTarget);
     } else if (SameDropTarget === false) {
       _dropTarget = dropTarget;
-      _currentDropTarget = null;
-      _multiDropOptions = dropTarget.nextDropTarget != null; //onsole.log('draw, _multiDropOptions = ' + _multiDropOptions);
-      // if (_dropMenu){
-      //     PopupService.hidePopup();
-      //     _dropMenu = false;
-      // }
-
-      this.drawTarget(dropTarget, measurements, x, y);
+      _multiDropOptions = dropTarget.nextDropTarget != null;
+      this.drawTargetSVG(dropTarget);
     }
 
     if (_hoverDropTarget !== null) ; else if (_multiDropOptions) {
+      // compute menu position
+      const [left, top] = computeMenuPosition(dropTarget);
+
       if (!wasMultiDrop) {
         // onsole.log('show the drop menu');
-        _konvaDropMenu.visible(true);
-      }
+        const component = React.createElement(DropMenu, null);
+        PopupService.showPopup({
+          left,
+          top,
+          position: PopupPosition.CenteredOnPosition,
+          component
+        });
 
-      drawDropOptions(this.canvas, dropTarget, measurements, this.w, this.h, this.t, this.l);
+        _konvaDropMenu.visible(true);
+      } else {
+        PopupService.movePopupTo(left, top);
+      }
     } else if (_konvaDropMenu.visible()) {
       // onsole.log('clear the drop menu');
       _konvaDropMenu.visible(false);
@@ -2374,282 +2429,134 @@ class DropTargetCanvas {
     }
   }
 
-  drawTarget(dropTarget, measurements, x, y) {
-    const {
-      canvas,
-      w,
-      h,
-      t: offsetTop,
-      l: offsetLeft
-    } = this;
-    setWidth(canvas, w, h);
-    var ctx = canvas.getContext('2d');
+  drawTargetSVG(dropTarget, offsetTop = 0, offsetLeft = 0) {
+    const lineWidth = 6;
+    const targetRect = dropTarget.pos.tab ? dropTarget.targetTabRect(lineWidth, offsetTop, offsetLeft) : dropTarget.targetRect(lineWidth, offsetTop, offsetLeft);
+    console.log(`targetRect ${targetRect}`);
 
-    if (_currentDropTarget) {
-      _currentDropTarget.active = false;
-    } //onsole.log('activate drop target',dropTarget);	    
-
-
-    _currentDropTarget = dropTarget;
-    dropTarget.active = true;
-    var rect = measurements[dropTarget.component.$path];
-    var header = rect.header || rect.tabstrip;
-    var pos = dropTarget.pos;
-
-    if (pos.position === HEADER$1 && header) {
-      // this is wrong, only needed because we're manipulating the tabs here
-      const $id = dropTarget.component.$path;
-      drawTabbedOutline(ctx, rect, w, h, offsetTop, offsetLeft, x, y, $id);
-    } else {
-      drawOutline(ctx, pos, rect, w, h, offsetTop, offsetLeft);
+    if (targetRect) {
+      const [l, t, r, b, tl = 0, tw = 0, th = 0] = targetRect;
+      const w = r - l;
+      const h = b - t;
+      const tabLeftOffset = tl === 0 ? 0 : tl - l;
+      const data = [l, t, w, h, tabLeftOffset, tw, th];
+      const svg = select('#drag-canvas > svg');
+      const path = svg.selectAll("path.drop-target").data([data]);
+      const d = drawTabPath(data);
+      path.transition().duration(200).attr('d', d);
+      const p = path.enter().append("path").attr("class", "drop-target").style("stroke", "blue").style("fill", "transparent").style("stroke-width", 4).attr('d', d);
     }
   }
 
-}
-
-function setWidth(canvas, w, h) {
-  canvas.width = w;
-  canvas.height = h;
-}
-
-function drawTabbedOutline(ctx, rect, w, h, offsetTop, offsetLeft, mouseX, mouseY, $id) {
-  // This is completely the wrong place to be identifying the target tab, should be done in
-  // BoxModel.identifyDropTarget
-  const {
-    tabs
-  } = rect;
-  const tabCount = tabs ? tabs.length : 0;
-  let tab = tabs && tabs.find(({
-    left,
-    right
-  }) => mouseX >= left && mouseX <= right);
-
-  if (tab) {
-    _currentTabIndex = tabs.indexOf(tab);
-  } else {
-    const lastTab = tabs && tabs[tabs.length - 1];
-
-    if (lastTab) {
-      tab = {
-        left: lastTab.right
-      };
-      _currentTabIndex = tabs.length;
-    } else {
-      tab = {
-        left: rect.left
-      };
-      _currentTabIndex = -1;
-    }
-  } //====================================== EXPERIMENT
-
-
-  if (_currentTabIndex > -1 && _currentTabIndex < tabCount) {
-    const selector = `:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab:nth-child(${_currentTabIndex + 1})`;
-    const tab = document.getElementById($id).querySelector(selector);
-
-    if (tab && tab !== _shiftedTab) {
-      if (_shiftedTab) {
-        _shiftedTab.style.cssText = '';
-      }
-
-      tab.style.cssText = 'transition:margin-left .4s ease-out;margin-left: 80px';
-      _shiftedTab = tab;
-    }
-  } else if (_shiftedTab) {
-    _shiftedTab.style.cssText = '';
-    _shiftedTab = null;
-  } //====================================== EXPERIMENT
-
-
-  _dropTargetIsTabstrip = rect.tabs && rect.tabs.length;
-  var header = rect.header;
-  var t = Math.round(header.top - offsetTop),
-      l =
-  /*header.name === 'Tabstrip' ? Math.round(header.tabRight) :*/
-  Math.round(header.left - offsetLeft),
-      r = Math.round(header.right - offsetLeft),
-      b = Math.round(header.bottom - offsetTop),
-      tabLeft = Math.round(tab.left - offsetLeft),
-      tabRight = Math.round(tab.left + 60 - offsetLeft);
-  ctx.beginPath();
-  var lineWidth = 6;
-  var inset = 0; // var headOffset = (header.top - rect.top) + header.height;
-
-  var gap = Math.round(lineWidth / 2) + inset;
-  var {
-    top,
-    left,
-    right,
-    bottom
-  } = rect;
-  setCanvasStyles(ctx, {
-    lineWidth: lineWidth,
-    strokeStyle: 'yellow'
-  });
-  drawTab(ctx, l + gap, t + gap, r, b, top, left - offsetLeft + gap, right - offsetLeft - gap, bottom - offsetTop - gap, tabLeft, tabRight);
-  ctx.stroke();
-}
-
-function drawTab(ctx, l, t, r, b, top, left, right, bottom, tabLeft, tabRight) {
-  var radius = 6; // var x = l;
-
-  var y = t + 3; // var width = 100;
-
-  var height = b - t;
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(tabLeft + radius, y);
-  ctx.lineTo(tabRight - radius, y);
-  ctx.quadraticCurveTo(tabRight, y, tabRight, y + radius);
-  ctx.lineTo(tabRight, y + height);
-  ctx.lineTo(right, y + height);
-  ctx.lineTo(right, bottom);
-  ctx.lineTo(left, bottom);
-  ctx.lineTo(left, y + height);
-  ctx.lineTo(tabLeft, y + height);
-  ctx.lineTo(tabLeft, y + radius);
-  ctx.quadraticCurveTo(tabLeft, y, tabLeft + radius, y); //   ctx.moveTo(x, y + height);
-  //   ctx.lineTo(x, y + radius);
-  //   ctx.quadraticCurveTo(x,y,x + radius, y);
-  //   ctx.lineTo(x + width - radius, y);
-  //   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  //   ctx.lineTo(x + width, y + height);
-  //   ctx.lineTo(right, y + height);
-  //   ctx.lineTo(right, bottom);
-  //   ctx.lineTo(left, bottom);
-  //   ctx.lineTo(left, y+height);
-
-  ctx.closePath();
-
-  {
-    ctx.stroke();
-  }
-}
-
-function drawOutline(ctx, pos, rect, w, h, offsetTop = 0, offsetLeft = 0) {
-  var targetPosition = pos.position;
-  var size = null; //onsole.log(`layout=${JSON.stringify(layout)}`);
-
-  if (pos.width) {
-    size = {
-      width: pos.width
-    };
-  } else if (pos.height) {
-    size = {
-      height: pos.height
-    };
-  }
-
-  var t = Math.round(rect.top - offsetTop),
-      l = Math.round(rect.left - offsetLeft),
-      r = Math.round(rect.right - offsetLeft),
-      b = Math.round(rect.bottom - offsetTop);
-  var lineWidth = 6;
-  setCanvasStyles(ctx, {
-    lineWidth: lineWidth,
-    strokeStyle: 'yellow'
-  });
-  ctx.beginPath();
-  var inset = 0;
-  var gap = Math.round(lineWidth / 2) + inset;
-
-  switch (targetPosition) {
-    case NORTH$1:
-    case HEADER$1:
-      var halfHeight = Math.round((b - t) / 2);
-      var sizeHeight = size && size.height ? size.height : 0;
-      var height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
-      drawRect(ctx, l + gap, t + gap, r - gap, t + gap + height);
-      break;
-
-    case WEST$1:
-      var halfWidth = Math.round((r - l) / 2);
-      var sizeWidth = size && size.width ? size.width : 0;
-      var width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
-      drawRect(ctx, l + gap, t + gap, l + gap + width, b - gap);
-      break;
-
-    case EAST$1:
-      // var halfWidth = Math.round((r - l) / 2);
-      // var sizeWidth = (size && size.width) ? size.width : 0;
-      // var width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
-      drawRect(ctx, r - gap - width, t + gap, r - gap, b - gap);
-      break;
-
-    case SOUTH$1:
-      // var halfHeight = Math.round((b - t) / 2);
-      // var sizeHeight = (size && size.height) ? size.height : 0;
-      // var height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
-      drawRect(ctx, l + gap, b - gap - height, r - gap, b - gap);
-      break;
-
-    default:
-      console.log('DropTargetCanvas what are we doing here ?');
-  }
-
-  ctx.closePath();
-  ctx.stroke(); // if (dropTarget.pos.closeToTheEdge == dropTarget.pos.position){
-  // 	var zone = 30;
-  //     ctx.beginPath();
-  //     ctx.fillStyle = 'rgba(0,0,0,.25)';
-  //     //TODO if op is 'insert' we may not be at the edge - may be 
-  //     // somewhere in middle of a tower or terrace - look at index
-  //     var g = 6;
-  //     zone = zone - gap;
-  //     console.log(_dropTarget.pos.position , dropTarget.pos.position);
-  //     switch (_dropTarget.pos.position ){
-  //         case NORTH: drawRect(ctx,l+g,t+g,r-g,t+g+zone); break;
-  //         case SOUTH: drawRect(ctx,l+g,b-g-zone,r-g,b-g); break;
-  //         case EAST: drawRect(ctx,r-g-zone,t+g,r-g,b-g); break;
-  //         case WEST: drawRect(ctx,l+g,t+g,l+zone,b-g); break;
-  //     }
-  //     ctx.closePath();
-  //     ctx.fill();
-  // }
-}
-
-function drawDropOptions(canvas, dropTarget, measurements, w, h, offsetTop, offsetLeft) {
-  // PopupService.showPopup({component : (
-  //         <DropMenu dropTarget={dropTarget} measurements={measurements}
-  //             onMouseOver={handleMouseOver(canvas, measurements, w, h)} /> )});
-  // _dropMenu = true;
-  _konvaDropMenu.computeMenuPosition(dropTarget, measurements, offsetTop, offsetLeft);
-
-  _layer.draw();
-} // function handleMouseOver(canvas, measurements, w, h) {
-//     return function (dropTarget) {
-//         draw(canvas, dropTarget, measurements, w, h, 0, 0, true);
-//     };
-// }
-
-
-function setCanvasStyles(ctx, styles) {
-  ctx.strokeStyle = styles.strokeStyle || 'black';
-  ctx.lineWidth = styles.lineWidth || 2;
-  ctx.fillStyle = styles.fillStyle || 'rgba(255,0,0,.5)'; // if (_multiDropOptions){
-  // 	ctx.setLineDash([15,10]);
-  // }
-}
-
-function drawRect(ctx, x1, y1, x2, y2) {
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y1);
-  ctx.lineTo(x2, y2);
-  ctx.lineTo(x1, y2);
 }
 
 class DropTarget {
   constructor({
     component,
-    pos
+    pos,
+    clientRect
     /*, closeToTheEdge*/
     ,
     nextDropTarget
   }) {
     this.component = component;
     this.pos = pos;
+    this.clientRect = clientRect;
     this.nextDropTarget = nextDropTarget;
     this.active = false;
+  }
+
+  targetTabRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
+    const {
+      clientRect: {
+        top,
+        left,
+        right,
+        bottom,
+        header
+      },
+      pos: {
+        tab
+      }
+    } = this;
+    const inset = 0;
+    const gap = Math.round(lineWidth / 2) + inset;
+    const t = Math.round(top - offsetTop);
+    const l = Math.round(left - offsetLeft + gap);
+    const r = Math.round(right - offsetLeft - gap);
+    const b = Math.round(bottom - offsetTop - gap);
+    const tabLeft = Math.round(tab.left - offsetLeft + gap);
+    const tabWidth = 60;
+    const tabHeight = header.bottom - header.top;
+    return [l, t, r, b, tabLeft, tabWidth, tabHeight];
+  }
+
+  targetRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
+    const {
+      pos: {
+        width,
+        height,
+        position
+      },
+      clientRect: rect
+    } = this;
+    let size = null;
+
+    if (width) {
+      size = {
+        width
+      };
+    } else if (height) {
+      size = {
+        height
+      };
+    }
+
+    const t = Math.round(rect.top - offsetTop);
+    const l = Math.round(rect.left - offsetLeft);
+    const r = Math.round(rect.right - offsetLeft);
+    const b = Math.round(rect.bottom - offsetTop);
+    const inset = 0;
+    const gap = Math.round(lineWidth / 2) + inset;
+
+    switch (position) {
+      case Position.North:
+      case Position.Header:
+        {
+          const halfHeight = Math.round((b - t) / 2);
+          const sizeHeight = size && size.height ? size.height : 0;
+          const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+          return [l + gap, t + gap, r - gap, t + gap + height];
+        }
+
+      case Position.West:
+        {
+          const halfWidth = Math.round((r - l) / 2);
+          const sizeWidth = size && size.width ? size.width : 0;
+          const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+          return [l + gap, t + gap, l + gap + width, b - gap];
+        }
+
+      case Position.East:
+        {
+          const halfWidth = Math.round((r - l) / 2);
+          const sizeWidth = size && size.width ? size.width : 0;
+          const width = sizeWidth ? Math.min(halfWidth, Math.round(sizeWidth)) : halfWidth;
+          return [r - gap - width, t + gap, r - gap, b - gap];
+        }
+
+      case Position.South:
+        {
+          const halfHeight = Math.round((b - t) / 2);
+          const sizeHeight = size && size.height ? size.height : 0;
+          const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
+          return [l + gap, b - gap - height, r - gap, b - gap];
+        }
+
+      default:
+        console.warn(`DropTarget does not recognize position ${position}`);
+        return null;
+    }
   }
 
   activate() {
@@ -2657,44 +2564,56 @@ class DropTarget {
     return this;
   }
 
-  static getActiveDropTarget(dropTarget) {
-    return dropTarget.active ? dropTarget : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
-  } // Initial entry to this method is always via the app (may be it should be *on* the app)
+  toArray() {
+    let dropTarget = this;
+    const dropTargets = [dropTarget];
 
+    while (dropTarget = dropTarget.nextDropTarget) {
+      dropTargets.push(dropTarget);
+    }
 
-  static identifyDropTarget(x, y, model, dragState, measurements) {
-    let dropTarget = null; //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
-    // this could return all boxes containing point, which would make getNextDropTarget almost free
-    // Also, if we are over  atabstrip, it could include the actual tab
-
-    var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
-
-    if (component) {
-      // onsole.log(`%cidentifyDropTarget target path ${component.$path}
-      //     position: ${JSON.stringify(component.$position)}
-      //     measurements : ${JSON.stringify(_measurements[component.$path])}
-      //     `,'color:cornflowerblue;font-weight:bold;');
-      const pos = BoxModel.pointPositionWithinRect(x, y, measurements[component.$path]);
-      const nextDropTarget = getNextDropTarget(model, component, pos, dragState.constraint.zone, measurements, x, y);
-      dropTarget = new DropTarget({
-        component,
-        pos,
-        nextDropTarget
-      }).activate(); // onsole.log('%c'+printDropTarget(dropTarget),'color:green');
-    } //onsole.log(`\n${printDropTarget(dropTarget)}`);
-
-
-    return dropTarget;
+    return dropTargets;
   }
 
+  static getActiveDropTarget(dropTarget) {
+    return dropTarget.active ? dropTarget : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
+  }
+
+} // Initial entry to this method is always via the app (may be it should be *on* the app)
+
+function identifyDropTarget(x, y, model, measurements) {
+  let dropTarget = null; //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
+  // this could return all boxes containing point, which would make getNextDropTarget almost free
+  // Also, if we are over  atabstrip, it could include the actual tab
+
+  var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
+
+  if (component) {
+    // onsole.log(`%cidentifyDropTarget target path ${component.$path}
+    //     position: ${JSON.stringify(component.$position)}
+    //     measurements : ${JSON.stringify(_measurements[component.$path])}
+    //     `,'color:cornflowerblue;font-weight:bold;');
+    const clientRect = measurements[component.$path];
+    const pos = pointPositionWithinRect(x, y, clientRect);
+    const nextDropTarget = getNextDropTarget(model, component, pos, measurements, x, y);
+    dropTarget = new DropTarget({
+      component,
+      pos,
+      clientRect,
+      nextDropTarget
+    }).activate(); // onsole.log('%c'+printDropTarget(dropTarget),'color:green');
+  } //onsole.log(`\n${printDropTarget(dropTarget)}`);
+
+
+  return dropTarget;
 } // must be cleared when we end the drag
 // layout never changes
 // component never changes
 // pos neve changes
-// zone enver changes
+// zone never changes
 // measurements never change
 
-function getNextDropTarget(layout, component, pos, zone, measurements, x, y) {
+function getNextDropTarget(layout, component, pos, measurements, x, y) {
   const {
     north,
     south,
@@ -2709,7 +2628,8 @@ function getNextDropTarget(layout, component, pos, zone, measurements, x, y) {
     if (pos.position.Header || pos.closeToTheEdge) {
       let nextDropTarget = false; // experiment...
 
-      let containerPos = BoxModel.pointPositionWithinRect(x, y, measurements[container.$path]);
+      const clientRect = measurements[container.$path];
+      let containerPos = pointPositionWithinRect(x, y, clientRect);
 
       while (container && positionedAtOuterContainerEdge(container, pos, component, measurements)) {
         //onsole.log(`${component.type} positioned at outer edge of container ${container.type}`);
@@ -2735,6 +2655,7 @@ function getNextDropTarget(layout, component, pos, zone, measurements, x, y) {
             component: container,
             pos: containerPos,
             // <<<<  a local pos for each container
+            clientRect,
             nextDropTarget: next(containerOf(layout, container))
           });
         }
@@ -2815,7 +2736,7 @@ class DragState {
       left: x,
       top: y
     } = rect;
-    var mousePosition = BoxModel.pointPositionWithinRect(mouseX, mouseY, rect); // We are applying a scale factor of 0.4 to the draggee. This is purely a visual
+    var mousePosition = pointPositionWithinRect(mouseX, mouseY, rect); // We are applying a scale factor of 0.4 to the draggee. This is purely a visual
     // effect - the actual box size remains the original size. The 'leading' values 
     // represent the difference between the visual scaled down box and the actual box.
 
@@ -3168,9 +3089,9 @@ function dragMousemoveHandler(evt) {
   }
 
   if (dragState.inBounds()) {
-    dropTarget = DropTarget.identifyDropTarget(x, y, _dragContainer, dragState, _measurements);
+    dropTarget = identifyDropTarget(x, y, _dragContainer, _measurements);
   } else {
-    dropTarget = DropTarget.identifyDropTarget(dragState.dropX(), dragState.dropY(), _dragContainer, dragState, _measurements);
+    dropTarget = identifyDropTarget(dragState.dropX(), dragState.dropY(), _dragContainer, _measurements);
   } // did we have an existing droptarget which is no longer such ...
 
 
@@ -3181,7 +3102,9 @@ function dragMousemoveHandler(evt) {
   }
 
   if (dropTarget) {
-    _dropTargetCanvas.draw(dropTarget, _measurements, x, y);
+    const sameDropTarget = currentDropTarget && currentDropTarget.component === dropTarget.component && currentDropTarget.pos.position === dropTarget.pos.position && currentDropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
+
+    _dropTargetCanvas.draw(dropTarget, x, y);
 
     _dropTarget$1 = dropTarget; // if (currentDropTarget && 
     //     currentDropTarget.component === dropTarget.component &&
@@ -3207,6 +3130,7 @@ function dragMouseupHandler(evt) {
 
 function onDragEnd() {
   if (_dropTarget$1) {
+    // why wouldn't the active dropTarget be the hover target
     const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget$1);
 
     if (_dropTargetCanvas.dropTargetIsTabstrip) {
@@ -3335,11 +3259,7 @@ class Container extends React.Component {
 
   getLayoutModel() {
     if (this.isLayoutRoot()) {
-      const layoutModel = getLayoutModel(this);
-      console.log(`%c${JSON.stringify(layoutModel, null, 2)}`, 'color:blue;font-weight: bold;');
-      const l = layout(layoutModel);
-      console.log(`%c${JSON.stringify(l, null, 2)}`, 'color:brown;font-weight: bold;');
-      return l; // return applyLayout(getLayoutModel(this));
+      return layout(getLayoutModel(this));
     } else {
       return this.props.layoutModel;
     } // let {layoutModel/*,style*/} = this.props;
@@ -4731,10 +4651,6 @@ registerClass('ComponentIcon', ComponentIcon);
 
 const getLayoutModel$1 = state => state.layoutModel;
 
-// import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
-// import componentState from './redux/componentReducer';
-// import thunk from 'redux-thunk';
-
 const NO_STYLE$2 = {};
 class Application extends React.Component {
   constructor(props) {
@@ -4749,18 +4665,8 @@ class Application extends React.Component {
         backgroundColor
       } = NO_STYLE$2
     } = props;
-    this.resizeListener = this.resizeListener.bind(this); // const reduxDevTools = window.devToolsExtension ? window.devToolsExtension() : f => f;
-    // const reducers = combineReducers({
-    //     ...this.props.reducers,
-    //     componentState,
-    //     layoutModel
-    // });
-    // this.store = createStore(
-    //     reducers,
-    //     compose(applyMiddleware(thunk/*, logger*/), reduxDevTools)
-    // );
-    // this.store.subscribe(this.handleChange);
-
+    this.resizeListener = this.resizeListener.bind(this);
+    this.el = React.createRef();
     this.state = {
       height,
       width,
@@ -4769,9 +4675,8 @@ class Application extends React.Component {
       // REALLY ???
       draggedComponent: null,
       dialogs,
-      hasError: false // layoutModel: this.getLayoutModel(width, height)
-
-    }; // this.props.bootstrap(this.store.dispatch);
+      hasError: false
+    };
   }
 
   componentDidCatch(error, info) {
@@ -4781,8 +4686,40 @@ class Application extends React.Component {
     });
   }
 
+  componentDidMount() {
+    let {
+      width,
+      height
+    } = this.state;
+
+    if (width === undefined || height === undefined) {
+      const {
+        height: clientHeight,
+        width: clientWidth
+      } = this.el.current.getBoundingClientRect();
+
+      if (height === undefined) {
+        height = clientHeight;
+      }
+
+      if (width === undefined) {
+        width = clientWidth;
+      }
+
+      this.setState({
+        height,
+        width
+      });
+    }
+
+    window.addEventListener('resize', this.resizeListener, false); // this.store.dispatch(initializeLayoutModel(this.state.layoutModel));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resizeListener, false);
+  }
+
   render() {
-    // dragging will suppress render in all children except the DragSurface
     const {
       width,
       height,
@@ -4798,18 +4735,16 @@ class Application extends React.Component {
       height,
       backgroundColor
     };
-    const className = cx('Application', this.props.className); //TODO make the default Container a Surface, which can host dialogs/popups as well
-    // as root layout. Default style will be 100% x 100%
-    //TODO maybe DragSurface should be part of Surface ?
-    // TRY scrap the DragSurface. pass dragging to each child. If it is set and they do not
-    // match do not render. So dialogs can be moved without dom removal. Layout items 
-    // will be transplanted to Surface. Means every container and LayoutItem will have to
-    // implement this in shouldComponentUpdate
-    // if (nextProps.dragOperation && nextProps.dragOperation.draggedComponent !== this)
-    // we want something like 
-    // <Surface dragOperation={{draggedComponent,x,y}}
+    const className = cx('Application', this.props.className);
 
-    if (hasError) {
+    if (width === undefined || height === undefined) {
+      return React.createElement("div", {
+        style: {
+          height: '100%'
+        },
+        ref: this.el
+      });
+    } else if (hasError) {
       return React.createElement("div", {
         style: style,
         className: className
@@ -4818,7 +4753,8 @@ class Application extends React.Component {
 
     return React.createElement("div", {
       style: style,
-      className: className
+      className: className,
+      ref: this.el
     }, React.createElement(Surface, {
       layoutModel: this.props.layoutModel,
       style: {
@@ -4848,17 +4784,7 @@ class Application extends React.Component {
     }
 
     return children.concat(dialogs);
-  } // handleChange = () => {
-  //     const layoutModel = getLayoutModel(this.store.getState());
-  //     // console.log(`Application.handleChange 
-  //     // 	state version ${this.state ? this.state.layoutModel.$version : 'null'}
-  //     // 	store version ${layoutModel ? layoutModel.$version : 'null'}`);
-  //     if (layoutModel !== null && layoutModel !== this.state.layoutModel){
-  //         //onsole.log(`Application:store change triggers setState EXPECT RENDER`);
-  //         this.setState({layoutModel});
-  //     }
-  // }
-
+  }
 
   getLayoutModel(width, height, id = uuid()) {
     console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`, 'color:blue;font-weight:bold');
@@ -4881,14 +4807,6 @@ class Application extends React.Component {
       },
       children: []
     };
-  }
-
-  componentDidMount() {
-    window.addEventListener('resize', this.resizeListener, false); // this.store.dispatch(initializeLayoutModel(this.state.layoutModel));
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.resizeListener, false);
   }
 
   componentWillReceiveProps(nextProps) {

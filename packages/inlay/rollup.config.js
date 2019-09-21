@@ -1,5 +1,6 @@
 import babel from 'rollup-plugin-babel'
 import postcss from 'rollup-plugin-postcss'
+import sizes from 'rollup-plugin-sizes';
 
 export default {
     input: 'index.js',
@@ -17,6 +18,7 @@ export default {
             minimize: false,
             extract: true,
             sourceMap: true
-          })
+          }),
+          sizes()
     ]
 };

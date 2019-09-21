@@ -1,10 +1,14 @@
+.ComponentHeader {
+	--component-header-background: #ccc;
+	--component-header-color: #000;
+}
+
 .Tower > .ComponentHeader,
 .LayoutItem > .ComponentHeader {
-	background-color: #1a4e95;
+	background-color: var(--component-header-background);
+	color:var(--component-header-color);
 	display: flex;
 	align-items: center;
-	background-color: black;
-	color:white;
 }
 
 .Tower > .ComponentHeader button,
@@ -86,8 +90,20 @@
 	transform-origin: 100% 0%;
 }
 
+.LayoutItem {
+    background-color: #fff;
+}
+
 .LayoutItem.dragging {
     opacity: .5;
+}
+
+.drop-menu {
+  width: 80px;
+  height: 32px;
+  margin-left: -50%;
+  margin-bottom: -50%; 
+  background-color: rgba(255,255,0,.5);
 }
 
 .DropMenu {
@@ -128,17 +144,6 @@
 }
 
 
-canvas.fullscreen {
-	position:absolute;
-	top:0;
-	left:0;
-	visibility:hidden;
-	z-index: 2;
-}
-
-canvas.fullscreen.ready {
-	visibility: visible;
-}
 
 #sketchpad {
 
@@ -151,7 +156,7 @@ canvas.fullscreen.ready {
 	background-color: rgba(0,255,0,0.2);
 	visibility:hidden;
 	/*opacity : 0.5;*/
-	z-index:2;
+	z-index:102;
 
 }
 
@@ -160,6 +165,21 @@ canvas.fullscreen.ready {
 }
 
 #sketchpad.sketching {
+	visibility:visible;
+}
+
+#drag-canvas {
+	visibility:hidden;
+	z-index: 1;
+  position: absolute;
+  top: 0px;
+  left:0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+.drawing #drag-canvas {
 	visibility:visible;
 }
 
@@ -254,6 +274,9 @@ canvas.fullscreen.ready {
 	background-color: rgba(255,255,255,0.3);
 }
 
+.Component {
+  background-color: inherit;;
+}
 .PlaceHolder {
 	position: absolute;
 	left:0;
@@ -328,7 +351,15 @@ body, div {
 	user-select: none;
 }
 
+#root {
+	height: 100%;
+}
+
 * {
 	box-sizing: border-box;
+}
+
+.Application {
+	background-color: #000;
 }
 /*# sourceMappingURL=index.css.map */

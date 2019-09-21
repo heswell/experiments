@@ -71,7 +71,7 @@ export function pointPositionWithinRect(x, y, rect) {
     const pctX = posX / width;
     const pctY = posY / height;
 
-    let closeToTheEdge;
+    let closeToTheEdge = 0;
     let position;
     let tab;
 
@@ -128,7 +128,6 @@ export function pointPositionWithinRect(x, y, rect) {
     // dropTargets, the Header loses significance after the first dropTarget, but
     // closeToTheEdge remains meaningful.
     if (typeof borderZone === 'number') {
-        // var closeToTheEdge = 0;
         if (posX < borderZone) closeToTheEdge += 8;
         if (posX > width - borderZone) closeToTheEdge += 2;
         if (posY < borderZone) closeToTheEdge += 1;

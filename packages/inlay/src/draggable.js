@@ -1,7 +1,7 @@
 
 import ReactDOM from 'react-dom';
-import DropTargetCanvas from './drop-target-canvas';
-import {DropTarget, identifyDropTarget} from './drop-target';
+import DropTargetCanvas from './components/drop-target/drop-target-renderer';
+import {DropTarget, identifyDropTarget} from './model/drop-target';
 import DragState from './drag-state';
 import { followPath, BoxModel, Position } from './model/index';
 
@@ -278,23 +278,6 @@ function onDragEnd() {
     if (_dropTarget) {
         // why wouldn't the active dropTarget be the hover target
         const dropTarget = _dropTargetCanvas.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
-        if (_dropTargetCanvas.dropTargetIsTabstrip) {
-            dropTarget.tabIndex = _dropTargetCanvas.currentTabIndex;
-
-            // EXPERIMENT ----------- What is this trying to do ? (cos it's not working)
-            const selector = `:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab:nth-child(${dropTarget.tabIndex + 1})`;
-            const tabstrip = document.getElementById(dropTarget.component.$path);
-            if (tabstrip){
-                const tab = tabstrip.querySelector(selector);
-                if (tab){
-                    tab.style.cssText = '';
-                }
-            } else {
-                console.log(`dropTarget indicated to be Tabstrip, but is not`);
-            }
-            //----------------------
-
-        }
 
         // looking into eliminating this call altogether. We don't need it if we set the dragging index via
         // top-level layout state

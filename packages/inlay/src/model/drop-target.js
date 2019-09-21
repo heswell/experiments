@@ -1,8 +1,12 @@
 
 
-import {BoxModel, positionValues, pointPositionWithinRect} from './model/boxModel';
-import {containerOf} from './model/layoutModel';
-import { Position } from './model/index';
+import {BoxModel, positionValues, pointPositionWithinRect} from './boxModel';
+import {containerOf} from './layoutModel';
+import { Position } from './index';
+
+export const isTabstrip = dropTarget => dropTarget.pos.tab && dropTarget.component.type === 'TabbedContainer' && dropTarget.pos.position.Header;
+
+
 
 export class DropTarget {
 
@@ -11,7 +15,7 @@ export class DropTarget {
         this.pos = pos;
         this.clientRect = clientRect;
 	    this.nextDropTarget = nextDropTarget;
-	    this.active = false;       
+        this.active = false; 
     }
 
     targetTabRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
@@ -27,7 +31,6 @@ export class DropTarget {
         const tabLeft = Math.round(tab.left - offsetLeft + gap);
         const tabWidth = 60;
         const tabHeight = header.bottom - header.top;
-
         return [l,t, r,b,tabLeft, tabWidth, tabHeight];
     }
     
@@ -115,9 +118,9 @@ export function identifyDropTarget(x, y, model, measurements){
     var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
     
     if (component){
-        // onsole.log(`%cidentifyDropTarget target path ${component.$path}
+        // console.log(`%cidentifyDropTarget target path ${component.$path}
         //     position: ${JSON.stringify(component.$position)}
-        //     measurements : ${JSON.stringify(_measurements[component.$path])}
+        //     measurements : ${JSON.stringify(measurements[component.$path])}
         //     `,'color:cornflowerblue;font-weight:bold;');
         const clientRect = measurements[component.$path];
         const pos = pointPositionWithinRect(x,y,clientRect);

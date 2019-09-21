@@ -126,12 +126,13 @@ function switchTab(layoutModel, { path, nextIdx }) {
 
 function drop(layoutModel, options) {
 
-    var { draggedComponent: source, dropTarget: { component: target, pos, tabIndex = -1 } } = options;
+    var { draggedComponent: source, dropTarget: { component: target, pos } } = options;
 
     if (pos.position.Header) {
         if (target.type === 'TabbedContainer') { //onsole.log('CASE 2 Works)');
             let before, after;
-            if (tabIndex === -1 || tabIndex >= target.children.length) {
+            const tabIndex = pos.tab.index;
+            if (pos.tab.index === -1 || tabIndex >= target.children.length) {
                 after = target.children[target.children.length - 1];
             } else {
                 before = target.children[tabIndex];

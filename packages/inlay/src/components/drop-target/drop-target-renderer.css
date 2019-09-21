@@ -1,14 +1,3 @@
-canvas.fullscreen {
-	position:absolute;
-	top:0;
-	left:0;
-	visibility:hidden;
-	z-index: 2;
-}
-
-canvas.fullscreen.ready {
-	visibility: visible;
-}
 
 #sketchpad {
 
@@ -21,7 +10,7 @@ canvas.fullscreen.ready {
 	background-color: rgba(0,255,0,0.2);
 	visibility:hidden;
 	/*opacity : 0.5;*/
-	z-index:2;
+	z-index:102;
 
 }
 
@@ -30,5 +19,20 @@ canvas.fullscreen.ready {
 }
 
 #sketchpad.sketching {
+	visibility:visible;
+}
+
+#drag-canvas {
+	visibility:hidden;
+	z-index: 1;
+  position: absolute;
+  top: 0px;
+  left:0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+.drawing #drag-canvas {
 	visibility:visible;
 }

@@ -133,6 +133,12 @@ export class PopupService {
         container.style.left = (parseInt(container.style.left,10) + x) + 'px';
     }
 
+    static movePopupTo(x, y, name='anon', group='all'){
+        const container = document.querySelector(`.react-popup.${group} .popup-container`);
+        container.style.top = `${y}px`;
+        container.style.left = `${x}px`;
+    }
+
     static keepWithinThePage(el) {
 
         //onsole.log(`PopupService.keepWithinThePage`);
