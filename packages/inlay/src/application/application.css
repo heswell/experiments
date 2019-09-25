@@ -5,7 +5,6 @@ html, body {
 	height: 100%;
 	width:100%;
 	overflow: hidden;
-	font-family: roboto, Arial;
 }
 
 body, div {
@@ -21,5 +20,5 @@ body, div {
 }
 
 .Application {
-	background-color: #000;
+	background-color: #eee;
 }

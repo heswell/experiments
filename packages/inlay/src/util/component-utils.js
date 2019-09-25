@@ -27,49 +27,6 @@ export function typeOf(element){
 
 }
 
-//TODO components should be able to register props here
-const LayoutProps = {
-	resizeable: true,
-	header: true,
-	title: true,
-	active: true,
-	tabstripHeight: true,
-	dragStyle: true
-}
-
-function layoutProps({props}){
-	const results = {};
-	Object.entries(props).forEach(([key, value]) => {
-			if (LayoutProps[key]){
-					results[key] = value;
-			}
-	})
-	return results;
-}
-
-
-export const getLayoutModel = (component) => ({
-	type: typeOf(component),
-	$id: component.props.id || uuid(),
-	...layoutProps(component),
-	style: component.props.style,
-	children: isLayout(component) ? getLayoutModelChildren(component) : []
-})
-
-function getLayoutModelChildren(component){
-	var {children, contentModel=null} = component.props;
-	// TODO don't recurse into children of non-layout
-	if (React.isValidElement(children)){
-			return [getLayoutModel(children)];
-	} else if (Array.isArray(children)){
-			return children.filter(child => child).map(child => getLayoutModel(child));
-	} else if (contentModel !== null){
-			return [contentModel];
-	} else {
-			return []; // is this safe ?
-	}
-}
-
 export function isLayout(element){
 	if (typeof element !== 'string'){
 			element = (element.type && element.type.displayName) ||

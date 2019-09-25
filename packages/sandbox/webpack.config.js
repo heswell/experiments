@@ -9,6 +9,7 @@ const localPackages = [
   'ingrid',
   'ingrid-extras',
   'inlay',
+  'inlay-extras',
   'ui-controls',
   'utils'
 ]
@@ -39,10 +40,12 @@ module.exports = (_, {mode = 'development'}) => {
   entry: path.join(__dirname, entryPoint),
   resolve: {
     descriptionFiles,
+    extensions: ['.js', '.jsx'],
     alias: {
       '@heswell/data': path.resolve('./node_modules/@heswell/data'),
       '@heswell/ingrid': path.resolve('./node_modules/@heswell/ingrid'),
       '@heswell/inlay': path.resolve('./node_modules/@heswell/inlay'),
+      '@heswell/inlay-extras': path.resolve('./node_modules/@heswell/inlay-extras'),
       '@heswell/ui-controls': path.resolve('./node_modules/@heswell/ui-controls'),
       '@heswell/utils': path.resolve('./node_modules/@heswell/utils'),
       'classnames': path.resolve('../../node_modules/classnames'),

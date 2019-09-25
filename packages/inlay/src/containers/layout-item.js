@@ -1,22 +1,22 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import { PopupService } from '@heswell/ui-controls';
-import ComponentHeader from '../component/component-header';
+import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { remove as removeFromLayout } from '../redux/actions';
 import {
     layout as applyLayout,
     layoutStyleDiff
 } from '../model/index';
-import {getLayoutModel} from '../util/component-utils';
+import {getLayoutModel} from '../model/layoutModel';
 
 import './layout-item.css';
 
-const DEFAULT_HEADER_SPEC = {
-    height: 32,
-    menu: true
-}
+// fixed style values
+const position = 'absolute';
+const border = 0;
+const padding = 0;
+const margin = 0;
 
 export default class LayoutItem extends React.Component {
 
@@ -34,56 +34,38 @@ export default class LayoutItem extends React.Component {
     render() {
 
         const {
-            children,
+            children: component,
             title = '',
             state,
             dragging,
             header: _,
             ...props } = this.props;
 
-        const {layoutModel} = this.state;
-        const [{layout: childLayout}] = layoutModel.children;
+        const {
+            header,
+            style: {backgroundColor, boxShadow}, 
+            layout,
+            children: [
+                {layout: {top,left,width,height}}
+            ]
+        } = this.state.layoutModel;
 
-        var { $path, layout } = layoutModel;
-        var isSelected = this.props.isSelected;
-
-        var className = cx(
+        const className = cx(
             'LayoutItem', {
                 'minimized': state === 1,
                 'maximized': state === 2,
-                'active': isSelected,
+                'active': this.props.isSelected,
                 'dragging': dragging
             }
         );
 
-        const header = !layoutModel.header
-            ? false
-            : layoutModel.header === true
-                ? DEFAULT_HEADER_SPEC
-                : { ...DEFAULT_HEADER_SPEC, ...layoutModel.header };
-
-        var headerHeight = header ? header.height : 0;
-
-        const style = {
-            backgroundColor: layoutModel.style.backgroundColor,
-            boxShadow: layoutModel.style.boxShadow
-        }
-
-        const componentStyle = {
-            // backgroundColor: props.style.backgroundColor,
-            position: 'absolute',
-            top: headerHeight,
-            border: 0,
-            padding: 0,
-            margin: 0,
-            // ...childStyle,
-            ...childLayout
-        };
+        const style = { position, border, padding, margin, top, left, width, height };
 
         return (
-            <div id={$path} className={className} style={{ position: 'absolute', ...style, ...layout }} ref={this.el}>
+            <div className={className} ref={this.el}
+                style={{ position, backgroundColor, boxShadow, ...layout }} >
                 {header &&
-                    <ComponentHeader ref='header'
+                    <ComponentHeader
                         title={`${title}`}
                         style={{ height: header.height }}
                         menu={header.menu}
@@ -92,91 +74,27 @@ export default class LayoutItem extends React.Component {
                         state={state} />
                 }
 
-                {children.type === 'div'
-                    ? React.cloneElement(children, {
-                        style: {...componentStyle, ...childLayout}
-                    })
+                {component.type === 'div'
+                    ? React.cloneElement(component, { style })
 
-                    : React.cloneElement(children, {
+                    : React.cloneElement(component, {
                         ...props,
-                        style: componentStyle, // we may need to merge style attributes from props
-                        width: childLayout.width,
-                        height: childLayout.height,
-                        onLayout: this.handleLayout
+                        style, // we may need to selectively merge style attributes from props
+                        width, // are not the values in style enough ?
+                        height,
+                        onLayout: this.handleLayout // which component supports this ?
                     })
                 }
             </div>
         );
     }
 
-    componentDidMount() {
-
-        const self = this;
-        if (this.context && this.context.store) {
-            const { store } = this.context;
-            //TODO sort out this mess
-            // be careful the context of store change notification is not 'this'
-            this.unsubscribe = store.subscribe(() => {
-                const myState = self.getState();
-                if (myState && myState !== self.state.c) {
-                    // console.log(`LayoutItem receives store change notification - ITS FOR ME and it has changed 
-                    // ${JSON.stringify(myState)}
-                    //${JSON.stringify(self.state.c)}`);
-                    self.setState({ c: myState });
-                }
-
-                // else if (myState && myState === self.state.c){
-                // console.log(`LayoutItem receives store change notification - it's for me BUT it hasn't changed`);
-                // }
-                // else {
-                // console.log(`LayoutItem receives store change notification - it's Not for me :-(`);
-                // }
-            });
-
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.unsubscribe) {
-            this.unsubscribe();
-            this.unsubscribe = null;
-        }
-    }
-
     componentWillReceiveProps(nextProps) {
 
-        const { layoutModel, style } = nextProps;
-        // look out for a style change that will require a layout, we will reset layout in state and call
-        // onLayout prop to pass this up chain of command
+        const { layoutModel } = nextProps;
 
-        if (style && style.flexGrow !== this.props.style.flexGrow) {
-            var fixed = style.flexGrow === 0;
-            this.setState({
-                fixed,
-                header: { title: this.props.title, fixed }
-            });
-        }
         if (layoutModel && layoutModel !== this.state.layoutModel) {
             this.setState({ layoutModel });
-        } else if (layoutStyleDiff(this.props.style, style)) {
-            // TODO test this code
-            const {$path, layout} = this.state.layoutModel;
-            const {marginTop=0,marginRight=0,marginBottom=0,marginLeft=0} = this.props.style;
-            const {top, left,width, height} = layout;
-            this.setState({
-                layoutModel: applyLayout(
-                    {
-                        ...this.state.layoutModel,
-                        style
-                    },
-                    { top, left, width: width + marginLeft + marginRight, height: height + marginTop + marginBottom },
-                    $path,
-                    true // FORCE_LAYOUT
-                )
-            }, () => {
-                this.props.onLayout('replace', { model: this.state.layoutModel });
-            });
-
         }
     }
 

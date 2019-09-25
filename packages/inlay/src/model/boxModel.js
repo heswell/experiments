@@ -168,7 +168,7 @@ function addMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
 function addClientMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
-    var { $path, header } = model;
+    var { $id, $path, header } = model;
     var { top, left, width, height } = model.layout;
 
     left = x + left - preX;
@@ -191,7 +191,7 @@ function addClientMeasurements(model, measurements, x, y, preX, posX, preY, posY
             console.log(`measuring a tabbedContainer ${$path}`);
 
             const start = performance.now();
-            const tabMeasurements = measureTabs($path);
+            const tabMeasurements = measureTabs($id);
             const end = performance.now();
             console.log(`took ${end - start}ms to measure tabs`);
             measurements[$path].tabs = tabMeasurements;
@@ -300,20 +300,13 @@ function smallestBoxContainingPoint(layout, measurements, x, y) {
 
 function containsPoint(rect, x, y) {
 
-    //	if (component.props.isHidden || component.props.dragging === true) return false;
     if (rect) {
         return x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
     }
 }
 
-// function byPosition(c1, c2) {
-//     if (c1.top < c2.top || c1.left < c2.left) return -1;
-//     if (c1.top > c2.top || c1.left > c2.left) return 1;
-//     return 0;
-// }
-
 function measureTabs(id) {
-    // Note the :scope selector is not supported on IE 
+    // Note the :scope selector is not supported on IE
     return Array.from(document.getElementById(id).querySelectorAll(`:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab`))
         .map(tab => tab.getBoundingClientRect())
         .map(({ left, right }) => ({ left, right }))

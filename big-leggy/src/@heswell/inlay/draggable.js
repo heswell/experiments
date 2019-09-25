@@ -44,31 +44,6 @@ function getDraggable(component) {
 
 export var Draggable = {
 
-    // bound to target components when called
-    componentDidMount() {
-
-        // // can we always rely on dragContainer being available at this point ?
-        // // Might we have to wait for layout ?
-        // if (this.props.dragContainer === true){
-        //     DragContainer.register(this);
-        // }
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            this.mouseDownHandler = Draggable.handleMousedown.bind(this);
-            ReactDOM.findDOMNode(draggable).addEventListener('mousedown', this.mouseDownHandler, false);
-        }
-    },
-
-    componentWillUnmount() {
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            ReactDOM.findDOMNode(draggable).removeEventListener('mousedown', this.mouseDownHandler, false);
-            this.mouseDownHandler = null;
-        }
-    },
-
     // bound to Draggable Component
     handleMousedown(e, dragStartCallback) {
 

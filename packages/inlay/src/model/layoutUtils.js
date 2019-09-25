@@ -19,6 +19,8 @@ const LAYOUT = 'layout';
 const FLEXBOX = 'FlexBox';
 const SPLITTER = 'Splitter';
 
+export const DEFAULT_HEADER_HEIGHT = 26;
+
 const BORDER_STYLES = {
     border: true,
     borderWidth: true,
@@ -67,11 +69,24 @@ export function stripLayout(model){
     }
 }
 export function computeLayout(model, width, height, top=0, left=0, path){
+    // transform css (padding, borders etc) to canonical form
+    // insert splitters 
     const tree = createTree(model, path || model.$path);
+    
+    // attach yoga node to each tree model node, apply css via yoga api calls on nodes
+    // the top-level node contains a parallel hierarchy
     const layoutModel = createYogaTree(tree);
-    layoutModel.node.calculateLayout(width, height, yoga.DIRECTION_LTR);
+
+    // call calculate on top-level yoga node
+    layoutModel.yogaNode.calculateLayout(width, height, yoga.DIRECTION_LTR);
+
+     const rootYogaNode = layoutModel.yogaNode;    
+    // for each model node, set layout by calling getComputedLAyout on attached node
+    // TODO can we remove the node here ?
     setLayout(layoutModel)
-    layoutModel.node.freeRecursive();
+
+    // free references
+    rootYogaNode.freeRecursive();
 
     if (left !== 0){
         layoutModel.layout.left += left
@@ -87,6 +102,7 @@ function createTree(model, path='0'){
         ...model,
         $path: path,
         // TODO normalize style
+        // TODO do not override the existing styles
         style: normalizeLayoutStyles(model.style),
         // style: expandStyle(model.style),
         children: expandChildren(model, path)
@@ -206,6 +222,7 @@ function normalizeBorderStyle(style=NO_STYLE){
             if (typeof border === 'string' && (match = BORDER_REX.exec(border))){
                 // what if both border and borderWidth are specified ?
                 ([,borderWidth,borderColor] = match);
+                borderWidth = parseInt(borderWidth,10);                
             }
 
             if (borderWidth){
@@ -239,7 +256,10 @@ function normalizeBorderStyle(style=NO_STYLE){
     }
 }
 
-const DEFAULT_HEADER = {height: 32, style: {backgroundColor: 'brown'}}
+const DEFAULT_HEADER = {
+    height: DEFAULT_HEADER_HEIGHT, 
+    style: {backgroundColor: 'brown'}
+}
 // we may mutate the tree in here
 function createYogaTree(model, parent, idx){
 
@@ -353,10 +373,10 @@ function createYogaTree(model, parent, idx){
 
     children.forEach((child,i) => {
         const expandedChild = createYogaTree(child, model, i);
-        node.insertChild(expandedChild.node,i);
+        node.insertChild(expandedChild.yogaNode,i);
     })
 
-    model.node = node
+    model.yogaNode = node
     return model;
 }
 
@@ -409,8 +429,17 @@ export function elementsFromLayout(model){
 }
 
 export function setLayout(model){
-    model.layout = model.node.getComputedLayout();
-    model.children && model.children.forEach(child => setLayout(child))
+    // we should call this outputStyle or layoutStyle?
+    const {right, bottom, ...layout} = model.yogaNode.getComputedLayout();
+    const {borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth} = model.style;
+    layout.paddingTop = borderTopWidth || undefined; 
+    layout.paddingRight = borderRightWidth || undefined; 
+    layout.paddingBottom =borderBottomWidth || undefined; 
+    layout.paddingLeft = borderLeftWidth || undefined; 
+
+    model.layout = layout;
+    model.children && model.children.forEach(child => setLayout(child));
+    model.yogaNode = null;
 }
 
 const CSS_MEASURE_SETTERS = {

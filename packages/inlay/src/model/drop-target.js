@@ -118,16 +118,19 @@ export function identifyDropTarget(x, y, model, measurements){
     var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
     
     if (component){
-        // console.log(`%cidentifyDropTarget target path ${component.$path}
-        //     position: ${JSON.stringify(component.$position)}
-        //     measurements : ${JSON.stringify(measurements[component.$path])}
-        //     `,'color:cornflowerblue;font-weight:bold;');
+
         const clientRect = measurements[component.$path];
         const pos = pointPositionWithinRect(x,y,clientRect);
+
+        // console.log(`%cidentifyDropTarget target path ${component.$path}
+        //     position: ${JSON.stringify(pos)}
+        //     measurements : ${JSON.stringify(measurements[component.$path])}
+        //     `,'color:cornflowerblue;font-weight:bold;');
+
         const nextDropTarget = getNextDropTarget(model, component, pos, measurements, x, y);
         dropTarget = new DropTarget({component, pos, clientRect, nextDropTarget}).activate()
     
-        // onsole.log('%c'+printDropTarget(dropTarget),'color:green');
+        // console.log('%c'+printDropTarget(dropTarget),'color:green');
 
     }
 
@@ -156,11 +159,10 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y){
 
             let nextDropTarget = false;
 
-            // experiment...
-            const clientRect = measurements[container.$path];
-            let containerPos = pointPositionWithinRect(x,y,clientRect);
-
             while (container && positionedAtOuterContainerEdge(container, pos, component, measurements)){               
+                const clientRect = measurements[container.$path];
+                let containerPos = pointPositionWithinRect(x,y,clientRect);
+    
                 //onsole.log(`${component.type} positioned at outer edge of container ${container.type}`);
                 // if its a VBox and we're close to left or right ...
                 if ((isVBox(container) || isTabbedContainer(container)) && (pos.closeToTheEdge & eastwest)){
@@ -222,27 +224,29 @@ function isHBox({type, style:{flexDirection}}){
 }
 
 
-// const w = '  ';
+const w = '  ';
 
-// function printDropTarget(dropTarget, s=w){
+function printDropTarget(dropTarget, s=w){
+    if (!dropTarget){
+        return
+    }
+	const {pos} = dropTarget;
+	const ctte = pos.closeToTheEdge ? `=>${printClose(pos.closeToTheEdge)}<=` : '';
+    const size = pos.width ? ` width:${pos.width} ` : pos.height ? ` height:${pos.height} ` : '';
 
-// 	const {pos} = dropTarget;
-// 	const ctte = pos.closeToTheEdge ? `=>${printClose(pos.closeToTheEdge)}<=` : '';
-//     const size = pos.width ? ` width:${pos.width} ` : pos.height ? ` height:${pos.height} ` : '';
+    var str = `<${dropTarget.component.type}> ${ctte} ${size} $${dropTarget.component.$path}`;
+    if (dropTarget.nextDropTarget != null){
+        str += `\n${s} ${printDropTarget(dropTarget.nextDropTarget,s+w)}` 
+    }
+    return str;
+}
 
-//     var str = `<${dropTarget.component.type}> ${ctte} ${size} $${dropTarget.component.$path}`;
-//     if (dropTarget.nextDropTarget != null){
-//         str += `\n${s} ${printDropTarget(dropTarget.nextDropTarget,s+w)}` 
-//     }
-//     return str;
-// }
-
-// function printClose(val){
-// 	var s = '';
-// 	if (val & 1) s+= 'N';
-// 	if (val & 4) s+= 'S';
-// 	if (val & 2) s+= 'E';
-// 	if (val & 8) s += 'W';
-// 	return s;
-// }
+function printClose(val){
+	var s = '';
+	if (val & 1) s+= 'N';
+	if (val & 4) s+= 'S';
+	if (val & 2) s+= 'E';
+	if (val & 8) s += 'W';
+	return s;
+}
 

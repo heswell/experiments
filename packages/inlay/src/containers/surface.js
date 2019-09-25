@@ -102,19 +102,23 @@ export default class Surface extends DynamicContainer {
     }
 
     // _dragCallback from draggable, but bound to original handleLayout 'options' in container
-    handleDragStart({model, position, instructions=EMPTY_OBJECT}, e){
-        var {top,left} = position;
+    handleDragStart({model, position: dragRect, instructions=EMPTY_OBJECT}, e){
+        var {top,left} = dragRect;
 
         // Can we find a better way than these clumsy instructions
+
 
         const layoutModel = !instructions.DoNotRemove
             ? handleLayout(this.state.layoutModel,'remove', {targetNode: model})
             : this.state.layoutModel;
 
-        const {draggableWidth: width, draggableHeight: height, ...dragTransform} = Draggable.initDrag(e, layoutModel, model.$path, position, {
+        const dragTransform = Draggable.initDrag(e, layoutModel, model.$path, dragRect, {
             drag: this.handleDrag,
             drop: this.handleDrop
         });
+
+        const width = dragRect.right - dragRect.left;
+        const height = dragRect.bottom - dragRect.top;
 
         var {$path, layout: modelLayout, style, dragAsIcon, ...rest} = model;
         const layout = modelLayout
@@ -148,7 +152,7 @@ export default class Surface extends DynamicContainer {
                 }]
             };
 
-            // don't set dragging yet, it will suppress the final render of app with draggedComonent
+        // don't set dragging yet, it will suppress the final render of app with draggedComonent
         // removed.
         this.setState({
             dragX: left,

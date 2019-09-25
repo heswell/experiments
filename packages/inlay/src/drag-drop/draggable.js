@@ -29,18 +29,6 @@ export class DragContainer {
     }
 }
 
-function getDraggable(component) {
-    var target;
-
-    var header = component.refs.header || component.tabstrip;
-    if (header && header.props.draggable) {
-        target = header;
-    } else if (component.props.draggable) {
-        target = component;
-    }
-    return target;
-}
-
 function getDragContainer(layoutModel, path) {
 
     var pathToContainer = '';
@@ -69,31 +57,6 @@ function getDragContainer(layoutModel, path) {
 }
 
 export const Draggable = {
-
-    // bound to target components when called
-    componentDidMount() {
-
-        // // can we always rely on dragContainer being available at this point ?
-        // // Might we have to wait for layout ?
-        // if (this.props.dragContainer === true){
-        //     DragContainer.register(this);
-        // }
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            this.mouseDownHandler = Draggable.handleMousedown.bind(this);
-            ReactDOM.findDOMNode(draggable).addEventListener('mousedown', this.mouseDownHandler, false);
-        }
-    },
-
-    componentWillUnmount() {
-
-        var draggable = getDraggable(this);
-        if (draggable) {
-            ReactDOM.findDOMNode(draggable).removeEventListener('mousedown', this.mouseDownHandler, false);
-            this.mouseDownHandler = null;
-        }
-    },
 
     handleMousedown(e, dragStartCallback) {
         _dragCallback = dragStartCallback;
@@ -180,8 +143,8 @@ function initDrag(evt, layoutModel, path, dragRect) {
         _dropTargetRenderer.prepare(dragZone);
 
         return {
-            draggableWidth: dragRect.right - dragRect.left,
-            draggableHeight: dragRect.bottom - dragRect.top,
+            // draggableWidth: dragRect.right - dragRect.left,
+            // draggableHeight: dragRect.bottom - dragRect.top,
             transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
             transformOrigin: pctX + "% " + pctY + "%"
         };
@@ -230,39 +193,8 @@ function dragMousemoveHandler(evt) {
     }
 
     if (dropTarget) {
-
-        const sameDropTarget = currentDropTarget && 
-            currentDropTarget.component === dropTarget.component &&
-            currentDropTarget.pos.position === dropTarget.pos.position &&
-            currentDropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge;
-
         _dropTargetRenderer.draw(dropTarget, x, y);
-
         _dropTarget = dropTarget;
-    
-
-        // if (currentDropTarget && 
-        //     currentDropTarget.component === dropTarget.component &&
-        //     currentDropTarget.pos.position === dropTarget.pos.position &&
-        //     // experiment...
-        //     currentDropTarget.pos.closeToTheEdge === dropTarget.pos.closeToTheEdge){
-        //     // no change from last turn, don't assign to _dropTarget, we might lose settings
-
-        //     //onsole.log('%cSame Drop Target/Position','color:green');
-
-        //     // BUT, we are going to want to reposition the dropmenu ... 
-
-        // }
-        // else {
-
-        //     // redraw position marker
-        //     //onsole.log('%cNew Drop Target/Position','color:red;font-weight:bold;');
-        //     _dropTargetCanvas.draw(dropTarget, _measurements);
-
-        //     _dropTarget = dropTarget;
-
-        // }
-
     }
 }
 
@@ -273,7 +205,7 @@ function dragMouseupHandler(evt) {
 function onDragEnd() {
 
     if (_dropTarget) {
-        // why wouldn't the active dropTarget be the hover target
+        // why wouldn't the active dropTarget be the hover target - IT ISNT
         const dropTarget = _dropTargetRenderer.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);
 
         // looking into eliminating this call altogether. We don't need it if we set the dragging index via

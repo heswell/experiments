@@ -1,6 +1,6 @@
 import React from 'react';
 import {registerClass} from '../componentRegistry';
-import {getLayoutModel} from '../util/component-utils';
+import {getLayoutModel} from '../model/layoutModel';
 import LayoutItem from './layout-item';
 import {Draggable} from '../drag-drop/draggable';
 import {layout as applyLayout, handleLayout,followPath} from '../model/index';

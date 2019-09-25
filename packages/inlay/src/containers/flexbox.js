@@ -172,7 +172,7 @@ export default class FlexBox extends Container {
                 evt: e,
                 position: ReactDOM.findDOMNode(this).getBoundingClientRect()
             });
-        } else {
+        } else if (this.props.onLayout){
             this.props.onLayout('drag-start', {
                 model: this.state.layoutModel,
                 evt: e,

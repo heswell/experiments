@@ -8,6 +8,14 @@ import Layout5 from './sample-layouts/layout5.jsx';
 import Layout6 from './sample-layouts/layout6.jsx';
 import Layout7 from './sample-layouts/layout7.jsx';
 import Layout8 from './sample-layouts/layout8.jsx';
+import Layout9 from './sample-layouts/layout9.jsx';
+import Layout10 from './sample-layouts/layout10.jsx';
+import Layout11 from './sample-layouts/layout11.jsx';
+import Layout12 from './sample-layouts/layout12.jsx';
+import Layout13 from './sample-layouts/layout13.jsx';
+import Layout14 from './sample-layouts/layout14.jsx';
+import Layout15 from './sample-layouts/layout15.jsx';
+import Layout16 from './sample-layouts/layout16.jsx';
 
 const SampleLayout = ({ sample, width, height }) => {
 
@@ -20,6 +28,14 @@ const SampleLayout = ({ sample, width, height }) => {
     case 6: return Layout6(width, height);  /* Complex nested layout */
     case 7: return Layout7(width, height);  /* DynamicContainer (static content), within FlexBox */
     case 8: return Layout8(width, height);  /* DynamicContainer (JSON content), within FlexBox */
+    case 9: return Layout9(width, height);  /* Singleton FlexBox */
+    case 10: return Layout10(width, height);  /* FlexBox, with Tree & Configutator */
+    case 11: return Layout11(width, height);  /* Twin FlexBox */
+    case 12: return Layout12(width, height);  /* Twin FlexBox, with header */
+    case 13: return Layout13(width, height);  /* Twin FlexBox Application */
+    case 14: return Layout14(width, height);  /* Quad FlexBox, children can be moved, remopved */
+    case 15: return Layout15(width, height);  /* Quad FlexBox, Flexbox shuffle */
+    case 16: return Layout16(width, height);  /* Nested FlexBox */
     default: return Layout1(width, height);
   }
 

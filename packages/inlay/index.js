@@ -7,4 +7,7 @@ export {default as Surface} from './src/containers/surface';
 export {default as DragSurface} from './src/containers/dragSurface';
 export {default as LayoutItem} from './src/containers/layout-item';
 export {default as Component} from './src/component/component';
+export * from './src/model/pathUtils';
+export * from './src/model/layoutModel';
+export * from './src/model/layoutUtils';
 export {registerClass} from './src/componentRegistry';

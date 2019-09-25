@@ -1,0 +1,32 @@
+{
+  "name": "@heswell/inlay-extras",
+  "version": "1.0.0",
+  "description": "Heswell Layout Components",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production",
+    "test": "jest"
+  },
+  "author": "heswell",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-jest": "^24.9.0",
+    "babel-plugin-transform-jsx": "^2.0.0",
+    "jest": "^24.9.0",
+    "react": "^16.9.0",
+    "rollup": "^1.18.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-postcss": "^2.0.3"
+  },
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "react": "^16.9.0"
+  }
+}

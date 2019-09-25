@@ -1,9 +1,69 @@
-
+import React from 'react';
 import {uuid} from '@heswell/utils';
 import { followPath, followPathToParent, nextStep } from './pathUtils';
-import { computeLayout as computeLayoutYoga } from './layoutUtils';
+import { computeLayout as computeLayoutYoga, DEFAULT_HEADER_HEIGHT } from './layoutUtils';
+import { typeOf, isLayout } from '../util/component-utils';
 
 const EMPTY_OBJECT = {};
+
+const DEFAULT_HEADER_SPEC = {
+    height: DEFAULT_HEADER_HEIGHT,
+    menu: true
+}
+
+//TODO components should be able to register props here
+const LayoutProps = {
+	resizeable: true,
+	header: DEFAULT_HEADER_SPEC,
+	title: true,
+	active: true,
+	tabstripHeight: true,
+	dragStyle: true // still used ?
+}
+
+function layoutProps({props}){
+    const results = {};
+    let layoutProp;
+	Object.entries(props).forEach(([key, value]) => {
+			if (layoutProp = LayoutProps[key]){
+                if (layoutProp === true){
+                    results[key] = value;
+                } else if (value === true){
+                    results[key] = {...layoutProp};
+                } else {
+                    results[key] = {
+                        ...layoutProp,
+                        ...value
+                    };
+                }
+			}
+	})
+	return results;
+}
+
+export const getLayoutModel = (component) => ({
+	type: typeOf(component),
+	$id: component.props.id || uuid(),
+	...layoutProps(component),
+    style: component.props.style,
+    layout: null,
+    yogaNode: null,
+	children: isLayout(component) ? getLayoutModelChildren(component) : []
+})
+
+function getLayoutModelChildren(component){
+	var {children, contentModel=null} = component.props;
+	// TODO don't recurse into children of non-layout
+	if (React.isValidElement(children)){
+			return [getLayoutModel(children)];
+	} else if (Array.isArray(children)){
+			return children.filter(child => child).map(child => getLayoutModel(child));
+	} else if (contentModel !== null){
+			return [contentModel];
+	} else {
+			return []; // is this safe ?
+	}
+}
 
 export function containerOf(layout, target) {
 
@@ -244,20 +304,23 @@ function insert(model, source, into, before, after, size) {
         if (type === 'Surface' && idx === -1) {
             children = children.concat(source);
         } else {
-
+            const hasSize = typeof size === 'number'; 
             children = children.reduce((arr, child, i/*, all*/) => {
                 // idx of -1 means we just insert into end 
                 if (idx === i) {
                     if (flexBox) {
-                        var size = (child.layout[dim] - 6) / 2;
-                        child = {
-                            ...child,
-                            layout: {...child.layout, [dim]: size}};
-                        const flex = source.style.flex === undefined ? 1 : source.style.flex;
+                        if (!hasSize){
+                            size = (child.layout[dim] - 6) / 2;
+                            child = {
+                                ...child,
+                                style: {...child.style, position: null, flex: undefined, [dim]: size},
+                                layout: {[dim]: size}
+                            };
+                        }
                         source = {
                             ...source,
-                            layout: {...source.layout, [dim]: size},
-                            style: {...source.style, flex, position: null, transform: null, transformOrigin: null}
+                            layout: hasSize ? null : {[dim]: size},
+                            style: {...source.style, position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: size}
                         };
                     } else {
                         source = {...source, style: {...source.style, position: null, transform: null, transformOrigin: null}};
@@ -297,9 +360,14 @@ function wrap(model, source, target, pos) {
         var active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
         var $path = `${model.$path}.${idx}`;
         target = children[idx];
-        var style = { position: null, transform: null, transformOrigin: null, flex: 1 };
-        var size = (target.layout[dim] - 6) / 2;
-        var childLayout = { [dim]: size };
+        const hasSize = typeof pos[dim] === 'number' 
+
+        var size = hasSize
+            ? pos[dim]
+            : (target.layout[dim] - 6) / 2;
+
+        var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
+
         var wrapperStyle = { flexDirection };
         if (target.style.flex) {
             wrapperStyle.flex = target.style.flex;
@@ -315,10 +383,10 @@ function wrap(model, source, target, pos) {
             layout: target.layout,
             resizeable: target.resizeable,
             children: (pos.position.SouthOrEast || pos.position.Header)
-                ? [{...target, $path: `${$path}.0`, style: {...target.style, ...style}, layout: childLayout},
-                    {...source, $path: `${$path}.1`, style: {...source.style, ...style}, layout: childLayout}]
-                : [{...source, $path: `${$path}.0`, style: {...source.style, ...style}, layout: childLayout},
-                    {...target, $path: `${$path}.1`, style: {...target.style, ...style}, layout: childLayout}]
+                ? [{...target, $path: `${$path}.0`, style: {...target.style, flex: 1}, layout: null, resizeable: true},
+                    {...source, $path: `${$path}.1`, style: {...source.style, ...style}, layout: null, resizeable: true}]
+                : [{...source, $path: `${$path}.0`, style: {...source.style, ...style}, layout: null, resizeable: true},
+                    {...target, $path: `${$path}.1`, style: {...target.style, flex: 1}, layout: null, resizeable: true}]
         },
         target.layout,
         $path,

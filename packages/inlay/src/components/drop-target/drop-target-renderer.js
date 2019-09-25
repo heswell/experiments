@@ -41,6 +41,7 @@ export default class DropTargetCanvas {
 
     clear() {
         // don't do this on body
+        _hoverDropTarget = null;
         clearShiftedTab();
         document.body.classList.remove("drawing");
         PopupService.hidePopup();
@@ -139,7 +140,7 @@ function moveExistingTabs(dropTarget){
     _currentTabIndex = dropTarget.pos.tab.index;
 
     if (_currentTabIndex > -1 && _currentTabIndex < tabCount) {
-        const $id = dropTarget.component.$path;
+        const $id = dropTarget.component.$id;
         const selector = `:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab:nth-child(${_currentTabIndex + 1})`;
         const tabEl = document.getElementById($id).querySelector(selector);
         if (tabEl && tabEl !== _shiftedTab) {
