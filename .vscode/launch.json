@@ -8,8 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "Viewserver",
-      "program": "${workspaceFolder}/big-leggy/dist/viewserver.js",
-      "cwd": "${workspaceRoot}/big-leggy"
+      "program": "${workspaceFolder}/scripts/run-viewserver.js",
+      "cwd": "${workspaceRoot}"
     },
     {
       "type": "node",

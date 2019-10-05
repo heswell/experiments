@@ -2095,6 +2095,7 @@ class Table extends EventEmitter {
             this.columnMap = buildColumnMap(this.columns);
         }
         this.status = 'ready';
+        console.log(`>>>>> Table ${this.name} is ready`)
         this.emit('ready');
         if (this.updateConfig && this.updateConfig.applyUpdates !== false){
             setTimeout(() => {

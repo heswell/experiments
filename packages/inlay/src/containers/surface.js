@@ -106,8 +106,6 @@ export default class Surface extends DynamicContainer {
         var {top,left} = dragRect;
 
         // Can we find a better way than these clumsy instructions
-
-
         const layoutModel = !instructions.DoNotRemove
             ? handleLayout(this.state.layoutModel,'remove', {targetNode: model})
             : this.state.layoutModel;
@@ -122,7 +120,7 @@ export default class Surface extends DynamicContainer {
 
         var {$path, layout: modelLayout, style, dragAsIcon, ...rest} = model;
         const layout = modelLayout
-            ? {width, height, ...modelLayout, top, left}
+            ? {width, height, ...modelLayout, top, left, ...(!instructions.DoNotTransform && dragTransform)}
             : {top, left, width, height}
 
 
@@ -135,21 +133,12 @@ export default class Surface extends DynamicContainer {
             })
             : undefined;
 
-        // what if draggedComponent is a Layout ?    
         var draggedComponent = dragAsIcon
             ? {$id: uuid(), $path, layout, style, ...rest}
             : {
                 ...rest,
-                style: {
-                    ...style,
-                    position: 'absolute',
-                    ...(!instructions.DoNotTransform && dragTransform),
-                    visibility: 'visible'
-                },
-                layout,
-                children: [{
-                    type: 'layout', style: {}, layout: {...layout, top: 0, left: 0}
-                }]
+                style,
+                layout
             };
 
         // don't set dragging yet, it will suppress the final render of app with draggedComonent

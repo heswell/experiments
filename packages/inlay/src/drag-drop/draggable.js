@@ -143,8 +143,6 @@ function initDrag(evt, layoutModel, path, dragRect) {
         _dropTargetRenderer.prepare(dragZone);
 
         return {
-            // draggableWidth: dragRect.right - dragRect.left,
-            // draggableHeight: dragRect.bottom - dragRect.top,
             transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
             transformOrigin: pctX + "% " + pctY + "%"
         };
@@ -203,7 +201,6 @@ function dragMouseupHandler(evt) {
 }
 
 function onDragEnd() {
-
     if (_dropTarget) {
         // why wouldn't the active dropTarget be the hover target - IT ISNT
         const dropTarget = _dropTargetRenderer.hoverDropTarget || DropTarget.getActiveDropTarget(_dropTarget);

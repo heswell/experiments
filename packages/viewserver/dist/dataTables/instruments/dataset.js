@@ -1,4 +1,4 @@
-export default [
+module.exports= [
       {"Symbol":"TFSC", 	 "Name": "1347 Capital Corp.", 	 "Price": 9.4345671, 	 "MarketCap": 56090000, 	 "IPO":"2014", 		 "Sector":"Finance", 	 "Industry":"Business Services"},
       {"Symbol":"PIH", 	       "Name": "1347 Property Insurance Holdings, Inc.", 	 "Price": 7.6400987, 	 "MarketCap": 48580000, 	 "IPO":"2014", 		 "Sector":"Finance", 	 "Industry":"Property-Casualty Insurers"},
       {"Symbol":"FLWS", 	 "Name": "1-800 FLOWERS.COM, Inc.", 	 "Price": 10.3300001, 	 "MarketCap": 668420000, 	 "IPO":"1999", 		 "Sector":"Consumer Services", 	 "Industry":"Other Specialty Stores"},

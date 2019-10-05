@@ -36,3 +36,13 @@
 .drawing #drag-canvas {
 	visibility:visible;
 }
+
+path.drop-target {
+	stroke: blue;
+	stroke-width: 4px;
+	fill: transparent;
+}
+
+path.drop-target.centre {
+	stroke: red;
+}

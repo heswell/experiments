@@ -55,210 +55,6 @@ const createLogger = (source, labelColor=plain, msgColor=plain) => ({
   warn: (msg) => console.warn(`[${source}] ${msg}`)
 });
 
-class Connection {
-
-  static connect(connectionString, callback) {
-    return new Promise(function (resolve) {
-        const connection = new Connection(connectionString, msg => {
-          const {type} = msg;
-          if (type === 'connection-status'){
-            resolve(connection);
-          } else if (type === 'HB'); else {
-            callback(msg);
-          }
-        });
-    });
-  }
-
-  constructor(connectionString, callback) {
-      this._callback = callback;
-      const ws = new WebSocket('ws://' + connectionString);
-      ws.onopen = () => {
-        console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
-          callback({type : 'connection-status',  status: 'connected' });
-      };
-
-      ws.onmessage = evt => {
-        const message = JSON.parse(evt.data);
-        // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
-        if (Array.isArray(message)){
-          message.map(callback);
-        } else {
-          callback(message);
-        }
-      };
-
-      ws.onerror = evt => websocketError(callback);
-      ws.onclose = evt => websocketClosed(callback);
-      this.ws = ws;
-  }
-
-  send(message) {
-      // console.log(`%c>>>  (WebSocket) ${JSON.stringify(message)} bufferedAmount ${this.ws.bufferedAmount}`,'color:yellow;background-color:blue;font-weight:bold;');
-      this.ws.send(JSON.stringify(message));
-  }
-
-}
-
-function websocketError(callback) {
-  callback({type:'websocket.websocketError'});
-}
-
-function websocketClosed(callback) {
-  callback({type:'websocket.websocketClosed'});
-}
-
-const ServerApiMessageTypes = {
-  addSubscription: 'AddSubscription',
-  setColumns: 'setColumns'
-};
-const FILTER_DATA = 'filterData';
-const SUBSCRIBED = 'Subscribed';
-const SET_VIEWPORT_RANGE = 'setViewRange';
-const SEARCH_DATA = 'searchData';
-
-const logger = createLogger('RemoteServerProxy', logColor.blue);
-
-function partition(array, test, pass = [], fail = []) {
-
-    for (let i = 0, len = array.length; i < len; i++) {
-        (test(array[i], i) ? pass : fail).push(array[i]);
-    }
-
-    return [pass, fail];
-}
-
-// we use one ServerProxy per client (i.e per browser instance)
-// This is created as a singleton in the (remote-data) view
-class ServerProxy {
-
-    constructor(clientCallback) {
-        this.connection = null;
-        this.connectionStatus = 'not-connected';
-
-        this.queuedRequests = [];
-        this.viewportStatus = {};
-        this.pendingSubscriptionRequests = {};
-        this.postMessageToClient = clientCallback;
-
-    }
-
-    handleMessageFromClient(message) {
-        this.sendIfReady(message, this.viewportStatus[message.viewport] === 'subscribed');
-    }
-
-    sendIfReady(message, isReady) {
-        // TODO implement the message queuing in remote data view
-        if (isReady) {
-            this.sendMessageToServer(message);
-        } else {
-            this.queuedRequests.push(message);
-        }
-
-        return isReady;
-
-    }
-
-    // if we're going to support multiple connections, we need to save them against connectionIs
-    async connect({ connectionString, connectionId = 0 }) {
-
-        logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`);
-        this.connectionStatus = 'connecting';
-        this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
-        this.onReady(connectionId);
-    }
-
-    subscribe(message) {
-        const isReady = this.connectionStatus === 'ready';
-        const { viewport } = message;
-        this.pendingSubscriptionRequests[viewport] = message;
-        this.viewportStatus[viewport] = 'subscribing';
-        this.sendIfReady( message, isReady);
-    }
-
-    subscribed(/* server message */ message) {
-        const { viewport } = message;
-        if (this.pendingSubscriptionRequests[viewport]) {
-
-            const request = this.pendingSubscriptionRequests[viewport];
-            // const {table, columns, sort, filter, groupBy} = request;
-            let { range } = request;
-            logger.log(`<handleMessageFromServer> SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`);
-
-            this.pendingSubscriptionRequests[viewport] = undefined;
-            this.viewportStatus[viewport] = 'subscribed';
-
-            const byViewport = vp => item => item.viewport === vp;
-            const byMessageType = msg => msg.type === SET_VIEWPORT_RANGE;
-            const [messagesForThisViewport, messagesForOtherViewports] = partition(this.queuedRequests, byViewport(viewport));
-            const [rangeMessages, otherMessages] = partition(messagesForThisViewport, byMessageType);
-
-            this.queuedRequests = messagesForOtherViewports;
-            rangeMessages.forEach(msg => {
-
-                range = msg.range;
-
-            });
-
-            if (otherMessages.length) {
-                console.log(`we have ${otherMessages.length} messages still to process`);
-            }
-
-        }
-
-    }
-
-    onReady(connectionId) {
-        this.connectionStatus = 'ready';
-        // messages which have no dependency on previous subscription
-        logger.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan');
-
-        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === ServerApiMessageTypes.addSubscription;
-        const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);
-        // TODO roll setViewRange messages into subscribe messages
-        readyToSend.forEach(msg => this.sendMessageToServer(msg));
-        this.queuedRequests = remainingMessages;
-        this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
-    }
-
-    sendMessageToServer(message) {
-        const { clientId } = this.connection;
-        this.connection.send({ clientId, message });
-    }
-
-    handleMessageFromServer(message) {
-        const { type, viewport } = message;
-
-        switch (type) {
-
-            case SUBSCRIBED:
-                this.subscribed(message);
-                break;
-
-            case FILTER_DATA:
-            case SEARCH_DATA:
-                const { data: filterData } = message;
-                // const { rowset: data } = subscription.putData(type, filterData);
-
-                // if (data.length || filterData.size === 0) {
-                this.postMessageToClient({
-                    type,
-                    viewport,
-                    [type]: filterData
-                });
-                // }
-
-                break;
-
-            default:
-                this.postMessageToClient(message);
-
-        }
-
-    }
-
-}
-
 // This is given to client on subscription and acts as a conduit between client and server
 // client calls api methods directly, the view calls postMessageToClient when it receives
 // responses from server. 
@@ -282,13 +78,19 @@ class RemoteSubscription {
 }
 
 const { metaData } = columnUtils;
-const logger$1 = createLogger('RemoteDataView', logColor.blue);
+const logger = createLogger('RemoteDataView', logColor.blue);
+
+const AvailableProxies = {
+  Viewserver: 'viewserver', 
+  Vuu: 'vuu'
+};
 
 /*----------------------------------------------------------------
   Set up the Server Proxy
   ----------------------------------------------------------------*/
   // TODO isn't it more natural to pass messageFromTheServer to subscribe ?
-const serverProxy = new ServerProxy(messageFromTheServer);
+// const serverProxy = new ServerProxy(messageFromTheServer);
+let serverProxy;
 
 const postMessageToServer = async (message) => {
   serverProxy.handleMessageFromClient(message);
@@ -297,7 +99,7 @@ const postMessageToServer = async (message) => {
 function messageFromTheServer({ type: msgType$1, ...message }) {
   switch (msgType$1) {
     case msgType.connectionStatus:
-      logger$1.log(`<==   ${msgType$1}`);
+      logger.log(`<==   ${msgType$1}`);
       onConnected(message);
       break;
     case msgType.snapshot:
@@ -307,7 +109,7 @@ function messageFromTheServer({ type: msgType$1, ...message }) {
       subscriptions[message.viewport].postMessageToClient(message);
       break;
     default:
-      logger$1.warn(`does not yet handle ${msgType$1}`);
+      logger.warn(`does not yet handle ${msgType$1}`);
   }
 }
 
@@ -329,13 +131,13 @@ let pendingConnection = new Promise((resolve, reject) => {
 const getDefaultConnection = () => pendingConnection;
 
 
-/*----------------------------------------------------------------
+/*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
 class RemoteDataView  {
 
-  constructor({url, tableName}) {
-    connect(url);
+  constructor({url, tableName, server = AvailableProxies.Viewserver}) {
+    connect(url, server);
     this.columns = null;
     this.meta = null;
 
@@ -361,7 +163,7 @@ class RemoteDataView  {
     this.tableName = tableName;
     this.columns = columns;
     this.meta = metaData(columns);
-    logger$1.log(`range = ${JSON.stringify(range)}`);
+    logger.log(`range = ${JSON.stringify(range)}`);
 
     this.subscription = subscribe({
       ...options,
@@ -453,7 +255,7 @@ class RemoteDataView  {
   }
 
   subscribeToFilterData(column, range, callback) {
-    logger$1.log(`<subscribeToFilterData>`);
+    logger.log(`<subscribeToFilterData>`);
     this.filterDataCallback = callback;
     this.setFilterRange(range.lo, range.hi);
     if (this.filterDataMessage) {
@@ -464,7 +266,7 @@ class RemoteDataView  {
   }
 
   unsubscribeFromFilterData() {
-    logger$1.log(`<unsubscribeFromFilterData>`);
+    logger.log(`<unsubscribeFromFilterData>`);
     this.filterDataCallback = null;
   }
 
@@ -488,8 +290,10 @@ class RemoteDataView  {
   Connecting to the server
 
   --------------------------------------------------------*/
+//TODO support for additional connections
 const connect = (
   connectionString,
+  server = AvailableProxies.Viewserver,
   isDefaultConnection =  defaultConnection.status === 'pending'
 ) => {
   if (isDefaultConnection) {
@@ -502,7 +306,7 @@ const connect = (
 
     defaultConnection.status = 'connecting';
   }
-  logger$1.log(`connect ${connectionString} isDefaultConnection: ${isDefaultConnection}`);
+  logger.log(`connect ${connectionString} isDefaultConnection: ${isDefaultConnection}`);
   // connections[connectionString] set to a promise. However will be replaced with
   // the actual connection once connected, That can't be right
   return connections[connectionString] || (
@@ -520,8 +324,15 @@ const connect = (
         // do we want this to be true ONLY if this was the first request ?
         isDefaultConnection
       };
-      logger$1.log(JSON.stringify({ type: msgType.connect, clientId, connectionId: connectionId$1, connectionString }));
-      serverProxy.connect({ connectionId: connectionId$1, connectionString });
+      logger.log(JSON.stringify({ type: msgType.connect, clientId, connectionId: connectionId$1, connectionString }));
+
+      import(/* webpackIgnore: true */ `./server-proxy/${server}.js`)
+      .then(module => {
+        const {ServerProxy} = module;
+        serverProxy = new ServerProxy(messageFromTheServer);
+        serverProxy.connect({ connectionId: connectionId$1, connectionString });
+      })
+      .catch(err => console.log(`failed to load Server Proxy ${err}`));
     })
   )
 };
@@ -550,14 +361,14 @@ function onConnected(message) {
 
   --------------------------------------------------------*/
 function subscribe(options, clientCallback) {
-  logger$1.log(`<subscribe> vp ${options.viewport} table ${options.tablename}`);
+  logger.log(`<subscribe> vp ${options.viewport} table ${options.tablename}`);
   const viewport = options.viewport;
   // This remoteview is specific to this viewport, no need for mapping
   const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback);
 
-  // subscription blocks here until connection is resolved (to an instance of ServerApi)
+  // subscription blocks here until connection is resolved (to an instance of RemoteConnectionAPI)
   getDefaultConnection().then(remoteConnection => {
-    logger$1.log(`>>>>> now we have a remoteConnection, we can subscribe`);
+    logger.log(`>>>>> now we have a remoteConnection, we can subscribe`);
     remoteConnection.subscribe(options, viewport);
   });
 
@@ -573,7 +384,7 @@ const RemoteConnectionAPI = (connectionId, postMessage) => ({
   subscribe(message, viewport) {
     // From here, the serverProxy will maintain the association between connection
     // and viewport, we only have to supply viewport
-    logger$1.log(`[RemoteConnection]<subscribe>  ===>  SW   vp: ${viewport}`);
+    logger.log(`[RemoteConnection]<subscribe>  ===>  SW   vp: ${viewport}`);
     serverProxy.subscribe({
       connectionId,
       viewport,

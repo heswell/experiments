@@ -54,7 +54,7 @@ export function handleLayout(model, command, options) {
 
 }
 
-export function layout(model, position = {}, path = '0', visibility = 'visible', force = false, active) {
+export function layout(model, rect = {}, path = '0', visibility = 'visible', force = false, active) {
 
     function firstNumber(n1, n2, n3) {
         return typeof n1 === 'number' ? Math.round(n1) : typeof n2 === 'number' ? n2 : n3;
@@ -67,10 +67,10 @@ export function layout(model, position = {}, path = '0', visibility = 'visible',
     }
 
     var style = model.style || {};
-    var top = firstNumber(position.top, style.top, 0);
-    var left = firstNumber(position.left, style.left, 0);
-    var width = firstDefined(position.width, style.width, 0);
-    var height = firstDefined(position.height, style.height, 0);
+    var top = firstNumber(rect.top, style.top, 0);
+    var left = firstNumber(rect.left, style.left, 0);
+    var width = firstDefined(rect.width, style.width, 0);
+    var height = firstDefined(rect.height, style.height, 0);
 
     var { layout, ...m } = model;
 

@@ -24,14 +24,24 @@ export class DropTarget {
         const inset = 0;
         const gap = Math.round(lineWidth / 2) + inset;
 
-        const t = Math.round(top - offsetTop);
-        const l = Math.round(left - offsetLeft + gap);
-        const r = Math.round(right - offsetLeft - gap);
-        const b = Math.round(bottom - offsetTop - gap);
-        const tabLeft = Math.round(tab.left - offsetLeft + gap);
-        const tabWidth = 60;
-        const tabHeight = header.bottom - header.top;
-        return [l,t, r,b,tabLeft, tabWidth, tabHeight];
+        if (tab){
+            const t = Math.round(top - offsetTop);
+            const l = Math.round(left - offsetLeft + gap);
+            const r = Math.round(right - offsetLeft - gap);
+            const b = Math.round(bottom - offsetTop - gap);
+            const tabLeft = Math.round(tab.left - offsetLeft + gap);
+            const tabWidth = 60;
+            const tabHeight = header.bottom - header.top;
+            return [l,t, r,b,tabLeft, tabWidth, tabHeight];
+    
+        } else {
+            const rect = this.targetRect(lineWidth, offsetTop, offsetLeft);
+            if (rect){
+                rect.push(0,0,0);
+            }
+            return rect 
+        }
+
     }
     
     targetRect(lineWidth, offsetTop = 0, offsetLeft = 0){
@@ -80,6 +90,9 @@ export class DropTarget {
                 const height = sizeHeight ? Math.min(halfHeight, Math.round(sizeHeight)) : halfHeight;
                 return [l+gap, (b-gap)-height, r-gap, b-gap];
                     
+            }
+            case Position.Centre: {
+                return [l+gap, t+gap, r-gap, b-gap];
             }
             default:
                 console.warn(`DropTarget does not recognize position ${position}`);

@@ -1,6 +1,6 @@
-import startServer from './@heswell/server-core';
-import {config} from './@heswell/viewserver/config';
+const startServer = require('../packages/server-core/dist');
+const viewserver = require('../packages/viewserver/dist');
 
-console.log('server.mjs about to START SERVER');
+console.log('run-viewserver.js about to START SERVER');
 
-startServer(config);
+startServer(viewserver.config);

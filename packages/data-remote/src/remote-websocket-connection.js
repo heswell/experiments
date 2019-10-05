@@ -5,6 +5,7 @@ export default class Connection {
     return new Promise(function (resolve) {
         const connection = new Connection(connectionString, msg => {
           const {type} = msg;
+          // TODO check the connection status is actually connected
           if (type === 'connection-status'){
             resolve(connection)
           } else if (type === 'HB'){

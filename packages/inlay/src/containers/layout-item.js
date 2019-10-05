@@ -4,10 +4,7 @@ import { PopupService } from '@heswell/ui-controls';
 import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { remove as removeFromLayout } from '../redux/actions';
-import {
-    layout as applyLayout,
-    layoutStyleDiff
-} from '../model/index';
+import { layout as applyLayout } from '../model/index';
 import {getLayoutModel} from '../model/layoutModel';
 
 import './layout-item.css';
