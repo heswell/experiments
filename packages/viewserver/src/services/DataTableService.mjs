@@ -1,4 +1,3 @@
-/* global __dirname:false */
 import Table from './Table';
 import Subscription from './Subscription';
 

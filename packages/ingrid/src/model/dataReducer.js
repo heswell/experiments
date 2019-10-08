@@ -1,4 +1,4 @@
-
+import {rowUtils} from '@heswell/data';
 
 const INITIAL_RANGE = {lo:0,hi:-1}
 
@@ -19,9 +19,11 @@ export const initialData = {
 export default function (model) {
   return (state, action) => {
     if (action.type === 'range'){
-      return setRange(state, action, model.meta)
+      return setRange(state, action, model.meta);
     } else if (action.type === 'data'){
-      return setData(state, action, model.meta)
+      return setData(state, action, model.meta);
+    } else if (action.type === 'update'){
+      return applyUpdates(state, action, model.meta);
     } else if (action.type === 'selected'){
       return applySelection(state, action, model.meta)
     }
@@ -64,6 +66,14 @@ function setRange(state, {range}, meta){
     range,
     // selected,
     _keys
+  }
+}
+
+function applyUpdates(state, action, meta){
+  const rows = rowUtils.update(state.rows, action.updates, meta);
+  return {
+    ...state,
+    rows
   }
 }
 

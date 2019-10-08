@@ -1,7 +1,7 @@
 // import './ingrid/remote/vuu.jsx';
-// import './ingrid/remote/viewserver.jsx';
+import './ingrid/remote/viewserver.jsx';
 // import './ingrid/local/index.jsx';
-import './inlay/index.jsx';
+// import './inlay/index.jsx';
 
 import './style/material-design.css';
 import './style/main.css';

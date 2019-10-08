@@ -1,7 +1,7 @@
-//import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
-const project_path = path.resolve(__dirname, 'dataTables/instruments');
+const project_path = path.resolve(fs.realpathSync('.'), 'packages/viewserver/dataTables/instruments');
 
 const config = {
     name: 'Instruments',
@@ -23,7 +23,7 @@ const config = {
         interval: 100,
         fields: ['Price'],
         applyInserts: false,
-        applyUpdates: false
+        applyUpdates: true
     }
 };
 

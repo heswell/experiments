@@ -13,7 +13,8 @@ export const msgType = {
   rowSet: 'rowset',
   select : 'select',
   selected: 'selected',
-
+  snapshot : 'snapshot',
+  update: 'update',
 
   addSubscription: 'AddSubscription',
   collapseGroup : 'CollapseGroup',
@@ -31,7 +32,6 @@ export const msgType = {
   setGroupState : 'setGroupState',
   setViewRange : 'setViewRange',
   size : 'size',
-  snapshot : 'snapshot',
   sort : 'sort',
   subscribed : 'Subscribed',
   tableList : 'TableList',

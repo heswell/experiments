@@ -4,7 +4,7 @@ import commonjs from 'rollup-plugin-commonjs';
 export default [{
     input: 'index.js',
     output: {
-        file: 'dist/index.es.js',
+        file: 'dist/index.js',
         format: 'es',
         sourcemap: true
     },
@@ -12,7 +12,7 @@ export default [{
         resolve(),
         commonjs()
     ]
-}, {
+}/*, {
     input: 'index.js',
     output: {
         file: 'dist/index.js',
@@ -23,4 +23,4 @@ export default [{
         resolve(),
         commonjs()
     ]
-}];
+}*/];

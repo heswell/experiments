@@ -24,7 +24,7 @@ export function addRowsToIndex(rows, index, indexField){
     return index;
 }
 
-export function update(rows, range, updates, {IDX}) {
+export function update(rows, updates, {IDX}) {
     const results = rows.slice();
 
     for (let i = 0; i < updates.length; i++) {
@@ -35,7 +35,6 @@ export function update(rows, range, updates, {IDX}) {
         for (let ii = 0; ii < rows.length; ii++) {
             if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
-                // updates = [colIdx, oldValue, newValue]*
                 for (let j = 0; j < fieldUpdates.length; j += 3) {
                     row[fieldUpdates[j]] = fieldUpdates[j + 2];
                 }

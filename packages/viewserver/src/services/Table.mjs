@@ -3,10 +3,15 @@ import {Table as BaseTable} from '@heswell/data';
 export default class Table extends BaseTable {
 
     async loadData(dataPath){
-        const {default: data} = await import(dataPath);
-        if (data) {
-            this.parseData(data);
-        } 
+        console.log(`import data from ${dataPath}.mjs`)
+        try {
+            const {default: data} = await import(dataPath);
+            if (data) {
+                this.parseData(data);
+            } 
+        } catch(e){
+            console.error(`failed to load data from path '${dataPath}'`, e)
+        }
     }
 
     async installDataGenerators({createPath, updatePath}){

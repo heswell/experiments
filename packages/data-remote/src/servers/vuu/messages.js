@@ -9,6 +9,9 @@ export const CHANGE_VP_SUCCESS = 'CHANGE_VP_SUCCESS';
 export const CHANGE_VP_RANGE = 'CHANGE_VP_RANGE';
 export const CHANGE_VP_RANGE_SUCCESS = 'CHANGE_VP_RANGE_SUCCESS';
 export const TABLE_ROW = 'TABLE_ROW';
+export const HB = "HB";
+export const HB_RESP = "HB_RESP";
+
 
 export const SIZE = 'SIZE'
 export const UPDATE = 'U'

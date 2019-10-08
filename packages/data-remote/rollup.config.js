@@ -8,7 +8,7 @@ export default [
         }
     },
     {
-        input: './src/viewserver-proxy.js',
+        input: './src/servers/viewserver/server-proxy.js',
         output: {
             file: 'dist/server-proxy/viewserver.js',
             format: 'es',
@@ -16,7 +16,7 @@ export default [
         }
     },
     {
-        input: './src/vuu-proxy.js',
+        input: './src/servers/vuu/server-proxy.js',
         output: {
             file: 'dist/server-proxy/vuu.js',
             format: 'es',

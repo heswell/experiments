@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Grid } from '@heswell/ingrid';
-// import data from '@heswell/viewserver/dataTables/instruments/dataset';
 import {RemoteDataView as View, Servers} from '@heswell/data-remote';
 
-const tableName = 'instrumentPrices'
-const dataConfig = {url: '127.0.0.1:8090/websocket', tableName, server: Servers.Vuu};
+const dataConfig = {
+  server: Servers.Vuu,
+  tableName: 'instrumentPrices', 
+  url: '127.0.0.1:8090/websocket' 
+};
 
 [ "currency", "exchange", "lotSize", "bid", "ask", "last", "open", "close", "scenario" ] 
 const instrumentColumns = [

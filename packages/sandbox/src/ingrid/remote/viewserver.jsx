@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Grid } from '@heswell/ingrid';
-// import data from '@heswell/viewserver/dataTables/instruments/dataset';
 import {RemoteDataView as View} from '@heswell/data-remote';
 
 const tableName = 'Instruments'
