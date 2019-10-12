@@ -23,7 +23,7 @@ const config = {
         interval: 100,
         fields: ['Price'],
         applyInserts: false,
-        applyUpdates: true
+        applyUpdates: false
     }
 };
 

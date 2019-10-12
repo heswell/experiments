@@ -1,4 +1,4 @@
-import { NULL_RANGE, resetRange, withinRange } from './rangeUtils';
+import { resetRange, withinRange } from './rangeUtils';
 import { RowSet, GroupRowSet } from './rowset/index';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
 import UpdateQueue from './updateQueue';

@@ -55,8 +55,6 @@ const createLogger = (source, labelColor=plain, msgColor=plain) => ({
   warn: (msg) => console.warn(`[${source}] ${msg}`)
 });
 
-// const serverProxy = new ServerProxy(messageFromTheServer);
-
 const serverProxies = new WeakMap();
 const servers = new WeakMap();
 
@@ -68,26 +66,19 @@ const getServer = async (serverName, url, messageFromTheServer) => {
   if (servers[url]){
     return servers[url];
   } 
-
   const {ServerProxy} = await getServerProxy(serverName);
   return servers[url] = Promise.resolve(new ServerProxy(messageFromTheServer));
-
 };
   
-  
+// We want this to be an eventemitter so we can broadcast connection events 
 var ConnectionManager = {
-  async connect({serverName, url}){
+  async connect(url, serverName){
     console.log(`ConnectionManager.connect ${serverName} ${url}`);
 
     const server = await getServer(serverName, url);
-    console.log(`connection-manager got proxy`,server);
-
+  // Make sure we don't call connect if it's already comnnected
     const connectionId$1 = `connection-${connectionId.nextValue}`;
-    server.connect({ connectionId: connectionId$1, connectionString: url, callback: message => {
-      console.log(`message = `, message);
-    }});
-
-
+    await server.connect({ connectionId: connectionId$1, connectionString: url });
 
     return server;
 
@@ -102,26 +93,11 @@ const AvailableProxies = {
   Vuu: 'vuu'
 };
 
-/*----------------------------------------------------------------
-  Set up the Server Proxy
-  ----------------------------------------------------------------*/
-  // TODO isn't it more natural to pass messageFromTheServer to subscribe ?
-// const serverProxy = new ServerProxy(messageFromTheServer);
-//let serverProxy;
-
-const postMessageToServer = async (message) => {
-//  serverProxy.handleMessageFromClient(message);
+const NullServer = {
+  handleMessageFromClient: message => console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`)
 };
 
 const defaultRange = { lo: 0, hi: 0 };
-
-/*----------------------------------------------------------------
-  connection/subscription management
-  ----------------------------------------------------------------*/
-const clientId = uuid(); // what purpose does this serve ?
-let pendingConnection = new Promise((resolve, reject) => {
-});
-
 
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
@@ -134,22 +110,20 @@ class RemoteDataView  {
     this.serverName = serverName;
     this.tableName = tableName;
 
-    this.server = null;  
+    this.server = NullServer;  
     this.columns = null;
     this.meta = null;
     this.subscription = null;
     this.viewport = null;
     this.filterDataCallback = null;
     this.filterDataMessage = null;
-
   }
 
   async subscribe({
     viewport = uuid(),
     tableName = this.tableName,
     columns,
-    range = defaultRange,
-    ...options
+    range = defaultRange
   }, callback) {
 
     if (!tableName) throw Error("RemoteDataView subscribe called without table name");
@@ -161,8 +135,16 @@ class RemoteDataView  {
     this.meta = metaData(columns);
     logger.log(`range = ${JSON.stringify(range)}`);
 
-    this.server = await ConnectionManager.connect(this);
-    console.log(`>>>>>>>>> server created`, this.server);
+    this.server = await ConnectionManager.connect(this.url, this.serverName);
+
+    this.server.subscribe({
+        viewport,
+        tablename: tableName,
+        columns,
+        range
+      }, message => {
+        callback(message);
+      });
 
     // could we pass all this into the call above ?
     // this.subscription = subscribe({
@@ -196,7 +178,7 @@ class RemoteDataView  {
   }
 
   setRange(lo, hi) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.setViewRange,
       range: { lo, hi },
@@ -205,7 +187,7 @@ class RemoteDataView  {
   }
 
   select(idx, _row, rangeSelect, keepExistingSelection){
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.select,
       idx,
@@ -215,7 +197,7 @@ class RemoteDataView  {
   }
 
   group(columns) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.groupBy,
       groupBy: columns
@@ -223,7 +205,7 @@ class RemoteDataView  {
   }
 
   setGroupState(groupState) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.setGroupState,
       groupState
@@ -231,7 +213,7 @@ class RemoteDataView  {
   }
 
   sort(columns) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.sort,
       sortCriteria: columns
@@ -239,7 +221,7 @@ class RemoteDataView  {
   }
 
   filter(filter, dataType = DataTypes.ROW_DATA, incremental=false) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.filter,
       dataType,
@@ -273,7 +255,7 @@ class RemoteDataView  {
   // To support multiple open filters, we need a column here
   setFilterRange(lo, hi) {
     console.log(`setFilerRange ${lo}:${hi}`);
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: msgType.setViewRange,
       dataType: DataTypes.FILTER_DATA,

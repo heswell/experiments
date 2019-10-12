@@ -5,8 +5,8 @@ import {
   connectionId as _connectionId,
 } from './constants';
 
-import { ServerProxy } from './vuu-proxy';
-import RemoteSubscription from './remote-subscription';
+// TODO make this dynamic
+import ConnectionManager from './connection-manager';
 
 const { metaData } = columnUtils;
 const logger = createLogger('RemoteDataView', logColor.blue);
@@ -16,75 +16,37 @@ export const AvailableProxies = {
   Vuu: 'vuu'
 }
 
-/*----------------------------------------------------------------
-  Set up the Server Proxy
-  ----------------------------------------------------------------*/
-  // TODO isn't it more natural to pass messageFromTheServer to subscribe ?
-const serverProxy = new ServerProxy(messageFromTheServer);
-//let serverProxy;
-
-const postMessageToServer = async (message) => {
-  serverProxy.handleMessageFromClient(message);
-}
-
-function messageFromTheServer({ type: msgType, ...message }) {
-  switch (msgType) {
-    case Msg.connectionStatus:
-      logger.log(`<==   ${msgType}`)
-      onConnected(message);
-      break;
-    case Msg.snapshot:
-    case Msg.rowSet: 
-    case Msg.selected:
-    case Msg.filterData:
-      subscriptions[message.viewport].postMessageToClient(message);
-      break;
-    default:
-      logger.warn(`does not yet handle ${msgType}`);
-  }
+const NullServer = {
+  handleMessageFromClient: message => console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`)
 }
 
 const defaultRange = { lo: 0, hi: 0 };
-
-/*----------------------------------------------------------------
-  connection/subscription management
-  ----------------------------------------------------------------*/
-const clientId = uuid(); // what purpose does this serve ?
-const connections = {};
-const subscriptions = {};
-const pendingPromises = {};
-let defaultConnection = { status: 'pending' };
-let pendingConnection = new Promise((resolve, reject) => {
-  defaultConnection.resolve = resolve;
-  defaultConnection.reject = reject;
-});
-
-const getDefaultConnection = () => pendingConnection;
-
 
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
 export default class RemoteDataView  {
 
-  constructor({url, tableName, server = AvailableProxies.Viewserver}) {
-    connect(url, server);
+  constructor({tableName, serverName = AvailableProxies.Viewserver, url}) {
+
+    this.url = url;
+    this.serverName = serverName;
+    this.tableName = tableName;
+
+    this.server = NullServer;  
     this.columns = null;
     this.meta = null;
-
-    this.tableName = tableName;
     this.subscription = null;
     this.viewport = null;
     this.filterDataCallback = null;
     this.filterDataMessage = null;
   }
 
-  subscribe({
+  async subscribe({
     viewport = uuid(),
     tableName = this.tableName,
     columns,
-    range = defaultRange,
-    ...options
+    range = defaultRange
   }, callback) {
 
     if (!tableName) throw Error("RemoteDataView subscribe called without table name");
@@ -96,29 +58,46 @@ export default class RemoteDataView  {
     this.meta = metaData(columns);
     logger.log(`range = ${JSON.stringify(range)}`)
 
-    this.subscription = subscribe({
-      ...options,
-      viewport,
-      tablename: tableName,
-      columns,
-      range
-    }, /* postMessageToClient */(message) => {
+    this.server = await ConnectionManager.connect(this.url, this.serverName);
 
-      const { filterData, data } = message;
-      if (data && data.rows) {
-        callback(data);
-      } else if (filterData && this.filterDataCallback) {
-        this.filterDataCallback(message)
-      } else if (filterData) {
-        // experiment - need to store the column as well
-        this.filterDataMessage = message;
-      } else if (data && data.selected){
-        // TODO think about this
-        const {selected, deselected} = data;
-        callback({range, selected, deselected});
-      }
+    this.server.subscribe({
+        viewport,
+        tablename: tableName,
+        columns,
+        range
+      }, message => {
+          const { filterData/*, data, updates*/ } = message;
+          if (filterData && this.filterDataCallback) {
+            this.filterDataCallback(message)
+          } else {
+            callback(message)
+          }
+      });
 
-    });
+    // could we pass all this into the call above ?
+    // this.subscription = subscribe({
+    //   ...options,
+    //   viewport,
+    //   tablename: tableName,
+    //   columns,
+    //   range
+    // }, /* postMessageToClient */(message) => {
+
+    //   const { filterData, data, updates } = message;
+    //   if ((data && data.rows) || updates) {
+    //     callback(data || message);
+    //   } else if (filterData && this.filterDataCallback) {
+    //     this.filterDataCallback(message)
+    //   } else if (filterData) {
+    //     // experiment - need to store the column as well
+    //     this.filterDataMessage = message;
+    //   } else if (data && data.selected){
+    //     // TODO think about this
+    //     const {selected, deselected} = data;
+    //     callback({range, selected, deselected});
+    //   }
+
+    // });
 
   }
 
@@ -127,7 +106,7 @@ export default class RemoteDataView  {
   }
 
   setRange(lo, hi) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.setViewRange,
       range: { lo, hi },
@@ -136,7 +115,7 @@ export default class RemoteDataView  {
   }
 
   select(idx, _row, rangeSelect, keepExistingSelection){
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.select,
       idx,
@@ -146,7 +125,7 @@ export default class RemoteDataView  {
   }
 
   group(columns) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.groupBy,
       groupBy: columns
@@ -154,7 +133,7 @@ export default class RemoteDataView  {
   }
 
   setGroupState(groupState) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.setGroupState,
       groupState
@@ -162,7 +141,7 @@ export default class RemoteDataView  {
   }
 
   sort(columns) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.sort,
       sortCriteria: columns
@@ -170,7 +149,7 @@ export default class RemoteDataView  {
   }
 
   filter(filter, dataType = DataTypes.ROW_DATA, incremental=false) {
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.filter,
       dataType,
@@ -180,13 +159,17 @@ export default class RemoteDataView  {
   }
 
   getFilterData(column, searchText) {
-    if (this.subscription) {
-      this.subscription.getFilterData(column, searchText);
-    }
+    console.log(`[RemoteDataView] getFilterData`)
+    this.server.handleMessageFromClient({
+      viewport: this.viewport,
+      type: Msg.getFilterData,
+      column,
+      searchText
+    });
   }
 
   subscribeToFilterData(column, range, callback) {
-    logger.log(`<subscribeToFilterData>`)
+    logger.log(`<subscribeToFilterData> ${column.name}`)
     this.filterDataCallback = callback;
     this.setFilterRange(range.lo, range.hi);
     if (this.filterDataMessage) {
@@ -204,7 +187,7 @@ export default class RemoteDataView  {
   // To support multiple open filters, we need a column here
   setFilterRange(lo, hi) {
     console.log(`setFilerRange ${lo}:${hi}`)
-    postMessageToServer({
+    this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.setViewRange,
       dataType: DataTypes.FILTER_DATA,
@@ -214,125 +197,4 @@ export default class RemoteDataView  {
   }
 
 }
-
-
-/*--------------------------------------------------------
-
-  Connecting to the server
-
-  --------------------------------------------------------*/
-//TODO support for additional connections
-export const connect = (
-  connectionString,
-  server = AvailableProxies.Viewserver,
-  isDefaultConnection = true && defaultConnection.status === 'pending'
-) => {
-  if (isDefaultConnection) {
-    // is it possible that defaultConnection.status could be pending, yet we have already 
-    // resolved this connection ?
-
-    // if we're already connected on the default connection ...
-    // 
-    // else ...
-
-    defaultConnection.status = 'connecting';
-  }
-  logger.log(`connect ${connectionString} isDefaultConnection: ${isDefaultConnection}`)
-  // connections[connectionString] set to a promise. However will be replaced with
-  // the actual connection once connected, That can't be right
-  return connections[connectionString] || (
-    connections[connectionString] = new Promise(async (resolve, reject) => {
-      const connectionId = `connection-${_connectionId.nextValue}`;
-      const timeoutHandle = setTimeout(() => {
-        delete pendingPromises[connectionId];
-        reject(new Error('timed out waiting for server response'));
-      }, 5000);
-      pendingPromises[connectionId] = {
-        resolve,
-        reject,
-        connectionString,
-        timeoutHandle,
-        // do we want this to be true ONLY if this was the first request ?
-        isDefaultConnection
-      };
-      logger.log(JSON.stringify({ type: Msg.connect, clientId, connectionId, connectionString }))
-
-      // import(/* webpackIgnore: true */ `./server-proxy/${server}.js`)
-      // .then(module => {
-      //   const {ServerProxy} = module;
-      //   serverProxy = new ServerProxy(messageFromTheServer);
-        serverProxy.connect({ connectionId, connectionString });
-    //   })
-    //   .catch(err => console.log(`failed to load Server Proxy ${err}`));
-    })
-  )
-}
-
-function onConnected(message) {
-  if (message.status === 'ready') {
-    const { connectionId } = message;
-    if (pendingPromises[connectionId]) {
-      // TODO handle reject here as well
-      const { resolve, connectionString, timeoutHandle, isDefaultConnection } = pendingPromises[connectionId];
-      clearTimeout(timeoutHandle);
-      delete pendingPromises[connectionId];
-      const connection = connections[connectionString] = RemoteConnectionAPI(connectionId, postMessageToServer);
-      resolve(connection);
-      if (isDefaultConnection && defaultConnection.status !== 'connected') {
-        defaultConnection.status = 'connected';
-        defaultConnection.resolve(connection);
-      }
-    }
-  }
-}
-
-/*--------------------------------------------------------
-
-  Subscribing to services
-
-  --------------------------------------------------------*/
-export function subscribe(options, clientCallback) {
-  logger.log(`<subscribe> vp ${options.viewport} table ${options.tablename}`)
-  const viewport = options.viewport;
-  // This remoteview is specific to this viewport, no need for mapping
-  const subscription = subscriptions[viewport] = new RemoteSubscription(viewport, postMessageToServer, clientCallback)
-
-  // subscription blocks here until connection is resolved (to an instance of RemoteConnectionAPI)
-  getDefaultConnection().then(remoteConnection => {
-    logger.log(`>>>>> now we have a remoteConnection, we can subscribe`)
-    remoteConnection.subscribe(options, viewport);
-  });
-
-  return subscription;
-}
-
-const RemoteConnectionAPI = (connectionId, postMessage) => ({
-
-  disconnect() {
-    console.log(`disconnect ${connectionId}`)
-  },
-
-  subscribe(message, viewport) {
-    // From here, the serverProxy will maintain the association between connection
-    // and viewport, we only have to supply viewport
-    logger.log(`[RemoteConnection]<subscribe>  ===>  SW   vp: ${viewport}`)
-    serverProxy.subscribe({
-      connectionId,
-      viewport,
-      type: Msg.addSubscription,
-      ...message
-    });
-  },
-
-  query: (type, params = null) => new Promise((resolve, reject) => {
-    const requestId = uuid.v1();
-    postMessage({ requestId, type, params });
-    const timeoutHandle = setTimeout(() => {
-      delete pendingPromises[requestId];
-      reject(Error('query timed out waiting for server response'));
-    }, 5000);
-    pendingPromises[requestId] = { resolve, reject, timeoutHandle };
-  })
-
-});
 

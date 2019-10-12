@@ -8,7 +8,10 @@
       "type": "node",
       "request": "launch",
       "name": "Viewserver",
-      "program": "${workspaceFolder}/scripts/run-viewserver.js",
+      "args": [
+        "--experimental-modules"
+      ],
+      "program": "${workspaceFolder}/scripts/run-viewserver.mjs",
       "cwd": "${workspaceRoot}"
     },
     {

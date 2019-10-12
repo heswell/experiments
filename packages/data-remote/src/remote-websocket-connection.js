@@ -18,7 +18,6 @@ export default class Connection {
   }
 
   constructor(connectionString, callback) {
-      this._callback = callback;
       const ws = new WebSocket('ws://' + connectionString);
       ws.onopen = () => {
         console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
@@ -35,22 +34,14 @@ export default class Connection {
         }
       }
 
-      ws.onerror = evt => websocketError(callback, evt);
-      ws.onclose = evt => websocketClosed(callback, evt);
-      this.ws = ws;
+      ws.onerror = evt => {
+        console.error(`websocket error`, evt)
+        callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
+      }
+      ws.onclose = evt => {
+        console.warn(`websocket closed`, evt)
+        callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
+      }
+      this.send = message => ws.send(JSON.stringify(message))
   }
-
-  send(message) {
-      // console.log(`%c>>>  (WebSocket) ${JSON.stringify(message)} bufferedAmount ${this.ws.bufferedAmount}`,'color:yellow;background-color:blue;font-weight:bold;');
-      this.ws.send(JSON.stringify(message));
-  }
-
-}
-
-function websocketError(callback) {
-  callback({type:'websocket.websocketError'});
-}
-
-function websocketClosed(callback) {
-  callback({type:'websocket.websocketClosed'});
 }

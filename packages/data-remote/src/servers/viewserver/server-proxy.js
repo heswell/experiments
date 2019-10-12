@@ -1,7 +1,7 @@
 import Connection from '../../remote-websocket-connection';
-import * as Message from '../../messages.js';
+import * as Message from './messages.js';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import { createLogger, logColor } from '../../constants';
+import { createLogger, logColor } from '@heswell/utils';
 
 const logger = createLogger('ViewsServerProxy', logColor.blue);
 
@@ -14,6 +14,18 @@ function partition(array, test, pass = [], fail = []) {
     return [pass, fail];
 }
 
+/*
+    query: (type, params = null) => new Promise((resolve, reject) => {
+      const requestId = uuid.v1();
+      postMessage({ requestId, type, params });
+      const timeoutHandle = setTimeout(() => {
+        delete pendingPromises[requestId];
+        reject(Error('query timed out waiting for server response'));
+      }, 5000);
+      pendingPromises[requestId] = { resolve, reject, timeoutHandle };
+    })
+
+    */
 // we use one ServerProxy per client (i.e per browser instance)
 // This is created as a singleton in the (remote-data) view
 // TODO don'r we need to create one per server connected to ?
@@ -25,13 +37,12 @@ export class ServerProxy {
 
         this.queuedRequests = [];
         this.viewportStatus = {};
-        this.pendingSubscriptionRequests = {};
         this.postMessageToClient = null;
 
     }
 
     handleMessageFromClient(message) {
-        this.sendIfReady(message, this.viewportStatus[message.viewport] === 'subscribed');
+        this.sendIfReady(message, this.viewportStatus[message.viewport].status === 'subscribed');
     }
 
     sendIfReady(message, isReady) {
@@ -47,34 +58,38 @@ export class ServerProxy {
     }
 
     // if we're going to support multiple connections, we need to save them against connectionIs
-    async connect({ connectionString, connectionId = 0, callback }) {
+    async connect({ connectionString, connectionId = 0 }) {
 
         logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`)
         this.connectionStatus = 'connecting';
-        this.postMessageToClient = callback;
         this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
         this.onReady(connectionId);
     }
 
-    subscribe(message) {
+    subscribe(message, callback) {
         const isReady = this.connectionStatus === 'ready';
         const { viewport } = message;
-        this.pendingSubscriptionRequests[viewport] = message;
-        this.viewportStatus[viewport] = 'subscribing';
-        this.sendIfReady( message, isReady);
+        this.viewportStatus[viewport] = {
+            status: 'subscribing',
+            request: message,
+            callback
+        }
+        this.sendIfReady( {
+            type: API.addSubscription,
+            ...message
+        }, isReady);
     }
 
     subscribed(/* server message */ message) {
         const { viewport } = message;
-        if (this.pendingSubscriptionRequests[viewport]) {
+        if (this.viewportStatus[viewport]) {
 
-            const request = this.pendingSubscriptionRequests[viewport];
+            const {request, callback} = this.viewportStatus[viewport];
             // const {table, columns, sort, filter, groupBy} = request;
             let { range } = request;
             logger.log(`<handleMessageFromServer> SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`)
 
-            this.pendingSubscriptionRequests[viewport] = undefined;
-            this.viewportStatus[viewport] = 'subscribed';
+            this.viewportStatus[viewport].status = 'subscribed';
 
             const byViewport = vp => item => item.viewport === vp;
             const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
@@ -106,7 +121,7 @@ export class ServerProxy {
         // TODO roll setViewRange messages into subscribe messages
         readyToSend.forEach(msg => this.sendMessageToServer(msg));
         this.queuedRequests = remainingMessages;
-        this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
+        //this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
     }
 
     sendMessageToServer(message) {
@@ -117,30 +132,49 @@ export class ServerProxy {
     handleMessageFromServer(message) {
         const { type, viewport } = message;
 
-        switch (type) {
+        if (viewport){
+            const {callback: postMessageToClient} = this.viewportStatus[viewport];
 
-            case Message.SUBSCRIBED:
-                this.subscribed(message);
-                break;
-
-            case Message.FILTER_DATA:
-            case Message.SEARCH_DATA:
-                const { data: filterData } = message;
-                // const { rowset: data } = subscription.putData(type, filterData);
-
-                // if (data.length || filterData.size === 0) {
-                this.postMessageToClient({
-                    type,
-                    viewport,
-                    [type]: filterData
-                });
-                // }
-
-                break;
-
-            default:
-                this.postMessageToClient(message);
-
+            switch (type) {
+    
+                case Message.SUBSCRIBED:
+                    this.subscribed(message);
+                    break;
+    
+                case Message.FILTER_DATA:
+                case Message.SEARCH_DATA:
+                    const { data: filterData } = message;
+                    // const { rowset: data } = subscription.putData(type, filterData);
+    
+                    // if (data.length || filterData.size === 0) {
+                    postMessageToClient({
+                        type,
+                        viewport,
+                        [type]: filterData
+                    });
+                    // }
+    
+                    break;
+                    
+                case 'rowset':    
+                case 'selected':
+                case Message.SNAPSHOT:{
+                    postMessageToClient(message.data);
+                }
+                    break;
+                case 'update':
+                    postMessageToClient(message);
+                    break;
+                default:
+                    if (type !== 'update'){
+                        console.log(`[ServerProxy] message received ${JSON.stringify(message)}`)
+                    }
+                    // postMessageToClient(message);
+    
+            }
+    
+        } else {
+            console.log(`message with no viewport ${JSON.stringify(message)}`)
         }
 
     }

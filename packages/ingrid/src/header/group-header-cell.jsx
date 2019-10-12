@@ -3,18 +3,14 @@ import cx from 'classnames';
 import Draggable from '../draggable/draggable.jsx';
 import {expandStatesfromGroupState} from '../model/utils';
 
-import './header.css';
-
-const styles = {
-    groupByHeaderCell: 'GroupbyHeaderCell'
-}
+import './group-header-cell.css';
 
 const ColHeader = (props) => {
     const {column, className, onClick, onRemoveColumn, expandState, onToggle} = props
     const expanded = expandState === 1;
     return (
         <div className={cx('ColHeader', className,{expanded, collapsed: !expanded})}>
-            <i className='material-icons toggle-icon' onClick={() => onToggle(column, -expandState)}>{expanded ? 'arrow_drop_down' : 'arrow_right'}</i>
+            <i className='material-icons toggle-icon' onClick={() => onToggle(column, -expandState)}>{expanded ? 'expand_more' : 'chevron_right'}</i>
             <span className='ColHeaderLabel' onClick={() => onClick(column)}>{column.name}</span>
             <i className='material-icons remove-icon' onClick={() => onRemoveColumn(column)}>cancel</i>
         </div>
@@ -69,7 +65,7 @@ export default ({
 
         const {columns, resizing, width} = groupCol;
         const className = cx(
-            styles.groupByHeaderCell,
+            'GroupHeaderCell',
             'HeaderCell group',
             propClassName,
             resizing ? 'HeaderCell--resizing': ''

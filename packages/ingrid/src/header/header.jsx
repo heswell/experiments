@@ -5,6 +5,8 @@ import ColumnGroupHeader from './column-group-header.jsx';
 import * as Action from '../model/actions';
 import GridContext from '../grid-context';
 
+import './header.css';
+
 export default memo(forwardRef(({
     className: propClassName,
     colGroupHeaderRenderer,

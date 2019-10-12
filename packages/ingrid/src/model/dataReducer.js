@@ -7,7 +7,6 @@ export const initialData = {
   rowCount: 0,
   range: INITIAL_RANGE,
   offset: 0,
-  // selected: [],
   _keys: {
     free: [],
     used: {}
@@ -64,7 +63,6 @@ function setRange(state, {range}, meta){
     rowCount,
     offset,
     range,
-    // selected,
     _keys
   }
 }
@@ -86,14 +84,11 @@ function setData(state, action, meta){
     
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
-  // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-
   return {
     rows: mergedRows,
     rowCount,
     offset,
     range,
-    // selected,
     _keys
   }
 
@@ -133,9 +128,9 @@ function applySelection(state, {selected, deselected}, meta){
   }
 
   return {
+    ...state,
     rows,
     rowCount,
-    // selected: results
   }
 }
 
