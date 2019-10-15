@@ -1,7 +1,7 @@
+import { createLogger, logColor } from '@heswell/utils';
 import Connection from '../../remote-websocket-connection';
 import * as Message from './messages';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import { createLogger, logColor } from '../../constants';
 
 const logger = createLogger('ViewsServerProxy', logColor.blue);
 
@@ -209,7 +209,7 @@ export class ServerProxy {
             };
 
             const byViewport = vp => item => item.viewport === vp;
-            const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
+            const byMessageType = msg => msg.type === Message.CHANGE_VP;
             const [messagesForThisViewport, messagesForOtherViewports] = partition(this.queuedRequests, byViewport(viewport));
             const [rangeMessages, otherMessages] = partition(messagesForThisViewport, byMessageType);
 

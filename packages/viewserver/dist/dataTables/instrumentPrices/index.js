@@ -10,7 +10,7 @@ const path = fs.realpathSync(process.cwd());
 
 const config = {
     name: 'InstrumentPrices',
-    dataPath: `${path}/data-generator`,
+    dataPath: `${path}/data-generator.mjs`,
     // createPath: `${__dirname}/create-row.js`,
     // updatePath: `${__dirname}/update-row`,
     type: 'vs',

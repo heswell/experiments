@@ -7,6 +7,8 @@
     "@babel/plugin-transform-modules-commonjs": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
     "@babel/preset-react": "^7.0.0",
+    "@babel/register": "^7.6.2",
+    "babel-plugin-dynamic-import-node": "^2.3.0",
     "copy-webpack-plugin": "^5.0.4",
     "lerna": "^3.16.4",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -19,5 +21,15 @@
     "dygraphs": "^2.1.0",
     "material-design-icons": "^3.0.1",
     "react-motion": "^0.5.2"
+  },
+  "babel": {
+    "presets": [
+      "@babel/env"
+    ],
+    "plugins": [
+      "dynamic-import-node"
+    ],
+    "sourceMaps": true,
+    "retainLines": true
   }
 }

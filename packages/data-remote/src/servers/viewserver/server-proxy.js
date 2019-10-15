@@ -1,4 +1,3 @@
-import Connection from '../../remote-websocket-connection';
 import * as Message from './messages.js';
 import { ServerApiMessageTypes as API } from '../../messages.js';
 import { createLogger, logColor } from '@heswell/utils';
@@ -32,13 +31,11 @@ function partition(array, test, pass = [], fail = []) {
 export class ServerProxy {
 
     constructor() {
+        logger.log(`ServerProxy constructor`)
         this.connection = null;
-        this.connectionStatus = 'not-connected';
-
         this.queuedRequests = [];
         this.viewportStatus = {};
         this.postMessageToClient = null;
-
     }
 
     handleMessageFromClient(message) {
@@ -58,16 +55,16 @@ export class ServerProxy {
     }
 
     // if we're going to support multiple connections, we need to save them against connectionIs
-    async connect({ connectionString, connectionId = 0 }) {
+    // async connect({ connectionString, connectionId = 0 }) {
 
-        logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`)
-        this.connectionStatus = 'connecting';
-        this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
-        this.onReady(connectionId);
-    }
+    //     logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`)
+    //     this.connectionStatus = 'connecting';
+    //     this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
+    //     this.onReady(connectionId);
+    // }
 
     subscribe(message, callback) {
-        const isReady = this.connectionStatus === 'ready';
+        const isReady = this.connection !== null;
         const { viewport } = message;
         this.viewportStatus[viewport] = {
             status: 'subscribing',
@@ -111,18 +108,19 @@ export class ServerProxy {
 
     }
 
-    onReady(connectionId) {
-        this.connectionStatus = 'ready';
-        // messages which have no dependency on previous subscription
-        logger.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan')
+    // DO we need this now that we block on connection
+    // onReady(connectionId) {
+    //     this.connectionStatus = 'ready';
+    //     // messages which have no dependency on previous subscription
+    //     logger.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan')
 
-        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === API.addSubscription;
-        const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);
-        // TODO roll setViewRange messages into subscribe messages
-        readyToSend.forEach(msg => this.sendMessageToServer(msg));
-        this.queuedRequests = remainingMessages;
-        //this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
-    }
+    //     const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === API.addSubscription;
+    //     const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);
+    //     // TODO roll setViewRange messages into subscribe messages
+    //     readyToSend.forEach(msg => this.sendMessageToServer(msg));
+    //     this.queuedRequests = remainingMessages;
+    //     //this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
+    // }
 
     sendMessageToServer(message) {
         const { clientId } = this.connection;

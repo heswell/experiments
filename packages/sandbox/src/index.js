@@ -1,5 +1,6 @@
 // import './ingrid/remote/vuu.jsx';
-import './ingrid/remote/viewserver.jsx';
+// import './ingrid/remote/viewserver.jsx';
+import './ingrid/remote/viewserver-multiple.jsx';
 // import './ingrid/local/index.jsx';
 // import './inlay/index.jsx';
 

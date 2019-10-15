@@ -1,3 +1,5 @@
+import resolve from 'rollup-plugin-node-resolve';
+
 export default [
     {
         input: 'index.js',
@@ -13,7 +15,12 @@ export default [
             file: 'dist/server-proxy/viewserver.js',
             format: 'es',
             sourcemap: true
-        }
+        },
+        plugins: [
+            resolve({
+                preferBuiltins: false
+            })
+        ]
     },
     {
         input: './src/servers/vuu/server-proxy.js',
@@ -21,6 +28,11 @@ export default [
             file: 'dist/server-proxy/vuu.js',
             format: 'es',
             sourcemap: true
-        }
+        },
+        plugins: [
+            resolve({
+                preferBuiltins: false
+            })
+        ]
     },
 ];

@@ -1,7 +1,7 @@
 import { DataTypes, columnUtils } from '@heswell/data';
-import {uuid} from '@heswell/utils';
+import {uuid, createLogger, logColor} from '@heswell/utils';
 import {
-  msgType as Msg, createLogger, logColor,
+  msgType as Msg,
   connectionId as _connectionId,
 } from './constants';
 
@@ -17,7 +17,7 @@ export const AvailableProxies = {
 }
 
 const NullServer = {
-  handleMessageFromClient: message => console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`)
+  handleMessageFromClient: message => console.log(`%cNullServer.handleMessageFromClient ${JSON.stringify(message)}`,'color:red')
 }
 
 const defaultRange = { lo: 0, hi: 0 };

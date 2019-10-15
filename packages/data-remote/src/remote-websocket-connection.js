@@ -1,15 +1,19 @@
-
 export default class Connection {
 
-  static connect(connectionString, callback) {
+  static connect(connectionString, callback, connectionStatusCallback) {
     return new Promise(function (resolve) {
+        let connected = false;
         const connection = new Connection(connectionString, msg => {
           const {type} = msg;
           // TODO check the connection status is actually connected
           if (type === 'connection-status'){
-            resolve(connection)
+            connectionStatusCallback(msg);
+            if (msg.status === 'connected' && !connected){
+              connected = true;
+              resolve(connection);
+            }
           } else if (type === 'HB'){
-
+              console.log(`swallowing HB in WebsocketConnection`);
           } else {
             callback(msg)
           }
@@ -21,7 +25,7 @@ export default class Connection {
       const ws = new WebSocket('ws://' + connectionString);
       ws.onopen = () => {
         console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
-          callback({type : 'connection-status',  status: 'connected' });
+        callback({type : 'connection-status',  status: 'connected' });
       };
 
       ws.onmessage = evt => {

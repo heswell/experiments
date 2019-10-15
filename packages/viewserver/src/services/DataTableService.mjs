@@ -37,7 +37,6 @@ export function unsubscribeAll(clientId, queue){
 }
 
 export function AddSubscription(clientId, request, queue){
-
     const table = getTable(request.tablename);
     _subscriptions[request.viewport] = Subscription(table, request, queue);
     let clientSubscriptions = _client_subscriptions[clientId] || (_client_subscriptions[clientId] = []);
