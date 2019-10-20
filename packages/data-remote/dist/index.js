@@ -209,6 +209,15 @@ const connectServer = async (serverName, url, onConnectionStatusMessage) => {
     invariant(connection !== undefined, 'unable to open connection to ${url}');
     // if the connection breaks, the serverPrtoxy will continue top 'send' messages 
     const server = new ServerProxy(connection);
+    
+    // How do we handle authentication, login
+    if (typeof server.authenticate === 'function'){
+      await server.authenticate('steve', 'pword');
+    }
+    if (typeof server.login === 'function'){
+      await server.login();
+    }
+
     resolve(server);
   }))
 };

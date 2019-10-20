@@ -4,12 +4,11 @@ import {Grid } from '@heswell/ingrid';
 import {RemoteDataView as View, Servers} from '@heswell/data-remote';
 
 const dataConfig = {
-  server: Servers.Vuu,
+  serverName: Servers.Vuu,
   tableName: 'instrumentPrices', 
-  url: '127.0.0.1:8090/websocket' 
+  url: '127.0.0.1:8090/websocket'
 };
 
-[ "currency", "exchange", "lotSize", "bid", "ask", "last", "open", "close", "scenario" ] 
 const instrumentColumns = [
   { name: 'ric', width: 120} ,
   { name: 'description', width: 200} ,

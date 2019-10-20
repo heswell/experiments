@@ -1,17 +1,8 @@
 import * as Message from './messages.js';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import { createLogger, logColor } from '@heswell/utils';
+import { createLogger, logColor, partition } from '@heswell/utils';
 
 const logger = createLogger('ViewsServerProxy', logColor.blue);
-
-function partition(array, test, pass = [], fail = []) {
-
-    for (let i = 0, len = array.length; i < len; i++) {
-        (test(array[i], i) ? pass : fail).push(array[i]);
-    }
-
-    return [pass, fail];
-}
 
 /*
     query: (type, params = null) => new Promise((resolve, reject) => {
@@ -25,20 +16,27 @@ function partition(array, test, pass = [], fail = []) {
     })
 
     */
-// we use one ServerProxy per client (i.e per browser instance)
-// This is created as a singleton in the (remote-data) view
-// TODO don'r we need to create one per server connected to ?
 export class ServerProxy {
 
     constructor(connection) {
-        logger.log(`ServerProxy constructor`)
         this.connection = connection;
         this.queuedRequests = [];
         this.viewportStatus = {};
     }
 
+
+
+
+
+
+
+
+
+
+
     handleMessageFromClient(message) {
-        this.sendIfReady(message, this.viewportStatus[message.viewport].status === 'subscribed');
+        const viewport = this.viewportStatus[message.viewport];
+        this.sendIfReady(message, viewport.status === 'subscribed');
     }
 
     sendIfReady(message, isReady) {
@@ -53,16 +51,6 @@ export class ServerProxy {
 
     }
 
-    resubscribeAll(){
-        logger.log(`resubscribe all`)
-        for (let [viewport, {request}] of Object.entries(this.viewportStatus)) {
-            this.sendMessageToServer({
-                type: API.addSubscription,
-                ...request
-            });
-        }
-    }
-
     disconnected(){
         logger.log(`disconnected`);
         for (let [viewport, {callback}] of Object.entries(this.viewportStatus)) {
@@ -74,7 +62,18 @@ export class ServerProxy {
         }
     }
 
+    resubscribeAll(){
+        logger.log(`resubscribe all`)
+        for (let [viewport, {request}] of Object.entries(this.viewportStatus)) {
+            this.sendMessageToServer({
+                type: API.addSubscription,
+                ...request
+            });
+        }
+    }
+
     subscribe(message, callback) {
+        // Q is this ever null, shouldn't we query the connection.status ?
         const isReady = this.connection !== null;
         const { viewport } = message;
         this.viewportStatus[viewport] = {
@@ -89,15 +88,11 @@ export class ServerProxy {
     }
 
     subscribed(/* server message */ message) {
-        const { viewport } = message;
-        if (this.viewportStatus[viewport]) {
+        const viewport = this.viewportStatus[message.viewport];
 
-            const {request, callback} = this.viewportStatus[viewport];
-            // const {table, columns, sort, filter, groupBy} = request;
-            let { range } = request;
-            logger.log(`<handleMessageFromServer> SUBSCRIBED create subscription range ${range.lo} - ${range.hi}`)
+        if (viewport) {
 
-            this.viewportStatus[viewport].status = 'subscribed';
+            viewport.status = 'subscribed';
 
             const byViewport = vp => item => item.viewport === vp;
             const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
@@ -106,17 +101,13 @@ export class ServerProxy {
 
             this.queuedRequests = messagesForOtherViewports;
             rangeMessages.forEach(msg => {
-
                 range = msg.range;
-
             });
 
             if (otherMessages.length) {
                 console.log(`we have ${otherMessages.length} messages still to process`);
             }
-
         }
-
     }
 
     sendMessageToServer(message) {

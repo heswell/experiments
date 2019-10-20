@@ -235,6 +235,15 @@ function invariant(condition, message) {
   }
 }
 
+function partition(array, test, pass = [], fail = []) {
+
+  for (let i = 0, len = array.length; i < len; i++) {
+      (test(array[i], i) ? pass : fail).push(array[i]);
+  }
+
+  return [pass, fail];
+}
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, module) {
@@ -1159,5 +1168,6 @@ exports.EventEmitter = EventEmitter;
 exports.createLogger = createLogger;
 exports.invariant = invariant;
 exports.logColor = logColor;
+exports.partition = partition;
 exports.uuid = uuid$1;
 //# sourceMappingURL=index.js.map

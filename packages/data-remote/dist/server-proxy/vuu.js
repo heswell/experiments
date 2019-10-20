@@ -1,3 +1,21 @@
+const AUTH = 'AUTH';
+const AUTH_SUCCESS = 'AUTH_SUCCESS';
+const LOGIN = 'LOGIN';
+const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+const CREATE_VP = 'CREATE_VP';
+const CREATE_VP_SUCCESS = 'CREATE_VP_SUCCESS';
+const CHANGE_VP = 'CHANGE_VP';
+const CHANGE_VP_SUCCESS = 'CHANGE_VP_SUCCESS';
+const CHANGE_VP_RANGE = 'CHANGE_VP_RANGE';
+const CHANGE_VP_RANGE_SUCCESS = 'CHANGE_VP_RANGE_SUCCESS';
+const TABLE_ROW = 'TABLE_ROW';
+const HB = "HB";
+const HB_RESP = "HB_RESP";
+
+
+const SIZE = 'SIZE';
+const UPDATE = 'U';
+
 const logColor = {
   plain : 'color: black; font-weight: normal',
   blue : 'color: blue; font-weight: bold',
@@ -10,6 +28,15 @@ const createLogger = (source, labelColor=plain, msgColor=plain) => ({
   log: (msg, args='') => console.log(`[${Date.now()}]%c[${source}] %c${msg}`,labelColor, msgColor, args),
   warn: (msg) => console.warn(`[${source}] ${msg}`)
 });
+
+function partition(array, test, pass = [], fail = []) {
+
+  for (let i = 0, len = array.length; i < len; i++) {
+      (test(array[i], i) ? pass : fail).push(array[i]);
+  }
+
+  return [pass, fail];
+}
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -927,217 +954,52 @@ var uuid = createCommonjsModule(function (module) {
 }));
 });
 
-const ServerApiMessageTypes = {
-  addSubscription: 'AddSubscription',
-  setColumns: 'setColumns'
-};
+const logger = createLogger('ViewsServerProxy', logColor.blue);
 
-const logger = createLogger('WebsocketConnection', logColor.brown);
-
-const connectionAttempts = {};
-
-const setWebsocket = Symbol('setWebsocket');
-const connectionCallback = Symbol('connectionCallback');
-const destroyConnection = Symbol('destroyConnection');
-
-async function connect(connectionString, callback, connectionStatusCallback) {
-    return makeConnection(connectionString, msg => {
-      const {type} = msg;
-      if (type === 'connection-status'){
-        connectionStatusCallback(msg);
-      } else if (type === 'HB'){
-          console.log(`swallowing HB in WebsocketConnection`);
-      } else if (type === 'Welcome'){
-        // Note: we are actually resolving the connection before we get this session message
-        logger.log(`Session established clientId: ${msg.clientId}`);
-      } else {
-        callback(msg);
-      }
-    });
-}
-
-async function reconnect(connection){
-  console.log(`reconnect connection at ${connection.url}`);
-  makeConnection(connection.url, connection[connectionCallback], connection);
-}
-
-async function makeConnection(url, callback, connection){
-
-  const connectionStatus = connectionAttempts[url] || (connectionAttempts[url] = {
-    attemptsRemaining: 5,
-    status: 'not-connected'
-  });
-
-  try {
-    callback({type: 'connection-status', status: 'connecting'});
-    const reconnecting = typeof connection !== 'undefined';
-    const ws = await createWebsocket(url);
-
-    console.log(`%c⚡ %c${url}`, 'font-size: 24px;color: green;font-weight: bold;','color:green; font-size: 14px;');
-    
-    if (reconnecting){
-      connection[setWebsocket](ws);
-    } else {
-      connection = new Connection(ws, url, callback);
-    }
-
-    callback({type: 'connection-status', status: reconnecting ? 'reconnected' : 'connected'});
-
-    return connection;
-  
-  } catch(evt){
-    const retry = --connectionStatus.attemptsRemaining > 0;
-    callback({type: 'connection-status', status: 'not-connected', reason: 'failed to connect', retry});
-    if (retry){
-      return makeConnectionIn(url, callback, connection, 10000);
-    }
-  }
-}
-
-const makeConnectionIn = (url, callback, connection, delay) => new Promise(resolve => {
-  setTimeout(() => {
-    resolve(makeConnection(url, callback, connection));
-  }, delay);
-}); 
-
-const createWebsocket = connectionString => new Promise((resolve, reject) => {
-  //TODO add timeout
-    const ws = new WebSocket('ws://' + connectionString);
-    ws.onopen = () => resolve(ws);
-    ws.onerror = evt => reject(evt);  
-});
-
-
-class Connection {
-
-  constructor(ws, url, callback) {
-
-    this.url = url;
-    this[connectionCallback] = callback;
-
-    this[setWebsocket](ws);
-
-  }
-
-  [setWebsocket](ws){
-
-    const callback = this[connectionCallback];
-
-    ws.onmessage = evt => {
-      const message = JSON.parse(evt.data);
-      // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
-      if (Array.isArray(message)){
-        message.map(callback);
-      } else {
-        callback(message);
-      }
-    };
-
-    ws.onerror = evt => {
-      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: red;font-weight: bold;','color:red; font-size: 14px;');
-      callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
-      reconnect(this);
-      this.send = queue;
-    };
-
-    ws.onclose = evt => {
-      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: orange;font-weight: bold;','color:orange; font-size: 14px;');
-      callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
-      reconnect(this);
-      this.send = queue;
-    };
-
-    const send = msg => {
-      ws.send(JSON.stringify(msg));
-    };
-
-    const queue = msg => {
-      console.log(`queuing message ${JSON.stringify(msg)}`);
-    };
-
-    this.send = send;
-
-  }
-
-  [destroyConnection](){
-    console.log(`destroy !!!!!`);
-  }
-}
-
-const AUTH = 'AUTH';
-const AUTH_SUCCESS = 'AUTH_SUCCESS';
-const LOGIN = 'LOGIN';
-const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
-const CREATE_VP = 'CREATE_VP';
-const CREATE_VP_SUCCESS = 'CREATE_VP_SUCCESS';
-const CHANGE_VP = 'CHANGE_VP';
-const CHANGE_VP_SUCCESS = 'CHANGE_VP_SUCCESS';
-const CHANGE_VP_RANGE = 'CHANGE_VP_RANGE';
-const CHANGE_VP_RANGE_SUCCESS = 'CHANGE_VP_RANGE_SUCCESS';
-const TABLE_ROW = 'TABLE_ROW';
-const HB = "HB";
-const HB_RESP = "HB_RESP";
-
-
-const SIZE = 'SIZE';
-const UPDATE = 'U';
-
-const logger$1 = createLogger('ViewsServerProxy', logColor.blue);
-
-const SORT = {
-    asc: 'D',
-    dsc : 'A'
-};
-
-function partition(array, test, pass = [], fail = []) {
-
-    for (let i = 0, len = array.length; i < len; i++) {
-        (test(array[i], i) ? pass : fail).push(array[i]);
-    }
-
-    return [pass, fail];
-}
+const SORT = { asc: 'D', dsc : 'A' };
 
 let _requestId = 1;
 
-// we use one ServerProxy per client (i.e per browser instance)
-// This is created as a singleton in the (remote-data) view
-// TODO don'r we need to create one per server connected to ?
+
+
+
+
+
+
+
+
 class ServerProxy {
 
-    constructor(clientCallback) {
-        this.connection = null;
-        this.connectionStatus = 'not-connected';
+    constructor(connection) {
+        this.connection = connection;
+        this.queuedRequests = [];
+        this.viewportStatus = {};
 
         this.queuedRequests = [];
         this.loginToken = "";
         this.sessionId= "";
         this.pendingLogin = null;
         this.pendingAuthentication = null;
-        this.pendingSubscriptionRequests = {};
-        this.postMessageToClient = clientCallback;
-        this.viewports = {};
 
     }
 
     handleMessageFromClient(message) {
 
-        const viewport = this.viewports[message.viewport];
+        const viewport = this.viewportStatus[message.viewport];
+        const isReady = viewport.status === 'subscribed';
 
         switch (message.type){
             case 'setViewRange':
-                const isViewportReady = viewport !== undefined;
-                if (isViewportReady){
-                    this.sendIfReady({
-                        type : CHANGE_VP_RANGE,
-                        viewPortId : viewport.serverId,
-                        from : message.range.lo,
-                        to : message.range.hi
-                    });
-                }
+                this.sendIfReady({
+                    type : CHANGE_VP_RANGE,
+                    viewPortId : viewport.serverId,
+                    from : message.range.lo,
+                    to : message.range.hi
+                },
+                _requestId++,
+                isReady);
                 break;
-            case 'groupBy': {
-                console.log(message.groupBy);
+            case 'groupBy':
                 this.sendIfReady({
                     type : CHANGE_VP,
                     viewPortId : viewport.serverId,
@@ -1147,22 +1009,24 @@ class ServerProxy {
                     },
                     groupBy : message.groupBy.map(([columnName]) => columnName),
                     filterSpec : null
-                  });
-            }
+                },
+                _requestId++,
+                isReady);
                 break;
                 
-            case 'sort': {
+            case 'sort':
                 this.sendIfReady({
-                        type : CHANGE_VP,
-                        viewPortId : viewport.serverId,
-                        columns : [ "ric", "description", "currency", "exchange", "lotSize", "bid", "ask", "last", "open", "close", "scenario" ],
-                        sort : {
-                            sortDefs: message.sortCriteria.map(([column, dir='asc']) => ({column, sortType: SORT[dir]}))
-                        },
-                        groupBy : [ ],
-                        filterSpec : null
-                      });
-                }
+                    type : CHANGE_VP,
+                    viewPortId : viewport.serverId,
+                    columns : [ "ric", "description", "currency", "exchange", "lotSize", "bid", "ask", "last", "open", "close", "scenario" ],
+                    sort : {
+                        sortDefs: message.sortCriteria.map(([column, dir='asc']) => ({column, sortType: SORT[dir]}))
+                    },
+                    groupBy : [ ],
+                    filterSpec : null
+                },
+                _requestId++,
+                isReady);
                 break;
 
             default:
@@ -1197,27 +1061,30 @@ class ServerProxy {
 
     }
 
-    // if we're going to support multiple connections, we need to save them against connectionIs
-    async connect({ connectionString, connectionId = 0 }) {
+    disconnected(){
+        logger.log(`disconnected`);
+        for (let [viewport, {callback}] of Object.entries(this.viewportStatus)) {
+            callback({
+                rows: [],
+                size: 0,
+                range: {lo:0, hi:0}
+            });
+        }
+    }
 
-        logger$1.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`);
-        this.connectionStatus = 'connecting';
-        this.connection = await connect.connect(connectionString, msg => this.handleMessageFromServer(msg));
-
-        // login
-        console.log(`connected to VUU, now we're going to authenticate ...`);
-        const token = await this.authenticate('steve', 'steve');
-        console.log(`authenticated on VUU token: ${token}, now we're going to login ...`);
-
-        const sessionId = await this.login();
-        console.log(`logged in to VUU sessionId: ${sessionId}`);
-
-        this.onReady(connectionId);
+    resubscribeAll(){
+        logger.log(`resubscribe all`);
+        // for (let [viewport, {request}] of Object.entries(this.viewportStatus)) {
+        //     this.sendMessageToServer({
+        //         type: API.addSubscription,
+        //         ...request
+        //     });
+        // }
     }
 
     async authenticate(username, password){
         return new Promise((resolve, reject) => {
-            this.sendMessageToServer({type : AUTH,username,password}, "");
+            this.sendMessageToServer({type : AUTH, username, password}, "");
             this.pendingAuthentication = {resolve, reject};
         })
     }
@@ -1229,10 +1096,9 @@ class ServerProxy {
 
     async login(){
         return new Promise((resolve, reject) => {
-            this.sendMessageToServer({type : LOGIN},"");
+            this.sendMessageToServer({type : LOGIN}, "");
             this.pendingLogin = {resolve, reject};
         })
-
     }
 
     loggedIn(sessionId){
@@ -1240,16 +1106,15 @@ class ServerProxy {
         this.pendingLogin.resolve(sessionId);
     }
 
-    subscribe(message) {
-        const isReady = this.connectionStatus === 'ready';
-        const {connectionId, viewport, tablename, columns, range: {lo, hi}} = message;
-        this.pendingSubscriptionRequests[viewport] = message;
-        this.viewports[viewport] = {
-            clientId: viewport,
-            status: 'subscribing'
+    subscribe(message, callback) {
+        // the session should live at the connection level
+        const isReady = this.sessionId !== "";
+        const {viewport, tablename, columns, range: {lo, hi}} = message;
+        this.viewportStatus[viewport] = {
+            status: 'subscribing',
+            request: message,
+            callback
         };
-
-        console.log(JSON.stringify(message,null,2));
 
         // use client side viewport as request id, so that when we process the response,
         // with the serverside viewport we can establish a mapping between the two
@@ -1272,18 +1137,19 @@ class ServerProxy {
      
     }
 
-    subscribed(/* server message */ viewport, message) {
+    subscribed(/* server message */ clientViewport, message) {
+        const viewport = this.viewportStatus[clientViewport];
         const { viewPortId } = message;
-        if (this.pendingSubscriptionRequests[viewport]) {
-            const request = this.pendingSubscriptionRequests[viewport];
 
-            this.pendingSubscriptionRequests[viewport] = undefined;
-            // use server id as an alternate key to viewport
-            const vp = this.viewports[viewPortId] = this.viewports[viewport];
-            vp.status = 'subscribed';
-            vp.serverId = viewPortId;
+        if (viewport) {
+            // key the viewport on server viewport ID as well as client id
+            this.viewportStatus[viewPortId] = viewport;
+
+            viewport.status = 'subscribed';
+            viewport.serverId = viewPortId;
+
             const {table, range, columns, sort, groupBy, filterSpec} = message;
-            vp.spec = {
+            viewport.spec = {
                 table, range, columns, sort, groupBy, filterSpec
             };
 
@@ -1300,24 +1166,8 @@ class ServerProxy {
             if (otherMessages.length) {
                 console.log(`we have ${otherMessages.length} messages still to process`);
             }
-
         }
-
     }
-
-    onReady(connectionId) {
-        this.connectionStatus = 'ready';
-        // messages which have no dependency on previous subscription
-        logger$1.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan');
-
-        const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === ServerApiMessageTypes.addSubscription;
-        const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);
-        // TODO roll setViewRange messages into subscribe messages
-        readyToSend.forEach(msg => this.sendMessageToServer(msg));
-        this.queuedRequests = remainingMessages;
-        this.postMessageToClient({ type: 'connection-status', status: 'ready', connectionId });
-    }
-
 
     batchByViewport(rows){
         const viewports = {};
@@ -1354,26 +1204,20 @@ class ServerProxy {
             case CREATE_VP_SUCCESS:
                 return this.subscribed(requestId, body);
             case CHANGE_VP_RANGE_SUCCESS:
-                console.log(`VP range changed`);
-                break;
             case CHANGE_VP_SUCCESS:
-                console.log(`VP changed`);
                 break;
             case TABLE_ROW: {
                 const {batch, isLast, timestamp, rows} = body;
                 const rowsByViewport = this.batchByViewport(rows);
                 rowsByViewport.forEach(({viewPortId,size, rows}) => {
+                    const {request: {viewport}, callback: postMessageToClient} = this.viewportStatus[viewPortId];
                     const output = {
-                        viewport: this.viewports[viewPortId].clientId,
-                        type: 'rowset',
-                        data: {
-                            size,
-                            offset: 0,
-                            range: {lo: 0, hi: 27},
-                            rows
-                        }
+                        size,
+                        offset: 0,
+                        range: {lo: 0, hi: 27},
+                        rows
                     };
-                    this.postMessageToClient(output);
+                    postMessageToClient(output);
                 });                
             }
 
