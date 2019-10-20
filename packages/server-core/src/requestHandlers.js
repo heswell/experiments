@@ -8,12 +8,13 @@ export function configure(config){
     console.log(`requestHandler.configure ${JSON.stringify(config,null,2)}`)
 
     config.services.forEach(async ({name, module, API}) => {
-        console.log(`about to import ${module}`)
+        console.log(`about to import ${module}`);
+        // TODO roll these up into async functions we can invoke in parallel
         const service = await import(module);
         services[name] = service;
         API.forEach(messageType => serviceAPI[messageType] = name);
         console.log(`configure service ${name} `)
-        service.configure(config);
+        await service.configure(config);
     });
 
 }

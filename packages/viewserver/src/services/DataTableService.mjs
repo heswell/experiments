@@ -4,6 +4,7 @@ import Subscription from './Subscription';
 const _tables = {};
 var _subscriptions = {};
 var _client_subscriptions = {};
+const _queued_subscriptions = {};
 
 // TODO unify these with DataTypes
 const DataType = {
@@ -16,12 +17,30 @@ const DataType = {
 
 // need an API call to expose tables so extension services can manipulate data
 
-export function configure({DataTables}){
-    DataTables.forEach(config => {
-        _tables[config.name] = new Table(config);
-    });
+export const configure = ({DataTables}) => Promise.all(
+    DataTables.map(async config =>  await createTable(config))
+);
 
-}
+async function createTable({dataPath, ...config}){
+    const {name: tablename} = config;
+    const table = _tables[tablename] = new Table(config);
+
+    if (dataPath){
+        await table.loadData(dataPath);
+    }
+
+    const qs = _queued_subscriptions[tablename];
+    if (qs){
+        console.log(`Table ${tablename} created and we have queued Subscription(s)}`)
+        _queued_subscriptions[tablename] = undefined;
+        qs.forEach(({clientId, request, queue}) => {
+            console.log(`Add Queued Subscription clientId:${clientId}`)            
+            AddSubscription(clientId, request, queue);
+        })
+    }
+
+    return table;
+} 
 
 export function unsubscribeAll(clientId, queue){
     const subscriptions = _client_subscriptions[clientId];
@@ -37,10 +56,18 @@ export function unsubscribeAll(clientId, queue){
 }
 
 export function AddSubscription(clientId, request, queue){
-    const table = getTable(request.tablename);
-    _subscriptions[request.viewport] = Subscription(table, request, queue);
-    let clientSubscriptions = _client_subscriptions[clientId] || (_client_subscriptions[clientId] = []);
-    clientSubscriptions.push(request.viewport);
+    const {tablename} = request;
+    const table = _tables[tablename];
+    if (table.status === 'ready'){
+        _subscriptions[request.viewport] = Subscription(table, request, queue);
+        let clientSubscriptions = _client_subscriptions[clientId] || (_client_subscriptions[clientId] = []);
+        clientSubscriptions.push(request.viewport);
+    } else {
+        const qs = _queued_subscriptions;
+        const q = qs[tablename] || (qs[tablename] = []);
+        q.push({clientId, request, queue});
+        console.log(`queued subscriptions for ${tablename} = ${q.length}`)
+    }
 
 }
 
@@ -153,7 +180,7 @@ function getTable(name){
     if (_tables[name]){
         return _tables[name]
     } else {
-        throw Error('DataTableService. no table definition for ' + name);
+        throw Error(`DataTableService. no table definition for ${name}`);
     }
 }
 

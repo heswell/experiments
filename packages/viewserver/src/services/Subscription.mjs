@@ -11,7 +11,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
     const tableMeta = columnUtils.metaData(columns);
 
-    console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)}`)
+    console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)} table.status ${table.status} view.status ${view.status}`)
 
     queue.push({
         requestId,

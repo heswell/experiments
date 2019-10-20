@@ -927,55 +927,140 @@ var uuid = createCommonjsModule(function (module) {
 }));
 });
 
+const ServerApiMessageTypes = {
+  addSubscription: 'AddSubscription',
+  setColumns: 'setColumns'
+};
+
+const logger = createLogger('WebsocketConnection', logColor.brown);
+
+const connectionAttempts = {};
+
+const setWebsocket = Symbol('setWebsocket');
+const connectionCallback = Symbol('connectionCallback');
+const destroyConnection = Symbol('destroyConnection');
+
+async function connect(connectionString, callback, connectionStatusCallback) {
+    return makeConnection(connectionString, msg => {
+      const {type} = msg;
+      if (type === 'connection-status'){
+        connectionStatusCallback(msg);
+      } else if (type === 'HB'){
+          console.log(`swallowing HB in WebsocketConnection`);
+      } else if (type === 'Welcome'){
+        // Note: we are actually resolving the connection before we get this session message
+        logger.log(`Session established clientId: ${msg.clientId}`);
+      } else {
+        callback(msg);
+      }
+    });
+}
+
+async function reconnect(connection){
+  console.log(`reconnect connection at ${connection.url}`);
+  makeConnection(connection.url, connection[connectionCallback], connection);
+}
+
+async function makeConnection(url, callback, connection){
+
+  const connectionStatus = connectionAttempts[url] || (connectionAttempts[url] = {
+    attemptsRemaining: 5,
+    status: 'not-connected'
+  });
+
+  try {
+    callback({type: 'connection-status', status: 'connecting'});
+    const reconnecting = typeof connection !== 'undefined';
+    const ws = await createWebsocket(url);
+
+    console.log(`%c⚡ %c${url}`, 'font-size: 24px;color: green;font-weight: bold;','color:green; font-size: 14px;');
+    
+    if (reconnecting){
+      connection[setWebsocket](ws);
+    } else {
+      connection = new Connection(ws, url, callback);
+    }
+
+    callback({type: 'connection-status', status: reconnecting ? 'reconnected' : 'connected'});
+
+    return connection;
+  
+  } catch(evt){
+    const retry = --connectionStatus.attemptsRemaining > 0;
+    callback({type: 'connection-status', status: 'not-connected', reason: 'failed to connect', retry});
+    if (retry){
+      return makeConnectionIn(url, callback, connection, 10000);
+    }
+  }
+}
+
+const makeConnectionIn = (url, callback, connection, delay) => new Promise(resolve => {
+  setTimeout(() => {
+    resolve(makeConnection(url, callback, connection));
+  }, delay);
+}); 
+
+const createWebsocket = connectionString => new Promise((resolve, reject) => {
+  //TODO add timeout
+    const ws = new WebSocket('ws://' + connectionString);
+    ws.onopen = () => resolve(ws);
+    ws.onerror = evt => reject(evt);  
+});
+
+
 class Connection {
 
-  static connect(connectionString, callback, connectionStatusCallback) {
-    return new Promise(function (resolve) {
-        let connected = false;
-        const connection = new Connection(connectionString, msg => {
-          const {type} = msg;
-          // TODO check the connection status is actually connected
-          if (type === 'connection-status'){
-            connectionStatusCallback(msg);
-            if (msg.status === 'connected' && !connected){
-              connected = true;
-              resolve(connection);
-            }
-          } else if (type === 'HB'){
-              console.log(`swallowing HB in WebsocketConnection`);
-          } else {
-            callback(msg);
-          }
-        });
-    });
+  constructor(ws, url, callback) {
+
+    this.url = url;
+    this[connectionCallback] = callback;
+
+    this[setWebsocket](ws);
+
   }
 
-  constructor(connectionString, callback) {
-      const ws = new WebSocket('ws://' + connectionString);
-      ws.onopen = () => {
-        console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
-        callback({type : 'connection-status',  status: 'connected' });
-      };
+  [setWebsocket](ws){
 
-      ws.onmessage = evt => {
-        const message = JSON.parse(evt.data);
-        // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
-        if (Array.isArray(message)){
-          message.map(callback);
-        } else {
-          callback(message);
-        }
-      };
+    const callback = this[connectionCallback];
 
-      ws.onerror = evt => {
-        console.error(`websocket error`, evt);
-        callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
-      };
-      ws.onclose = evt => {
-        console.warn(`websocket closed`, evt);
-        callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
-      };
-      this.send = message => ws.send(JSON.stringify(message));
+    ws.onmessage = evt => {
+      const message = JSON.parse(evt.data);
+      // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
+      if (Array.isArray(message)){
+        message.map(callback);
+      } else {
+        callback(message);
+      }
+    };
+
+    ws.onerror = evt => {
+      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: red;font-weight: bold;','color:red; font-size: 14px;');
+      callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
+      reconnect(this);
+      this.send = queue;
+    };
+
+    ws.onclose = evt => {
+      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: orange;font-weight: bold;','color:orange; font-size: 14px;');
+      callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
+      reconnect(this);
+      this.send = queue;
+    };
+
+    const send = msg => {
+      ws.send(JSON.stringify(msg));
+    };
+
+    const queue = msg => {
+      console.log(`queuing message ${JSON.stringify(msg)}`);
+    };
+
+    this.send = send;
+
+  }
+
+  [destroyConnection](){
+    console.log(`destroy !!!!!`);
   }
 }
 
@@ -997,12 +1082,7 @@ const HB_RESP = "HB_RESP";
 const SIZE = 'SIZE';
 const UPDATE = 'U';
 
-const ServerApiMessageTypes = {
-  addSubscription: 'AddSubscription',
-  setColumns: 'setColumns'
-};
-
-const logger = createLogger('ViewsServerProxy', logColor.blue);
+const logger$1 = createLogger('ViewsServerProxy', logColor.blue);
 
 const SORT = {
     asc: 'D',
@@ -1120,9 +1200,9 @@ class ServerProxy {
     // if we're going to support multiple connections, we need to save them against connectionIs
     async connect({ connectionString, connectionId = 0 }) {
 
-        logger.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`);
+        logger$1.log(`<connect> connectionString: ${connectionString} connectionId: ${connectionId}`);
         this.connectionStatus = 'connecting';
-        this.connection = await Connection.connect(connectionString, msg => this.handleMessageFromServer(msg));
+        this.connection = await connect.connect(connectionString, msg => this.handleMessageFromServer(msg));
 
         // login
         console.log(`connected to VUU, now we're going to authenticate ...`);
@@ -1228,7 +1308,7 @@ class ServerProxy {
     onReady(connectionId) {
         this.connectionStatus = 'ready';
         // messages which have no dependency on previous subscription
-        logger.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan');
+        logger$1.log(`%c onReady ${JSON.stringify(this.queuedRequests)}`, 'background-color: brown;color: cyan');
 
         const byReadyToSendStatus = msg => msg.viewport === undefined || msg.type === ServerApiMessageTypes.addSubscription;
         const [readyToSend, remainingMessages] = partition(this.queuedRequests, byReadyToSendStatus);

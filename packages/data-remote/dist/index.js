@@ -1,5 +1,5 @@
 import { DataTypes, columnUtils } from '@heswell/data';
-import { createLogger, logColor, EventEmitter, uuid } from '@heswell/utils';
+import { createLogger, logColor, EventEmitter, invariant, uuid } from '@heswell/utils';
 
 let _connectionId = 0;
 
@@ -42,62 +42,142 @@ const msgType = {
   viewRangeChanged : 'ViewRangeChanged',
 };
 
+const logger = createLogger('WebsocketConnection', logColor.brown);
+
+const connectionAttempts = {};
+
+const setWebsocket = Symbol('setWebsocket');
+const connectionCallback = Symbol('connectionCallback');
+const destroyConnection = Symbol('destroyConnection');
+
+async function connect(connectionString, callback, connectionStatusCallback) {
+    return makeConnection(connectionString, msg => {
+      const {type} = msg;
+      if (type === 'connection-status'){
+        connectionStatusCallback(msg);
+      } else if (type === 'HB'){
+          console.log(`swallowing HB in WebsocketConnection`);
+      } else if (type === 'Welcome'){
+        // Note: we are actually resolving the connection before we get this session message
+        logger.log(`Session established clientId: ${msg.clientId}`);
+      } else {
+        callback(msg);
+      }
+    });
+}
+
+async function reconnect(connection){
+  console.log(`reconnect connection at ${connection.url}`);
+  makeConnection(connection.url, connection[connectionCallback], connection);
+}
+
+async function makeConnection(url, callback, connection){
+
+  const connectionStatus = connectionAttempts[url] || (connectionAttempts[url] = {
+    attemptsRemaining: 5,
+    status: 'not-connected'
+  });
+
+  try {
+    callback({type: 'connection-status', status: 'connecting'});
+    const reconnecting = typeof connection !== 'undefined';
+    const ws = await createWebsocket(url);
+
+    console.log(`%c⚡ %c${url}`, 'font-size: 24px;color: green;font-weight: bold;','color:green; font-size: 14px;');
+    
+    if (reconnecting){
+      connection[setWebsocket](ws);
+    } else {
+      connection = new Connection(ws, url, callback);
+    }
+
+    callback({type: 'connection-status', status: reconnecting ? 'reconnected' : 'connected'});
+
+    return connection;
+  
+  } catch(evt){
+    const retry = --connectionStatus.attemptsRemaining > 0;
+    callback({type: 'connection-status', status: 'not-connected', reason: 'failed to connect', retry});
+    if (retry){
+      return makeConnectionIn(url, callback, connection, 10000);
+    }
+  }
+}
+
+const makeConnectionIn = (url, callback, connection, delay) => new Promise(resolve => {
+  setTimeout(() => {
+    resolve(makeConnection(url, callback, connection));
+  }, delay);
+}); 
+
+const createWebsocket = connectionString => new Promise((resolve, reject) => {
+  //TODO add timeout
+    const ws = new WebSocket('ws://' + connectionString);
+    ws.onopen = () => resolve(ws);
+    ws.onerror = evt => reject(evt);  
+});
+
+
 class Connection {
 
-  static connect(connectionString, callback, connectionStatusCallback) {
-    return new Promise(function (resolve) {
-        let connected = false;
-        const connection = new Connection(connectionString, msg => {
-          const {type} = msg;
-          // TODO check the connection status is actually connected
-          if (type === 'connection-status'){
-            connectionStatusCallback(msg);
-            if (msg.status === 'connected' && !connected){
-              connected = true;
-              resolve(connection);
-            }
-          } else if (type === 'HB'){
-              console.log(`swallowing HB in WebsocketConnection`);
-          } else {
-            callback(msg);
-          }
-        });
-    });
+  constructor(ws, url, callback) {
+
+    this.url = url;
+    this[connectionCallback] = callback;
+
+    this[setWebsocket](ws);
+
   }
 
-  constructor(connectionString, callback) {
-      const ws = new WebSocket('ws://' + connectionString);
-      ws.onopen = () => {
-        console.log('%c⚡','font-size: 24px;color: green;font-weight: bold;');
-        callback({type : 'connection-status',  status: 'connected' });
-      };
+  [setWebsocket](ws){
 
-      ws.onmessage = evt => {
-        const message = JSON.parse(evt.data);
-        // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
-        if (Array.isArray(message)){
-          message.map(callback);
-        } else {
-          callback(message);
-        }
-      };
+    const callback = this[connectionCallback];
 
-      ws.onerror = evt => {
-        console.error(`websocket error`, evt);
-        callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
-      };
-      ws.onclose = evt => {
-        console.warn(`websocket closed`, evt);
-        callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
-      };
-      this.send = message => ws.send(JSON.stringify(message));
+    ws.onmessage = evt => {
+      const message = JSON.parse(evt.data);
+      // console.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (WebSocket) ${message.type || JSON.stringify(message)}`,'color:white;background-color:blue;font-weight:bold;');
+      if (Array.isArray(message)){
+        message.map(callback);
+      } else {
+        callback(message);
+      }
+    };
+
+    ws.onerror = evt => {
+      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: red;font-weight: bold;','color:red; font-size: 14px;');
+      callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
+      reconnect(this);
+      this.send = queue;
+    };
+
+    ws.onclose = evt => {
+      console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: orange;font-weight: bold;','color:orange; font-size: 14px;');
+      callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
+      reconnect(this);
+      this.send = queue;
+    };
+
+    const send = msg => {
+      ws.send(JSON.stringify(msg));
+    };
+
+    const queue = msg => {
+      console.log(`queuing message ${JSON.stringify(msg)}`);
+    };
+
+    this.send = send;
+
+  }
+
+  [destroyConnection](){
+    console.log(`destroy !!!!!`);
   }
 }
 
 const serverProxies = new WeakMap();
 const servers = new WeakMap();
 
-const logger = createLogger('ConnectionManager', logColor.blue);
+const logger$1 = createLogger('ConnectionManager', logColor.green);
 
 const getServerProxy = async serverName => {
   console.log(`request for proxy class for ${serverName}`,serverProxies[serverName]);
@@ -105,44 +185,49 @@ const getServerProxy = async serverName => {
   return serverProxies[serverName] || (serverProxies[serverName] =
     import(/* webpackIgnore: true */`./server-proxy/${serverName}.js`));
 };
-const getServer = async (serverName, url) => {
-  logger.log(`request for server at ${url} ... `);
+const connectServer = async (serverName, url, onConnectionStatusMessage) => {
   
   return servers[url] || (servers[url] = new Promise(async (resolve, reject) => {
-    const {ServerProxy} = await getServerProxy(serverName);
-    if (ServerProxy){
-      logger.log(`...resolved server at ${url}`);
-      resolve(new ServerProxy());
-    } else {
-      reject('Unable to load class ServerProxy for server ${serverName}');
-    }
+    const proxyModule = getServerProxy(serverName);
+    const pendingConnection = connect(
+      url,
+      // if this was called during connect, we would get a ReferenceError, but it will
+      // never be called until subscriptions have been made, so this is safe.
+      msg => server.handleMessageFromServer(msg),
+      msg => {
+        onConnectionStatusMessage(msg);
+        if (msg.status === 'disconnected'){
+          server.disconnected();
+        } else if (msg.status === 'reconnected'){
+          server.resubscribeAll();
+        } 
+      }
+    );
+    
+    const [{ServerProxy}, connection] = [await proxyModule, await pendingConnection];
+    invariant(typeof ServerProxy === 'function', 'Unable to load ServerProxy class for ${serverName}');
+    invariant(connection !== undefined, 'unable to open connection to ${url}');
+    // if the connection breaks, the serverPrtoxy will continue top 'send' messages 
+    const server = new ServerProxy(connection);
+    resolve(server);
   }))
 };
   
 class ConnectionManager extends EventEmitter {
 
   async connect(url, serverName){
-    logger.log(`ConnectionManager.connect ${serverName} ${url}`);
-    const server = await getServer(serverName, url);
-    if (server.connection === null){
-      const connection = await Connection.connect(
-        url, 
-        msg => server.handleMessageFromServer(msg),
-        msg => this.onConnectionStatusChanged(serverName, url, msg)
-      );
-      server.connection = connection;
-    }
-   
-  // Make sure we don't call connect if it's already comnnected
-    const connectionId$1 = `connection-${connectionId.nextValue}`;
-    // await server.connect({ connectionId, connectionString: url });
-
-    return server;
-
+    logger$1.log(`ConnectionManager.connect ${serverName} ${url}`);
+    return connectServer(
+      serverName, 
+      url, 
+      msg => this.onConnectionStatusChanged(serverName, url, msg)
+    );
   }
 
-  onConnectionStatusChanged(serverName, url, {status}){
-    console.log(`connectionStatusChanged server ${serverName}, url ${url} status ${status}`);
+  onConnectionStatusChanged(serverName, url, msg){
+    const {status} = msg;
+    logger$1.log(`connectionStatusChanged server ${serverName}, url ${url} status ${status}`);
+    this.emit('connection-status', msg);
   }
 
 }
@@ -150,7 +235,7 @@ class ConnectionManager extends EventEmitter {
 var ConnectionManager$1 = new ConnectionManager();
 
 const { metaData } = columnUtils;
-const logger$1 = createLogger('RemoteDataView', logColor.blue);
+const logger$2 = createLogger('RemoteDataView', logColor.blue);
 
 const AvailableProxies = {
   Viewserver: 'viewserver', 
@@ -197,7 +282,7 @@ class RemoteDataView  {
     this.tableName = tableName;
     this.columns = columns;
     this.meta = metaData(columns);
-    logger$1.log(`range = ${JSON.stringify(range)}`);
+    logger$2.log(`range = ${JSON.stringify(range)}`);
 
     this.server = await ConnectionManager$1.connect(this.url, this.serverName);
 
@@ -310,7 +395,7 @@ class RemoteDataView  {
   }
 
   subscribeToFilterData(column, range, callback) {
-    logger$1.log(`<subscribeToFilterData> ${column.name}`);
+    logger$2.log(`<subscribeToFilterData> ${column.name}`);
     this.filterDataCallback = callback;
     this.setFilterRange(range.lo, range.hi);
     if (this.filterDataMessage) {
@@ -321,7 +406,7 @@ class RemoteDataView  {
   }
 
   unsubscribeFromFilterData() {
-    logger$1.log(`<unsubscribeFromFilterData>`);
+    logger$2.log(`<unsubscribeFromFilterData>`);
     this.filterDataCallback = null;
   }
 

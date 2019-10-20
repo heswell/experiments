@@ -221,6 +221,16 @@ const createLogger = (source, labelColor=plain, msgColor=plain) => ({
   warn: (msg) => console.warn(`[${source}] ${msg}`)
 });
 
+function invariant(condition, message) {
+
+  if (!condition) {
+    const error = new Error(message);
+    error.name = 'Invariant Violation';
+    error.framesToPop = 1; // we don't care about invariant's own frame
+    throw error;
+  }
+}
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, module) {
@@ -1141,5 +1151,5 @@ function uuid$1(){
   return new uuid(1).format();
 }
 
-export { EventEmitter, createLogger, logColor, uuid$1 as uuid };
+export { EventEmitter, createLogger, invariant, logColor, uuid$1 as uuid };
 //# sourceMappingURL=index.es.js.map

@@ -1,11 +1,11 @@
 import { connectionId as _connectionId } from './constants';
-import { createLogger, logColor, EventEmitter } from '@heswell/utils';
-import Connection from './remote-websocket-connection';
+import { createLogger, logColor, EventEmitter, invariant } from '@heswell/utils';
+import connect from './remote-websocket-connection';
 
 const serverProxies = new WeakMap();
 const servers = new WeakMap();
 
-const logger = createLogger('ConnectionManager', logColor.blue);
+const logger = createLogger('ConnectionManager', logColor.green);
 
 const getServerProxy = async serverName => {
   console.log(`request for proxy class for ${serverName}`,serverProxies[serverName])
@@ -14,23 +14,30 @@ const getServerProxy = async serverName => {
     import(/* webpackIgnore: true */`./server-proxy/${serverName}.js`));
 }
 const connectServer = async (serverName, url, onConnectionStatusMessage) => {
-  logger.log(`request for server at ${url} ... `)
   
   return servers[url] || (servers[url] = new Promise(async (resolve, reject) => {
-    const {ServerProxy} = await getServerProxy(serverName);
-    if (ServerProxy){
-      logger.log(`...resolved server at ${url}`)
-      const server = new ServerProxy();
-      const connection = await Connection.connect(
-        url, 
-        msg => server.handleMessageFromServer(msg),
-        onConnectionStatusMessage
-      );
-      server.connection = connection;
-      resolve(server);
-    } else {
-      reject('Unable to load class ServerProxy for server ${serverName}')
-    }
+    const proxyModule = getServerProxy(serverName);
+    const pendingConnection = connect(
+      url,
+      // if this was called during connect, we would get a ReferenceError, but it will
+      // never be called until subscriptions have been made, so this is safe.
+      msg => server.handleMessageFromServer(msg),
+      msg => {
+        onConnectionStatusMessage(msg);
+        if (msg.status === 'disconnected'){
+          server.disconnected();
+        } else if (msg.status === 'reconnected'){
+          server.resubscribeAll();
+        } 
+      }
+    );
+    
+    const [{ServerProxy}, connection] = [await proxyModule, await pendingConnection];
+    invariant(typeof ServerProxy === 'function', 'Unable to load ServerProxy class for ${serverName}');
+    invariant(connection !== undefined, 'unable to open connection to ${url}');
+    // if the connection breaks, the serverPrtoxy will continue top 'send' messages 
+    const server = new ServerProxy(connection);
+    resolve(server);
   }))
 }
   
@@ -38,22 +45,17 @@ class ConnectionManager extends EventEmitter {
 
   async connect(url, serverName){
     logger.log(`ConnectionManager.connect ${serverName} ${url}`);
-    const server = await connectServer(
+    return connectServer(
       serverName, 
       url, 
       msg => this.onConnectionStatusChanged(serverName, url, msg)
     );
-   
-  // Make sure we don't call connect if it's already comnnected
-    const connectionId = `connection-${_connectionId.nextValue}`;
-    // await server.connect({ connectionId, connectionString: url });
-
-    return server;
-
   }
 
-  onConnectionStatusChanged(serverName, url, {status}){
-    console.log(`connectionStatusChanged server ${serverName}, url ${url} status ${status}`)
+  onConnectionStatusChanged(serverName, url, msg){
+    const {status} = msg;
+    logger.log(`connectionStatusChanged server ${serverName}, url ${url} status ${status}`)
+    this.emit('connection-status', msg);
   }
 
 }
