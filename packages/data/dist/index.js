@@ -1,26 +1,3 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopNamespace(e) {
-  if (e && e.__esModule) { return e; } else {
-    var n = {};
-    if (e) {
-      Object.keys(e).forEach(function (k) {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () {
-            return e[k];
-          }
-        });
-      });
-    }
-    n['default'] = e;
-    return n;
-  }
-}
-
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
@@ -1823,7 +1800,7 @@ function addRowsToIndex(rows, index, indexField){
     return index;
 }
 
-function update(rows, range, updates, {IDX}) {
+function update(rows, updates, {IDX}) {
     const results = rows.slice();
 
     for (let i = 0; i < updates.length; i++) {
@@ -1834,7 +1811,6 @@ function update(rows, range, updates, {IDX}) {
         for (let ii = 0; ii < rows.length; ii++) {
             if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
-                // updates = [colIdx, oldValue, newValue]*
                 for (let j = 0; j < fieldUpdates.length; j += 3) {
                     row[fieldUpdates[j]] = fieldUpdates[j + 2];
                 }
@@ -2221,8 +2197,10 @@ class Table extends EventEmitter {
 
 
         if (data){
+            console.log(`parseData from constructor`);
             this.parseData(data);
         } else if (dataPath){
+            console.log(`loadData from constructor`);
             this.loadData(dataPath);
         }
 
@@ -4790,7 +4768,7 @@ class UpdateQueue$1 extends EventEmitter {
 }
 
 const buildDataView = async url =>
-  new Promise(function (resolve) { resolve(_interopNamespace(require(/* webpackIgnore: true */ url))); })
+  import(/* webpackIgnore: true */ url)
     .catch(err => console.log(`failed to load data at ${url} ${err}`));
 
 const logger = createLogger('LocalDataView', logColor.blue);
@@ -5104,20 +5082,5 @@ const ASC$1 = ASC;
 const DSC$1 = DSC;
 const NULL_RANGE$1 = NULL_RANGE;
 
-exports.ASC = ASC$1;
-exports.BinnedDataView = BinnedDataView;
-exports.DSC = DSC$1;
-exports.DataTypes = DataTypes$1;
-exports.DataView = DataView;
-exports.FilterDataView = FilterDataView;
-exports.LocalDataView = LocalDataView;
-exports.NULL_RANGE = NULL_RANGE$1;
-exports.Table = Table;
-exports.arrayUtils = arrayUtils;
-exports.columnUtils = columnUtils;
-exports.filter = filter;
-exports.groupHelpers = groupHelpers;
-exports.rangeUtils = rangeUtils;
-exports.rowUtils = rowUtils;
-exports.sortUtils = sortUtils;
+export { ASC$1 as ASC, BinnedDataView, DSC$1 as DSC, DataTypes$1 as DataTypes, DataView, FilterDataView, LocalDataView, NULL_RANGE$1 as NULL_RANGE, Table, arrayUtils, columnUtils, filter, groupHelpers, rangeUtils, rowUtils, sortUtils };
 //# sourceMappingURL=index.js.map

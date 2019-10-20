@@ -1,11 +1,9 @@
-/* global require:false __dirname:false process:false module:false */
 import {configure as configureRequestHandlers} from './requestHandlers';
 import {configure as configureXhr} from './xhrHandler';
 import {requestHandler as viewserverRequestHandler} from './handlers/viewserverRequestHandler';
 
 import http from 'http';
-
-const WebSocket = require('ws')
+import WebSocket from 'ws';
 
 const logger = console
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Component from '../component/component';
 import LayoutItem from '../containers/layout-item';
-import PlaceHolder from '../placeHolder';
+import PlaceHolder from '../components/place-holder/place-holder';
 
 import { registerClass, ComponentRegistry } from '../componentRegistry';
 

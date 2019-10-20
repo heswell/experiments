@@ -1,10 +1,14 @@
+.ComponentHeader {
+	--component-header-background: #ccc;
+	--component-header-color: #000;
+}
+
 .Tower > .ComponentHeader,
 .LayoutItem > .ComponentHeader {
-	background-color: #1a4e95;
+	background-color: var(--component-header-background);
+	color:var(--component-header-color);
 	display: flex;
 	align-items: center;
-	background-color: black;
-	color:white;
 }
 
 .Tower > .ComponentHeader button,
@@ -86,59 +90,33 @@
 	transform-origin: 100% 0%;
 }
 
+.LayoutItem {
+    background-color: #fff;
+}
+
 .LayoutItem.dragging {
     opacity: .5;
 }
 
-.DropMenu {
-	position: absolute;
-	width: 0px;
-	height: 0px;
-	overflow: visible;
-	z-index: 10;
+.drop-menu {
+  width: 80px;
+  height: 32px;
+  margin-left: -50%;
+  margin-bottom: -50%; 
+  background-color: rgba(255,255,0,.5);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
 .drop-menu-item {
-	position: absolute;
-	cursor: pointer;
+  width: 32px;
+  background-color: rgba(255,0,0,06);
+  cursor: pointer;
+  border: solid 1px rebeccapurple;
+  margin: 0 1px;
 }
 
-.drop-menu-item {
-	border-radius: 7px;
-	cursor: default;
-	padding:0;
-	left: 2px;
-}
-
-.drop-menu-item:nth-child(1){ background-color: rgb(140,140,140);border: solid yellow 4px; left:0; border-radius: 10px;} 
-.drop-menu-item:nth-child(2){ background-color: rgb(130,130,130);} 
-.drop-menu-item:nth-child(3){ background-color: rgb(120,120,120);} 
-.drop-menu-item:nth-child(4){ background-color: rgb(110,110,110);} 
-
-.drop-menu-item:last-child:not(.hover){
-	border-left:none;
-}
-
-.drop-menu-item.hover {
-	background-color: yellow;
-}
-
-.drop-menu-item.hover + .drop-menu-item {
-	border-left: none;
-}
-
-
-canvas.fullscreen {
-	position:absolute;
-	top:0;
-	left:0;
-	visibility:hidden;
-	z-index: 2;
-}
-
-canvas.fullscreen.ready {
-	visibility: visible;
-}
 
 #sketchpad {
 
@@ -151,7 +129,7 @@ canvas.fullscreen.ready {
 	background-color: rgba(0,255,0,0.2);
 	visibility:hidden;
 	/*opacity : 0.5;*/
-	z-index:2;
+	z-index:102;
 
 }
 
@@ -160,6 +138,21 @@ canvas.fullscreen.ready {
 }
 
 #sketchpad.sketching {
+	visibility:visible;
+}
+
+#drag-canvas {
+	visibility:hidden;
+	z-index: 1;
+  position: absolute;
+  top: 0px;
+  left:0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+.drawing #drag-canvas {
 	visibility:visible;
 }
 
@@ -254,6 +247,9 @@ canvas.fullscreen.ready {
 	background-color: rgba(255,255,255,0.3);
 }
 
+.Component {
+  background-color: inherit;;
+}
 .PlaceHolder {
 	position: absolute;
 	left:0;
@@ -328,8 +324,16 @@ body, div {
 	user-select: none;
 }
 
+#root {
+	height: 100%;
+}
+
 * {
 	box-sizing: border-box;
+}
+
+.Application {
+	background-color: #000;
 }
 .GridCell {
 	position: relative;
@@ -1537,4 +1541,7 @@ button:active, button:hover {
 
   /* Support for IE. */
   font-feature-settings: 'liga';
+}
+head, body {
+  font-family: 'Roboto', sans-serif;
 }

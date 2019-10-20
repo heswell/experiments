@@ -1,4 +1,4 @@
-
+import {rowUtils} from '@heswell/data';
 
 const INITIAL_RANGE = {lo:0,hi:-1}
 
@@ -7,7 +7,6 @@ export const initialData = {
   rowCount: 0,
   range: INITIAL_RANGE,
   offset: 0,
-  // selected: [],
   _keys: {
     free: [],
     used: {}
@@ -19,9 +18,11 @@ export const initialData = {
 export default function (model) {
   return (state, action) => {
     if (action.type === 'range'){
-      return setRange(state, action, model.meta)
+      return setRange(state, action, model.meta);
     } else if (action.type === 'data'){
-      return setData(state, action, model.meta)
+      return setData(state, action, model.meta);
+    } else if (action.type === 'update'){
+      return applyUpdates(state, action, model.meta);
     } else if (action.type === 'selected'){
       return applySelection(state, action, model.meta)
     }
@@ -62,8 +63,15 @@ function setRange(state, {range}, meta){
     rowCount,
     offset,
     range,
-    // selected,
     _keys
+  }
+}
+
+function applyUpdates(state, action, meta){
+  const rows = rowUtils.update(state.rows, action.updates, meta);
+  return {
+    ...state,
+    rows
   }
 }
 
@@ -76,14 +84,11 @@ function setData(state, action, meta){
     
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
-  // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-
   return {
     rows: mergedRows,
     rowCount,
     offset,
     range,
-    // selected,
     _keys
   }
 
@@ -123,9 +128,9 @@ function applySelection(state, {selected, deselected}, meta){
   }
 
   return {
+    ...state,
     rows,
     rowCount,
-    // selected: results
   }
 }
 

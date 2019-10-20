@@ -1,11 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Grid } from '@heswell/ingrid';
-// import data from '@heswell/viewserver/dataTables/instruments/dataset';
 import {LocalDataView as View} from '@heswell/data';
 
 const tableName = 'Instruments'
-const dataConfig = {url: '/dataTables/instruments.js', tableName};
+const dataConfig = {url: '/dist/dataTables/instruments.js', tableName};
 
   
 const instrumentColumns = [

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
+    "watch": "rollup --watch -c --environment BUILD:production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "heswell",
@@ -12,9 +13,11 @@
   "devDependencies": {
     "rollup": "^1.19.4"
   },
+  "dependencies": {
+    "@heswell/utils": "^1.0.0"
+  },
   "peerDependencies": {
-    "@heswell/data": "1.0.0",
-    "@heswell/utils": "1.0.0"
+    "@heswell/data": "^1.0.0"
   }
 
 }

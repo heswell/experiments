@@ -32,7 +32,7 @@ function getContent(row, columns, meta, rowExpanded, onClick) {
         return (
             <div className='GroupCell' style={{ paddingLeft: depth * 20 }} tabIndex={0}
                 onClick={onClick}>
-                <i className='material-icons icon'>{rowExpanded ? 'arrow_drop_down' : 'arrow_right'}</i>
+                <i className='material-icons icon'>{rowExpanded ? 'expand_more' : 'chevron_right'}</i>
                 <span className='group-value'>{value}</span>
                 <span> ({count})</span>
             </div>

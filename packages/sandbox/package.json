@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "@heswell/data": "^1.0.0",
+    "@heswell/data-remote": "^1.0.0",
     "@heswell/ingrid": "^1.0.0",
     "@heswell/ingrid-extras": "^1.0.0",
     "@heswell/inlay": "^1.0.0",

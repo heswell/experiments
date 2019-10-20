@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import { PopupService } from '@heswell/ui-controls';
 import DropMenu, {computeMenuPosition} from './drop-menu/drop-menu.jsx'
 import {isTabstrip} from '../../model/drop-target';
@@ -61,7 +62,7 @@ export default class DropTargetCanvas {
         const wasMultiDrop = _multiDropOptions;
 
         if (_hoverDropTarget !== null) {
-            this.drawTargetSVG(_hoverDropTarget);
+            this.drawTarget(_hoverDropTarget);
         } else {
 
             if (sameDropTarget === false) {
@@ -72,7 +73,7 @@ export default class DropTargetCanvas {
                 } else {
                     clearShiftedTab();
                 }
-                this.drawTargetSVG(dropTarget);
+                this.drawTarget(dropTarget);
             }
     
             if (_multiDropOptions) {
@@ -96,16 +97,14 @@ export default class DropTargetCanvas {
 
     }
 
-    drawTargetSVG(dropTarget, offsetTop = 0, offsetLeft = 0) {
+    drawTarget(dropTarget, offsetTop = 0, offsetLeft = 0) {
 
         const lineWidth = 6;
 
-        const targetRect =  dropTarget.pos.tab
-            ? dropTarget.targetTabRect(lineWidth, offsetTop, offsetLeft)
-            : dropTarget.targetRect(lineWidth, offsetTop, offsetLeft);
+        const targetRect =  dropTarget.targetTabRect(lineWidth, offsetTop, offsetLeft);
         
         if (targetRect){
-            const [l,t,r,b, tl=0, tw=0, th=0] = targetRect
+            const [l,t,r,b,tl,tw,th] = targetRect
             const w = r - l;
             const h = b - t;
             const tabLeftOffset = tl === 0
@@ -118,15 +117,14 @@ export default class DropTargetCanvas {
                 .data([data])
     
             const d = drawTabPath(data);
+            const className = cx("drop-target", dropTarget.pos.position.toString());
     
             path.transition().duration(200)
                 .attr('d', d)
+                .attr("class", className)
     
             path.enter().append("path")
-                .attr("class", "drop-target")
-                .style("stroke", "blue")
-                .style("fill", "transparent")
-                .style("stroke-width", 4)
+                .attr("class", className)
                 .attr('d', d)
     
         }

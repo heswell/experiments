@@ -90,12 +90,14 @@ export const Viewport = React.memo(({
             /* postMessageToClient */
             ({
                 rows=null,
+                updates=null,
                 filter = undefined,
                 size: rowCount = null,
                 offset,
                 range,
                 selected = null,
-                deselected = null}) => {
+                deselected = null
+            }) => {
 
                 if (range && range.reset) {
                     setSrollTop(0);
@@ -109,7 +111,9 @@ export const Viewport = React.memo(({
                     dispatch({ type: Action.ROWCOUNT, rowCount })
                 }
                 if (rows !== null) {
-                    dispatchData({ type: 'data', rows, rowCount, offset, range })
+                    dispatchData({ type: 'data', rows, rowCount, offset, range });
+                } else if (updates !== null){
+                    dispatchData({ type: 'update', updates, range });
                 } else if (selected !== null) {
                     dispatchData({ type: 'selected', selected, deselected })
                 }

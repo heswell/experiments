@@ -16,6 +16,7 @@ import Layout13 from './sample-layouts/layout13.jsx';
 import Layout14 from './sample-layouts/layout14.jsx';
 import Layout15 from './sample-layouts/layout15.jsx';
 import Layout16 from './sample-layouts/layout16.jsx';
+import Layout17 from './sample-layouts/layout17.jsx';
 
 const SampleLayout = ({ sample, width, height }) => {
 
@@ -33,9 +34,10 @@ const SampleLayout = ({ sample, width, height }) => {
     case 11: return Layout11(width, height);  /* Twin FlexBox */
     case 12: return Layout12(width, height);  /* Twin FlexBox, with header */
     case 13: return Layout13(width, height);  /* Twin FlexBox Application */
-    case 14: return Layout14(width, height);  /* Quad FlexBox, children can be moved, remopved */
+    case 14: return Layout14(width, height);  /* Quad FlexBox, children can be moved, removed */
     case 15: return Layout15(width, height);  /* Quad FlexBox, Flexbox shuffle */
     case 16: return Layout16(width, height);  /* Nested FlexBox */
+    case 17: return <Layout17 width={width} height={height} />;  /* Layout Builder */
     default: return Layout1(width, height);
   }
 

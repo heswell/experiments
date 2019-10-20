@@ -10,13 +10,13 @@ export var positionValues = {
 };
 
 export var Position = Object.freeze({
-    'North': _position('north'),
-    'East': _position('east'),
-    'South': _position('south'),
-    'West': _position('west'),
-    'Header': _position('header'),
-    'Centre': _position('centre'),
-    'Absolute': _position('absolute')
+    North: _position('north'),
+    East: _position('east'),
+    South: _position('south'),
+    West: _position('west'),
+    Header: _position('header'),
+    Centre: _position('centre'),
+    Absolute: _position('absolute')
 });
 
 function _position(str) {

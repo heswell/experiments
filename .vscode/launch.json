@@ -8,8 +8,15 @@
       "type": "node",
       "request": "launch",
       "name": "Viewserver",
-      "program": "${workspaceFolder}/big-leggy/dist/viewserver.js",
-      "cwd": "${workspaceRoot}/big-leggy"
+      "runtimeArgs": [
+        "--experimental-modules"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },      
+      "sourceMaps": true,
+      "program": "${workspaceFolder}/scripts/run-viewserver.mjs",
+      "cwd": "${workspaceRoot}"
     },
     {
       "type": "node",

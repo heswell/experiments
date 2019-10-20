@@ -225,6 +225,25 @@ const createLogger = (source, labelColor=plain, msgColor=plain) => ({
   warn: (msg) => console.warn(`[${source}] ${msg}`)
 });
 
+function invariant(condition, message) {
+
+  if (!condition) {
+    const error = new Error(message);
+    error.name = 'Invariant Violation';
+    error.framesToPop = 1; // we don't care about invariant's own frame
+    throw error;
+  }
+}
+
+function partition(array, test, pass = [], fail = []) {
+
+  for (let i = 0, len = array.length; i < len; i++) {
+      (test(array[i], i) ? pass : fail).push(array[i]);
+  }
+
+  return [pass, fail];
+}
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, module) {
@@ -1147,6 +1166,8 @@ function uuid$1(){
 
 exports.EventEmitter = EventEmitter;
 exports.createLogger = createLogger;
+exports.invariant = invariant;
 exports.logColor = logColor;
+exports.partition = partition;
 exports.uuid = uuid$1;
 //# sourceMappingURL=index.js.map

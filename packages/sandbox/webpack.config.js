@@ -6,6 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 const localPackages = [
   'data',
+  'data-remote',
   'ingrid',
   'ingrid-extras',
   'inlay',
@@ -81,8 +82,10 @@ module.exports = (_, {mode = 'development'}) => {
       new MiniCssExtractPlugin(),
       // ...(production ? [new MiniCssExtractPlugin()]: [])
       new CopyPlugin([
-        {from : '../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2', to: 'assets/fonts'},
-        {from: './node_modules/@heswell/viewserver/dataTables/instruments/dataset.js', to: 'dataTables/instruments.js'}
+        {from : './public/assets/fonts/MaterialIcons-Regular.woff2', to: 'assets/fonts'},
+        // {from : '../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2', to: 'assets/fonts'},
+        {from: './node_modules/@heswell/viewserver/dataTables/instruments/dataset.mjs', to: 'dataTables/instruments.js'},
+        {from: './node_modules/@heswell/data-remote/dist/server-proxy', to: 'server-proxy'}
       ])
     ]
 });

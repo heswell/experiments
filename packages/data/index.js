@@ -50,7 +50,7 @@ export const groupHelpers = {
 }
 
 export {default as Table} from './src/store/table';
-export {default as DataView} from './src/store/DataView';
+export {default as DataView} from './src/store/data-view';
 export {default as LocalDataView} from './src/view/local-data-view';
 export {default as BinnedDataView} from './src/view/binned-data-view';
 export {default as FilterDataView} from './src/view/filter-data-view';
