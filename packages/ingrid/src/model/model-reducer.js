@@ -95,22 +95,22 @@ export const initModel = model =>
 
 function initialize(state, action) {
     const {
-        width=state.width,
-        height=state.height,
-        headerHeight=state.headerHeight,
-        rowHeight=state.rowHeight,
-        minColumnWidth=state.minColumnWidth,
-        groupColumnWidth=state.groupColumnWidth,
+        collapsedColumns=state.collapsedColumns,
         columns=state.columns,
         columnMap=state.columnMap,
-        sortBy=state.sortBy,
         groupBy=state.groupBy,
-        range=state.range,
+        groupColumnWidth=state.groupColumnWidth,
         groupState=state.groupState,
-        rowCount=state.rowCount,
+        height=state.height,
+        headerHeight=state.headerHeight,
+        minColumnWidth=state.minColumnWidth,
+        rowHeight=state.rowHeight,
+        range=state.range,
+        rowCount=0,
         scrollbarSize=state.scrollbarSize,
-        collapsedColumns=state.collapsedColumns,
-        selectionModel=state.selectionModel
+        sortBy=state.sortBy,
+        selectionModel=state.selectionModel,
+        width=state.width,
     } = action.gridState;
 
     const preCols = selectionModel === Selection.Checkbox
@@ -132,7 +132,6 @@ function initialize(state, action) {
         height,
         headerHeight,
         rowHeight,
-        rowCount,
         minColumnWidth,
         meta: metaData(columns),
         columns: keyedColumns,
@@ -147,7 +146,8 @@ function initialize(state, action) {
         _columns,
         _groups,
         totalColumnWidth,
-        displayWidth};
+        displayWidth
+    };
 }
 
 function subscribed(state, action){
@@ -160,17 +160,12 @@ function subscribed(state, action){
 }
 
 function setRowCount(state, {rowCount}) {
-    if (rowCount === state.rowCount){
+    const {height, headerHeight,rowHeight,width,totalColumnWidth,scrollbarSize} = state;
+    const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
+    if (displayWidth === state.displayWidth){
         return state;
     } else {
-        const {height, headerHeight,rowHeight,width,totalColumnWidth,scrollbarSize} = state;
-        const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
-    
-        if (displayWidth === state.displayWidth){
-            return { ...state, rowCount };
-        } else {
-            return initialize(state, {gridState: {rowCount}});
-        }
+        return initialize(state, {gridState: {rowCount}});
     }
 }
 

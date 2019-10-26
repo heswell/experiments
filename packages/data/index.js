@@ -37,8 +37,6 @@ import {
 
 import {
   isEmptyRow,
-  mergeAndPurge,
-  purgeAndFill,
   update
 } from './src/store/rowUtils'
 
@@ -70,7 +68,7 @@ export const columnUtils = {
 }
 
 export const rowUtils = {
-  isEmptyRow, /*mergeAndPurge, purgeAndFill,*/ update
+  isEmptyRow, update
 }
 
 export const filter = {

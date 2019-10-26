@@ -104,6 +104,7 @@ export const Viewport = React.memo(({
 
                 if (typeof msg.size === 'number' && msg.size !== rowCount.current) {
                     dispatch({ type: Action.ROWCOUNT, rowCount: msg.size })
+                    dispatchData({ type: Action.ROWCOUNT, rowCount: msg.size })
                 }
                 if (msg.rows) {
                     dispatchData({ type: 'data', rows: msg.rows, rowCount: msg.size, offset: msg.offset, range: msg.range });

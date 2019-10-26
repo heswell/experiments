@@ -1,4 +1,5 @@
 import {rowUtils} from '@heswell/data';
+import * as Action from './actions';
 
 const INITIAL_RANGE = {lo:0,hi:-1}
 
@@ -25,6 +26,8 @@ export default function (model) {
       return applyUpdates(state, action, model.meta);
     } else if (action.type === 'selected'){
       return applySelection(state, action, model.meta)
+    } else if (action.type === Action.ROWCOUNT){
+      return setSize(state, action)      
     }
   }
 }
@@ -43,6 +46,9 @@ function setKeys(keys, {lo,hi}){
     free
   }
 
+}
+function setSize(state, {rowCount}){
+  return { ...state, rowCount };
 }
 
 //TODO we HAVE to remove out=of-range rows and add empty placeholders
