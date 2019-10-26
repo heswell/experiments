@@ -4,7 +4,7 @@ import Canvas from './canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
 // import SelectionModel from '../model/selectionModel';
 import * as Action from '../model/actions';
-import dataReducer, { initialData } from '..//model/dataReducer';
+import dataReducer, { initialData } from '../model/data-reducer';
 import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
 
@@ -73,49 +73,46 @@ export const Viewport = React.memo(({
     const scrollTop = useRef(0);
     const firstVisibleRow = useRef(0);
     const groupBy = useRef(model.groupBy);
+    const rowCount = useRef(model.rowCount);
 
     const { dispatch, callbackPropsDispatch } = useContext(GridContext);
-
-    // const [selectionState, setSelectionState] = useState(SelectionModel.getInitialState(selectedRows));
 
     const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
     useEffect(() => {
+        rowCount.current = model.rowCount
+    },[model.rowCount])
 
-        const rowCount = Math.ceil(height / model.rowHeight) + 1
+    useEffect(() => {
+
+        // todo move into model
+        const viewportSize = Math.ceil(height / model.rowHeight) + 1
         dataView.subscribe({
             columns: model.columns,
-            range: { lo: 0, hi: rowCount }
+            range: { lo: 0, hi: viewportSize }
         },
             /* postMessageToClient */
-            ({
-                rows=null,
-                updates=null,
-                filter = undefined,
-                size: rowCount = null,
-                offset,
-                range,
-                selected = null,
-                deselected = null
-            }) => {
+            msg => {
 
-                if (range && range.reset) {
+                if (msg.range && msg.range.reset) {
                     setSrollTop(0);
                 }
 
-                if (filter !== undefined){
-                    onFilterChange(filter);
+                if (msg.filter !== undefined){
+                    onFilterChange(msg.filter);
                 }
 
-                if (rowCount !== null && rowCount !== model.rowCount) {
-                    dispatch({ type: Action.ROWCOUNT, rowCount })
+                if (typeof msg.size === 'number' && msg.size !== rowCount.current) {
+                    dispatch({ type: Action.ROWCOUNT, rowCount: msg.size })
                 }
-                if (rows !== null) {
-                    dispatchData({ type: 'data', rows, rowCount, offset, range });
-                } else if (updates !== null){
-                    dispatchData({ type: 'update', updates, range });
-                } else if (selected !== null) {
-                    dispatchData({ type: 'selected', selected, deselected })
+                if (msg.rows) {
+                    dispatchData({ type: 'data', rows: msg.rows, rowCount: msg.size, offset: msg.offset, range: msg.range });
+                } else if (msg.updates){
+                    dispatchData({ type: 'update', updates: msg.updates, range: msg.range });
+                } else if (msg.selected) {
+                    dispatchData({ type: 'selected', selected: msg.selected, deselected: msg.deselected })
+                } else if (msg.type === 'subscribed'){
+                    dispatch({type: Action.SUBSCRIBED, columns: msg.columns, availableColumns: msg.availableColumns});
                 }
             }
         )
@@ -126,6 +123,7 @@ export const Viewport = React.memo(({
 
     useEffect(() => {
         const rowCount = Math.ceil(height / model.rowHeight) + 1;
+        // careful model might be out of date
         if (rowCount !== model.rowCount) {
             dispatch({ type: Action.ROWCOUNT, rowCount })
             const firstRow = firstVisibleRow.current;

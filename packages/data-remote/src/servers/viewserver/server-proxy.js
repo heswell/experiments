@@ -53,8 +53,8 @@ export class ServerProxy {
 
     disconnected(){
         logger.log(`disconnected`);
-        for (let [viewport, {callback}] of Object.entries(this.viewportStatus)) {
-            callback({
+        for (let [viewport, {postMessageToClient}] of Object.entries(this.viewportStatus)) {
+            postMessageToClient({
                 rows: [],
                 size: 0,
                 range: {lo:0, hi:0}
@@ -79,7 +79,7 @@ export class ServerProxy {
         this.viewportStatus[viewport] = {
             status: 'subscribing',
             request: message,
-            callback
+            postMessageToClient: callback
         }
         this.sendIfReady( {
             type: API.addSubscription,
@@ -88,11 +88,18 @@ export class ServerProxy {
     }
 
     subscribed(/* server message */ message) {
-        const viewport = this.viewportStatus[message.viewport];
+        const viewportStatus = this.viewportStatus[message.viewport];
+        const {viewport, postMessageToClient} = viewportStatus;
+        const {columns, availableColumns} = message;
 
-        if (viewport) {
+        if (viewportStatus) {
 
-            viewport.status = 'subscribed';
+            viewportStatus.status = 'subscribed';
+            postMessageToClient({
+                type: API.subscribed,
+                columns,
+                availableColumns
+            });
 
             const byViewport = vp => item => item.viewport === vp;
             const byMessageType = msg => msg.type === Message.SET_VIEWPORT_RANGE;
@@ -119,7 +126,7 @@ export class ServerProxy {
         const { type, viewport } = message;
 
         if (viewport){
-            const {callback: postMessageToClient} = this.viewportStatus[viewport];
+            const {postMessageToClient} = this.viewportStatus[viewport];
 
             switch (type) {
     
@@ -149,6 +156,7 @@ export class ServerProxy {
                 }
                     break;
                 case 'update':
+                case 'size':
                     postMessageToClient(message);
                     break;
                 default:

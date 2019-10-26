@@ -8,9 +8,7 @@ import {getColumnWidth} from '../utils/domUtils';
 
 const {metaData} = columnUtils;
 
-export default function reducer(state, action){
-    return (handlers[action.type] || MISSING_HANDLER)(state, action);
-}
+export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
 
 export const DEFAULT_MODEL_STATE = {
     width: 400,
@@ -20,6 +18,7 @@ export const DEFAULT_MODEL_STATE = {
     minColumnWidth: 80,
     groupColumnWidth: 'auto',
     columns: [],
+    availableColumns: [],
     // Note: values which have never been set are undefined, once set, they are unset to null
     range: undefined,
     sortBy: undefined,
@@ -65,6 +64,7 @@ const MAX_OVER_THE_LINE = 20;
 const MISSING_TYPE = undefined;
 const handlers = {
     [Action.INITIALIZE]: initialize,
+    [Action.SUBSCRIBED]: subscribed,
     [Action.ROWCOUNT]: setRowCount,
     [Action.SORT]: sort,
     [Action.SORT_GROUP]: sortGroup,
@@ -117,13 +117,13 @@ function initialize(state, action) {
         ? [{name: '', width: 25, sortable: false, type: {name: 'checkbox', renderer: {name: 'selection-checkbox'}}}]
         :EMPTY_ARRAY;
 
-    const _columns = preCols.concat(columns.map(toColumn));
+    const keyedColumns = columns.map(columnUtils.toKeyedColumn)
+    const _columns = preCols.concat(keyedColumns.map(toColumn));
 
     const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy || [], collapsedColumns, minColumnWidth);
     // problem, this doesn't account for width of grouped cols, as we do it on the raw columns
     const _totalColumnWidth = sumWidth(_columns, minColumnWidth);
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize);
-
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
     console.log(`initialize rowCount = ${rowCount}`)
     return {
@@ -135,7 +135,7 @@ function initialize(state, action) {
         rowCount,
         minColumnWidth,
         meta: metaData(columns),
-        columns,
+        columns: keyedColumns,
         columnMap,
         sortBy,
         groupBy,
@@ -148,6 +148,15 @@ function initialize(state, action) {
         _groups,
         totalColumnWidth,
         displayWidth};
+}
+
+function subscribed(state, action){
+    console.log(`subscribed ${JSON.stringify(action.columns)}`);
+    if (state.columns.length === 0){
+        return initialize(state, {gridState: {columns: action.columns}});
+    } else {
+        return state;
+    }
 }
 
 function setRowCount(state, {rowCount}) {
@@ -768,7 +777,9 @@ function endsWith(string, subString){
 function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=null, minColumnWidth) {
     const sortMap = sortUtils.sortByToMap(sortBy);
     const groups = [];
-    const maxHeadingDepth = Math.max(...columns.map(({heading}) => Array.isArray(heading) ? heading.length: 1));
+    const maxHeadingDepth = columns.length === 0
+        ? 0
+        : Math.max(...columns.map(({heading}) => Array.isArray(heading) ? heading.length: 1));
 
     let group = null;
 
@@ -905,7 +916,9 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
 }
 
 function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {
-
+    if (groups.length === 0){
+        return 0;
+    }
     const columns = flatMap(groups);
     const [firstColumn] = columns;
     if (groupColumnWidth && firstColumn.isGroup) {

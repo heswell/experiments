@@ -3,8 +3,11 @@ import {DataView as View, columnUtils, DataTypes} from '@heswell/data';
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
 
-    const tablename = table.name;
-    const {range, columns, sortCriteria, groupBy} = options;
+    const {range, columns: requestedColumns, sortCriteria, groupBy} = options;
+    const {name: tablename, columns: availableColumns} = table;
+    const columns = requestedColumns.length > 0
+        ? requestedColumns
+        : availableColumns;
 
     let view = new View(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
@@ -18,6 +21,8 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
         viewport,
         type: 'Subscribed',
         tablename,
+        columns,
+        availableColumns,
         size: view.size,
         offset: view.offset
     });
@@ -42,17 +47,33 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
         // undefined and therefore not survive json serialization.
         updates.forEach(batch => {
             const {type, updates, rows, size, offset} = batch;
-            queue.push({
-                priority: 2,
-                viewport: viewport,
-                type,
-                tablename,
-                updates,
-                rows,
-                size,
-                offset,
-                range
-            }, tableMeta);
+            if (type === 'rowset'){
+                queue.push({
+                    priority: 2,
+                    viewport: viewport,
+                    type,
+                    tablename,
+                    data: {
+                        rows,
+                        size,
+                        offset,
+                        range
+                    }
+                }, tableMeta);
+    
+            } else {
+                queue.push({
+                    priority: 2,
+                    viewport: viewport,
+                    type,
+                    tablename,
+                    updates,
+                    rows,
+                    size,
+                    offset,
+                    range
+                }, tableMeta);
+            }
         });
 
 

@@ -39,7 +39,8 @@ import {
   isEmptyRow,
   mergeAndPurge,
   purgeAndFill,
-  update } from './src/store/rowUtils'
+  update
+} from './src/store/rowUtils'
 
 import * as types from './src/store/types';
 
@@ -69,7 +70,7 @@ export const columnUtils = {
 }
 
 export const rowUtils = {
-  isEmptyRow, mergeAndPurge, purgeAndFill, update
+  isEmptyRow, /*mergeAndPurge, purgeAndFill,*/ update
 }
 
 export const filter = {

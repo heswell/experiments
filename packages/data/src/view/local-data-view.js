@@ -1,5 +1,5 @@
 import {createLogger, logColor} from '@heswell/utils'
-import DataView from '../store/DataView';
+import DataView from '../store/data-view';
 import { metaData } from '../store/columnUtils';
 import { DataTypes } from '../store/types';
 import Table from '../store/table';

@@ -25,9 +25,18 @@ const scrollbarSize = getScrollbarSize();
 //TODO 
 // 1) how do we assign extra horizontal space
 
+/**
+ * @typedef {Object} GridProps
+ * @property {object} dataView 
+ */
+
+/**
+ * @type React.FunctionComponent 
+ * @param {GridProps} props 
+ */
 export default function Grid({
     dataView,
-    columns,
+    columns=[],
     style,
     showHeaders = true,
     headerHeight = showHeaders ? 24 : 0,
@@ -104,7 +113,7 @@ export default function Grid({
     const [model, dispatch] = useReducer(modelReducer, {
         //TODO which props exactly does the model still use ?
         ...props,
-        columns: columns.map(columnUtils.toKeyedColumn),
+        columns,
         columnMap: columnUtils.buildColumnMap(columns),
         scrollbarSize,
         headerHeight

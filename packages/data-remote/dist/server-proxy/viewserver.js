@@ -6,7 +6,8 @@ const SUBSCRIBED = 'Subscribed';
 
 const ServerApiMessageTypes = {
   addSubscription: 'AddSubscription',
-  setColumns: 'setColumns'
+  setColumns: 'setColumns',
+  subscribed: 'subscribed'
 };
 
 const logColor = {
@@ -998,8 +999,8 @@ class ServerProxy {
 
     disconnected(){
         logger.log(`disconnected`);
-        for (let [viewport, {callback}] of Object.entries(this.viewportStatus)) {
-            callback({
+        for (let [viewport, {postMessageToClient}] of Object.entries(this.viewportStatus)) {
+            postMessageToClient({
                 rows: [],
                 size: 0,
                 range: {lo:0, hi:0}
@@ -1024,7 +1025,7 @@ class ServerProxy {
         this.viewportStatus[viewport] = {
             status: 'subscribing',
             request: message,
-            callback
+            postMessageToClient: callback
         };
         this.sendIfReady( {
             type: ServerApiMessageTypes.addSubscription,
@@ -1033,11 +1034,18 @@ class ServerProxy {
     }
 
     subscribed(/* server message */ message) {
-        const viewport = this.viewportStatus[message.viewport];
+        const viewportStatus = this.viewportStatus[message.viewport];
+        const {viewport, postMessageToClient} = viewportStatus;
+        const {columns, availableColumns} = message;
 
-        if (viewport) {
+        if (viewportStatus) {
 
-            viewport.status = 'subscribed';
+            viewportStatus.status = 'subscribed';
+            postMessageToClient({
+                type: ServerApiMessageTypes.subscribed,
+                columns,
+                availableColumns
+            });
 
             const byViewport = vp => item => item.viewport === vp;
             const byMessageType = msg => msg.type === SET_VIEWPORT_RANGE;
@@ -1064,7 +1072,7 @@ class ServerProxy {
         const { type, viewport } = message;
 
         if (viewport){
-            const {callback: postMessageToClient} = this.viewportStatus[viewport];
+            const {postMessageToClient} = this.viewportStatus[viewport];
 
             switch (type) {
     
@@ -1094,6 +1102,7 @@ class ServerProxy {
                 }
                     break;
                 case 'update':
+                case 'size':
                     postMessageToClient(message);
                     break;
                 default:

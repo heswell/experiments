@@ -2,6 +2,7 @@ export const COLUMN_COLLAPSE = 'COLUMN_COLLAPSE';
 export const COLUMN_EXPAND = 'COLUMN_EXPAND';
 export const INITIALIZE = 'INITIALIZE';
 export const ROWCOUNT = 'ROWCOUNT';
+export const SUBSCRIBED = 'SUBSCRIBED';
 export const GROUP = 'GROUP';
 export const SORT = 'SORT';
 export const SORT_GROUP = 'SORT_GROUP';

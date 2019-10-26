@@ -336,7 +336,7 @@ export class RowSet extends BaseRowSet {
     }
 
     insert(idx, row) {
-        // TODO multi colun sort sort DSC 
+        // TODO multi column sort sort DSC 
         if (this.sortCols === null && this.currentFilter === null) {
             // simplest scenario, row will be at end of sortset ...
             this.sortSet.push([idx, null, null]);

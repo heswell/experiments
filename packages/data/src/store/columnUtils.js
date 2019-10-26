@@ -123,7 +123,9 @@ export function getDataType({type=null}){
 
 //TODO cache result by length
 export function metaData(columns){
-    const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
+    const start = columns.length === 0
+        ? -1
+        : Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
         RENDER_IDX: start + 2,

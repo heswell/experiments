@@ -5,3 +5,4 @@ export {default as CreditMatrix} from './creditMatrix';
 export {default as Sets} from './sets';
 export {default as OrderBlotter} from './order-blotter';
 export {default as OrderBook} from './order-book';
+export {default as Simpsons} from './simpsons';

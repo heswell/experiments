@@ -49,7 +49,7 @@ export function update(rows, updates, {IDX}) {
     return results;
 }
 
-
+//TODO is this still used ?
 // export so we can test - see if we can't use rewire
 // Called when client calls setRange, locally cached data is immediately
 // trimmed to new range and missing data filled with empty rows. 

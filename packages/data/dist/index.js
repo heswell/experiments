@@ -783,7 +783,9 @@ function getDataType({type=null}){
 
 //TODO cache result by length
 function metaData(columns){
-    const start = Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
+    const start = columns.length === 0
+        ? -1
+        : Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
     return {
         IDX: start + 1,
         RENDER_IDX: start + 2,
@@ -1825,119 +1827,6 @@ function update(rows, updates, {IDX}) {
     return results;
 }
 
-
-// export so we can test - see if we can't use rewire
-// Called when client calls setRange, locally cached data is immediately
-// trimmed to new range and missing data filled with empty rows. 
-function purgeAndFill({range:{lo, hi}, rows, offset = 0}, meta) {
-
-    const {IDX} = meta;
-    const results = [];
-    const len = rows.length;
-    const low = lo + offset;
-    const high = hi + offset;
-
-    let row;
-    let firstRowIdx = -1;
-
-
-    // 1) do we need any fills at the beginning ? 
-    while (row === undefined && firstRowIdx < len) {
-        firstRowIdx += 1;
-        row = rows[firstRowIdx];
-    }
-
-    let idx = row ? row[IDX] : high;
-
-    const end = Math.min(idx, high);
-    for (let i = low; i < end; i++) {
-        results.push(emptyRow(i, meta));
-    }
-
-    if (end === high) {
-        // we're done if we've already filled the results
-        return results;
-    }
-
-    // 2) existing rows that still fall within range go into results
-    for (let i = firstRowIdx; i < len; i++) {
-        row = rows[i];
-        if (row) {
-            idx = row[IDX];
-            if (idx >= low && idx < high) {
-                results.push(row);
-            }
-        } else {
-            //onsole.log(`rowUtils.purgeAndFill gap at ${i}`);
-            results.push(emptyRow(i, meta));
-        }
-    }
-
-    // 3) pad results to end of range
-    const start = Math.max(idx + 1, low);
-    for (let i = start; i < high; i++) {
-        results.push(emptyRow(i, meta));
-    }
-
-    return results;
-
-}
-
-// TODO create a pool of these and reuse them
-function emptyRow(idx, {IDX, count}){
-    const row = Array(count);
-    row[IDX] = idx;
-    return row;
-}
-
-
-// New data is merged into local cache
-function mergeAndPurge({range:{lo, hi}, rows, offset = 0}, newRows, size, meta) {
-    // console.groupCollapsed(`mergeAndPurge  existing range: ${lo} - ${hi} 
-    //  old   rows: [${rows.length ? rows[0][0]: null} - ${rows.length ? rows[rows.length-1][0]: null}]
-    //  new   rows: [${newRows.length ? newRows[0][0]: null} - ${newRows.length ? newRows[newRows.length-1][0]: null}]
-    //     `);
-    const {IDX} = meta;
-    const results = [];
-    const low = lo + offset;
-    const high = Math.min(hi + offset, size + offset);
-
-    let idx;
-    let row;
-
-    for (let i = 0; i < rows.length; i++) {
-        if (row = rows[i]) {
-            idx = row[IDX];
-            if (idx >= low && idx < high) {
-                results[idx - low] = rows[i];
-            }
-        }
-    }
-
-    for (let i = 0; i < newRows.length; i++) {
-        if (row = newRows[i]) {
-            idx = row[IDX];
-
-            if (idx >= low && idx < high) {
-                results[idx - low] = newRows[i];
-            }
-        }
-    }
-
-    // make sure the resultset contains entries for the full range
-    // TODO make this more efficient
-    const rowCount = hi - lo;
-    for (let i=0;i<rowCount;i++){
-        if (results[i] === undefined){
-            results[i] = emptyRow(i+low, meta);
-        }
-    }
-    // console.log(`results ${JSON.stringify(results,null,2)}`);
-    // console.groupEnd();
-    return results;
-
-}
-
 const MAX_LISTENERS = 10;
 
 class EventEmitter {
@@ -2197,10 +2086,8 @@ class Table extends EventEmitter {
 
 
         if (data){
-            console.log(`parseData from constructor`);
             this.parseData(data);
         } else if (dataPath){
-            console.log(`loadData from constructor`);
             this.loadData(dataPath);
         }
 
@@ -5047,7 +4934,7 @@ const columnUtils = {
 };
 
 const rowUtils = {
-  isEmptyRow, mergeAndPurge, purgeAndFill, update
+  isEmptyRow, /*mergeAndPurge, purgeAndFill,*/ update
 };
 
 const filter = {

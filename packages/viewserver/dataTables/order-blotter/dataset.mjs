@@ -1,4 +1,4 @@
-module.exports = [
+export default [
   {
     "OrderId": "ORD123001",
     "Status": "done",

@@ -7,9 +7,9 @@ import GridContext from '../grid-context';
 
 import './column-group-header.css';
 
-export default forwardRef(ColumnGrouHeader);
+export default forwardRef(ColumnGroupHeader);
 
-export function ColumnGrouHeader({
+export function ColumnGroupHeader({
     columnGroup,
     colGroupHeaderRenderer,
     colHeaderRenderer,

@@ -55,8 +55,12 @@ function setRange(state, {range}, meta){
 
   // const { IDX, SELECTED } = meta;
   const {rows, rowCount, offset} = state;
-  const keys = setKeys(state._keys, range)
-  const [mergedRows, _keys] = mergeAndPurge(range, rows, offset, [], rowCount, meta, keys)
+  const keys = setKeys(state._keys, range);
+
+  const [mergedRows, _keys] = rows.length === 0
+    ? [rows, keys] 
+    : mergeAndPurge(range, rows, offset, [], rowCount, meta, keys)
+
   // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
   return {
     rows: mergedRows,
