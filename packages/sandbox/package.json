@@ -1,6 +1,7 @@
 {
   "name": "@heswell/sandbox",
   "version": "1.0.1",
+  "private": true,
   "description": "Heswell Sandbox",
   "main": "index.js",
   "scripts": {
