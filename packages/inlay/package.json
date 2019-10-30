@@ -1,6 +1,6 @@
 {
   "name": "@heswell/inlay",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Heswell Layout Components",
   "main": "dist/index.js",
   "module": "dist/index.js",

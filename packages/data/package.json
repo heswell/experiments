@@ -1,6 +1,6 @@
 {
   "name": "@heswell/data",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Heswell data stores and views",
   "main": "dist/index.js",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "@heswell/sandbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Heswell Sandbox",
   "main": "index.js",
   "scripts": {
@@ -11,15 +11,15 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data": "^1.0.0",
-    "@heswell/data-remote": "^1.0.0",
-    "@heswell/ingrid": "^1.0.0",
-    "@heswell/ingrid-extras": "^1.0.0",
-    "@heswell/inlay": "^1.0.0",
-    "@heswell/inlay-extras": "^1.0.0",
-    "@heswell/ui-controls": "^1.0.0",
-    "@heswell/utils": "^1.0.2",
-    "@heswell/viewserver": "^1.0.0",
+    "@heswell/data": "^1.0.4",
+    "@heswell/data-remote": "^1.0.2",
+    "@heswell/ingrid": "^1.0.14",
+    "@heswell/ingrid-extras": "^1.0.3",
+    "@heswell/inlay": "^1.0.5",
+    "@heswell/inlay-extras": "^1.0.1",
+    "@heswell/ui-controls": "^1.0.7",
+    "@heswell/utils": "^1.0.5",
+    "@heswell/viewserver": "^1.0.19",
     "d3-array": "^2.2.0",
     "dygraphs": "^2.1.0",
     "react": "^16.9.0",
@@ -71,5 +71,4 @@
     },
     "extends": "react-app"
   }
-
 }

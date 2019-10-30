@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ui-controls",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "UI Controls",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -13,7 +13,6 @@
   },
   "author": "heswell",
   "license": "MIT",
-  "peerDependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",

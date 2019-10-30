@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "files": [
@@ -18,8 +18,8 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
-    "@heswell/data": "^1.0.0",
-    "@heswell/utils": "^1.0.2",
+    "@heswell/data": "^1.0.4",
+    "@heswell/utils": "^1.0.5",
     "bufferutil": "^4.0.1",
     "d3-array": "^2.2.0",
     "utf-8-validate": "^5.0.2",
