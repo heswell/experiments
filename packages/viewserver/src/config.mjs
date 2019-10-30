@@ -1,5 +1,5 @@
 import { Instruments, InstrumentPrices, Simpsons, OrderBlotter/*, OrderBook, TestTable, CreditMatrix */} from '../dataTables';
-import {ServiceDefinition as DataTableService} from './services/dataTableServiceDefinition';
+import {ServiceDefinition as DataTableService} from './services/dataTableServiceDefinition.js';
 
 export const config = {
     services: [

@@ -77,7 +77,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
         });
 
 
-        timeoutHandle = setTimeout(collectUpdates, 250);
+        timeoutHandle = setTimeout(collectUpdates, 100);
     }
 
     timeoutHandle = setTimeout(collectUpdates, 1000);

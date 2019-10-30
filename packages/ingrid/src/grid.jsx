@@ -114,7 +114,6 @@ export default function Grid({
         //TODO which props exactly does the model still use ?
         ...props,
         columns,
-        columnMap: columnUtils.buildColumnMap(columns),
         scrollbarSize,
         headerHeight
     }, initModel);

@@ -353,19 +353,24 @@ export class RowSet extends BaseRowSet {
                 }
             }
         } else if (this.currentFilter === null) {
-            // sort only
+            // sort only - currently only support single column sorting
             const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
             const [[colIdx]] = sortCols;
             const sortRow = [idx, row[colIdx]];
-            const sorter = sortBy([[1, 'asc']]);
+            const sorter = sortBy([[1, 'asc']]); // the sortSet is always ascending
             const sortPos = sortPosition(this.sortSet, sorter, sortRow, 'last-available');
             this.sortSet.splice(sortPos, 0, sortRow);
 
-            if (sortPos >= this.range.hi) {
+            // we need to know whether it is an ASC or DSC sort to determine whether row is in viewport
+            const viewportPos = this.sortReverse
+                ? this.size - sortPos
+                : sortPos;
+
+            if (viewportPos >= this.range.hi) {
                 return {
                     size: this.size
                 }
-            } else if (sortPos >= this.range.lo) {
+            } else if (viewportPos >= this.range.lo) {
                 return {
                     size: this.size,
                     replace: true
@@ -411,9 +416,9 @@ export class RowSet extends BaseRowSet {
                 // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
-                const [[colIdx]] = sortCols; // TODO multi-colun sort
+                const [[colIdx, direction]] = sortCols; // TODO multi-colun sort
                 const sortRow = [idx, row[colIdx]];
-                const sorter = sortBy([[1, 'asc']]); // TODO DSC
+                const sorter = sortBy([[1, direction]]); // TODO DSC
                 const navIdx = sortPosition(this.filterSet, sorter, sortRow, 'last-available');
                 this.filterSet.splice(navIdx, 0, sortRow);
 

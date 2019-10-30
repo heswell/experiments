@@ -15,16 +15,17 @@ const config = {
         {name: 'Status'},
         {name: 'Direction'},
         {name: 'ISIN'},
-        {name: 'Quantity'},
+        {name: 'Quantity', type: 'number', aggregate: 'sum'},
         {name: 'Price'},
         {name: 'Currency'},
         {name: 'timestamp'},
     ],
     updates: {
-        interval: 1000,
-        fields: ['Quantity'],
         applyInserts: true,
-        applyUpdates: false
+        insertInterval: 100,
+        applyUpdates: false,
+        interval: 1000,
+        fields: ['Quantity']
     }
 };
 

@@ -25,8 +25,8 @@ export function update(rows, updates, {IDX}) {
         for (let ii = 0; ii < rows.length; ii++) {
             if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
-                for (let j = 0; j < fieldUpdates.length; j += 3) {
-                    row[fieldUpdates[j]] = fieldUpdates[j + 2];
+                for (let j = 0; j < fieldUpdates.length; j += 2) {
+                    row[fieldUpdates[j]] = fieldUpdates[j + 1];
                 }
                 results[ii] = row;
 

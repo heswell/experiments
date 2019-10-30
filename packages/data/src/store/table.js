@@ -185,7 +185,7 @@ export default class Table extends EventEmitter {
             console.log(`createRow did not return a new row`);
         }
 
-        setTimeout(() => this.applyInserts(),5000);
+        setTimeout(() => this.applyInserts(),this.updateConfig.insertInterval | 100);
 
     }
 

@@ -2,7 +2,10 @@ import babel from 'rollup-plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import sizes from 'rollup-plugin-sizes';
+import filesize from 'rollup-plugin-filesize';
+import {terser} from 'rollup-plugin-terser';
+
+const isProd = process.env.BUILD === 'production';
 
 export default {
     input: 'index.js',
@@ -11,6 +14,7 @@ export default {
         format: 'es',
         sourcemap: true
     },
+    perf: false,
     preserveSymlinks: true,
     plugins: [
         resolve(),
@@ -26,7 +30,8 @@ export default {
             extract: true,
             sourceMap: true
           }),
-          sizes()
+          ...(isProd ? [terser()] : []),
+          filesize()
     ],
     "external": [
         "@heswell/data",

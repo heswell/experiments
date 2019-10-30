@@ -355,9 +355,9 @@ export class RowSet extends BaseRowSet {
         } else if (this.currentFilter === null) {
             // sort only
             const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
-            const [[colIdx]] = sortCols;
+            const [[colIdx, direction]] = sortCols;
             const sortRow = [idx, row[colIdx]];
-            const sorter = sortBy([[1, 'asc']]);
+            const sorter = sortBy([[1, direction]]);
             const sortPos = sortPosition(this.sortSet, sorter, sortRow, 'last-available');
             this.sortSet.splice(sortPos, 0, sortRow);
 
@@ -411,9 +411,9 @@ export class RowSet extends BaseRowSet {
                 // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
-                const [[colIdx]] = sortCols; // TODO multi-colun sort
+                const [[colIdx, direction]] = sortCols; // TODO multi-colun sort
                 const sortRow = [idx, row[colIdx]];
-                const sorter = sortBy([[1, 'asc']]); // TODO DSC
+                const sorter = sortBy([[1, direction]]);
                 const navIdx = sortPosition(this.filterSet, sorter, sortRow, 'last-available');
                 this.filterSet.splice(navIdx, 0, sortRow);
 

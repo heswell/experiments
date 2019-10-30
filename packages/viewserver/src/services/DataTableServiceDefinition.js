@@ -10,7 +10,7 @@ const data_path = path.dirname(new url.URL(import.meta.url).pathname);
 
 export const ServiceDefinition = {
   name: 'DataTableService',
-  module: `${data_path}/DataTableService`,
+  module: `${data_path}/DataTableService.mjs`,
   API: [
       'GetTableList',
       'GetTableMeta',

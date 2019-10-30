@@ -36,7 +36,6 @@ export const DEFAULT_MODEL_STATE = {
     meta: null,
 
     _columns: null,
-    _columnMap: null,
     _movingColumn: null,
     _groups: null,
     _overTheLine: 0,
@@ -97,7 +96,7 @@ function initialize(state, action) {
     const {
         collapsedColumns=state.collapsedColumns,
         columns=state.columns,
-        columnMap=state.columnMap,
+        columnMap=null,
         groupBy=state.groupBy,
         groupColumnWidth=state.groupColumnWidth,
         groupState=state.groupState,
@@ -120,12 +119,16 @@ function initialize(state, action) {
     const keyedColumns = columns.map(columnUtils.toKeyedColumn)
     const _columns = preCols.concat(keyedColumns.map(toColumn));
 
-    const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy || [], collapsedColumns, minColumnWidth);
+    const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
     // problem, this doesn't account for width of grouped cols, as we do it on the raw columns
     const _totalColumnWidth = sumWidth(_columns, minColumnWidth);
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize);
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
-    console.log(`initialize rowCount = ${rowCount}`)
+
+    const map = columnMap === null || columns !== state.columns
+        ? columnUtils.buildColumnMap(columns)
+        : columnMap;
+
     return {
         ...state,
         width,
@@ -135,7 +138,7 @@ function initialize(state, action) {
         minColumnWidth,
         meta: metaData(columns),
         columns: keyedColumns,
-        columnMap,
+        columnMap: map,
         sortBy,
         groupBy,
         range,
@@ -769,7 +772,7 @@ function endsWith(string, subString){
 
 }
 
-function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=null, minColumnWidth) {
+function splitIntoGroups(columns, sortBy=null, groupBy=EMPTY_ARRAY, collapsedColumns=null, minColumnWidth) {
     const sortMap = sortUtils.sortByToMap(sortBy);
     const groups = [];
     const maxHeadingDepth = columns.length === 0
@@ -814,28 +817,30 @@ function splitIntoGroups(columns, sortBy=null, groupBy=null, collapsedColumns=nu
 }
 
 function extractGroupColumn(columns, groupBy, minColumnWidth){
-    if (groupBy){
+    if (groupBy && groupBy.length > 0){
         const isGroup = ({name}) => groupHelpers.indexOfCol(name, groupBy) !== -1
+        // Note: groupedColumns will be in column order, not groupBy order
         const [groupedColumns, rest] = arrayUtils.partition(columns, isGroup);
-        const groupCount = groupBy.length;
-
-        if (groupedColumns.length){
-            const groupCols = groupedColumns.map(column => {
-                const idx = groupHelpers.indexOfCol(column.name, groupBy);
-                return {
-                    ...column,
-                    groupLevel: groupCount - idx
-                }
-            })
-            const groupCol = {
-                key: -1,
-                name: 'group-col',
-                isGroup: true,
-                columns: groupCols,
-                width: Math.max(...groupCols.map(col => col.width || minColumnWidth)) + 50
-            };
-            return [groupCol, rest];
+        if (groupedColumns.length !== groupBy.length){
+            throw Error(`extractGroupColumn: no column definition found for all groupBy cols ${JSON.stringify(groupBy)} `);
         }
+        const groupCount = groupBy.length;
+        const groupCols = groupBy.map(([name], idx) => {
+            // Keep the cols in same order defined on groupBy
+            const column = groupedColumns.find(col => col.name === name);
+            return {
+                ...column,
+                groupLevel: groupCount - idx
+            }
+        })
+        const groupCol = {
+            key: -1,
+            name: 'group-col',
+            isGroup: true,
+            columns: groupCols,
+            width: Math.max(...groupCols.map(col => col.width || minColumnWidth)) + 50
+        };
+        return [groupCol, rest];
     }
     return [null, columns]
 }

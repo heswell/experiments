@@ -954,7 +954,7 @@ var uuid = createCommonjsModule(function (module) {
 }));
 });
 
-const logger = createLogger('ViewsServerProxy', logColor.blue);
+const logger = createLogger('VuuServerProxy', logColor.blue);
 
 const SORT = { asc: 'D', dsc : 'A' };
 
@@ -1000,6 +1000,7 @@ class ServerProxy {
                 isReady);
                 break;
             case 'groupBy':
+                viewport.groupByStatus = 'pending';
                 this.sendIfReady({
                     type : CHANGE_VP,
                     viewPortId : viewport.serverId,
@@ -1063,8 +1064,8 @@ class ServerProxy {
 
     disconnected(){
         logger.log(`disconnected`);
-        for (let [viewport, {callback}] of Object.entries(this.viewportStatus)) {
-            callback({
+        for (let [viewport, {postMessageToClient}] of Object.entries(this.viewportStatus)) {
+            postMessageToClient({
                 rows: [],
                 size: 0,
                 range: {lo:0, hi:0}
@@ -1113,7 +1114,7 @@ class ServerProxy {
         this.viewportStatus[viewport] = {
             status: 'subscribing',
             request: message,
-            callback
+            postMessageToClient: callback
         };
 
         // use client side viewport as request id, so that when we process the response,
@@ -1173,11 +1174,27 @@ class ServerProxy {
         const viewports = {};
         for (let i=0; i < rows.length; i++){
             const {viewPortId, vpSize, rowIndex, rowKey, updateType, ts, data} = rows[i];
-            if (updateType === UPDATE){
+            //TODO it is probably more efficient to do the groupBy checks at next level
+            const {groupByStatus} = this.viewportStatus[viewPortId];
+            if (groupByStatus === 'pending' && rowKey !== '$root'){
+                console.log(`ignoring ${updateType} message whilst waiting for grouped rows`);
+            } else if (groupByStatus === 'pending' && rowKey === '$root'){
+                this.viewportStatus[viewPortId].groupByStatus = 'complete';
+                console.log(`groupBy in place, $root received`);
+            } else if (updateType === UPDATE){
                 const record = (viewports[viewPortId] || (viewports[viewPortId] = {viewPortId, size: vpSize, rows: []}));
-                // TODO populate the key field correctly
-                data.push(rowIndex, 0, 0, 0, data[0]);
-                record.rows.push(data);
+                if (groupByStatus === 'complete'){
+                    let [depth, expanded, path, unknown, label, count, ...rest] = data;
+                    if (!expanded){
+                        depth = -depth;
+                    }
+                    rest.push(rowIndex-1, 0, depth, count, path, 0);
+                    record.rows.push(rest);
+                } else {
+                    // TODO populate the key field correctly
+                    data.push(rowIndex, 0, 0, 0, data[0]);
+                    record.rows.push(data);
+                }
             } else if (updateType === SIZE){
                 console.log(`size record ${JSON.stringify(rows[i],null,2)}`);
             }
@@ -1209,8 +1226,8 @@ class ServerProxy {
             case TABLE_ROW: {
                 const {batch, isLast, timestamp, rows} = body;
                 const rowsByViewport = this.batchByViewport(rows);
-                rowsByViewport.forEach(({viewPortId,size, rows}) => {
-                    const {request: {viewport}, callback: postMessageToClient} = this.viewportStatus[viewPortId];
+                rowsByViewport.forEach(({viewPortId, size, rows}) => {
+                    const {postMessageToClient} = this.viewportStatus[viewPortId];
                     const output = {
                         size,
                         offset: 0,

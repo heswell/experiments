@@ -12,15 +12,14 @@ export default [{
         resolve(),
         commonjs()
     ]
-}/*, {
-    input: 'index.js',
+}, /* Just for Jest */{
+    input: 'index.jest.js',
     output: {
-        file: 'dist/index.js',
-        format: 'cjs',
-        sourcemap: true
+        file: 'dist/index.cjs.js',
+        format: 'cjs'
     },
     plugins: [
         resolve(),
         commonjs()
     ]
-}*/];
+}];

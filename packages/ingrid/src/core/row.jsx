@@ -34,13 +34,16 @@ export default React.memo(({
     const groupLevel = row[meta.DEPTH];
     const isGroup = groupLevel !== 0;
     const isSelected = row[meta.SELECTED] === 1;
+    // TODO should be driven by config
+    const striping = idx % 2 === 0 ? 'even' : 'odd';
 
     const className = cx(
-        'GridRow',
-        isSelected ? 'selected' : null,
-        isGroup 
-            ? `group ${groupLevel < 0 ? 'collapsed' :'expanded'}`
-            : (idx % 2 === 0 ? 'even' : 'odd') 
+        'GridRow', striping, {
+            selected: isSelected,
+            group: isGroup,
+            collapsed: isGroup && groupLevel < 0,
+            expanded : isGroup && groupLevel >= 0
+        }
     );
 
     //TODO load default formatters here and pass formatter/cellClass down to cell 

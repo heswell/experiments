@@ -1,4 +1,4 @@
-import BaseRowSet from './rowSet';
+import BaseRowSet from './rowset';
 import {
     groupRows,
     findSortedCol, findDoomedColumnDepths, getGroupStateChanges,
@@ -443,7 +443,7 @@ export class GroupRowSet extends BaseRowSet {
     }
 
     insert(newRowIdx, row){
-        // TODO look at append and idx manipulation for insertion at head. See insertDeprecated
+        // TODO look at append and idx manipulation for insertion at head.
         const { groupRows: groups, groupby, data: rows, sortSet, columns, meta, iter: iterator } = this
         let groupCols = mapSortCriteria(groupby, this.columnMap);
         const groupPositions = findGroupPositions(groups, groupCols, row);
@@ -492,18 +492,22 @@ export class GroupRowSet extends BaseRowSet {
         }
 
         this.incrementGroupCounts(groupPositions);
+        this.updateAggregatedValues(groupPositions, row);
 
         iterator.refresh(); // force iterator to rebuild rangePositions
         let rangeIdx = allGroupsExist
             ? iterator.getRangeIndexOfRow(newRowIdx)
             : iterator.getRangeIndexOfGroup(newGroupIdx);
+        
         if (rangeIdx !== -1){
+            // New row is visible within viewport so we will force render all rows
             result = {replace: true}
             if (newGroupIdx !== null){
                 this.currentLength += 1;
             }
         } else if (noGroupsExist === false){
-            result = {updates: this.collectGroupCountUpdates(groupPositions)}
+            // new row is not visible as group is collapsed, but we need to update groiup row(s)
+            result = {updates: this.collectGroupUpdates(groupPositions)}
         }
 
         return result;
@@ -517,19 +521,40 @@ export class GroupRowSet extends BaseRowSet {
         })
     }
 
-    collectGroupCountUpdates(groupPositions){
-        const {groupRows: groups, meta:{COUNT}, offset} = this;
+    updateAggregatedValues(groupPositions, row){
+        const { groupRows: groups } = this;
+
+        groupPositions.forEach(grpIdx => {
+            const group = groups[grpIdx];
+            for (let [key, type] of this.aggregations){
+                const value = row[key];
+                const groupValue = group[key]
+                if (type === 'sum'){
+                    group[key] = groupValue + value;
+                }
+            }
+        })
+
+    }
+
+    collectGroupUpdates(groupPositions){
+        const {aggregations, groupRows: groups, meta:{COUNT}, offset} = this;
         const updates = [];
-        for (let i=0;i<groupPositions.length;i++){
-            const grpIdx = groupPositions[i];
-            const count = groups[grpIdx][COUNT];
+        for (let grpIdx of groupPositions){
             const rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
             if (rangeIdx !== -1){
-                updates.push([rangeIdx+offset, COUNT, count]);
+                const group = groups[grpIdx];
+                const update = [rangeIdx+offset, COUNT, group[COUNT]]
+                for (let [key] of aggregations){
+                    update.push(key, group[key]);
+                }
+                updates.push(update);
             }
         }
         return updates;
     }
+
+
 
     // start with a simplesequential search
     findGroupIdx(groupKey){

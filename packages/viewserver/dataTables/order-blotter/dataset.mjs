@@ -16,7 +16,7 @@ export default [
       "ISIN": "GB00BH4HKS39",
       "Quantity": 100000,
       "Price": 132.35,
-      "Currency": "GBP",
+      "Currency": "EUR",
       "timestamp": 155850625955
       },
     {
@@ -26,7 +26,7 @@ export default [
       "ISIN": "GB00BH4HKS39",
       "Quantity": 100000,
       "Price": 132.35,
-      "Currency": "GBP",
+      "Currency": "EUR",
       "timestamp": 155850625955
       },
     {
@@ -76,7 +76,7 @@ export default [
       "ISIN": "GB00BH4HKS39",
       "Quantity": 100000,
       "Price": 132.35,
-      "Currency": "GBP",
+      "Currency": "USD",
       "timestamp": 155850625955
       },
     {
@@ -106,7 +106,7 @@ export default [
       "ISIN": "GB00BH4HKS39",
       "Quantity": 100000,
       "Price": 132.35,
-      "Currency": "GBP",
+      "Currency": "USD",
       "timestamp": 155850625955
       },
     {

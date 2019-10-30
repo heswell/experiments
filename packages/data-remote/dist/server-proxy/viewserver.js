@@ -948,7 +948,7 @@ var uuid = createCommonjsModule(function (module) {
 }));
 });
 
-const logger = createLogger('ViewsServerProxy', logColor.blue);
+const logger = createLogger('ViewServerProxy', logColor.blue);
 
 /*
     query: (type, params = null) => new Promise((resolve, reject) => {

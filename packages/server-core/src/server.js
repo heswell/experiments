@@ -24,8 +24,8 @@ const port = /* argv.port || */ 9090;
 //onsole.log(`args ${JSON.stringify(process.argv)}`);
 
 //const port = process.env.OPENSHIFT_NODEJS_PORT || argv.port || 9090;
-const PRIORITY_UPDATE_FREQUENCY = 50;
-const CLIENT_UPDATE_FREQUENCY = 250;
+const PRIORITY_UPDATE_FREQUENCY = 20;
+const CLIENT_UPDATE_FREQUENCY = 50;
 const HEARTBEAT_FREQUENCY = 5000;
 
 export default function start(config){

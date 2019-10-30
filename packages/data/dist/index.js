@@ -1813,8 +1813,8 @@ function update(rows, updates, {IDX}) {
         for (let ii = 0; ii < rows.length; ii++) {
             if (rows[ii][IDX] === idx) {
                 row = rows[ii].slice();
-                for (let j = 0; j < fieldUpdates.length; j += 3) {
-                    row[fieldUpdates[j]] = fieldUpdates[j + 2];
+                for (let j = 0; j < fieldUpdates.length; j += 2) {
+                    row[fieldUpdates[j]] = fieldUpdates[j + 1];
                 }
                 results[ii] = row;
 
@@ -2235,7 +2235,7 @@ class Table extends EventEmitter {
             console.log(`createRow did not return a new row`);
         }
 
-        setTimeout(() => this.applyInserts(),5000);
+        setTimeout(() => this.applyInserts(),this.updateConfig.insertInterval | 100);
 
     }
 
@@ -2855,19 +2855,24 @@ class RowSet extends BaseRowSet {
                 }
             }
         } else if (this.currentFilter === null) {
-            // sort only
+            // sort only - currently only support single column sorting
             const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
             const [[colIdx]] = sortCols;
             const sortRow = [idx, row[colIdx]];
-            const sorter = sortBy([[1, 'asc']]);
+            const sorter = sortBy([[1, 'asc']]); // the sortSet is always ascending
             const sortPos = sortPosition(this.sortSet, sorter, sortRow, 'last-available');
             this.sortSet.splice(sortPos, 0, sortRow);
 
-            if (sortPos >= this.range.hi) {
+            // we need to know whether it is an ASC or DSC sort to determine whether row is in viewport
+            const viewportPos = this.sortReverse
+                ? this.size - sortPos
+                : sortPos;
+
+            if (viewportPos >= this.range.hi) {
                 return {
                     size: this.size
                 }
-            } else if (sortPos >= this.range.lo) {
+            } else if (viewportPos >= this.range.lo) {
                 return {
                     size: this.size,
                     replace: true
@@ -2913,9 +2918,9 @@ class RowSet extends BaseRowSet {
                 // TODO what about totalCOunt
 
                 const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
-                const [[colIdx]] = sortCols; // TODO multi-colun sort
+                const [[colIdx, direction]] = sortCols; // TODO multi-colun sort
                 const sortRow = [idx, row[colIdx]];
-                const sorter = sortBy([[1, 'asc']]); // TODO DSC
+                const sorter = sortBy([[1, direction]]); // TODO DSC
                 const navIdx = sortPosition(this.filterSet, sorter, sortRow, 'last-available');
                 this.filterSet.splice(navIdx, 0, sortRow);
 
@@ -3897,7 +3902,7 @@ class GroupRowSet extends BaseRowSet {
     }
 
     insert(newRowIdx, row){
-        // TODO look at append and idx manipulation for insertion at head. See insertDeprecated
+        // TODO look at append and idx manipulation for insertion at head.
         const { groupRows: groups, groupby, data: rows, sortSet, columns, meta, iter: iterator } = this;
         let groupCols = mapSortCriteria(groupby, this.columnMap);
         const groupPositions = findGroupPositions(groups, groupCols, row);
@@ -3946,18 +3951,22 @@ class GroupRowSet extends BaseRowSet {
         }
 
         this.incrementGroupCounts(groupPositions);
+        this.updateAggregatedValues(groupPositions, row);
 
         iterator.refresh(); // force iterator to rebuild rangePositions
         let rangeIdx = allGroupsExist
             ? iterator.getRangeIndexOfRow(newRowIdx)
             : iterator.getRangeIndexOfGroup(newGroupIdx);
+        
         if (rangeIdx !== -1){
+            // New row is visible within viewport so we will force render all rows
             result = {replace: true};
             if (newGroupIdx !== null){
                 this.currentLength += 1;
             }
         } else if (noGroupsExist === false){
-            result = {updates: this.collectGroupCountUpdates(groupPositions)};
+            // new row is not visible as group is collapsed, but we need to update groiup row(s)
+            result = {updates: this.collectGroupUpdates(groupPositions)};
         }
 
         return result;
@@ -3971,19 +3980,40 @@ class GroupRowSet extends BaseRowSet {
         });
     }
 
-    collectGroupCountUpdates(groupPositions){
-        const {groupRows: groups, meta:{COUNT}, offset} = this;
+    updateAggregatedValues(groupPositions, row){
+        const { groupRows: groups } = this;
+
+        groupPositions.forEach(grpIdx => {
+            const group = groups[grpIdx];
+            for (let [key, type] of this.aggregations){
+                const value = row[key];
+                const groupValue = group[key];
+                if (type === 'sum'){
+                    group[key] = groupValue + value;
+                }
+            }
+        });
+
+    }
+
+    collectGroupUpdates(groupPositions){
+        const {aggregations, groupRows: groups, meta:{COUNT}, offset} = this;
         const updates = [];
-        for (let i=0;i<groupPositions.length;i++){
-            const grpIdx = groupPositions[i];
-            const count = groups[grpIdx][COUNT];
+        for (let grpIdx of groupPositions){
             const rangeIdx = this.iter.getRangeIndexOfGroup(grpIdx);
             if (rangeIdx !== -1){
-                updates.push([rangeIdx+offset, COUNT, count]);
+                const group = groups[grpIdx];
+                const update = [rangeIdx+offset, COUNT, group[COUNT]];
+                for (let [key] of aggregations){
+                    update.push(key, group[key]);
+                }
+                updates.push(update);
             }
         }
         return updates;
     }
+
+
 
     // start with a simplesequential search
     findGroupIdx(groupKey){
@@ -4404,7 +4434,7 @@ class DataView {
 
     destroy() {
         this._table.removeListener('rowUpdated', this.rowUpdated);
-        this._table.removeListener('rowUpdated', this.rowInserted);
+        this._table.removeListener('rowInserted', this.rowInserted);
         this._table = null;
         this.rowSet = null;
         this.filterRowSet = null;
@@ -4934,7 +4964,7 @@ const columnUtils = {
 };
 
 const rowUtils = {
-  isEmptyRow, /*mergeAndPurge, purgeAndFill,*/ update
+  isEmptyRow, update
 };
 
 const filter = {

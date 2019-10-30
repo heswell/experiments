@@ -5,7 +5,7 @@ export default class Table extends BaseTable {
     async loadData(dataPath){
         console.log(`import data from ${dataPath}.mjs`)
         try {
-            const {default: data} = await import(dataPath);
+            const {default: data} = await import(`${dataPath}.mjs`);
             if (data) {
                 this.parseData(data);
             } 
@@ -16,11 +16,11 @@ export default class Table extends BaseTable {
 
     async installDataGenerators({createPath, updatePath}){
         if (createPath){
-            const {default:createGenerator} = await import(createPath);
+            const {default:createGenerator} = await import(`${createPath}.mjs`);
             this.createRow = createGenerator;
         }
         if (updatePath){
-            const {default: updateGenerator} = await import(updatePath);
+            const {default: updateGenerator} = await import(`${updatePath}.mjs`);
             this.updateRow = updateGenerator;
         }
     }

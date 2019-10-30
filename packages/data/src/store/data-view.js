@@ -51,7 +51,7 @@ export default class DataView {
 
     destroy() {
         this._table.removeListener('rowUpdated', this.rowUpdated);
-        this._table.removeListener('rowUpdated', this.rowInserted);
+        this._table.removeListener('rowInserted', this.rowInserted);
         this._table = null;
         this.rowSet = null;
         this.filterRowSet = null;

@@ -2,7 +2,7 @@ import * as Message from './messages.js';
 import { ServerApiMessageTypes as API } from '../../messages.js';
 import { createLogger, logColor, partition } from '@heswell/utils';
 
-const logger = createLogger('ViewsServerProxy', logColor.blue);
+const logger = createLogger('ViewServerProxy', logColor.blue);
 
 /*
     query: (type, params = null) => new Promise((resolve, reject) => {
