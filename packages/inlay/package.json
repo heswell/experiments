@@ -32,5 +32,6 @@
   },
   "peerDependencies": {
     "@heswell/utils": "^1.0.0"
-  }
+  },
+  "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }
