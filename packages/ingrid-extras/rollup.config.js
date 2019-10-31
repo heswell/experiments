@@ -1,10 +1,9 @@
 import babel from 'rollup-plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import atImport from 'postcss-import'
-// import cssnano from 'cssnano'
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-
+import filesize from 'rollup-plugin-filesize';
 
 export default {
     input: 'index.js',
@@ -27,14 +26,18 @@ export default {
             minimize: false,
             extract: true,
             sourceMap: true
-          })
+          }),
+          filesize()
     ],
     "external": [
         "@heswell/data",
         "@heswell/inlay",
         "@heswell/ingrid",
         "@heswell/ui-controls",
+        "@heswell/utils",
+        "dygraphs",
         "react",
-        "react-dom"
+        "react-dom",
+        "react-motion"
     ]
 };

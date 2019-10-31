@@ -715,21 +715,11 @@ body, div {
 }
 
 
-
-.Header {
-	background: #eaeaea;
-	position: absolute;
-	top:0;
-	left:0;
-	right:0;
-	cursor: default;
-}
-
-.GroupbyHeaderCell {
+.GroupHeaderCell {
 	overflow:hidden;
 }
 
-.GroupbyHeaderCell .inner-container {
+.GroupHeaderCell .inner-container {
   overflow: hidden;
 	height: 100%;
 	width: 100%;
@@ -737,7 +727,7 @@ body, div {
   align-items: stretch;
 }
 
-.ColHeader {
+.GroupHeaderCell .ColHeader {
   display:inline-block;
   background-color: inherit;
   position: relative;
@@ -745,53 +735,52 @@ body, div {
   flex: 0 1 auto;
 }
 
-.first.ColHeader {
+.GroupHeaderCell .first.ColHeader {
 	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100% );
 	z-index:1;
 }
 
-
-.ColHeader:not(.first){
+.GroupHeaderCell .ColHeader:not(.first){
 	margin-left: -6px;
 	padding-left: 6px;
 	clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50% );
 }
 
-.ColHeader:nth-child(odd) {
+.GroupHeaderCell .ColHeader:nth-child(odd) {
 	background-color: rgba(136, 136, 136,.5);
 }
-.ColHeader:nth-child(even) {
+.GroupHeaderCell .ColHeader:nth-child(even) {
 	background-color: rgba(160,160,160,.3);
 }
 
-.ColHeaderLabel {
+.GroupHeaderCell .ColHeaderLabel {
 	display: inline-block;
 	height: 100%;
 }
 
-.ColHeader .toggle-icon,
-.ColHeader .remove-icon {
+.GroupHeaderCell .ColHeader .toggle-icon,
+.GroupHeaderCell .ColHeader .remove-icon {
 	height: 100%;
 	line-height: 24px;
 	cursor: pointer;
 }
 
-.ColHeader .remove-icon {
+.GroupHeaderCell .ColHeader .remove-icon {
 	visibility:hidden;
 	font-size: 16px;
 	padding-left: 3px;
 }
 
-.ColHeader:hover .remove-icon {
+.GroupHeaderCell .ColHeader:hover .remove-icon {
 	visibility: visible;
 } 
 
-.ColHeader:hover {
+.GroupHeaderCell .ColHeader:hover {
   background-color: rgb(66, 139, 202);
   color: white;
 }
 
-.ColHeader:hover .groupby-remove {
+.GroupHeaderCell .ColHeader:hover .groupby-remove {
 	visibility: visible;
 }
 
@@ -811,6 +800,16 @@ body, div {
 
 .colgroup-header:not(.bottomless) {
 	border-bottom: solid 1px var(--grid-heading-border-color);
+}
+
+
+.Header {
+	background: #eaeaea;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	cursor: default;
 }
 
 .react-dialog,
@@ -928,11 +927,6 @@ body, div {
 }
 
 
-.material-icons {
-	font-size: 18px;	
-	vertical-align: top;
-}
-
 .Grid {
 	--grid-row-selected: #2b8bf8;
 	--grid-heading-border-color: #bbb;
@@ -946,6 +940,12 @@ body, div {
 .Grid, .Grid div {
 	box-sizing: border-box;
 	user-select: none;	
+}
+
+.Grid .material-icons {
+	font-size: 18px;	
+	vertical-align: top;
+	width: 18px;
 }
 
 
