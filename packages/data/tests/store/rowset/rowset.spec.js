@@ -2,9 +2,10 @@
 const {RowSet, filter: {IN}} = require('../../../dist/index.cjs');
 
 const {
+    getInstrumentRowset,
     getTestTable,
     getTestRowset,
-    columns: rowset_columns
+    columns: rowset_columns,
 } = require('../../test-data.js');
 
 // import {
@@ -214,54 +215,6 @@ describe('sort', () => {
 
     });
 
-    /*
-    describe('performance tests, large dataset', () => {
-
-        // let instrumentPrices;
-
-        // beforeAll(async() => {
-        //     instrumentPrices = await _getInstrumentPricesTable()
-        // })
-
-        test('Rowset creation, large dataset', async () => {
-            const instrumentPrices = await _getInstrumentPricesTable()
-            const t1 = global.performance.now();
-            const rowSet = new RowSet(instrumentPrices, InstrumentPriceColumns, 100);
-            const t2 = global.performance.now();
-            console.log(`Rowset creation: ${t2-t1}ms`)
-            expect(rowSet.size).toBe(1042568);
-        });
-
-        test('simple sort', async () => {
-            const instrumentPrices = await _getInstrumentPricesTable()
-            const rowSet = new RowSet(instrumentPrices, InstrumentPriceColumns, 100)
-            const t1 = global.performance.now();
-            rowSet.sort([['currency', 'asc']])
-            const t2 = global.performance.now();
-            console.log(`Rowset sort: ${t2-t1}ms`)
-            // const {rows} = rowSet.setRange({lo: 0, hi: 10})
-            // console.log(`${join(rows)}`)
-        })
-
-        test('simple sort, add additional column', async () => {
-            const instrumentPrices = await _getInstrumentPricesTable()
-            const rowSet = new RowSet(instrumentPrices, InstrumentPriceColumns, 100)
-            rowSet.sort([['currency', 'asc']])
-            rowSet.sort([['currency', 'asc'],['ric', 'asc']])
-            // const {rows} = rowSet.setRange({lo: 0, hi: 25})
-            // console.log(`${join(rows)}`)
-        });
-
-        test('simple sort, multiple columns', async () => {
-            const instrumentPrices = await _getInstrumentPricesTable()
-            const rowSet = new RowSet(instrumentPrices, InstrumentPriceColumns, 100)
-            rowSet.sort([['currency', 'asc'],['ric', 'asc']])
-            // const {rows} = rowSet.setRange({lo: 0, hi: 25})
-            // console.log(`${join(rows)}`)
-        });
-
-    })
-*/
 });
 
 describe('filter', () => {
@@ -608,15 +561,14 @@ describe('getDistinctValuesForColumn', () => {
         ])
     });
 
-    /*
     test('check filter counts against distinct value counts', () => {
-        const rowSet = _getInstrumentRowset();
+        const rowSet = getInstrumentRowset();
         let {rows} = rowSet.setRange({lo: 0, hi: 17});
 
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'});
         ({rows} = filterRowset.setRange({lo: 0,hi: 25}));
 
-        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,'Advertising', 1])
+        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,0,'Advertising', 1])
 
         rowSet.filter({type: IN, colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
@@ -625,18 +577,18 @@ describe('getDistinctValuesForColumn', () => {
         ({rows} = rowSet.setRange({lo: 0,hi: 17},false));
 
         expect(rows).toEqual([
-            ['AMCN','AirMedia Group Inc',2.28,135810000,'2007','Technology','Advertising',100,0,0,'AMCN',0],
-            ['ANGI','Angie&#39;s List, Inc.',5.02,293750000,'2011','Consumer Services','Advertising',101,0,0,'ANGI',0],
-            ['CTCT','Constant Contact, Inc.',42.48,1350000000,'2007','Technology','Advertising',102,0,0,'CTCT',0],
-            ['CRTO','Criteo S.A.',40.7,2410000000,'2013','Technology','Advertising',103,0,0,'CRTO',0],
-            ['GRPN','Groupon, Inc.',7.97,5350000000,'2011','Technology','Advertising',104,0,0,'GRPN',0],
-            ['ISIG','Insignia Systems, Inc.',3.19,39220000,'1991','Consumer Services','Advertising',105,0,0,'ISIG',0],
-            ['NCMI','National CineMedia, Inc.',14.92,908190000,'2007','Consumer Services','Advertising',106,0,0,'NCMI',0],
-            ['RLOC','ReachLocal, Inc.',3.58,104410000,'2010','Technology','Advertising',107,0,0,'RLOC',0],
-            ['SALE','RetailMeNot, Inc.',16.41,887230000,'2013','Consumer Services','Advertising',108,0,0,'SALE',0],
-            ['VISN','VisionChina Media, Inc.',12.9,65510000,'2007','Technology','Advertising',109,0,0,'VISN',0]
+            ['AMCN','AirMedia Group Inc',2.28,135810000,'2007','Technology','Advertising',100,0,0,0,'AMCN',0],
+            ['ANGI','Angie&#39;s List, Inc.',5.02,293750000,'2011','Consumer Services','Advertising',101,0,0,0,'ANGI',0],
+            ['CTCT','Constant Contact, Inc.',42.48,1350000000,'2007','Technology','Advertising',102,0,0,0,'CTCT',0],
+            ['CRTO','Criteo S.A.',40.7,2410000000,'2013','Technology','Advertising',103,0,0,0,'CRTO',0],
+            ['GRPN','Groupon, Inc.',7.97,5350000000,'2011','Technology','Advertising',104,0,0,0,'GRPN',0],
+            ['ISIG','Insignia Systems, Inc.',3.19,39220000,'1991','Consumer Services','Advertising',105,0,0,0,'ISIG',0],
+            ['NCMI','National CineMedia, Inc.',14.92,908190000,'2007','Consumer Services','Advertising',106,0,0,0,'NCMI',0],
+            ['RLOC','ReachLocal, Inc.',3.58,104410000,'2010','Technology','Advertising',107,0,0,0,'RLOC',0],
+            ['SALE','RetailMeNot, Inc.',16.41,887230000,'2013','Consumer Services','Advertising',108,0,0,0,'SALE',0],
+            ['VISN','VisionChina Media, Inc.',12.9,65510000,'2007','Technology','Advertising',109,0,0,0,'VISN',0]
         ])
 
     });
-*/
+
 });

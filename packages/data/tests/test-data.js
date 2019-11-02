@@ -1,6 +1,11 @@
 const {Table, RowSet} = require('../dist/index.cjs.js');
+const instrumentData = require('./test-fixtures/instrumentData.js');
 
 const DEFAULT_OFFSET = 100;
+
+const GROUP_COL_1 = ['Group 1','asc'];
+const GROUP_COL_2 = ['Group 2','asc'];
+const GROUP_COL_3 = ['Group 3','asc'];
 
 const columns = [
   { name: 'Key Col', key: 0 },
@@ -9,6 +14,15 @@ const columns = [
   { name: 'Group 3', key: 3 },
   { name: 'Price', key: 4 },
   { name: 'Qty', key: 5 }
+];
+
+const columns_with_aggregation = [
+  { name: 'Key Col' },
+  { name: 'Group 1' },
+  { name: 'Group 2' },
+  { name: 'Group 3' },
+  { name: 'Price', aggregate: 'avg' },
+  { name: 'Qty', aggregate: 'sum' }
 ];
 
 const _data = [
@@ -54,8 +68,50 @@ function getTestRowset(){
   return new RowSet(table, columns, DEFAULT_OFFSET)
 }
 
+function getTestTableAndRowset(){
+  const table = getTestTable();
+  const rowSet = new RowSet(table, columns, DEFAULT_OFFSET);
+  return [table, rowSet]
+}
+
+const  instrumentColumns = [
+  {name: 'Symbol'},
+  {name: 'Name'},
+  {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
+  {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
+  {name: 'IPO', 'type': 'year'},
+  {name: 'Sector'},
+  {name: 'Industry'}
+];
+
+const getInstrumentTable = () => new Table({
+  name: 'Instruments',
+  primaryKey: 'Symbol',
+  columns: instrumentColumns,
+  data: instrumentData
+});
+
+function getInstrumentRowset(){
+  const table = getInstrumentTable();
+  return new RowSet(table, instrumentColumns, 100)
+}
+
+function getEmptyTestTableAndRowset(){
+  const table = getTestTable([]);
+  const rowSet = new RowSet(table, columns, DEFAULT_OFFSET);
+  return [table, rowSet]
+}
+
 module.exports = {
+  getInstrumentRowset,
   getTestTable,
   getTestRowset,
-  columns
+  getTestTableAndRowset,
+  getEmptyTestTableAndRowset,
+  columns,
+  columns_with_aggregation,
+  instrumentColumns,
+  GROUP_COL_1,
+  GROUP_COL_2,
+  GROUP_COL_3
 }

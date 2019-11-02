@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "files": [
@@ -25,5 +25,5 @@
     "utf-8-validate": "^5.0.2",
     "ws": "6.2.1"
   },
-  "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
+  "gitHead": "5e9d97181fde5877bc223014a9fa244ac0bb43c5"
 }

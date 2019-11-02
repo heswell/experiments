@@ -1596,7 +1596,7 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const { IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
     const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
@@ -1627,6 +1627,7 @@ function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, column
     const groupKey = buildKey(groupby.slice(0, groupIdx + 1));
 
     group[IDX] = idx;
+    group[RENDER_IDX] = 0;
     group[DEPTH] = -depth;
     group[COUNT] = 0;
     group[KEY] = baseKey + groupKey;
@@ -3404,7 +3405,7 @@ function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
             // the equivalent of project row
             const row = rows[absRowIdx].slice();
             row[meta.IDX] = absRowIdx;
-            row[meta.DEPTH] = 0;
+            row[meta.RENDER_IDX] = 0;            row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
             return [row, grpIdx, rowIdx === null ? 0 : rowIdx];
@@ -3447,6 +3448,7 @@ function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX);
             const row = data[absRowIdx].slice();
             // row[meta.IDX] = idx;
+            row[meta.RENDER_IDX] = 0; // is this right ?
             row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
@@ -3466,6 +3468,7 @@ function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta
             rowIdx = getCount(lastGroup, NAV_COUNT) - 1;
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX);
             const row = data[absRowIdx].slice();
+            row[meta.RENDER_IDX] = 0; // is tis right ?
             row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now

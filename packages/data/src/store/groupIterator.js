@@ -298,6 +298,7 @@ function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
             // the equivalent of project row
             const row = rows[absRowIdx].slice()
             row[meta.IDX] = absRowIdx;
+            row[meta.RENDER_IDX] = 0;;
             row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
@@ -341,6 +342,7 @@ function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
             const row = data[absRowIdx].slice()
             // row[meta.IDX] = idx;
+            row[meta.RENDER_IDX] = 0; // is this right ?
             row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
@@ -360,6 +362,7 @@ function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta
             rowIdx = getCount(lastGroup, NAV_COUNT) - 1;
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
             const row = data[absRowIdx].slice()
+            row[meta.RENDER_IDX] = 0; // is tis right ?
             row[meta.DEPTH] = 0;
             row[meta.COUNT] = 0;
             row[meta.KEY] = row[0]; // assume keyfieldis 0 for now

@@ -512,7 +512,7 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const { IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
     const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
@@ -543,6 +543,7 @@ export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns,
     const groupKey = buildKey(groupby.slice(0, groupIdx + 1));
 
     group[IDX] = idx;
+    group[RENDER_IDX] = 0;
     group[DEPTH] = -depth;
     group[COUNT] = 0;
     group[KEY] = baseKey + groupKey;

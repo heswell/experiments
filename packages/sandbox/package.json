@@ -6,8 +6,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "serve": "serve",
-    "start": "webpack-dev-server --mode development --open"
+    "start": "webpack-dev-server --mode development --open",
+    "serve": "serve"
   },
   "author": "heswell",
   "license": "MIT",
