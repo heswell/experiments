@@ -7,7 +7,7 @@ export {default as Surface} from './src/containers/surface';
 export {default as DragSurface} from './src/containers/dragSurface';
 export {default as LayoutItem} from './src/containers/layout-item';
 export {default as Component} from './src/component/component';
-export {default as PlaceHolder} from './src/components/place-holder/place-holder';
+export {default as PlaceHolder} from './src/components/place-holder/place-holder.jsx';
 export * from './src/model/pathUtils';
 export * from './src/model/layoutModel';
 export * from './src/model/layoutUtils';

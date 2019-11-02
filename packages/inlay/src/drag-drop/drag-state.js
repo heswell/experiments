@@ -1,5 +1,5 @@
 
-import {pointPositionWithinRect} from '../model';
+import {pointPositionWithinRect} from '../model/index.js';
 
 var SCALE_FACTOR = 0.4;
 

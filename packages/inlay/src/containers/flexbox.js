@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
-import ComponentHeader from '../component/component-header';
+import ComponentHeader from '../component/component-header.jsx';
 import Container from './container';
 import {isLayout} from '../util/component-utils'
 import { registerClass } from '../componentRegistry';

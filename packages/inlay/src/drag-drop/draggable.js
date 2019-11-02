@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import DropTargetRenderer from '../components/drop-target/drop-target-renderer';
 import DragState from './drag-state';
-import { followPath, BoxModel, Position, DropTarget, identifyDropTarget } from '../model';
+import { followPath, BoxModel, Position, DropTarget, identifyDropTarget } from '../model/index.js';
 
 let _dragCallback;
 let _dragStartX;
