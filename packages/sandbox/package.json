@@ -5,6 +5,7 @@
   "description": "Heswell Sandbox",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf dist/*",
     "build": "webpack --mode production",
     "start": "webpack-dev-server --mode development --open",
     "serve": "serve"

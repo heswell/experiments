@@ -4,6 +4,7 @@
   "description": "Heswell remote data",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
     "watch": "rollup --watch -c --environment BUILD:production"
   },

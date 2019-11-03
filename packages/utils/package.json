@@ -13,6 +13,7 @@
     "dist"
   ],
   "scripts": {
+    "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
     "prepublishOnly": "npm run build"
   },
