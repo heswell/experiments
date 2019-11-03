@@ -8,8 +8,7 @@
   ],
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
-    "prepublishOnly": "npm run build && npm version patch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "npm run build && npm version patch"
   },
   "author": "heswell",
   "license": "MIT",

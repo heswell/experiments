@@ -8,8 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c --environment BUILD:production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c --environment BUILD:production"
   },
   "author": "heswell",
   "license": "MIT",

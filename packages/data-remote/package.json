@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
-    "watch": "rollup --watch -c --environment BUILD:production",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "rollup --watch -c --environment BUILD:production"
   },
   "author": "heswell",
   "license": "MIT",

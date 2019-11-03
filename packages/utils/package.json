@@ -14,8 +14,7 @@
   ],
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
-    "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "rollup": "^1.18.0"

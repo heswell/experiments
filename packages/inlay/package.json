@@ -8,8 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c --environment BUILD:production",
-    "test": "jest"
+    "build": "rollup -c --environment BUILD:production"
   },
   "author": "heswell",
   "license": "MIT",
