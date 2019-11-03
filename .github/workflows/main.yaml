@@ -13,6 +13,5 @@ jobs:
         with: 
           node-version: '12.x'
       - run: yarn install --ignore-scripts
-      - run: npx lerna bootstrap 
       - run: npx lerna run build 
 
