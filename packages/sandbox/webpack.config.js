@@ -35,7 +35,7 @@ module.exports = (_, { mode = 'development' }) => {
 
   const includeFiles = production
     ? includeSrc
-    : includeSrc.concat(localPackages.map(pck => fs.realpathSync(`${__dirname}/node_modules/@heswell/${pck}`)))
+    : includeSrc.concat(localPackages.map(pck => fs.realpathSync(`${__dirname}/../${pck}`)))
 
   return ({
     node: false,
@@ -43,20 +43,7 @@ module.exports = (_, { mode = 'development' }) => {
     entry: path.join(__dirname, entryPoint),
     resolve: {
       descriptionFiles,
-      extensions: ['.js', '.jsx'],
-      alias: {
-        '@heswell/data': path.resolve('./node_modules/@heswell/data'),
-        '@heswell/ingrid': path.resolve('./node_modules/@heswell/ingrid'),
-        '@heswell/inlay': path.resolve('./node_modules/@heswell/inlay'),
-        '@heswell/inlay-extras': path.resolve('./node_modules/@heswell/inlay-extras'),
-        '@heswell/ui-controls': path.resolve('./node_modules/@heswell/ui-controls'),
-        '@heswell/utils': path.resolve('./node_modules/@heswell/utils'),
-        'classnames': path.resolve('../../node_modules/classnames'),
-        'dygraphs': path.resolve('../../node_modules/dygraphs'),
-        'react': path.resolve('./node_modules/react'),
-        'react-dom': path.resolve('./node_modules/react-dom'),
-        'react-motion': path.resolve('./node_modules/react-motion')
-      }
+      extensions: ['.js', '.jsx']
     },
     module: {
       rules: [

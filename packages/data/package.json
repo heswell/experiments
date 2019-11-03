@@ -14,8 +14,8 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/utils": "1.0.0",
-    "d3-array": "2.2.0"
+    "@heswell/utils": "^1.0.0",
+    "d3-array": "^2.2.0"
   },
   "devDependencies": {
     "jest": "^24.9.0",
