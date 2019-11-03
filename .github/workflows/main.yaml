@@ -13,5 +13,6 @@ jobs:
         with: 
           node-version: '12.x'
       - run: yarn install
+      - run: npx lerna bootstrap 
       - run: npx lerna run build 
 
