@@ -12,7 +12,6 @@ jobs:
       - uses: actions/setup-node@v1
         with: 
           node-version: '12.x'
-      - run: yarn global add lerna    
       - run: yarn install
-      - run: lerna run build 
+      - run: npx lerna run build 
 
