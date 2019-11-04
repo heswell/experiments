@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ui-controls",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "UI Controls",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -30,6 +30,5 @@
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
   },
-
   "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }
