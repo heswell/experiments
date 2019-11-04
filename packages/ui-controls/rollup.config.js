@@ -1,5 +1,9 @@
-import babel from 'rollup-plugin-babel'
-import postcss from 'rollup-plugin-postcss'
+import babel from 'rollup-plugin-babel';
+import postcss from 'rollup-plugin-postcss';
+import filesize from 'rollup-plugin-filesize';
+import {terser} from 'rollup-plugin-terser';
+
+const isProd = process.env.BUILD === 'production';
 
 export default {
     input: 'index.js',
@@ -17,6 +21,14 @@ export default {
             minimize: false,
             extract: true,
             sourceMap: true
-          })
+          }),
+          filesize(),
+          ...(isProd ? [terser()] : [])
+    ],
+    "external": [
+        "classnames",
+        "react",
+        "react-dom"
     ]
+
 };

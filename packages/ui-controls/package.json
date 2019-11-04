@@ -7,6 +7,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production"
@@ -19,7 +22,14 @@
     "babel-plugin-transform-jsx": "^2.0.0",
     "rollup": "1.26.3",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-postcss": "^2.0.3"
+    "rollup-plugin-postcss": "^2.0.3",
+    "rollup-plugin-terser": "^5.1.2"
   },
+  "peerDependencies": {
+    "classnames": "^2.2.6",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  },
+
   "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }
