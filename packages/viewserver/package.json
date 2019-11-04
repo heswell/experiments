@@ -1,6 +1,6 @@
 {
   "name": "@heswell/viewserver",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
   "files": [
@@ -15,7 +15,7 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data": "^1.0.5"
+    "@heswell/data": "^1.0.6"
   },
   "devDependencies": {
     "rollup": "1.26.3",
