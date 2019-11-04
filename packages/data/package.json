@@ -6,6 +6,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
@@ -14,8 +17,10 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/utils": "^1.0.9",
     "d3-array": "^2.2.0"
+  },
+  "peerDependencies": {
+    "@heswell/utils": "^1.0.9"
   },
   "devDependencies": {
     "jest": "^24.9.0",

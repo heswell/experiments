@@ -1,5 +1,5 @@
 /*global describe test expect */
-const {RowSet, filter: {IN}} = require('../../../dist/index.cjs');
+const {RowSet, filter: {IN}} = require('../../dist/index.js');
 
 const {
     getInstrumentRowset,

@@ -2,7 +2,7 @@ const {
   GroupRowSet, 
   filter: {IN, NOT_IN}, 
   columnUtils: {metaData}
-} = require('../../../dist/index.cjs');
+} = require('../../dist/index.js');
 
 const {
     getInstrumentRowset,
