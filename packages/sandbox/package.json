@@ -29,21 +29,12 @@
     "react-motion": "^0.5.2"
   },
   "devDependencies": {
-    "babel-eslint": "^10.0.2",
     "babel-loader": "^8.0.6",
     "chalk": "^2.4.2",
     "classnames": "^2.2.6",
+    "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^3.2.0",
-    "eslint": "^6.2.0",
-    "eslint-config-react-app": "^5.0.1",
-    "eslint-loader": "^2.2.1",
-    "eslint-plugin-flowtype": "^4.2.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.14.3",
-    "eslint-plugin-react-hooks": "^1.7.0",
     "file-loader": "^4.2.0",
-    "flowtype": "^2.0.0",
     "html-webpack-plugin": "^4.0.0-beta.8",
     "mini-css-extract-plugin": "^0.8.0",
     "pnp-webpack-plugin": "^1.5.0",
@@ -58,20 +49,5 @@
     "webpack-cli": "^3.3.7",
     "webpack-dev-server": "^3.8.0",
     "webpack-manifest-plugin": "^2.0.4"
-  },
-  "eslintConfig": {
-    "rules": {
-      "no-cond-assign": 0,
-      "no-loop-func": 0,
-      "no-unused-vars": [
-        "warn",
-        {
-          "args": "after-used",
-          "varsIgnorePattern": "_",
-          "ignoreRestSiblings": true
-        }
-      ]
-    },
-    "extends": "react-app"
   }
 }

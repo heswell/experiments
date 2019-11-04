@@ -2,7 +2,8 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "clean": "lerna run --parallel clean"
+    "clean": "lerna run --parallel clean",
+    "viewserver": "node --experimental-modules scripts/run-viewserver.mjs"
   },
   "workspaces": [
     "packages/*"
@@ -15,17 +16,12 @@
     "@babel/preset-react": "^7.6.3",
     "@babel/register": "^7.6.2",
     "babel-plugin-dynamic-import-node": "^2.3.0",
-    "copy-webpack-plugin": "^5.0.4",
-    "lerna": "^3.18.3",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-filesize": "^6.2.1",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.1.2",
     "source-map-loader": "^0.2.4"
   },
   "dependencies": {
     "classnames": "^2.2.6",
     "dygraphs": "^2.1.0",
+    "global": "^4.4.0",
     "material-design-icons": "^3.0.1",
     "react-motion": "^0.5.2"
   },

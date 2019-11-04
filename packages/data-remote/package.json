@@ -11,7 +11,9 @@
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {
-    "rollup": "^1.19.4"
+    "rollup": "1.26.3",
+    "rollup-plugin-node-resolve": "^5.2.0"
+
   },
   "dependencies": {
     "@heswell/utils": "^1.0.6"

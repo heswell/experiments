@@ -1,11 +1,14 @@
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
+import {terser} from 'rollup-plugin-terser';
 
-export default [{
+const isProd = process.env.BUILD === 'production';
+
+export default {
     input: 'index.js',
     output: {
-        file: 'dist/index.es.js',
+        file: 'dist/index.js',
         format: 'es',
         sourcemap: true
     },
@@ -13,20 +16,8 @@ export default [{
         resolve({
             preferBuiltins: false
         }),
-        commonjs()
-    ]
-}, {
-    input: 'index.js',
-    output: {
-        file: 'dist/index.js',
-        format: 'cjs',
-        sourcemap: true
-    },
-    plugins: [
-        resolve({
-            preferBuiltins: false
-        }),
         commonjs(),
-        filesize()
+        filesize(),
+        ...(isProd ? [terser()] : [])
     ]
-}];
+};
