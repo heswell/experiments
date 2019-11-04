@@ -1,4 +1,4 @@
-const {Table, RowSet} = require('../dist/index.cjs.js');
+const {Table, RowSet} = require('./dist/index.js');
 const instrumentData = require('./test-fixtures/instrumentData.js');
 
 const DEFAULT_OFFSET = 100;
