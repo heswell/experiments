@@ -15,7 +15,8 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data": "^1.0.8"
+    "@heswell/data": "^1.0.8",
+    "@heswell/utils": "^1.0.9"
   },
   "devDependencies": {
     "rollup": "1.26.3",

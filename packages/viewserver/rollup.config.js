@@ -8,7 +8,6 @@ export default [{
         format: 'es',
         sourcemap: false
     },
-    external: ['url','path'],
     plugins: [
         nodeResolve({
             preferBuiltins: true
@@ -18,7 +17,8 @@ export default [{
                 {src: 'dataTables', dest: 'dist'}
             ]
         })
-    ]
+    ],
+    external: ['url','path']
 
 },{
     input: './src/index.js',
@@ -31,5 +31,6 @@ export default [{
         nodeResolve({
             preferBuiltins: true
         })
-    ]
+    ],
+    external: ['url','path', 'fs']
 }];
