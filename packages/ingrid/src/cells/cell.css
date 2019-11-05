@@ -1,4 +1,7 @@
 .GridCell {
+	--border-color: #d4d4d4;
+	--border-color-selected: rgb(46, 100, 139);
+
 	position: relative;
 	display: inline-block;
 	vertical-align: top;
@@ -8,7 +11,7 @@
 	text-overflow: ellipsis;
 	border-width: 0 1px 1px 0;
 	border-style: solid;
-	border-color: #d4d4d4;
+	border-color: var(--border-color);
 	font-weight: normal;
 	height: 100%;
 	line-height: 24px;
@@ -16,7 +19,13 @@
     z-index:0;
 }
 
+.Grid.checkbox-list .GridCell {
+	--border-color-selected: #fff;
+}
+
 .GridCell.checkbox {
+	--border-color: #fff;
+
 	padding: 0 3px;
 }
 
@@ -111,3 +120,20 @@
 	outline: none;
 } */
 
+.GridRow.focused:not(.selected) .GridCell:not(.selected) {
+	border-right-color: rgb(34, 61, 80);
+	border-bottom-color: rgb(34, 61, 80);
+}
+
+.GridRow.selected .GridCell:not(.selected) {
+	border-right-color: var(--grid-row-selected);
+	border-bottom-color: var(--border-color-selected);
+} 
+
+.GridRow.last-selected .GridCell {
+	border-bottom-color: rgba(30, 30, 30, 0.3);
+}
+
+.GridRow.selected .GridCell:last-child {
+	border-right-color: rgba(0,0,0,0);
+}

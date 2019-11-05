@@ -1,0 +1,17 @@
+.Viewport {
+	background-color: white;
+}
+
+.scrolling-canvas-container { 
+  transform: translate3d(0,0,0);
+}
+
+.Viewport.stripes .scrolling-canvas-container {
+  background: repeating-linear-gradient(
+    white 0px, 
+    white 22px,
+    var(--grid-cell-border-color) 22px,
+    #f3f3f3 23px,
+    #f3f3f3 45px,
+    white 46px);
+}

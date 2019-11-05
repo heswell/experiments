@@ -41,6 +41,7 @@ export default function Grid({
     showHeaders = true,
     headerHeight = showHeaders ? 24 : 0,
     showFilters:initialShowFilters = false,
+    rowStripes=false,
     onScroll,
     // TODO capture these as callbackProps
     onSelectCell=() => {},
@@ -115,7 +116,8 @@ export default function Grid({
         ...props,
         columns,
         scrollbarSize,
-        headerHeight
+        headerHeight,
+        rowStripes
     }, initModel);
 
     const showContextMenu = useContextMenu(model, showFilters, setShowFilters, dispatch);

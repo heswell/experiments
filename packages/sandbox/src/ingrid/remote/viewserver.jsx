@@ -35,6 +35,7 @@ const SampleGrid = () => {
         <Grid
           height={600}
           width={1100}
+          rowStripes
           dataView={dataView}
           onSelectCell={(rowIdx, idx) => console.log(`sample-grid onSelectCell ${rowIdx}* ${idx}`)}
           columns={columns}/>

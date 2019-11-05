@@ -4,6 +4,8 @@ import {getCellRenderer} from '../registry/datatype-registry.jsx';
 import GridContext from '../grid-context';
 import * as Action from '../model/actions';
 
+import './row.css';
+
 export default React.memo(({
     row,
     idx,

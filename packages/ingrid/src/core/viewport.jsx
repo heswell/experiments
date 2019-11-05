@@ -1,4 +1,5 @@
 import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
+import cx from 'classnames';
 import { createLogger, logColor } from '@heswell/utils';
 import Canvas from './canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
@@ -7,6 +8,8 @@ import * as Action from '../model/actions';
 import dataReducer, { initialData } from '../model/data-reducer';
 import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
+
+import './viewport.css';
 
 const logger = createLogger('Viewport', logColor.green)
 
@@ -177,10 +180,13 @@ export const Viewport = React.memo(({
         ? null
         : ((groupBy.current = model.groupBy), []);
 
+    const className = cx('Viewport', {
+        stripes: model.rowStripes
+    })    
 
     return (
         <>
-            <div className='Viewport' style={{ ...cssViewport, ...style }}>
+            <div className={className} style={{ ...cssViewport, ...style }}>
 
                 {horizontalScrollingRequired &&
                     model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
