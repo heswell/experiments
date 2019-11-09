@@ -1,6 +1,6 @@
 {
   "name": "@heswell/sandbox",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "description": "Heswell Sandbox",
   "main": "index.js",
@@ -14,9 +14,9 @@
   "license": "MIT",
   "dependencies": {
     "@heswell/data": "^1.0.9",
-    "@heswell/data-remote": "^1.0.5",
+    "@heswell/data-remote": "^1.0.6",
     "@heswell/ingrid": "^1.0.18",
-    "@heswell/ingrid-extras": "^1.0.7",
+    "@heswell/ingrid-extras": "^1.0.8",
     "@heswell/inlay": "^1.0.8",
     "@heswell/inlay-extras": "^1.0.5",
     "@heswell/ui-controls": "^1.0.10",
