@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "publishConfig": {
@@ -22,7 +22,7 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
-    "@heswell/data": "^1.0.8",
+    "@heswell/data": "^1.0.9",
     "@heswell/utils": "^1.0.9",
     "bufferutil": "^4.0.1",
     "d3-array": "^2.2.0",
