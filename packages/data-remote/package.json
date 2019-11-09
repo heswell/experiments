@@ -3,6 +3,9 @@
   "version": "1.0.5",
   "description": "Heswell remote data",
   "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
