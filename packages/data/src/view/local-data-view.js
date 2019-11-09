@@ -5,9 +5,11 @@ import { DataTypes } from '../store/types';
 import Table from '../store/table';
 import LocalUpdateQueue from '../store/localUpdateQueue';
 
-const buildDataView = async url =>
-  import(/* webpackIgnore: true */ url)
+const buildDataView = async url => {
+  console.log(`import url ${url}`)
+  return import(/* webpackIgnore: true */ url)
     .catch(err => console.log(`failed to load data at ${url} ${err}`))
+}
 
 const logger = createLogger('LocalDataView', logColor.blue);
 

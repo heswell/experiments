@@ -47,7 +47,6 @@ export function functor(columnMap, filter) {
     case AND: return testAND(columnMap, filter);
     case OR: return testOR(columnMap, filter);
     default:
-        debugger;
         console.log(`unrecognized filter type ${filter.type}`);
         return () => true;
     }

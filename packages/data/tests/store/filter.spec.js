@@ -1,19 +1,20 @@
-import {
-  AND,
-  OR,
-  GREATER_EQ,
-  LESS_EQ,
-  addFilter,
-  extendsFilter,
-  extractFilterForColumn,
-  includesNoValues,
-  IN,
-  NOT_IN,
-  EQUALS,
-  STARTS_WITH,
-  NOT_STARTS_WITH
-} from '../../../data/store/filter';
-
+const {
+  filter: {
+    AND,
+    OR,
+    GREATER_EQ,
+    LESS_EQ,
+    IN,
+    NOT_IN,
+    EQUALS,
+    STARTS_WITH,
+    NOT_STARTS_WITH,
+    addFilter,
+    extendsFilter,
+    extractFilterForColumn,
+    includesNoValues
+  }
+} = require('../dist/index.js');
 
 describe('filter', () => {
 
