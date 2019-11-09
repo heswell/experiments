@@ -13,9 +13,9 @@ export const IN = 'IN';
 export const NOT_IN = 'NOT_IN';
 
 export const SET_FILTER_DATA_COLUMNS = [
-    {name: 'name'}, 
-    {name: 'count', width: 40}, 
-    {name: 'totalCount', width: 40}
+    {name: 'name', key:0}, 
+    {name: 'count', key:1, width: 40, type: 'number'}, 
+    {name: 'totalCount', key:2, width: 40, type: 'number'}
 ];
 
 export const BIN_FILTER_DATA_COLUMNS = [
@@ -47,6 +47,7 @@ export function functor(columnMap, filter) {
     case AND: return testAND(columnMap, filter);
     case OR: return testOR(columnMap, filter);
     default:
+        debugger;
         console.log(`unrecognized filter type ${filter.type}`);
         return () => true;
     }
@@ -282,9 +283,17 @@ function merge(f1, f2){
     } else if ((t1 === IN && t2 === NOT_IN) || (t1 === NOT_IN && t2 === IN)){
         // do the two sets cancel each other out ?
         if (f1.values.length === f2.values.length && f1.values.every(v => f2.values.includes(v))){  
-            // DOn't think this is right
+            if (t1 === IN && t2 === NOT_IN){
+                return {
+                    colName: f1.colName,
+                    type: IN,
+                    values: []
+                }
+            } else {
+                return null;
+            }
             return null;
-        } else if (t1 === NOT_IN){
+        } else if (f1.values.length > f2.values.length){
             if (f2.values.every(v => f1.values.includes(v))){
                 return {
                     ...f1,
@@ -292,6 +301,7 @@ function merge(f1, f2){
                 }
             }
         }
+        
     } else if (sameType === IN || sameType === NOT_IN){
         return {
             ...f1,

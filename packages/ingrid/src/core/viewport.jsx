@@ -102,6 +102,8 @@ export const Viewport = React.memo(({
                 }
 
                 if (msg.filter !== undefined){
+                    console.log(`we have a new filter ${JSON.stringify(msg.filter,null,2)}`)
+                    //dispatch({type: Action.filter, filter})
                     onFilterChange(msg.filter);
                 }
 

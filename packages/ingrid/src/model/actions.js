@@ -1,5 +1,6 @@
 export const COLUMN_COLLAPSE = 'COLUMN_COLLAPSE';
 export const COLUMN_EXPAND = 'COLUMN_EXPAND';
+export const COLUMNS_CHANGE = 'COLUMNS_CHANGE';
 export const INITIALIZE = 'INITIALIZE';
 export const ROWCOUNT = 'ROWCOUNT';
 export const SUBSCRIBED = 'SUBSCRIBED';

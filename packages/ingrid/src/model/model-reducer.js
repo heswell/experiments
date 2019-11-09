@@ -86,6 +86,7 @@ const handlers = {
     [Action.SCROLL_RIGHT]: autoScrollRight,
     [Action.COLUMN_COLLAPSE]: collapseColumn,
     [Action.COLUMN_EXPAND]: expandColumn,
+    [Action.COLUMNS_CHANGE]: columnsChange,
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
@@ -124,7 +125,14 @@ function initialize(state, action) {
     const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
     // problem, this doesn't account for width of grouped cols, as we do it on the raw columns
     const _totalColumnWidth = sumWidth(_columns, minColumnWidth);
-    const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize);
+
+    // we're trying to avoid having to store rowCount (and therefore issuing a new model every time rowCount
+    // changes, rather than just when displayWidth changes to allow for scrollbar)
+    // TODO we also need to check rowHeight, headerHeight, _totalCOlumnWidth - which may affect horizontal scrollbar)
+    const displayWidth = width !== state.width || height !== state.height || rowCount !== 0
+        ? getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize)
+        : state.displayWidth;
+
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
 
     const map = columnMap === null || columns !== state.columns
@@ -154,6 +162,11 @@ function initialize(state, action) {
         totalColumnWidth,
         displayWidth
     };
+}
+
+function columnsChange(state, action){
+    console.log(`columns changed ${action.columns.map(c=>c.name)}`)
+    return initialize(state, {gridState: {columns: action.columns}});
 }
 
 function subscribed(state, action){

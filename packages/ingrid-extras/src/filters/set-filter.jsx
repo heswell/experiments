@@ -10,10 +10,13 @@ import './set-filter.css';
 
 const { 
     IN, NOT_IN, STARTS_WITH, NOT_STARTS_WITH, 
-    SET_FILTER_DATA_COLUMNS: filterColumns
+    SET_FILTER_DATA_COLUMNS
 } = filterUtils;
 const NO_STYLE = {}
 const NO_COUNT = {}
+
+const SET_FILTER_DATA_COLUMNS_NO_COUNT = SET_FILTER_DATA_COLUMNS.filter(col => col.name !== 'count');
+
 
 export const INCLUDE = 'include';
 export const EXCLUDE = 'exclude';
@@ -48,7 +51,6 @@ export const SetFilter = ({
     const [showZeroRows, setZeroRows] = useState(true);
     const [dataCounts, setDataCounts] = useState(NO_COUNT);
     const [selectionDefault, setSelectionDefault] = useState(columnFilter && columnFilter.type === IN ? SELECT_NONE : SELECT_ALL);
-
     const filterView = useRef(new FilterView(dataView, column));
     const searchText = useRef('');
 
@@ -104,6 +106,11 @@ export const SetFilter = ({
         onMouseDown(e)
     }
 
+    console.log(`SetFilter render filter ${JSON.stringify(filter,null,2)}`)
+    // somehow this needs to dispatch model-reducer if it's a change
+    const filterColumns = filter === null || columnFilter === filter
+        ? SET_FILTER_DATA_COLUMNS_NO_COUNT
+        : SET_FILTER_DATA_COLUMNS
 
     // TODO envelope should be part of columnFilter
     return (

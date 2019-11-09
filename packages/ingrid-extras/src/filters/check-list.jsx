@@ -2,6 +2,8 @@ import React from 'react';
 import {Grid, Selection} from '@heswell/ingrid';
 import {filter} from '@heswell/data';
 
+import './check-list.css';
+
 const {INCLUDE, EXCLUDE} = filter;
 
 export default class CheckList extends React.Component {

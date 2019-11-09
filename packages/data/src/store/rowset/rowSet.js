@@ -472,18 +472,10 @@ export class SetFilterRowSet extends RowSet {
     }
 
     set searchText(text) {
-        // TODO
-        console.log(`FilterRowset set text = '${text}'`)
         this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
-        const {filterSet, data: rows} = this;
-        // let totalCount = 0;
-        const colIdx = this.columnMap.totalCount;
-        for (let i=0;i<filterSet.length;i++){
-            const row = rows[filterSet[i]];
-            // totalCount += row[colIdx];
-        }
-        // this.totalCount = totalCount;
         this._searchText = text;
+        // reset range so next request will be met from top
+        this.clearRange();
     }
 
 
@@ -496,6 +488,10 @@ export class SetFilterRowSet extends RowSet {
                 dataCounts: this.dataCounts
             }
     
+    }
+
+    clearRange(){
+        this.range = {lo:0, hi: 0};
     }
     
     setRange(range, useDelta){
@@ -522,13 +518,14 @@ export class SetFilterRowSet extends RowSet {
             dataCounts.filterRowSelected = filterSet.length;
         }
 
-        dataCounts.filterRowTotal = filterSet.length;
+        return dataCounts.filterRowTotal = filterSet.length;
     }
 
     clearFilter() {
         this.currentFilter = null;
         this.filterSet = null;
         this._searchText = '';
+        this.clearRange();
     }
 
 
@@ -560,7 +557,6 @@ export class SetFilterRowSet extends RowSet {
 
         this.setProjection(columnFilter);
 
-        console.log(`SetFilterRowSet.setSelected selectedCount ${dataCounts.filterRowSelected} current range ${JSON.stringify(this.range)}`)
         return this.currentRange();
 
     }
@@ -594,7 +590,6 @@ export class BinFilterRowSet extends RowSet {
     // be used in the future
     // Note: currently no projection here, we don't currently need metadata
     setRange() {
-        console.log(`BinFilterRowset.setRange`)
         return {
             type: this.type,
             rows: this.data,

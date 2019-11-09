@@ -25,6 +25,7 @@ export default class DataView {
         this._update_queue = updateQueue;
         // TODO we should pass columns into the rowset as it will be needed for computed columns
         this.rowSet = new RowSet(table, this._columns, this._index_offset);
+        // Is one filterRowset enough, or should we manage one for each column ?
         this.filterRowSet = null;
 
         // What if data is BOTH grouped and sorted ...
@@ -155,10 +156,10 @@ export default class DataView {
                 if (filter){
                     filterResultset = filterRowSet.setSelected(filter, filterCount);
                 } else {
-                    // TODO examine this. Must be a more efficient way to reset counts in filterSet
+                    // TODO examine this. Must be a more efficient way to reset counts in filterRowSet
                     const {columnName, range} = filterRowSet;
                     this.filterRowSet = rowSet.getDistinctValuesForColumn({name:columnName});
-                    filterResultset = this.filterRowSet.setRange(range, false)
+                    filterResultset = this.filterRowSet.setRange(range, false);
                 }
             }
     
@@ -213,7 +214,6 @@ export default class DataView {
     }
 
     getFilterData(column, searchText = null, range) {
-        console.log(`getFilterData searchText='${searchText}'`)
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -235,14 +235,16 @@ export default class DataView {
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {
-            // reset the filter
             filterRowSet.clearFilter();
-
-        } else if (filter && filter.colName === column.name) {
+            
+        } else if (filterRowSet && filterRowSet.columnName === column.name) {
+            // THOS SEESM WRONG confusing the filter with filterRowset ?
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
             filterRowSet.setRange({ lo: 0, hi: 0 });
         }
+        // If we already have a filterRowset for this column, but a filter on another column has changed, we need to
+        // recreate the filterRowset: SHould this happen when filter happens ?
 
         if (filter) {
             this.filterRowSet.setSelected(filter, this.rowSet.filterCount);

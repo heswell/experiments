@@ -67,10 +67,13 @@ export default function Grid({
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
     const overTheLine = useRef(0);
+    const prevColumns = useRef(null);
     const inputWidth = props.width || style.width; 
     const inputHeight = props.height || style.height; 
 
     const [showFilters, setShowFilters] = useState(initialShowFilters);
+
+    // TODO why don't we store this in the model ?
     const [filter, setFilter] = useState(null);
 
     const handleScroll = useCallback(params => {
@@ -119,6 +122,13 @@ export default function Grid({
         headerHeight,
         rowStripes
     }, initModel);
+
+    useEffect(() => {
+        if (prevColumns.current && prevColumns.current !== columns){
+            dispatch({type: Action.COLUMNS_CHANGE, columns});
+        }
+        prevColumns.current = columns;
+    },[columns])
 
     const showContextMenu = useContextMenu(model, showFilters, setShowFilters, dispatch);
 

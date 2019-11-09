@@ -103,6 +103,7 @@ function getEmptyTestTableAndRowset(){
 }
 
 module.exports = {
+  getInstrumentTable,
   getInstrumentRowset,
   getTestTable,
   getTestRowset,

@@ -1,6 +1,6 @@
 const {
   GroupRowSet, 
-  filter: {IN, NOT_IN}, 
+  filter: {EQUALS, IN, NOT_IN}, 
   columnUtils: {metaData}
 } = require('../../dist/index.js');
 
@@ -1795,7 +1795,7 @@ describe('getDistinctValuesForColumn', () => {
         rowSet.filter({
             type: 'AND',
             filters: [
-                { type: 'eq', colName: 'Group 1', value: 'G1' },
+                { type: EQUALS, colName: 'Group 1', value: 'G1' },
                 { type: NOT_IN, colName: 'Group 2', values: ['I2'] }
             ]
         }
@@ -1805,8 +1805,8 @@ describe('getDistinctValuesForColumn', () => {
         const results = filterRowset.setRange({ lo: 0, hi: 10 });
         expect(results.rows).toEqual([
             ['G1', 4, 8, 0, 0, 0, 0, 'G1', 1],
-            ['G2', 6, 8, 1, 0, 0, 0, 'G2', 1],
-            ['G3', 7, 8, 2, 0, 0, 0, 'G3', 1]
+            ['G2', 0, 8, 1, 0, 0, 0, 'G2', 1],
+            ['G3', 0, 8, 2, 0, 0, 0, 'G3', 1]
         ])
     });
 

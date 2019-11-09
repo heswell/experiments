@@ -20,7 +20,7 @@ export default ({
 }) => {
 
     const rootEl = useRef(null);
-
+    console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
     const toggleFilterDisplay = () => {
         onFilterOpen(column);
     }
@@ -71,7 +71,7 @@ export default ({
                 PopupService.showPopup({ left: Math.round(left), top: top - 26, component });
             })
         }
-    },[showFilter]);
+    },[showFilter, filter]);
 
     const moveFilter = (e, deltaX, deltaY) => {
         console.log(`move Filter by ${deltaX} ${deltaY}`)

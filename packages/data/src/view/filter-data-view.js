@@ -10,6 +10,7 @@ export default class FilterDataView {
   constructor(dataView, column){
         this.dataView = dataView;
         this.column = column;
+        this.dataCounts = undefined;
         this.dataCountCallback = null;
     }
 
@@ -24,6 +25,7 @@ export default class FilterDataView {
         this.dataView.subscribeToFilterData(this.column, this.range, message => {
             const {filterData: {dataCounts, ...data}} = message;
             callback(data);
+            this.dataCounts = dataCounts;
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
             }    
@@ -32,8 +34,12 @@ export default class FilterDataView {
 
     subscribeToDataCounts(callback){
         this.dataCountCallback = callback;
+        if (this.dataCounts){
+            callback(this.dataCounts);
+        }
     }
     unsubscribeFromDataCounts(){
+        this.dataCounts = null;
         this.dataCountCallback = null;
     }
 
@@ -59,7 +65,6 @@ export default class FilterDataView {
             colName: this.column.name,
             values: [key]
         }
-        // This is enough to filter rows and populate filter display - but how can we add filter markers to UI ?
         this.dataView.filter(filter, DataTypes.ROW_DATA, true);
     
     }

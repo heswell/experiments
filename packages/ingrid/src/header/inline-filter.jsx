@@ -18,6 +18,8 @@ export default forwardRef(({
     const header = useRef(null);
     const [showFilter, setShowFilter] = useState(null);
 
+    console.log(`InlineFilter ${JSON.stringify(serverFilter,null,2)}`)
+
     useImperativeHandle(ref, () => ({
         scrollLeft: pos => {
             header.current.scrollLeft(pos);

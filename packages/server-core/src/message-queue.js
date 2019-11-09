@@ -226,8 +226,6 @@ function extractMessages(queue, test) {
     }
 
     extract.reverse();
-    const now = new Date().getTime()
-    console.log(`[${now}] extracted messages ${extract.map(formatMessage)}\n\n`)
     return extract;
 }
 

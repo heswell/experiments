@@ -23,11 +23,11 @@
       "request": "launch",
       "name": "Jest Tests",
       "args":[ 
-        "${workspaceRoot}/big-leggy/node_modules/.bin/jest",
+        "${workspaceRoot}/packages/data/node_modules/.bin/jest",
         "--",
-        "inMemoryView"
+        "group-rowset"
       ],
-      "cwd": "${workspaceRoot}/big-leggy"
+      "cwd": "${workspaceRoot}/packages/data"
   },
   ]
 }
