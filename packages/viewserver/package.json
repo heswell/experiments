@@ -3,6 +3,9 @@
   "version": "1.0.23",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],

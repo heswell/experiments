@@ -3,6 +3,9 @@
   "version": "1.0.19",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
