@@ -1,6 +1,6 @@
 import React from 'react';
 import {FlexBox, TabbedContainer} from '@heswell/inlay';
-import {SetFilter} from './set-filter.jsx'
+import {SetFilter} from './set-filter/set-filter.jsx'
 // import {NumberFilter} from './numberFilter'
 import './multi-column-filter.css'
 

@@ -33,7 +33,10 @@ export default class LocalDataView {
     this.updateQueue = new LocalUpdateQueue();
     this.dataView = null;
     this.clientCallback = null;
-    this.range = null;
+
+    this.pendingRangeRequest = null;
+    this.pendingFilterDataRequest = null;
+    this.pendingFilterRangeRequest = null;
   }
 
   async subscribe({
@@ -56,8 +59,18 @@ export default class LocalDataView {
     this.dataView = new DataView(table, {columns}, this.updateQueue);
     this.clientCallback = callback;
 
-    if (this.range){
-      this.setRange(this.range.lo, this.range.hi)
+    if (this.pendingRangeRequest){
+      this.setRange(...this.pendingRangeRequest);
+      this.pendingRangeRequest = null;
+    }
+    if (this.pendingFilterDataRequest){
+      this.getFilterData(...this.pendingFilterDataRequest);
+      this.pendingFilterDataRequest = null;
+    }
+
+    if (this.pendingFilterRangeRequest){
+      this.setFilterRange(...this.pendingFilterRangeRequest);
+      this.pendingFilterRangeRequest = null;
     }
   }
 
@@ -67,7 +80,7 @@ export default class LocalDataView {
 
   setRange(lo, hi) {
     if (this.dataView === null){
-      this.range = {lo,hi}
+      this.pendingRangeRequest = [lo,hi]
     } else {
       this.clientCallback(this.dataView.setRange({lo, hi}, true, DataTypes.ROW_DATA));
     }
@@ -103,13 +116,17 @@ export default class LocalDataView {
   }
 
   getFilterData(column, searchText) {
+    if (this.dataView){
       const filterData =  this.dataView.getFilterData(column, searchText)
       if (this.clientFilterCallback){
         this.clientFilterCallback({filterData});
       } else {
         this.filterDataMessage = {filterData};
       }
+    } else {
+      this.pendingFilterDataRequest = [column, searchText]
     }
+  }
 
   subscribeToFilterData(column, range, callback) {
     logger.log(`<subscribeToFilterData>`)
@@ -128,14 +145,19 @@ export default class LocalDataView {
 
   // To support multiple open filters, we need a column here
   setFilterRange(lo, hi) {
-    const message = {
-      filterData: this.dataView.setRange({lo, hi}, true, DataTypes.FILTER_DATA)
-    };
-
-    if (this.clientFilterCallback){
-      this.clientFilterCallback(message);
+    if (this.dataView){
+      const message = {
+        filterData: this.dataView.setRange({lo, hi}, true, DataTypes.FILTER_DATA)
+      };
+  
+      if (this.clientFilterCallback){
+        this.clientFilterCallback(message);
+      } else {
+        this.filterDataMessage = message;
+      }
+ 
     } else {
-      this.filterDataMessage = message;
+      this.pendingFilterRangeRequest = [lo, hi];
     }
   }
 

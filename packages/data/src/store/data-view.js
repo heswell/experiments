@@ -232,9 +232,11 @@ export default class DataView {
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (searchText) {
+            range = range || filterRowSet.range;
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {
+            range = range || filterRowSet.range;
             filterRowSet.clearFilter();
             
         } else if (filterRowSet && filterRowSet.columnName === column.name) {
