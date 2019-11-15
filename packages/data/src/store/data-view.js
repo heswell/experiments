@@ -122,6 +122,27 @@ export default class DataView {
     
     }
 
+    selectAll(dataType=DataTypes.ROW_DATA){
+        // must take into account current filter
+        // if dataType === filterData, update filter on rowData
+        if (dataType === DataTypes.FILTER_DATA){
+        
+        } else {
+
+        }
+    }
+
+    selectNone(dataType=DataTypes.ROW_DATA){
+        // must take into account current filter
+        // if dataType === filterData, update filter on rowData
+        if (dataType === DataTypes.FILTER_DATA){
+        
+        } else {
+
+        }
+
+    }
+
     sort(sortCriteria) {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);

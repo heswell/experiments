@@ -44,9 +44,7 @@ export default class Table extends EventEmitter {
         this.installDataGenerators(config);
     }
 
-    // ...updates = one or more pairs of (colIdx, colValue)
     update(rowIdx, ...updates){
-        //onsole.log(`Table.update ${this.name} idx: ${rowIdx}  ${JSON.stringify(updates)}` );
         const results = [];
         let row = this.rows[rowIdx];
         for (let i=0;i<updates.length;i+=2){
@@ -150,6 +148,7 @@ export default class Table extends EventEmitter {
             // not every row may have every column. How would we handle primary key ?
             const columnMap = map || (this.columnMap = {});
             const colnames = columnnameList || Object.getOwnPropertyNames(data);
+            // why start with idx in 0 ?
             const row = [idx];
             let colIdx;
             let key;
@@ -168,7 +167,7 @@ export default class Table extends EventEmitter {
                 }
             }
             // doesn't this risk pushing the metadata into the wrong slots if not every row has every 
-            // field
+            // field// TODO why do we need metadata fields in table itself ?
             row.push(idx, key)
             return row;
         }
@@ -190,13 +189,13 @@ export default class Table extends EventEmitter {
     }
 
     applyUpdates(){
-        const {rows} = this;
+        const {rows, columnMap} = this;
         // const count = Math.round(rows.length / 50);
         const count = 100;
 
         for (let i=0; i<count; i++){
             const rowIdx = getRandomInt(rows.length - 1);
-            const update = this.updateRow(rowIdx, this.rows[rowIdx], this.columnMap);
+            const update = this.updateRow(rowIdx, rows[rowIdx], columnMap);
             if (update){
                 this.update(rowIdx, ...update);
             }

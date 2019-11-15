@@ -3,8 +3,8 @@ import cx from 'classnames';
 import { columnUtils, filter as filterUtils } from '@heswell/data';
 import { SetFilter, NumberFilter, MultiColumnFilter } from '@heswell/ingrid-extras';
 
-import Draggable from '../draggable/draggable.jsx';
-import { PopupService } from '../services/index';
+import Draggable from '../../draggable/draggable.jsx';
+import { PopupService } from '../../services/index';
 
 import './column-filter.css';
 

@@ -1,17 +1,16 @@
 import React from 'react';
 import {Grid, Selection} from '@heswell/ingrid';
-import {filter} from '@heswell/data';
 
 import './check-list.css';
-
-const {INCLUDE, EXCLUDE} = filter;
 
 export default class CheckList extends React.Component {
 
     render(){
         return <Grid className='checkbox-list'
-            debug_title={this.props.debug_title}
-            showHeaders={false}
+            showHeaders={{
+                columnHeader: true,
+                selectHeader: true
+            }}
             rowHeight={22}
             minColumnWidth={80}
             columns={this.props.columns}

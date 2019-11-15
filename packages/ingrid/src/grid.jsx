@@ -3,14 +3,12 @@
 /*global requestAnimationFrame cancelAnimationFrame */
 import React, { useRef, useState, useReducer, useEffect, useCallback } from 'react';
 import cx from 'classnames';
-import { columnUtils } from '@heswell/data';
 import { createLogger, logColor } from '@heswell/utils';
 import * as Action from './model/actions';
-import { Motion, spring } from 'react-motion';
-// import { useAnimate } from 'react-simple-animate'
 import modelReducer, { initModel } from './model/model-reducer';
 import Header from './header/header.jsx';
-import InlineFilter from './header/inline-filter.jsx';
+import InlineFilter from './header/inline-filter/inline-filter.jsx';
+import SelectHeader from './header/select-header/select-header.jsx';
 import { Viewport } from './core/viewport.jsx';
 import { getScrollbarSize } from './utils/domUtils';
 import GridContext from './grid-context';
@@ -25,6 +23,12 @@ const scrollbarSize = getScrollbarSize();
 //TODO 
 // 1) how do we assign extra horizontal space
 
+const defaultHeaders = {
+    columnHeader: true,
+    selectHeader: false,
+    inlineFilter: false
+} 
+
 /**
  * @typedef {Object} GridProps
  * @property {object} dataView 
@@ -38,9 +42,8 @@ export default function Grid({
     dataView,
     columns=[],
     style,
-    showHeaders = true,
+    showHeaders = defaultHeaders,
     headerHeight = showHeaders ? 24 : 0,
-    showFilters:initialShowFilters = false,
     rowStripes=false,
     onScroll,
     // TODO capture these as callbackProps
@@ -63,6 +66,13 @@ export default function Grid({
     // collapsedColumns
     // selectionModel
 }) {
+
+    const {
+        columnHeader: showColumnHeader = false,
+        selectHeader: showSelectHeader = false,
+        inlineFilter: showInlineFilter = false,
+    } = showHeaders || {};
+
     const header = useRef(null);
     const inlineFilter = useRef(null);
     const scrollLeft = useRef(0);
@@ -71,7 +81,7 @@ export default function Grid({
     const inputWidth = props.width || style.width; 
     const inputHeight = props.height || style.height; 
 
-    const [showFilters, setShowFilters] = useState(initialShowFilters);
+    const [showFilters, setShowFilters] = useState(showInlineFilter);
 
     // TODO why don't we store this in the model ?
     const [filter, setFilter] = useState(null);
@@ -180,8 +190,9 @@ export default function Grid({
     }, [dataView, groupState]);
 
     const filterHeight = showFilters ? 24 : 0;
-    const headingHeight = showHeaders ? headerHeight * _headingDepth : 0;
-    const totalHeaderHeight = headingHeight + filterHeight;
+    const selectHeaderHeight = showSelectHeader ? 24 : 0; 
+    const headingHeight = showColumnHeader ? headerHeight * _headingDepth : 0;
+    const totalHeaderHeight = headingHeight + filterHeight + selectHeaderHeight;
     const isEmpty = dataView.size <= 0;
     const emptyDisplay = (isEmpty && props.emptyDisplay) || null;
     const className = cx(
@@ -195,7 +206,7 @@ export default function Grid({
         // we can roll context menu into the context once more of the child components are functions
         <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
             <div style={{ position: 'relative', height, width, ...style }} className={className}>
-                {showHeaders && headerHeight !== 0 &&
+                {showColumnHeader && headerHeight !== 0 &&
                     <Header ref={header}
                         height={headingHeight}
                         model={model}
@@ -209,17 +220,15 @@ export default function Grid({
                         filter={filter}
                         height={filterHeight}
                         style={{ position: 'absolute', top: headingHeight, height: filterHeight, width }} />}
-
-                <Motion defaultStyle={{ top: headingHeight }} style={{ top: spring(totalHeaderHeight) }}>
-                    {interpolatingStyle =>
-                        <Viewport
-                            dataView={dataView}
-                            model={model}
-                            style={interpolatingStyle}
-                            height={height - totalHeaderHeight}
-                            onFilterChange={setFilter}
-                        />}
-                </Motion>
+                {showSelectHeader &&
+                <SelectHeader dataView={dataView} style={{top:headingHeight, height:selectHeaderHeight}}/>}
+                <Viewport
+                    dataView={dataView}
+                    model={model}
+                    style={{top: totalHeaderHeight}}
+                    height={height - totalHeaderHeight}
+                    onFilterChange={setFilter}
+                />
                 {emptyDisplay}
             </div>
         </GridContext.Provider>

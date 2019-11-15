@@ -1,13 +1,21 @@
-import { createLogger, logColor } from '@heswell/utils';
+import { createLogger, logColor, EventEmitter } from '@heswell/utils';
 import { metaData } from '../store/columnUtils';
 import { DataTypes } from '../store/types';
 import { NOT_IN, IN } from '../store/filter';
 
 const logger = createLogger('FilterDataView', logColor.brown);
 
-export default class FilterDataView {
+/**
+ * This is a specialized wrapper around  a regular data-view (local or remote).
+ * It is specifically for a data list that is being used to filter the underlying
+ * data-view. 
+ */
 
-  constructor(dataView, column){
+// TODO shall we inherit from EventEmitter, so we can host multiple dataCount subscriptions ?
+export default class FilterDataView extends EventEmitter {
+
+    constructor(dataView, column){
+        super();
         this.dataView = dataView;
         this.column = column;
         this.dataCounts = undefined;
@@ -26,21 +34,11 @@ export default class FilterDataView {
             const {filterData: {dataCounts, ...data}} = message;
             callback(data);
             this.dataCounts = dataCounts;
+            this.emit('data-count', dataCounts);
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
             }    
         })
-    }
-
-    subscribeToDataCounts(callback){
-        this.dataCountCallback = callback;
-        if (this.dataCounts){
-            callback(this.dataCounts);
-        }
-    }
-    unsubscribeFromDataCounts(){
-        this.dataCounts = null;
-        this.dataCountCallback = null;
     }
 
     unsubscribe(){
@@ -51,10 +49,6 @@ export default class FilterDataView {
         logger.log(`<destroy>`)
         this.dataView.unsubscribeFromFilterData(this.column);
     }
-
-    // onFilterData = (_, rows, rowCount, totalCount, dataCounts) => {
-    //     this.emit(DataTypes.ROW_DATA, rows, rowCount, totalCount, dataCounts);
-    // }
 
     select(idx, row){
         const {KEY, SELECTED} = this.meta;

@@ -1,13 +1,14 @@
-/*global describe test expect */
-import {_getTestTable} from '../testData';
-import {_getInstrumentPricesTable} from '../instrumentPrices';
+const {Table} = require('../dist/index');
+const {
+    getTestTable,
+} = require('../test-data.js');
 
 describe('Table', () => {
 
     describe('data loading', () => {
 
         test('parseData from array', () => {
-            const table = _getTestTable();
+            const table = getTestTable();
             expect(table.rows).toEqual([
                 [ 'key01', 'G1', 'U2', 'T3', 5, 101, 0,'key01'],
                 [ 'key02', 'G1', 'U2', 'T3', 5, 102, 1,'key02'],
@@ -48,21 +49,14 @@ describe('Table', () => {
                 key21: 20, key22: 21, key23: 22, key24: 23
             })
 
-            // console.log(table.columns);
             expect(table.status).toBe('ready');
         });
 
-        test('load data from json', async () => {
-            const table = await _getInstrumentPricesTable();
-            expect(table.columnMap).toEqual({
-                'ric': 0, 'description': 1, 'currency': 2, 'exchange': 3, 'lotsize': 4
-            });
-        });
     })
 
     describe('insert', () => {
         test('insert row', (done) => {
-            const table = _getTestTable();
+            const table = getTestTable();
             table.on('rowInserted', (evtType, idx, row) => {
                 expect(table.rows[idx]).toEqual(row)
                 expect(row[6]).toEqual(24);
@@ -75,7 +69,7 @@ describe('Table', () => {
 
     describe('update', () => {
         test('update row', (done) => {
-            const table = _getTestTable();
+            const table = getTestTable();
             table.on('rowUpdated', (evtType, idx, updates) => {
                 expect(table.rows[4]).toEqual(['key05','G1','I2','T3',9.5,50, 4,'key05'])
                 expect(updates).toEqual([4,9,9.5,5,100,50])

@@ -94,6 +94,7 @@ export const initModel = model =>
     initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
   
 
+
 function initialize(state, action) {
     const {
         collapsedColumns=state.collapsedColumns,
@@ -115,8 +116,10 @@ function initialize(state, action) {
         width=state.width,
     } = action.gridState;
 
+    const CHECKBOX_COLUMN = {name: '', key: -1, width: 25, sortable: false, type: {name: 'checkbox', renderer: {name: 'selection-checkbox'}}};
+
     const preCols = selectionModel === Selection.Checkbox
-        ? [{name: '', width: 25, sortable: false, type: {name: 'checkbox', renderer: {name: 'selection-checkbox'}}}]
+        ? [CHECKBOX_COLUMN]
         :EMPTY_ARRAY;
 
     const keyedColumns = columns.map(columnUtils.toKeyedColumn)

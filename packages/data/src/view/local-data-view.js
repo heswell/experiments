@@ -18,8 +18,7 @@ export default class LocalDataView {
     url,
     tableName
   }) {
-    // note: don't wait
-    logger.log(`lets try and load ${url}`)
+
     this.eventualView = buildDataView(url);
     this.columns = null;
     this.meta = null;
@@ -41,9 +40,8 @@ export default class LocalDataView {
 
   async subscribe({
     tableName = this.tableName,
-    columns,
-    // range = defaultRange,
-    // ...options
+    columns
+    // TODO support groupBy, sort etc
   }, callback) {
 
     if (!columns) throw Error("LocalDataView subscribe called without columns");

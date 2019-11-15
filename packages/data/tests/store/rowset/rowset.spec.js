@@ -1,4 +1,3 @@
-/*global describe test expect */
 const {RowSet, filter: {IN}} = require('../../dist/index.js');
 
 const {
@@ -7,13 +6,6 @@ const {
     getTestRowset,
     columns: rowset_columns,
 } = require('../../test-data.js');
-
-// import {
-//     InstrumentPriceColumns,
-//     _getInstrumentPricesTable
-// } from '../instrumentPrices';
-
-// import {IN, NOT_IN, LESS_THAN, GREATER_EQ} from '../../../data/store/filter';
 
 const DEFAULT_OFFSET =100;
 
@@ -590,5 +582,29 @@ describe('getDistinctValuesForColumn', () => {
         ])
 
     });
+
+});
+
+describe('select', () => {
+    test.only('select single row, from no selection', () => {
+        const rowSet = getTestRowset();
+        rowSet.setRange({lo: 0, hi: 10});
+
+        debugger;
+        let result = rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
+        console.log(result)
+
+        let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
+        console.table(rows)
+    })
+
+});
+
+describe('selectAll', () => {
+
+});
+
+
+describe('selectNone', () => {
 
 });

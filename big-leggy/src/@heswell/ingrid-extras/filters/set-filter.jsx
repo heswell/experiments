@@ -51,9 +51,9 @@ export const SetFilter = ({
 
     useEffect(() => {
         // TODO how do we add multiple subscriptions
-        filterView.current.subscribeToDataCounts(setDataCounts);
+        filterView.current.on('data-count', setDataCounts);
         return () => {
-            filterView.current.unsubscribeFromDataCounts();
+            filterView.current.removeListener('data-count', setDataCounts);
             onHide();
         }
     }, [dataView])

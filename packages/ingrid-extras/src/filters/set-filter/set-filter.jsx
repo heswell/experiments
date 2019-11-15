@@ -76,11 +76,12 @@ export const SetFilter = ({
     const {filterRowTotal=0, filterRowSelected=0} = dataCounts;
     const selectionStatus = getSelectionStatus(filterRowTotal,filterRowSelected);
 
+    const onDataCount = (_, dataCounts) => setDataCounts(dataCounts)
+
     useEffect(() => {
-        // TODO how do we add multiple subscriptions
-        filterView.current.subscribeToDataCounts(setDataCounts);
+        filterView.current.addListener('data-count', onDataCount);
         return () => {
-            filterView.current.unsubscribeFromDataCounts();
+            filterView.current.removeListener('data-count', onDataCount);
             onHide();
         }
     }, [dataView])
@@ -138,10 +139,8 @@ export const SetFilter = ({
                     inputWidth={column.width - 16}
                     searchText={searchText}
                     onSearchText={handleSearchText}
-                    selectionText={allSelected ? 'EXCLUDE ALL' : 'INCLUDE ALL'}
-                    onClickSelectionText={clickHandler}
                     onHide={onClose} />}
-                <CheckList style={{ flex: 1, margin: '3px 3px 0 3px', border: '1px solid lightgray' }}
+                <CheckList style={{ flex: 1, border: '1px solid lightgray' }}
                     columns={filterColumns}
                     dataView={filterView.current} />
                 <FilterCounts style={{ height: 50 }} column={column} dataCounts={dataCounts} searchText={searchText} />

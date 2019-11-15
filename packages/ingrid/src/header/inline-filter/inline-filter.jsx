@@ -1,11 +1,11 @@
 import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
 import { filter as filterUtils, DataTypes } from '@heswell/data'
-import Header from './header.jsx';
+import Header from '../header.jsx';
 import ColumnFilter from './column-filter.jsx';
 
 import './inline-filter.css';
 
-const { STARTS_WITH, NOT_IN } = filterUtils;
+const { NOT_IN } = filterUtils;
 
 export default forwardRef(({ 
     dataView,
@@ -17,8 +17,6 @@ export default forwardRef(({
 
     const header = useRef(null);
     const [showFilter, setShowFilter] = useState(null);
-
-    console.log(`InlineFilter ${JSON.stringify(serverFilter,null,2)}`)
 
     useImperativeHandle(ref, () => ({
         scrollLeft: pos => {
