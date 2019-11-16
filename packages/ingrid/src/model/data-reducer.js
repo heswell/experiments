@@ -24,8 +24,6 @@ export default function (model) {
       return setData(state, action, model.meta);
     } else if (action.type === 'update'){
       return applyUpdates(state, action, model.meta);
-    } else if (action.type === 'selected'){
-      return applySelection(state, action, model.meta)
     } else if (action.type === Action.ROWCOUNT){
       return setSize(state, action)      
     }
@@ -103,47 +101,6 @@ function setData(state, action, meta){
   }
 
 }
-
-function applySelection(state, {selected, deselected}, meta){
-  const { IDX, SELECTED } = meta;
-  const {rows: input, rowCount} = state;
-  const results = [];
-  const rows = [];
-
-  // TODO whare do we apply the offset
-  const offset = 100;
-
-  for (let i=0;i<input.length;i++){
-    const row = input[i];
-    const rowIdx = row[IDX];
-    const wasSelected = row[SELECTED];
-    const nowSelected = !wasSelected && selected.includes(rowIdx-offset);
-    const nowDeselected = wasSelected && deselected.includes(rowIdx-offset);
-
-    if (!nowSelected && !nowDeselected){
-      rows[i] = row;
-      if (wasSelected){
-        results.push(rowIdx-100);
-      }
-    } else {
-      const dolly = row.slice();
-      if (nowSelected){
-        dolly[SELECTED] = 1;
-        results.push(rowIdx-100);
-      } else {
-        dolly[SELECTED] = 0;
-      }
-      rows[i] = dolly;
-    }
-  }
-
-  return {
-    ...state,
-    rows,
-    rowCount,
-  }
-}
-
 
 // TODO create a pool of these and reuse them
 function emptyRow(idx, { IDX, count }) {

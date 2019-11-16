@@ -586,21 +586,86 @@ describe('getDistinctValuesForColumn', () => {
 });
 
 describe('select', () => {
-    test.only('select single row, from no selection', () => {
+    test('select single row, from no selection', () => {
         const rowSet = getTestRowset();
         rowSet.setRange({lo: 0, hi: 10});
-
-        debugger;
         let result = rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
-        console.log(result)
-
+        expect(result).toEqual([[100,11,1]])
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
-        console.table(rows)
+        const {SELECTED} = rowSet.meta;
+        expect(rows.map(row => row[SELECTED])).toEqual([1,0,0,0,0,0,0,0,0,0])
+    })
+
+    test('select single row, extend to range', () => {
+        const rowSet = getTestRowset();
+        rowSet.setRange({lo: 0, hi: 10});
+        rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
+        let result = rowSet.select(15, /* rangeSelect */ true, /*keepExistingSelection */ true);
+        expect(result).toEqual([
+            [101,11,1],
+            [102,11,1],
+            [103,11,1],
+            [104,11,1],
+            [105,11,1],
+            [106,11,1],
+            [107,11,1],
+            [108,11,1],
+            [109,11,1],
+        ])
+        const {SELECTED} = rowSet.meta;
+        let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
+        expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,1,1,1,1]);
+
+        ({rows} = rowSet.setRange({lo: 10, hi: 20}));
+        expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,0,0,0,0]);
+
+    })
+
+    test('select single row, select other row, dont preserve selection', () => {
+        const rowSet = getTestRowset();
+        rowSet.setRange({lo: 0, hi: 10});
+        rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
+        let result = rowSet.select(2, /* rangeSelect */ false, /*keepExistingSelection */ false);
+
+        expect(result).toEqual([
+            [102,11,1],
+            [100,11,0],
+        ])
+        const {SELECTED} = rowSet.meta;
+        let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
+        expect(rows.map(row => row[SELECTED])).toEqual([0,0,1,0,0,0,0,0,0,0]);
+
     })
 
 });
 
 describe('selectAll', () => {
+    test('no previous selection', () => {
+        const rowSet = getTestRowset();
+        rowSet.setRange({lo: 0, hi: 10});
+
+        let result = rowSet.selectAll();
+
+        expect(result).toEqual([
+            [100,11,1],
+            [101,11,1],
+            [102,11,1],
+            [103,11,1],
+            [104,11,1],
+            [105,11,1],
+            [106,11,1],
+            [107,11,1],
+            [108,11,1],
+            [109,11,1],
+        ])
+        const {SELECTED} = rowSet.meta;
+        let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
+        expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,1,1,1,1]);
+
+        ({rows} = rowSet.setRange({lo: 10, hi: 20}, false));
+        expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,1,1,1,1]);
+
+    })
 
 });
 

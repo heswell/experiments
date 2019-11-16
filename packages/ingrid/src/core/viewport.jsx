@@ -114,9 +114,7 @@ export const Viewport = React.memo(({
                 if (msg.rows) {
                     dispatchData({ type: 'data', rows: msg.rows, rowCount: msg.size, offset: msg.offset, range: msg.range });
                 } else if (msg.updates){
-                    dispatchData({ type: 'update', updates: msg.updates, range: msg.range });
-                } else if (msg.selected) {
-                    dispatchData({ type: 'selected', selected: msg.selected, deselected: msg.deselected })
+                    dispatchData({ type: 'update', updates: msg.updates });
                 } else if (msg.type === 'subscribed'){
                     dispatch({type: Action.SUBSCRIBED, columns: msg.columns, availableColumns: msg.availableColumns});
                 }

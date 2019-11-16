@@ -55,20 +55,20 @@ export function buildColumnMap(columns){
 export function projectColumns(map, columns, meta){
     const length = columns.length;
     const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
-    return (startIdx, selectedRows=[]) => (row,i) => {
+    return (startIdx, offset, selectedRows=[]) => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
             out[i] = row[colIdx];
         }
-        // assume row[0] is key for now
-        // out.push(startIdx+i, 0, 0, row[0]);
-        out[IDX] = startIdx+i;
+        const idx = startIdx + i;
+        out[IDX] = idx + offset;
         out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
+        // assume row[0] is key for now
         out[KEY] = row[0];
-        out[SELECTED] = 0;
+        out[SELECTED] = selectedRows.includes(idx) ? 1 : 0;
         return out;
     }
 }

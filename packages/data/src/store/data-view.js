@@ -83,20 +83,14 @@ export default class DataView {
 
     rowUpdated(event, idx, updates) {
         const { rowSet, _update_queue } = this;
-        // const {range, rowSet} = _row_data;
         const result = rowSet.update(idx, updates);
+
         if (result) {
             if (rowSet instanceof RowSet) {
-                // we wouldn't have got the update back if it wasn't in range
-                if (withinRange(rowSet.range, result[0], rowSet.offset)) {
-                    _update_queue.update(result);
-                }
+                _update_queue.update(result);
             } else {
                 result.forEach(rowUpdate => {
-                    //TODO pretty sure we've already checked the range within the rowset itself
-                    if (withinRange(rowSet.range, rowUpdate[0], rowSet.offset)) {
-                        _update_queue.update(rowUpdate);
-                    }
+                    _update_queue.update(rowUpdate);
                 });
             }
         }
@@ -117,9 +111,10 @@ export default class DataView {
 
     select(idx, rangeSelect, keepExistingSelection){
         console.log(`InMemoryView.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`)
-        return this.rowSet.select(idx, rangeSelect, keepExistingSelection);
-        //TODO eliminate rows not in range
-    
+        const updates = this.rowSet.select(idx, rangeSelect, keepExistingSelection);
+        if (updates.length){
+            return {updates};
+        }
     }
 
     selectAll(dataType=DataTypes.ROW_DATA){
@@ -128,7 +123,10 @@ export default class DataView {
         if (dataType === DataTypes.FILTER_DATA){
         
         } else {
-
+            const updates = this.rowSet.selectAll();
+            if (updates.length){
+                return {updates};
+            }
         }
     }
 
@@ -138,7 +136,10 @@ export default class DataView {
         if (dataType === DataTypes.FILTER_DATA){
         
         } else {
-
+            const updates = this.rowSet.selectNone();
+            if (updates.length){
+                return {updates};
+            }
         }
 
     }
@@ -253,11 +254,11 @@ export default class DataView {
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (searchText) {
-            range = range || filterRowSet.range;
+            // range = range || filterRowSet.range;
             filterRowSet.searchText = searchText;
 
         } else if (filterRowSet && filterRowSet.searchText) {
-            range = range || filterRowSet.range;
+            // range = range || filterRowSet.range;
             filterRowSet.clearFilter();
             
         } else if (filterRowSet && filterRowSet.columnName === column.name) {

@@ -14,7 +14,7 @@ import {
     splitFilterOnColumn,
     overrideColName
 } from '../filter';
-import { addRowsToIndex } from '../rowUtils';
+import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
 import { groupbyExtendsExistingGroupby } from '../groupUtils';
 import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
 import { DataTypes } from '../types';
@@ -84,9 +84,10 @@ export default class BaseRowSet {
     }
 
     select(idx, rangeSelect, keepExistingSelection){
-        console.log(`RowSet.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`)
+
+        const {meta: {SELECTED}, selectionModel, range: {lo, hi}, offset} = this;
         
-        const {selected, deselected, ...selectionState} = this.selectionModel.select(
+        const {selected, deselected, ...selectionState} = selectionModel.select(
             this.selected,
             idx,
             rangeSelect,
@@ -95,7 +96,52 @@ export default class BaseRowSet {
         
         this.selected = selectionState;
 
-        return {selected, deselected};
+        const updates = [];
+        for (let i=0;i<selected.length;i++){
+            const idx = selected[i];
+            if (idx >= lo && idx < hi){
+                updates.push([idx+offset,SELECTED, 1]);
+            }
+        }
+        for (let i=0;i<deselected.length;i++){
+            const idx = deselected[i];
+            if (idx >= lo && idx < hi){
+                updates.push([idx+offset,SELECTED, 0]);
+            }
+        }
+        
+        return updates;
+    }
+
+    selectAll(){
+        const {data, meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        
+        // Step 1: brute force approach, actually create list of selected indices
+        this.selected = {rows: arrayOfIndices(data.length), focusedIdx: -1, lastTouchIdx: -1};
+
+        const updates = [];
+        for (let i=lo;i<hi;i++){
+            if (data[i][SELECTED] !== 1){
+                updates.push([i+offset,SELECTED, 1]);
+            }
+        }
+        
+        return updates;
+
+    }
+
+    selectNone(){
+
+        const {data, meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+
+        const updates = [];
+        for (let i=lo;i<hi;i++){
+            if (data[i][SELECTED] === 1){
+                updates.push([i+offset,SELECTED, 0]);
+            }
+        }
+        return updates;
     }
 
     selectNavigationSet(useFilter) {
@@ -203,28 +249,27 @@ export class RowSet extends BaseRowSet {
     }
 
     slice(lo, hi) {
-        const {selectedSet} = this;
-        if (this.filterSet) {
-            const filteredData = this.filterSet.slice(lo, hi);
+        const {data, selected, filterSet, offset, sortCols, sortSet, sortReverse} = this;
+        if (filterSet) {
+            const filteredData = filterSet.slice(lo, hi);
             const filterMapper = typeof filteredData[0] === 'number'
-                ? idx => this.data[idx]
-                : ([idx]) => this.data[idx];
+                ? idx => data[idx]
+                : ([idx]) => data[idx];
             return filteredData
                 .map(filterMapper)
-                .map(this.project(lo + this.offset, selectedSet));
-        } else if (this.sortCols) {
-            const sortSet = this.sortSet;
+                .map(this.project(lo, offset, selected.rows));
+        } else if (sortCols) {
             const results = []
-            for (let i = lo, rows = this.data, len = rows.length; i < len && i < hi; i++) {
-                const idx = this.sortReverse
+            for (let i = lo, len = data.length; i < len && i < hi; i++) {
+                const idx = sortReverse
                     ? sortSet[len - i - 1][0]
                     : sortSet[i][0];
-                const row = rows[idx];
+                const row = data[idx];
                 results.push(row);
             }
-            return results.map(this.project(lo + this.offset, selectedSet));
+            return results.map(this.project(lo, offset, selected.rows));
         } else {
-            return this.data.slice(lo, hi).map(this.project(lo + this.offset, selectedSet));
+            return this.data.slice(lo, hi).map(this.project(lo, offset, selected.rows));
         }
     }
 

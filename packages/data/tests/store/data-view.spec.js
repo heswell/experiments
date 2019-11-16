@@ -433,7 +433,6 @@ describe('getFilterData + Search', () => {
             ['Google Inc.',           1, 1, 3, 0, 0, 0, 'Google Inc.', 1],
             ['Gordmans Stores, Inc.', 1, 1, 4, 0, 0, 0, 'Gordmans Stores, Inc.', 0]
         ]);
-
         view.getFilterData({ name: 'Name' }, 'Goo');
         ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
         expect(rows).toEqual([
