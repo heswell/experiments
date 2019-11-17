@@ -499,9 +499,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20, 0, 0, 0, 0, 'T3', 1],
-            ['T4', 3,  3,  1, 0, 0, 0, 'T4', 1],
-            ['T5', 1,  1,  2, 0, 0, 0, 'T5', 1]
+            ['T3', 20, 20, 0, 0, 0, 0, 'T3', 0],
+            ['T4', 3,  3,  1, 0, 0, 0, 'T4', 0],
+            ['T5', 1,  1,  2, 0, 0, 0, 'T5', 0]
         ])
     });
 
@@ -511,9 +511,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20,  0, 0, 0, 0, 'T3', 1],
-            ['T4', 0,  3,   1, 0, 0, 0, 'T4', 1],
-            ['T5', 0,  1,   2, 0, 0, 0, 'T5', 1]
+            ['T3', 20, 20,  0, 0, 0, 0, 'T3', 0],
+            ['T4', 0,  3,   1, 0, 0, 0, 'T4', 0],
+            ['T5', 0,  1,   2, 0, 0, 0, 'T5', 0]
         ])
     });
 
@@ -523,14 +523,10 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
 
-        const {IDX, SELECTED} = filterRowset.meta;
-        let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-
-        expect(selectedIndices).toEqual([0,1,2]);
         expect(rows).toEqual([
-            ['T3', 15, 20, 0, 0, 0, 0, 'T3', 1],
-            ['T4', 2,  3,  1, 0, 0, 0, 'T4', 1],
-            ['T5', 0,  1,  2, 0, 0, 0, 'T5', 1]
+            ['T3', 15, 20, 0, 0, 0, 0, 'T3', 0],
+            ['T4', 2,  3,  1, 0, 0, 0, 'T4', 0],
+            ['T5', 0,  1,  2, 0, 0, 0, 'T5', 0]
         ])
     });
 
@@ -547,9 +543,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 1'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['G1', 4, 8,   0, 0, 0, 0, 'G1', 1],
-            ['G2', 0, 8,   1, 0, 0, 0, 'G2', 1],
-            ['G3', 0, 8,   2, 0, 0, 0, 'G3', 1]
+            ['G1', 4, 8,   0, 0, 0, 0, 'G1', 0],
+            ['G2', 0, 8,   1, 0, 0, 0, 'G2', 0],
+            ['G3', 0, 8,   2, 0, 0, 0, 'G3', 0]
         ])
     });
 
@@ -560,7 +556,7 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'});
         ({rows} = filterRowset.setRange({lo: 0,hi: 25}));
 
-        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,0,'Advertising', 1])
+        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,0,'Advertising', 0])
 
         rowSet.filter({type: IN, colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
@@ -671,5 +667,31 @@ describe('selectAll', () => {
 
 
 describe('selectNone', () => {
+
+    test('selectAll, then selectNone', () => {
+        const rowSet = getTestRowset();
+        rowSet.setRange({lo: 0, hi: 10});
+
+        rowSet.selectAll();
+        let result = rowSet.selectNone();
+
+        expect(result).toEqual([
+            [100,11,0],
+            [101,11,0],
+            [102,11,0],
+            [103,11,0],
+            [104,11,0],
+            [105,11,0],
+            [106,11,0],
+            [107,11,0],
+            [108,11,0],
+            [109,11,0],
+        ])
+        const {SELECTED} = rowSet.meta;
+        let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
+        expect(rows.map(row => row[SELECTED])).toEqual([0,0,0,0,0,0,0,0,0,0]);
+
+    })
+
 
 });

@@ -103,7 +103,7 @@ export default function Grid({
     },[]);
 
     const handleSelectionChange = useCallback((idx, row, rangeSelect, keepExistingSelection) => {
-        dataView.select(idx, row, rangeSelect,keepExistingSelection);
+        dataView.select(idx, rangeSelect,keepExistingSelection);
         if (onSelectionChange){
             const isSelected = row[model.meta.SELECTED] === 1;
             // TODO what about range selections

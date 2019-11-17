@@ -114,7 +114,7 @@ export default class RemoteDataView  {
     });
   }
 
-  select(idx, _row, rangeSelect, keepExistingSelection){
+  select(idx, rangeSelect, keepExistingSelection){
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.select,

@@ -1,4 +1,3 @@
-/*global describe test expect */
 const {
     DataView, DataTypes, 
     filter: {IN, STARTS_WITH, NOT_STARTS_WITH}} = require('../dist/index.js');
@@ -6,18 +5,8 @@ const {
 const {
     getInstrumentTable,
     instrumentColumns: columns,
-    // getInstrumentRowset,
-    // getTestRowset,
     getTestTable,
-    columns: test_columns,
-    // getTestTableAndRowset,
-    // getEmptyTestTableAndRowset,
-    // columns: rowset_columns,
-    // columns_with_aggregation: rowset_columns_with_aggregation,
-    // instrumentColumns,
-    // GROUP_COL_1,
-    // GROUP_COL_2,
-    // GROUP_COL_3  
+    columns: test_columns
 } = require('../test-data.js');
 
 
@@ -380,6 +369,7 @@ describe('getFilterData', () => {
         results = view.setRange({ lo: 0, hi: 9 }, true, DataTypes.FILTER_DATA); 
 
         const {IDX, SELECTED} = view.filterRowSet.meta;
+
         const selectedIndices = results.rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([0, 5, 6, 8])
 

@@ -72,21 +72,23 @@ export const SetFilter = ({
     }
 
     const handleDeselectAll = useCallback(() => {
-        if (searchText.current) {
-            applyFilter(NOT_STARTS_WITH, searchText.current);
-        } else {
-            applyFilter(IN, undefined, []);
-        }
-        setSelectionDefault(SELECT_NONE);
+        filterView.current.selectNone();
+        // if (searchText.current) {
+        //     applyFilter(NOT_STARTS_WITH, searchText.current);
+        // } else {
+        //     applyFilter(IN, undefined, []);
+        // }
+        // setSelectionDefault(SELECT_NONE);
     },[column]);
 
     const handleSelectAll = useCallback(() => {
-        if (searchText.current) {
-            applyFilter(STARTS_WITH, searchText.current);
-        } else {
-            applyFilter(NOT_IN, undefined, []);
-        }
-        setSelectionDefault(SELECT_ALL);
+        filterView.current.selectAll();
+        // if (searchText.current) {
+        //     applyFilter(STARTS_WITH, searchText.current);
+        // } else {
+        //     applyFilter(NOT_IN, undefined, []);
+        // }
+        // setSelectionDefault(SELECT_ALL);
     },[column]);
 
     const applyFilter = useCallback((type, value, values) => {

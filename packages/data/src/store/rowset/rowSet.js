@@ -3,7 +3,7 @@
  */
 import * as d3 from 'd3-array';
 import Table from '../table';
-import SelectionModel from '../selection-model';
+import SelectionModel, {SelectionModelType} from '../selection-model';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
 import { 
     BIN_FILTER_DATA_COLUMNS,
@@ -40,7 +40,11 @@ export default class BaseRowSet {
         this.meta = metaData(columns);
         this.data = table.rows;
         this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
-        this.selectionModel = new SelectionModel();
+        this.selectionModel = this.createSelectionModel();
+    }
+
+    createSelectionModel(){
+        return new SelectionModel();
     }
 
     // used by binned rowset
@@ -115,13 +119,14 @@ export default class BaseRowSet {
 
     selectAll(){
         const {data, meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        const previouslySelectedRows = this.selected.rows;
         
         // Step 1: brute force approach, actually create list of selected indices
         this.selected = {rows: arrayOfIndices(data.length), focusedIdx: -1, lastTouchIdx: -1};
 
         const updates = [];
         for (let i=lo;i<hi;i++){
-            if (data[i][SELECTED] !== 1){
+            if (!previouslySelectedRows.includes(i)){
                 updates.push([i+offset,SELECTED, 1]);
             }
         }
@@ -132,12 +137,17 @@ export default class BaseRowSet {
 
     selectNone(){
 
-        const {data, meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        const {meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        const previouslySelectedRows = this.selected.rows;
         this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
 
+
+        //TODO this isn't right. We don't store the selection state on internal rows,
+        // we populate it during projection, so SELECTION will never be 1.
+        // do we preserve the previous 'selected' to chack against ?
         const updates = [];
         for (let i=lo;i<hi;i++){
-            if (data[i][SELECTED] === 1){
+            if (previouslySelectedRows.includes(i)){
                 updates.push([i+offset,SELECTED, 0]);
             }
         }
@@ -508,9 +518,13 @@ export class SetFilterRowSet extends RowSet {
             filterRowSelected : this.data.length,
             filterRowHidden : 0
         };
-        this.setProjection();
         this.sort([['name', 'asc']]);
     }
+
+    createSelectionModel(){
+        return new SelectionModel(SelectionModelType.Checkbox);
+    }
+
 
     get searchText() {
         return this._searchText;
@@ -588,37 +602,45 @@ export class SetFilterRowSet extends RowSet {
         this.dataRowFilter = dataRowFilter;
         
         if (columnFilter){
+
             const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
+            const selectedRows = [];
+
             dataCounts.filterRowSelected = filterSet
-                ? filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
-                : rows.reduce((count, row) => count + (fn(row) ? 1 : 0),0) 
+                ? filterSet.reduce((count, i) => {
+                    if (fn(rows[i])){
+                        selectedRows.push(i);
+                        return count + 1;
+                    } else {
+                        return count;
+                    }
+                },0) 
+                : rows.reduce((count, row, i) => {
+                    if (fn(row)){
+                        selectedRows.push(i);
+                       return count + 1;     
+                    } else {
+                        return count;
+                    }
+                },0) 
+            
+            this.selected = {rows: selectedRows, focusedIdx: -1, lastTouchIdx: -1 }
+        
         } else {
+
             dataCounts.filterRowSelected = filterSet
                 ? filterSet.length
                 : rows.length;
+
+            this.selectAll();    
         }
 
         dataCounts.dataRowAllFilters = dataRowAllFilters;
 
-        this.setProjection(columnFilter);
 
         return this.currentRange();
 
     }
-
-    setProjection(columnFilter = null){
-
-        const columnMap = this.table.columnMap;
-
-        this.project = projectColumnsFilter(
-            columnMap,
-            this.columns,
-            this.meta,
-            columnFilter
-        );
-
-    }
-
 }
 
 export class BinFilterRowSet extends RowSet {

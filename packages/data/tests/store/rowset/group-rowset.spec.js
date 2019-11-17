@@ -1772,9 +1772,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({ name: 'Group 3' });
         const results = filterRowset.setRange({ lo: 0, hi: 10 });
         expect(results.rows).toEqual([
-            ['T3', 20, 20, 0, 0, 0, 0, 'T3', 1],
-            ['T4', 3,  3,  1, 0, 0, 0, 'T4', 1],
-            ['T5', 1,  1,  2, 0, 0, 0, 'T5', 1]
+            ['T3', 20, 20, 0, 0, 0, 0, 'T3', 0],
+            ['T4', 3,  3,  1, 0, 0, 0, 'T4', 0],
+            ['T5', 1,  1,  2, 0, 0, 0, 'T5', 0]
         ])
     });
 
@@ -1784,9 +1784,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({ name: 'Group 3' });
         const results = filterRowset.setRange({ lo: 0, hi: 10 });
         expect(results.rows).toEqual([
-            ['T3', 15, 20, 0, 0, 0, 0, 'T3', 1],
-            ['T4', 2,  3,  1, 0, 0, 0, 'T4', 1],
-            ['T5', 0,  1,  2, 0, 0, 0, 'T5', 1]
+            ['T3', 15, 20, 0, 0, 0, 0, 'T3', 0],
+            ['T4', 2,  3,  1, 0, 0, 0, 'T4', 0],
+            ['T5', 0,  1,  2, 0, 0, 0, 'T5', 0]
         ])
     });
 
@@ -1804,9 +1804,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({ name: 'Group 1' });
         const results = filterRowset.setRange({ lo: 0, hi: 10 });
         expect(results.rows).toEqual([
-            ['G1', 4, 8, 0, 0, 0, 0, 'G1', 1],
-            ['G2', 0, 8, 1, 0, 0, 0, 'G2', 1],
-            ['G3', 0, 8, 2, 0, 0, 0, 'G3', 1]
+            ['G1', 4, 8, 0, 0, 0, 0, 'G1', 0],
+            ['G2', 0, 8, 1, 0, 0, 0, 'G2', 0],
+            ['G3', 0, 8, 2, 0, 0, 0, 'G3', 0]
         ])
     });
 
@@ -1815,7 +1815,7 @@ describe('getDistinctValuesForColumn', () => {
         let { rows } = rowSet.setRange({ lo: 0, hi: 17 });
         const filterRowset = rowSet.getDistinctValuesForColumn({ name: 'Industry' })
         const results = filterRowset.setRange({ lo: 0, hi: 10 });
-        expect(results.rows[0]).toEqual(['Advertising', 10, 10, 0, 0, 0, 0, 'Advertising', 1])
+        expect(results.rows[0]).toEqual(['Advertising', 10, 10, 0, 0, 0, 0, 'Advertising', 0])
         rowSet.filter({ type: IN, colName: 'Industry', values: [] });
         ({ rows } = rowSet.setRange({ lo: 0, hi: 17 }, false));
 

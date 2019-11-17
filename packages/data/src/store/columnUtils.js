@@ -56,19 +56,24 @@ export function projectColumns(map, columns, meta){
     const length = columns.length;
     const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
     return (startIdx, offset, selectedRows=[]) => (row,i) => {
+        // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
+        // row is the original row from this set, with original index in IDX pos, which might
+        // be overwritten with a different value below if rows are sorted/filtered 
+        const baseRowIdx = row[IDX];
+
         const out = [];
         for (let i=0;i<length;i++){
             const colIdx = map[columns[i].name];
             out[i] = row[colIdx];
         }
-        const idx = startIdx + i;
-        out[IDX] = idx + offset;
+
+        out[IDX] = startIdx + i + offset;
         out[RENDER_IDX] = 0;
         out[DEPTH] = 0;
         out[COUNT] = 0;
         // assume row[0] is key for now
         out[KEY] = row[0];
-        out[SELECTED] = selectedRows.includes(idx) ? 1 : 0;
+        out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
         return out;
     }
 }

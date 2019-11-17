@@ -1,8 +1,6 @@
 import React, {memo, useEffect, useState} from 'react';
 import {filter, DataTypes} from '@heswell/data';
 
-const { IN, NOT_IN } = filter;
-
 import './select-header.css';
 
 export default memo(({
@@ -28,11 +26,12 @@ export default memo(({
   },[dataView])
 
   const onClick = () => {
-    // No, we should just invoke a select operation on dataView
     if (selectionState === 'all-selected'){
-      dataView.filter({type: IN, colName: dataView.column.name, values: []}, DataTypes.ROW_DATA, true);
+      dataView.selectNone();
+      // dataView.filter({type: IN, colName: dataView.column.name, values: []}, DataTypes.ROW_DATA, true);
     } else if (selectionState !== 'init'){
-      dataView.filter({type: NOT_IN, colName: dataView.column.name, values: []}, DataTypes.ROW_DATA, true);
+      dataView.selectAll();
+      // dataView.filter({type: NOT_IN, colName: dataView.column.name, values: []}, DataTypes.ROW_DATA, true);
     }
   }
 

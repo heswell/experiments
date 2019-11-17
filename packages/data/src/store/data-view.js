@@ -3,10 +3,9 @@ import { RowSet, GroupRowSet } from './rowset/index';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
 import UpdateQueue from './updateQueue';
 import { DataTypes } from './types';
-import { addFilter } from './filter';
+import { addFilter, IN } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
-
 export default class DataView {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
@@ -109,41 +108,48 @@ export default class DataView {
         return this.getData(dataType).setRange(range, useDelta);
     }
 
-    select(idx, rangeSelect, keepExistingSelection){
-        console.log(`InMemoryView.select ${idx} rangeSelect:${rangeSelect}, keepExistingSelection: ${keepExistingSelection}`)
-        const updates = this.rowSet.select(idx, rangeSelect, keepExistingSelection);
-        if (updates.length){
-            return {updates};
-        }
+    select(idx, rangeSelect, keepExistingSelection, dataType=DataTypes.ROW_DATA){
+        const rowset = this.getData(dataType);
+        return this.selectResponse(rowset.select(idx, rangeSelect, keepExistingSelection), dataType, rowset);
     }
 
     selectAll(dataType=DataTypes.ROW_DATA){
-        // must take into account current filter
-        // if dataType === filterData, update filter on rowData
-        if (dataType === DataTypes.FILTER_DATA){
-        
-        } else {
-            const updates = this.rowSet.selectAll();
-            if (updates.length){
-                return {updates};
-            }
-        }
+        const rowset = this.getData(dataType);
+        return this.selectResponse(rowset.selectAll(), dataType, rowset);
     }
 
     selectNone(dataType=DataTypes.ROW_DATA){
-        // must take into account current filter
-        // if dataType === filterData, update filter on rowData
-        if (dataType === DataTypes.FILTER_DATA){
-        
-        } else {
-            const updates = this.rowSet.selectNone();
-            if (updates.length){
-                return {updates};
-            }
-        }
-
+        const rowset = this.getData(dataType);
+        return this.selectResponse(rowset.selectNone(), dataType, rowset);
     }
 
+    selectResponse(updates, dataType, rowset){
+        const updatesInViewport = updates.length > 0;
+        if (dataType === DataTypes.ROW_DATA){
+            if (updatesInViewport){
+                return {updates};
+            }
+        } else {
+            const filterRowTotal = rowset.size;
+            const filterRowSelected = rowset.selected.rows.length
+
+            // Maybe defer the filter operation ?
+            // if (filterRowSelected === 0){
+            //     this.filter({colName: rowset.columnName, type: IN, values: []})
+            // }
+
+            if (updatesInViewport){
+                return {filterData: {
+                    updates,
+                    dataCounts: {
+                        filterRowTotal,
+                        filterRowSelected
+                    }
+                }}
+            }
+        }
+    }
+    
     sort(sortCriteria) {
         this._sortCriteria = sortCriteria;
         this.rowSet.sort(sortCriteria);
@@ -262,7 +268,6 @@ export default class DataView {
             filterRowSet.clearFilter();
             
         } else if (filterRowSet && filterRowSet.columnName === column.name) {
-            // THOS SEESM WRONG confusing the filter with filterRowset ?
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
             filterRowSet.setRange({ lo: 0, hi: 0 });
@@ -272,6 +277,8 @@ export default class DataView {
 
         if (filter) {
             this.filterRowSet.setSelected(filter, this.rowSet.filterCount);
+        } else {
+            this.filterRowSet.selectAll();
         }
 
         // do we need to returtn searchText ? If so, it should

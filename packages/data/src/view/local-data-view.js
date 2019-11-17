@@ -57,6 +57,7 @@ export default class LocalDataView {
     this.dataView = new DataView(table, {columns}, this.updateQueue);
     this.clientCallback = callback;
 
+    //TODO can we eliminate all the following ?
     if (this.pendingRangeRequest){
       this.setRange(...this.pendingRangeRequest);
       this.pendingRangeRequest = null;
@@ -84,8 +85,16 @@ export default class LocalDataView {
     }
   }
 
-  select(idx, _row, rangeSelect, keepExistingSelection) {
+  select(idx, rangeSelect, keepExistingSelection) {
     this.clientCallback(this.dataView.select(idx, rangeSelect, keepExistingSelection))
+  }
+
+  selectAll(dataType){
+    this.clientCallback(this.dataView.selectAll(dataType));
+  }
+
+  selectNone(dataType){
+    this.clientCallback(this.dataView.selectNone(dataType));
   }
 
   group(columns) {
@@ -103,6 +112,7 @@ export default class LocalDataView {
   filter(filter, dataType = DataTypes.ROW_DATA, incremental = false) {
     // TODO filter call returns an array
     const [rowData, filterData] = this.dataView.filter(filter, dataType, incremental);
+    // TODO can we eliminate the filterData callback ?
     this.clientCallback(rowData);
     if (filterData){
       if (this.clientFilterCallback){

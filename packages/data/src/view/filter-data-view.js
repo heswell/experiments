@@ -1,7 +1,6 @@
 import { createLogger, logColor, EventEmitter } from '@heswell/utils';
 import { metaData } from '../store/columnUtils';
 import { DataTypes } from '../store/types';
-import { NOT_IN, IN } from '../store/filter';
 
 const logger = createLogger('FilterDataView', logColor.brown);
 
@@ -30,7 +29,7 @@ export default class FilterDataView extends EventEmitter {
         this.range = range;
         this.keyCount = range.hi - range.lo;
 
-        this.dataView.subscribeToFilterData(this.column, this.range, message => {
+        const cb = this.clientCallback = message => {
             const {filterData: {dataCounts, ...data}} = message;
             callback(data);
             this.dataCounts = dataCounts;
@@ -38,7 +37,9 @@ export default class FilterDataView extends EventEmitter {
             if (this.dataCountCallback){
                 this.dataCountCallback(dataCounts);
             }    
-        })
+        }
+
+        this.dataView.subscribeToFilterData(this.column, this.range, cb)
     }
 
     unsubscribe(){
@@ -50,19 +51,34 @@ export default class FilterDataView extends EventEmitter {
         this.dataView.unsubscribeFromFilterData(this.column);
     }
 
-    select(idx, row){
-        const {KEY, SELECTED} = this.meta;
-        const key = row[KEY];
+    // select(idx, rangeSelect, keepExistingSelection){
+    //     this.dataView.select()
+    //     const {KEY, SELECTED} = this.meta;
+    //     // const key = row[KEY];
     
-        const filter = {
-            type: row[SELECTED] === 1 ? NOT_IN : IN,
-            colName: this.column.name,
-            values: [key]
-        }
-        this.dataView.filter(filter, DataTypes.ROW_DATA, true);
+    //     // const filter = {
+    //     //     type: row[SELECTED] === 1 ? NOT_IN : IN,
+    //     //     colName: this.column.name,
+    //     //     values: [key]
+    //     // }
+    //     // this.dataView.filter(filter, DataTypes.ROW_DATA, true);
     
+    // }
+
+    select(idx, rangeSelect, keepExistingSelection) {
+        this.clientCallback(this.dataView.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA))
+      }
+    
+    selectAll(){
+        // how can we do this ? If we just call dataView, it will redirect results to its OWN 
+        // clientCallback, which will go to the base grid
+        this.clientCallback(this.dataView.dataView.selectAll(DataTypes.FILTER_DATA));
     }
 
+    selectNone(){
+        this.clientCallback(this.dataView.dataView.selectNone(DataTypes.FILTER_DATA));
+    }
+    
     filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
         this.dataView.filter(filter, dataType, incremental);
     }
