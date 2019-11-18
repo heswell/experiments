@@ -1,6 +1,6 @@
 {
   "name": "@heswell/viewserver",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
   "publishConfig": {
