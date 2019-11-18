@@ -1,7 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 
-const project_path = path.resolve(fs.realpathSync('.'), 'packages/viewserver/dataTables/instruments');
+const path_root = 'node_modules/@heswell/viewserver/dist/dataTables';
+
+const project_path = path.resolve(fs.realpathSync('.'), `${path_root}/instruments`);
 
 const config = {
     name: 'Instruments',

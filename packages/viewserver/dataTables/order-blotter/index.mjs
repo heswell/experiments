@@ -1,7 +1,8 @@
 import path from 'path';
 import fs from 'fs';
 
-const project_path = path.resolve(fs.realpathSync('.'), 'packages/viewserver/dataTables/order-blotter');
+const path_root = 'node_modules/@heswell/viewserver/dist/dataTables';
+const project_path = path.resolve(fs.realpathSync('.'), `${path_root}/order-blotter`);
 
 const config = {
     name: 'OrderBlotter',
