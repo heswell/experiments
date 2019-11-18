@@ -71,10 +71,9 @@ export const SetFilter = ({
     const [showZeroRows, setZeroRows] = useState(true);
     const [dataCounts, setDataCounts] = useState(NO_COUNT);
     const filterView = useRef(new FilterView(dataView, column));
-    const searchText = useRef('');
+    // const searchText = useRef('');
     
     const {filterRowTotal=0, filterRowSelected=0} = dataCounts;
-    const selectionStatus = getSelectionStatus(filterRowTotal,filterRowSelected);
 
     const onDataCount = (_, dataCounts) => setDataCounts(dataCounts)
 
@@ -92,34 +91,10 @@ export const SetFilter = ({
         filterView.current.filter(showZero ? null : ZeroRowFilter);
     },[showZeroRows])
 
-    const handleSearchText = text => {
-        searchText.current = text;
-        filterView.current.getFilterData(column, text)
-        // if we're removing searchtext to widen the search, we need to reevaluate the selectionDefault
+    const handleSearchText = value => {
+        // searchText.current = value;
+        filterView.current.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
     }
-
-    const handleDeselectAll = useCallback(() => {
-        if (searchText.current) {
-            applyFilter(NOT_STARTS_WITH, searchText.current);
-        } else {
-            applyFilter(IN, undefined, []);
-        }
-    },[column]);
-
-    const handleSelectAll = useCallback(() => {
-        if (searchText.current) {
-            applyFilter(STARTS_WITH, searchText.current);
-        } else {
-            applyFilter(NOT_IN, undefined, []);
-        }
-    },[column]);
-
-    const applyFilter = useCallback((type, value, values) => {
-        filterView.current.filter({type, colName: column.name, value, values}, DataTypes.ROW_DATA, true);
-    },[column])
-
-    const allSelected = selectionStatus === 'all';
-    const clickHandler = allSelected ? handleDeselectAll : handleSelectAll;
 
     // somehow this needs to dispatch model-reducer if it's a change
     const filterColumns = filter === null || columnFilter === filter
@@ -137,13 +112,13 @@ export const SetFilter = ({
                 {suppressSearch !== true &&
                 <SearchBar style={{ height: 25 }}
                     inputWidth={column.width - 16}
-                    searchText={searchText}
+                    // searchText={searchText}
                     onSearchText={handleSearchText}
                     onHide={onClose} />}
                 <CheckList style={{ flex: 1, border: '1px solid lightgray' }}
                     columns={filterColumns}
                     dataView={filterView.current} />
-                <FilterCounts style={{ height: 50 }} column={column} dataCounts={dataCounts} searchText={searchText} />
+                <FilterCounts style={{ height: 50 }} column={column} dataCounts={dataCounts} />
                 {suppressFooter !== true &&
                 <div key='footer' className='footer' style={{ height: 26 }}>
                     <button

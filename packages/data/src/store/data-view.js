@@ -185,7 +185,10 @@ export default class DataView {
         return this.setRange(resetRange(this.rowSet.range), false);
     }
 
-    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false) {
+    // filter may be called directly from client, in which case changes should be propagated, where
+    // appropriate, to any active filterSet(s). However, if the filterset has been changed, e.g. selection
+    // within a set, then filter applied here in consequence must not attempt to reset filterSet. 
+    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false, ignoreFilterRowset=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
             return [undefined,this.filterFilterData(filter)];
@@ -208,7 +211,7 @@ export default class DataView {
                 throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
             }
     
-            if (filterRowSet) {
+            if (filterRowSet && !ignoreFilterRowset) {
                 if (filter){
                     filterResultset = filterRowSet.setSelected(filter, filterCount);
                 } else {
@@ -232,7 +235,7 @@ export default class DataView {
     }
 
     applyFilterSetChangeToFilter(partialFilter){
-        const [{filter, rows, offset, range, size}] = this.filter(partialFilter, DataTypes.ROW_DATA, true);
+        const [{filter, rows, offset, range, size}] = this.filter(partialFilter, DataTypes.ROW_DATA, true, true);
         console.log(`filter applied size=${size}`, rows);
         this._update_queue.replace(rows, size, range, offset);
     }

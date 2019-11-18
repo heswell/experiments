@@ -118,15 +118,22 @@ export default class BaseRowSet {
     }
 
     selectAll(){
-        const {data, meta: {SELECTED}, range: {lo, hi}, offset} = this;
+        const {data, meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
         const previouslySelectedRows = this.selected.rows;
-        
-        // Step 1: brute force approach, actually create list of selected indices
-        this.selected = {rows: arrayOfIndices(data.length), focusedIdx: -1, lastTouchIdx: -1};
+        // Behaviour depends on whether we currently have an active filter
+        if (filterSet){
+            this.selected = {rows: filterSet, focusedIdx: -1, lastTouchIdx: -1};
+        } else {
+            // Step 1: brute force approach, actually create list of selected indices
+            // need to replace this with a structure that tracks ranges
+            this.selected = {rows: arrayOfIndices(data.length), focusedIdx: -1, lastTouchIdx: -1};
+        }   
+
 
         const updates = [];
-        for (let i=lo;i<hi;i++){
-            if (!previouslySelectedRows.includes(i)){
+        const max = Math.min(hi, (filterSet || data).length)
+        for (let i=lo;i<max;i++){
+            if (!previouslySelectedRows.includes(i)){ // OR , if filterSet, filterSet includes index
                 updates.push([i+offset,SELECTED, 1]);
             }
         }
@@ -565,16 +572,17 @@ export class SetFilterRowSet extends RowSet {
     filter(filter){
         super.filter(filter);
 
+        // TODO take filterSet into account
         const {dataCounts, filterSet, data: rows, dataRowFilter, table, columnName} = this;
         let columnFilter;
 
         if (dataRowFilter && (columnFilter = extractFilterForColumn(dataRowFilter, columnName))){
             const columnMap = table.columnMap;
-            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
-            dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
+            // const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
+            // dataCounts.filterRowSelected = filterSet.reduce((count, i) => count + (fn(rows[i]) ? 1 : 0),0) 
                 
         } else {
-            dataCounts.filterRowSelected = filterSet.length;
+            // dataCounts.filterRowSelected = filterSet.length;
         }
 
         return dataCounts.filterRowTotal = filterSet.length;

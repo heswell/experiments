@@ -73,12 +73,6 @@ export const SetFilter = ({
 
     const handleDeselectAll = useCallback(() => {
         filterView.current.selectNone();
-        // if (searchText.current) {
-        //     applyFilter(NOT_STARTS_WITH, searchText.current);
-        // } else {
-        //     applyFilter(IN, undefined, []);
-        // }
-        // setSelectionDefault(SELECT_NONE);
     },[column]);
 
     const handleSelectAll = useCallback(() => {

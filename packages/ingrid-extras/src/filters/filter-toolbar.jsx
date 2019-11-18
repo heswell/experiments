@@ -11,14 +11,13 @@ export default class SearchBar extends React.Component {
     }
     
     render() {
-        const {style: {height}, inputWidth, selectionText, onClickSelectionText, onHide} = this.props
+        const {style: {height}, inputWidth, onHide} = this.props
         return (
             <div className='filter-toolbar' style={{height}}>
                 <div className='filter-button' onClick={onHide}>
                     <i className="material-icons">filter_list</i>
                 </div>
                 <input className='search-text' style={{width: inputWidth}} type='text' value={this.state.searchText} onChange={e => this.handleSearchTextChange(e)} />
-                <div className='mass-select' onClick={onClickSelectionText}>{selectionText}</div>
             </div>
         )
     }

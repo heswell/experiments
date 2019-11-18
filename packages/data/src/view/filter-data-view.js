@@ -68,7 +68,8 @@ export default class FilterDataView extends EventEmitter {
     }
     
     filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
-        this.dataView.filter(filter, dataType, incremental);
+        const [,filterData] = this.dataView.dataView.filter(filter, dataType, incremental);
+        this.clientCallback({filterData});
     }
 
     getFilterData(column, searchText){

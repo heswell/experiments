@@ -116,6 +116,7 @@ export default class LocalDataView {
     const [rowData, filterData] = this.dataView.filter(filter, dataType, incremental);
     // TODO can we eliminate the filterData callback ?
     this.clientCallback(rowData);
+    // This will go
     if (filterData){
       if (this.clientFilterCallback){
         this.clientFilterCallback({filterData});
