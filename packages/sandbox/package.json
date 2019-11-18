@@ -1,6 +1,6 @@
 {
   "name": "@heswell/sandbox",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "description": "Heswell Sandbox",
   "main": "index.js",
@@ -21,7 +21,7 @@
     "@heswell/inlay-extras": "^1.0.5",
     "@heswell/ui-controls": "^1.0.10",
     "@heswell/utils": "^1.0.9",
-    "@heswell/viewserver": "^1.0.24",
+    "@heswell/viewserver": "^1.0.25",
     "d3-array": "^2.2.0",
     "dygraphs": "^2.1.0",
     "react": "^16.9.0",
