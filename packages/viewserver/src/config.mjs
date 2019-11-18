@@ -7,11 +7,7 @@ export const config = {
     ],
     DataTables: [
         Instruments,
-        // Sets,
         OrderBlotter,
-        // OrderBook
-        InstrumentPrices,
-        // TestTable,
-        // Simpsons
+        InstrumentPrices
     ]
 };
