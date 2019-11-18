@@ -12,7 +12,6 @@ export const config = {
         // OrderBook
         InstrumentPrices,
         // TestTable,
-        // CreditMatrix,
-        Simpsons
+        // Simpsons
     ]
 };
