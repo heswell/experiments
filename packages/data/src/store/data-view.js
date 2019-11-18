@@ -1,9 +1,9 @@
 import { resetRange, withinRange } from './rangeUtils';
 import { RowSet, GroupRowSet } from './rowset/index';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
-import UpdateQueue from './updateQueue';
+import UpdateQueue from './update-queue';
 import { DataTypes } from './types';
-import { addFilter, IN } from './filter';
+import { addFilter, IN, NOT_IN } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
 export default class DataView {
@@ -110,7 +110,31 @@ export default class DataView {
 
     select(idx, rangeSelect, keepExistingSelection, dataType=DataTypes.ROW_DATA){
         const rowset = this.getData(dataType);
-        return this.selectResponse(rowset.select(idx, rangeSelect, keepExistingSelection), dataType, rowset);
+        const updates = rowset.select(idx, rangeSelect, keepExistingSelection);
+        if (dataType === DataTypes.ROW_DATA){
+            return this.selectResponse(updates, dataType, rowset);
+        } else {
+            // we need to handle this case here, as the filter we construct depends on the selecion details
+            // TODO we shouldn't be using the sortSet here, need an API method
+            const [, value] = rowset.sortSet[idx];
+            const isSelected = rowset.selected.rows.includes(idx);
+            const filter = {
+                type: isSelected ? IN : NOT_IN,
+                colName: rowset.columnName,
+                values: [value]
+            }
+            this.applyFilterSetChangeToFilter(filter);
+
+            if (updates.length > 0){
+                return {filterData: {
+                    updates,
+                    dataCounts: {
+                        filterRowTotal: rowset.size,
+                        filterRowSelected: rowset.selected.rows.length
+                    }
+                }}
+            }
+        }
     }
 
     selectAll(dataType=DataTypes.ROW_DATA){
@@ -134,9 +158,13 @@ export default class DataView {
             const filterRowSelected = rowset.selected.rows.length
 
             // Maybe defer the filter operation ?
-            // if (filterRowSelected === 0){
-            //     this.filter({colName: rowset.columnName, type: IN, values: []})
-            // }
+            if (filterRowSelected === 0){
+                this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: IN, values: []});
+            } else if (filterRowSelected === filterRowTotal){
+                this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: NOT_IN, values: []});
+            } else {
+
+            }
 
             if (updatesInViewport){
                 return {filterData: {
@@ -200,6 +228,16 @@ export default class DataView {
                 ? [resultSet, filterResultset]
                 : [resultSet];
         }
+
+    }
+
+    applyFilterSetChangeToFilter(partialFilter){
+        const [{filter, rows, offset, range, size}] = this.filter(partialFilter, DataTypes.ROW_DATA, true);
+        console.log(`filter applied size=${size}`, rows);
+        this._update_queue.replace(rows, size, range, offset);
+    }
+
+    applyFilter(){
 
     }
 

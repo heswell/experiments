@@ -3,7 +3,7 @@ import DataView from '../store/data-view';
 import { metaData } from '../store/columnUtils';
 import { DataTypes } from '../store/types';
 import Table from '../store/table';
-import LocalUpdateQueue from '../store/localUpdateQueue';
+import LocalUpdateQueue from '../store/local-update-queue';
 
 const buildDataView = async url => {
   console.log(`import url ${url}`)
@@ -56,6 +56,8 @@ export default class LocalDataView {
     const table = new Table({ data, columns });
     this.dataView = new DataView(table, {columns}, this.updateQueue);
     this.clientCallback = callback;
+
+    this.updateQueue.on(DataTypes.ROW_DATA, (evtName, rows, size, range, offset) => callback({rows, size, range, offset}));
 
     //TODO can we eliminate all the following ?
     if (this.pendingRangeRequest){

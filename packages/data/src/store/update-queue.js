@@ -55,10 +55,11 @@ export default class UpdateQueue {
           batch.offset = offset;
       }
 
-      replace(rows, size, offset) {
+      replace(rows, size, range, offset) {
           const batch = this.getCurrentBatch('rowset');
           batch.rows = rows;
           batch.size = size;
+          batch.range = range;
           batch.offset = offset;
       }
 

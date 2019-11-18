@@ -30,13 +30,15 @@ export default class FilterDataView extends EventEmitter {
         this.keyCount = range.hi - range.lo;
 
         const cb = this.clientCallback = message => {
-            const {filterData: {dataCounts, ...data}} = message;
-            callback(data);
-            this.dataCounts = dataCounts;
-            this.emit('data-count', dataCounts);
-            if (this.dataCountCallback){
-                this.dataCountCallback(dataCounts);
-            }    
+            if (message){
+                const {filterData: {dataCounts, ...data}} = message;
+                callback(data);
+                this.dataCounts = dataCounts;
+                this.emit('data-count', dataCounts);
+                if (this.dataCountCallback){
+                    this.dataCountCallback(dataCounts);
+                }    
+            }
         }
 
         this.dataView.subscribeToFilterData(this.column, this.range, cb)
@@ -50,20 +52,6 @@ export default class FilterDataView extends EventEmitter {
         logger.log(`<destroy>`)
         this.dataView.unsubscribeFromFilterData(this.column);
     }
-
-    // select(idx, rangeSelect, keepExistingSelection){
-    //     this.dataView.select()
-    //     const {KEY, SELECTED} = this.meta;
-    //     // const key = row[KEY];
-    
-    //     // const filter = {
-    //     //     type: row[SELECTED] === 1 ? NOT_IN : IN,
-    //     //     colName: this.column.name,
-    //     //     values: [key]
-    //     // }
-    //     // this.dataView.filter(filter, DataTypes.ROW_DATA, true);
-    
-    // }
 
     select(idx, rangeSelect, keepExistingSelection) {
         this.clientCallback(this.dataView.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA))

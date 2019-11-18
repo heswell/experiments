@@ -19,9 +19,9 @@ export default class UpdateQueue extends EventEmitter {
         console.log(`localUpdateQueue append ${JSON.stringify(row)} offset ${offset}`)
     }
 
-    replace({rows, size, offset}) {
+    replace(rows, size, range, offset) {
         console.log(`localUpdateQueue replace ${JSON.stringify(rows)} size ${size} offset ${offset}`)
-        this.emit(DataTypes.ROW_DATA, rows, size, offset)
+        this.emit(DataTypes.ROW_DATA, rows, size, range, offset)
     }
 
     popAll() {
