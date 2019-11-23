@@ -139,6 +139,7 @@ export default class LocalDataView {
     }
   }
 
+  // don't think we'll need it any more
   subscribeToFilterData(column, range, callback) {
     logger.log(`<subscribeToFilterData>`)
     this.clientFilterCallback = callback;

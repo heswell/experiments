@@ -8,6 +8,7 @@ import './inline-filter.css';
 const { NOT_IN } = filterUtils;
 
 export default forwardRef(({ 
+    // we should pass the dataView via context
     dataView,
     height,
     model,
@@ -25,19 +26,14 @@ export default forwardRef(({
     }))
 
     const onFilterOpen = column => {
-        const { key, name } = column.isGroup ? column.columns[0] : column;
+        const { name } = column.isGroup ? column.columns[0] : column;
         if (showFilter !== name){
-            dataView.getFilterData({
-                key, name
-            });
             setShowFilter(column.name);
         }
     }
 
     const onFilterClose = () => {
         setShowFilter(null);
-        // I think we're doing this so that if same filter is opened again, dataView sends rows
-        dataView.setFilterRange(0, 0);
     }
 
     // not used for setfilter any more

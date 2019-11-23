@@ -9,20 +9,21 @@ export default memo(({
   style
 }) => {
 
-  const [dataCounts, setDataCounts] = useState({});
+  const [stats, setStats] = useState({});
 
-  const onDataCount = (_, dataCounts) => setDataCounts(dataCounts)
-  const {filterRowTotal=0, filterRowSelected=0} = dataCounts;
-  const selectionState = filterRowTotal === 0
+  const onStats = (_, stats={}) => setStats(stats)
+  const {filteredRowCount=0, filteredSelected=0} = stats;
+  console.log(`render select header filteredRowCount ${filteredRowCount} filteredSelected ${filteredSelected}`)
+  const selectionState = filteredRowCount === 0
     ? 'init'
-    : filterRowTotal === filterRowSelected
+    : filteredRowCount === filteredSelected
       ? 'all-selected'
-      : filterRowSelected === 0
+      : filteredSelected === 0
         ? 'none-selected'
         : 'some-selected';
 
   useEffect(() => {
-    dataView.on('data-count', onDataCount);
+    dataView.on('data-count', onStats);
   },[dataView])
 
   const onClick = () => {

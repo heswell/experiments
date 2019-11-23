@@ -138,6 +138,8 @@ function includesAllValues(filter) {
         return false;
     } else if (filter.type === NOT_IN && filter.values.length === 0) {
         return true;
+    } else if (filter.type === STARTS_WITH && value === ''){
+        return true;
     } else {
         return false;
     }

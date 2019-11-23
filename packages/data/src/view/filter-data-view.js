@@ -11,18 +11,22 @@ const logger = createLogger('FilterDataView', logColor.brown);
  */
 
 // TODO shall we inherit from EventEmitter, so we can host multiple dataCount subscriptions ?
+// This needs to be a local-filter-data-view
 export default class FilterDataView extends EventEmitter {
 
     constructor(dataView, column){
         super();
+        // can we listen for destroy event ?
         this.dataView = dataView;
         this.column = column;
-        this.dataCounts = undefined;
-        this.dataCountCallback = null;
+        // this.dataCounts = undefined;
+        // why do we need to store the range ?
+        this.range = null;
     }
 
     subscribe({columns, range}, callback){
 
+        console.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
         this.columns = columns;
         this.meta = metaData(columns);
         //TODO make range s setter
@@ -31,17 +35,19 @@ export default class FilterDataView extends EventEmitter {
 
         const cb = this.clientCallback = message => {
             if (message){
-                const {filterData: {dataCounts, ...data}} = message;
+                const {stats, ...data} = message;
+                console.log(`filter-data-local stats=${JSON.stringify(stats,null,2)}`)
                 callback(data);
-                this.dataCounts = dataCounts;
-                this.emit('data-count', dataCounts);
-                if (this.dataCountCallback){
-                    this.dataCountCallback(dataCounts);
-                }    
+                // this.dataCounts = dataCounts;
+                if (stats){
+                    this.emit('data-count',stats);
+                }
             }
         }
 
-        this.dataView.subscribeToFilterData(this.column, this.range, cb)
+        // this.dataView.subscribeToFilterData(this.column, this.range, cb)
+
+        cb(this.dataView.dataView.getFilterData({ name: this.column.name}, null, range));
     }
 
     unsubscribe(){
@@ -53,13 +59,17 @@ export default class FilterDataView extends EventEmitter {
         this.dataView.unsubscribeFromFilterData(this.column);
     }
 
+    setRange(lo, hi){
+        if (lo !== this.range.lo && hi !== this.range.hi){
+            this.clientCallback(this.dataView.dataView.setRange(this.range = { lo, hi }, true, DataTypes.FILTER_DATA));
+        }
+      }
+  
     select(idx, rangeSelect, keepExistingSelection) {
         this.clientCallback(this.dataView.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA))
       }
     
     selectAll(){
-        // how can we do this ? If we just call dataView, it will redirect results to its OWN 
-        // clientCallback, which will go to the base grid
         this.clientCallback(this.dataView.dataView.selectAll(DataTypes.FILTER_DATA));
     }
 
@@ -69,23 +79,7 @@ export default class FilterDataView extends EventEmitter {
     
     filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
         const [,filterData] = this.dataView.dataView.filter(filter, dataType, incremental);
-        this.clientCallback({filterData});
-    }
-
-    getFilterData(column, searchText){
-        console.log(`FilterDataView.getFilterData ${JSON.stringify(column)} ${searchText}`)
-        this.dataView.getFilterData(column, searchText);
-    }
-
-    // TODO we need a filter method to filter results to omit zero value filterCount - call getFilterData on view, passing filter
-
-    setRange(lo, hi){
-      this.range = { lo, hi };
-      this.dataView.setFilterRange(lo,hi);
-    }
-
-    sort(){
-        
+        this.clientCallback(filterData);
     }
   
 }

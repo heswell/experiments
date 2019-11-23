@@ -46,13 +46,14 @@ export const SetFilter = ({
     const [dataCounts, setDataCounts] = useState(NO_COUNT);
     const [selectionDefault, setSelectionDefault] = useState(columnFilter && columnFilter.type === IN ? SELECT_NONE : SELECT_ALL);
 
+    // need something like dataView.getFilterView()
     const filterView = useRef(new FilterView(dataView, column));
     const searchText = useRef('');
 
     useEffect(() => {
-        // TODO how do we add multiple subscriptions
         filterView.current.on('data-count', setDataCounts);
         return () => {
+            console.log(`useEffect unwinding dataView === ${dataView}`)
             filterView.current.removeListener('data-count', setDataCounts);
             onHide();
         }

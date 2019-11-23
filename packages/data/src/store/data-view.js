@@ -6,6 +6,7 @@ import { DataTypes } from './types';
 import { addFilter, IN, NOT_IN } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
+const WITH_STATS = true;
 export default class DataView {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
@@ -114,7 +115,7 @@ export default class DataView {
         if (dataType === DataTypes.ROW_DATA){
             return this.selectResponse(updates, dataType, rowset);
         } else {
-            // we need to handle this case here, as the filter we construct depends on the selecion details
+            // we need to handle this case here, as the filter we construct depends on the selection details
             // TODO we shouldn't be using the sortSet here, need an API method
             const [, value] = rowset.sortSet[idx];
             const isSelected = rowset.selected.rows.includes(idx);
@@ -126,54 +127,55 @@ export default class DataView {
             this.applyFilterSetChangeToFilter(filter);
 
             if (updates.length > 0){
-                return {filterData: {
+                return {
                     updates,
-                    dataCounts: {
-                        filterRowTotal: rowset.size,
-                        filterRowSelected: rowset.selected.rows.length
-                    }
-                }}
+                    stats: rowset.stats
+                }
             }
         }
     }
 
     selectAll(dataType=DataTypes.ROW_DATA){
         const rowset = this.getData(dataType);
-        return this.selectResponse(rowset.selectAll(), dataType, rowset);
+        return this.selectResponse(rowset.selectAll(), dataType, rowset, true);
     }
 
     selectNone(dataType=DataTypes.ROW_DATA){
         const rowset = this.getData(dataType);
-        return this.selectResponse(rowset.selectNone(), dataType, rowset);
+        return this.selectResponse(rowset.selectNone(), dataType, rowset, false);
     }
 
-    selectResponse(updates, dataType, rowset){
+    // Handle response to a selecAll / selectNode operation. This may be operating on
+    // the entire resultset, or a filtered subset
+    selectResponse(updates, dataType, rowset, allSelected){
         const updatesInViewport = updates.length > 0;
+        const {stats} = rowset;
         if (dataType === DataTypes.ROW_DATA){
             if (updatesInViewport){
                 return {updates};
             }
         } else {
-            const filterRowTotal = rowset.size;
-            const filterRowSelected = rowset.selected.rows.length
+            const {totalRowCount, totalSelected} = stats;
 
             // Maybe defer the filter operation ?
-            if (filterRowSelected === 0){
+            if (totalSelected === 0){
                 this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: IN, values: []});
-            } else if (filterRowSelected === filterRowTotal){
+            } else if (totalSelected === totalRowCount){
                 this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: NOT_IN, values: []});
             } else {
-
+                // we are not operating on the whole dataset, therefore it is a filtered subset
+                if (allSelected){
+                    this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: IN, values: rowset.values});
+                } else {
+                    this.applyFilterSetChangeToFilter({colName: rowset.columnName, type: NOT_IN, values: rowset.values});
+                }
             }
 
             if (updatesInViewport){
-                return {filterData: {
+                return {
                     updates,
-                    dataCounts: {
-                        filterRowTotal,
-                        filterRowSelected
-                    }
-                }}
+                    stats: rowset.stats
+                }
             }
         }
     }
@@ -187,7 +189,8 @@ export default class DataView {
 
     // filter may be called directly from client, in which case changes should be propagated, where
     // appropriate, to any active filterSet(s). However, if the filterset has been changed, e.g. selection
-    // within a set, then filter applied here in consequence must not attempt to reset filterSet. 
+    // within a set, then filter applied here in consequence must not attempt to reset the same filterSet
+    // that originates the change. 
     filter(filter, dataType=DataTypes.ROW_DATA, incremental=false, ignoreFilterRowset=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
@@ -211,7 +214,7 @@ export default class DataView {
                 throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
             }
     
-            if (filterRowSet && !ignoreFilterRowset) {
+            if (filterRowSet && dataType === DataTypes.ROW_DATA && !ignoreFilterRowset) {
                 if (filter){
                     filterResultset = filterRowSet.setSelected(filter, filterCount);
                 } else {
@@ -230,6 +233,25 @@ export default class DataView {
             return filterResultset
                 ? [resultSet, filterResultset]
                 : [resultSet];
+        }
+
+    }
+
+    //TODO merge with method above
+    filterFilterData(filter){
+        const {filterRowSet} = this;
+        if (filterRowSet){
+
+            if (filter === null) {
+                filterRowSet.clearFilter();
+            } else if (filter){
+                filterRowSet.filter(filter);
+            }
+
+            return filterRowSet.setRange(resetRange(filterRowSet.range), false, WITH_STATS);
+    
+        } else {
+            console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`)
         }
 
     }
@@ -324,24 +346,10 @@ export default class DataView {
 
         // do we need to returtn searchText ? If so, it should
         // be returned by the rowSet
-        return this.filterRowSet.setRange(range, false);
 
-    }
+        // TODO wrap this, we use it  alot
+        return this.filterRowSet.setRange(range, false, WITH_STATS);
 
-    filterFilterData(filter){
-        const {filterRowSet} = this;
-        if (filterRowSet){
-
-            if (filter === null) {
-                filterRowSet.clearFilter();
-            } else if (filter){
-                filterRowSet.filter(filter);
-            }
-            return filterRowSet.setRange(resetRange(filterRowSet.range), false);
-    
-        } else {
-            console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`)
-        }
 
     }
 

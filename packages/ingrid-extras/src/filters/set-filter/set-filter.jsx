@@ -51,6 +51,12 @@ function getSelectionStatus(totalCount, selectedCount){
     }
 }
 
+const filterViewFactory = (dataView, column, statsHandler) => {
+    const filterView = new FilterView(dataView, column);
+    filterView.on('data-count', statsHandler);
+    return filterView;
+}
+
 export const SetFilter = ({
     className,
     column,
@@ -69,21 +75,18 @@ export const SetFilter = ({
 
     const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
     const [showZeroRows, setZeroRows] = useState(true);
-    const [dataCounts, setDataCounts] = useState(NO_COUNT);
-    const filterView = useRef(new FilterView(dataView, column));
-    // const searchText = useRef('');
-    
-    const {filterRowTotal=0, filterRowSelected=0} = dataCounts;
+    const [stats, setStats] = useState(NO_COUNT);
+    const onDataCount = (_, stats) => setStats(stats)
+    const filterView = useRef(filterViewFactory(dataView, column, onDataCount));
 
-    const onDataCount = (_, dataCounts) => setDataCounts(dataCounts)
-
-    useEffect(() => {
-        filterView.current.addListener('data-count', onDataCount);
-        return () => {
-            filterView.current.removeListener('data-count', onDataCount);
-            onHide();
-        }
-    }, [dataView])
+    // useEffect(() => {
+    //     console.log(`add data-count listener (set-filter)`)
+    //     filterView.current.addListener('data-count', onDataCount);
+    //     return () => {
+    //         filterView.current.removeListener('data-count', onDataCount);
+    //         onHide();
+    //     }
+    // }, [dataView])
 
     const toggleZeroRows = useCallback(() => {
         const showZero = !showZeroRows;
@@ -101,7 +104,7 @@ export const SetFilter = ({
         ? SET_FILTER_DATA_COLUMNS_NO_COUNT
         : SET_FILTER_DATA_COLUMNS
 
-    console.log(`dataCounts ${JSON.stringify(dataCounts,null,2)}`)
+    console.log(`dataCounts ${JSON.stringify(stats,null,2)}`)
 
     // TODO envelope should be part of columnFilter
     return (
@@ -118,7 +121,7 @@ export const SetFilter = ({
                 <CheckList style={{ flex: 1, border: '1px solid lightgray' }}
                     columns={filterColumns}
                     dataView={filterView.current} />
-                <FilterCounts style={{ height: 50 }} column={column} dataCounts={dataCounts} />
+                <FilterCounts style={{ height: 50 }} column={column} stats={stats} />
                 {suppressFooter !== true &&
                 <div key='footer' className='footer' style={{ height: 26 }}>
                     <button
