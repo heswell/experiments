@@ -9,6 +9,8 @@ import {
 import ConnectionManager from './connection-manager';
 
 const { metaData } = columnUtils;
+const {ROW_DATA} = DataTypes;
+
 const logger = createLogger('RemoteDataView', logColor.blue);
 
 export const AvailableProxies = {
@@ -66,61 +68,62 @@ export default class RemoteDataView  {
         columns,
         range
       }, message => {
-          const { filterData/*, data, updates*/ } = message;
-          if (filterData && this.filterDataCallback) {
+          if (message.dataType === DataTypes.FILTER_DATA) {
             this.filterDataCallback(message)
           } else {
             callback(message)
           }
       });
-
-    // could we pass all this into the call above ?
-    // this.subscription = subscribe({
-    //   ...options,
-    //   viewport,
-    //   tablename: tableName,
-    //   columns,
-    //   range
-    // }, /* postMessageToClient */(message) => {
-
-    //   const { filterData, data, updates } = message;
-    //   if ((data && data.rows) || updates) {
-    //     callback(data || message);
-    //   } else if (filterData && this.filterDataCallback) {
-    //     this.filterDataCallback(message)
-    //   } else if (filterData) {
-    //     // experiment - need to store the column as well
-    //     this.filterDataMessage = message;
-    //   } else if (data && data.selected){
-    //     // TODO think about this
-    //     const {selected, deselected} = data;
-    //     callback({range, selected, deselected});
-    //   }
-
-    // });
-
   }
 
   unsubscribe() {
 
   }
 
-  setRange(lo, hi) {
+  setRange(lo, hi, dataType=ROW_DATA) {
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.setViewRange,
       range: { lo, hi },
-      dataType: DataTypes.ROW_DATA
+      dataType
     });
   }
 
-  select(idx, rangeSelect, keepExistingSelection){
+  select(idx, rangeSelect, keepExistingSelection, dataType=ROW_DATA){
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.select,
       idx,
       rangeSelect,
-      keepExistingSelection
+      keepExistingSelection,
+      dataType
+    });
+  }
+
+  selectAll(dataType=ROW_DATA){
+    this.server.handleMessageFromClient({
+      viewport: this.viewport,
+      type: Msg.selectAll,
+      dataType
+    });
+  }
+
+  selectNone(dataType=ROW_DATA){
+    this.server.handleMessageFromClient({
+      viewport: this.viewport,
+      type: Msg.selectNone,
+      dataType
+    });
+
+  }
+
+  filter(filter, dataType = ROW_DATA, incremental=false) {
+    this.server.handleMessageFromClient({
+      viewport: this.viewport,
+      type: Msg.filter,
+      filter,
+      incremental,
+      dataType,
     })
   }
 
@@ -148,16 +151,6 @@ export default class RemoteDataView  {
     });
   }
 
-  filter(filter, dataType = DataTypes.ROW_DATA, incremental=false) {
-    this.server.handleMessageFromClient({
-      viewport: this.viewport,
-      type: Msg.filter,
-      dataType,
-      filter,
-      incremental
-    })
-  }
-
   getFilterData(column, searchText) {
     console.log(`[RemoteDataView] getFilterData`)
     this.server.handleMessageFromClient({
@@ -171,11 +164,13 @@ export default class RemoteDataView  {
   subscribeToFilterData(column, range, callback) {
     logger.log(`<subscribeToFilterData> ${column.name}`)
     this.filterDataCallback = callback;
-    this.setFilterRange(range.lo, range.hi);
-    if (this.filterDataMessage) {
-      callback(this.filterDataMessage);
-      // do we need to nullify now ?
-    }
+    this.getFilterData(column, range);
+
+    // this.setFilterRange(range.lo, range.hi);
+    // if (this.filterDataMessage) {
+    //   callback(this.filterDataMessage);
+    //   // do we need to nullify now ?
+    // }
 
   }
 
@@ -184,17 +179,17 @@ export default class RemoteDataView  {
     this.filterDataCallback = null;
   }
 
-  // To support multiple open filters, we need a column here
-  setFilterRange(lo, hi) {
-    console.log(`setFilerRange ${lo}:${hi}`)
-    this.server.handleMessageFromClient({
-      viewport: this.viewport,
-      type: Msg.setViewRange,
-      dataType: DataTypes.FILTER_DATA,
-      range: { lo, hi }
-    })
+  // // To support multiple open filters, we need a column here
+  // setFilterRange(lo, hi) {
+  //   console.log(`setFilerRange ${lo}:${hi}`)
+  //   this.server.handleMessageFromClient({
+  //     viewport: this.viewport,
+  //     type: Msg.setViewRange,
+  //     dataType: DataTypes.FILTER_DATA,
+  //     range: { lo, hi }
+  //   })
 
-  }
+  // }
 
 }
 

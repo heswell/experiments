@@ -13,6 +13,8 @@ export const msgType = {
   rowData : 'rowData',
   rowSet: 'rowset',
   select : 'select',
+  selectAll : 'selectAll',
+  selectNone : 'selectNone',
   selected: 'selected',
   snapshot : 'snapshot',
   update: 'update',

@@ -9,6 +9,7 @@ const {
     columns: test_columns
 } = require('../test-data.js');
 
+const {FILTER_DATA} = DataTypes;
 
 describe('construction', () => {
     test('construction', () => {
@@ -143,24 +144,9 @@ describe('getFilterData', () => {
     test('no groupBy, no filters, getFilterData', () => {
         const view = new DataView(getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
-        let results = view.getFilterData({ name: 'IPO' });
+        let results = view.getFilterData({ name: 'IPO' }, { lo: 0, hi: 10 });
         expect(results).toEqual({
-            rows: [],
-            range: { lo: 0, hi: 0 },
-            size: 38,
-            offset: 0,
-            dataCounts : {
-                dataRowAllFilters: 1247,
-                dataRowCurrentFilter: 0,
-                dataRowTotal: 1247,
-                filterRowHidden: 0,
-                filterRowSelected: 38,
-                filterRowTotal: 38
-            }
-        })
-
-        results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
-        expect(results).toEqual({
+            dataType: 'filterData',
             rows: [
                 ['1972', 4,  4,  0, 0, 0, 0, '1972', 1],
                 ['1973', 1,  1,  1, 0, 0, 0, '1973', 1],
@@ -176,15 +162,14 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 10 },
             size: 38,
             offset: 0,
-            dataCounts : {
-                dataRowAllFilters: 1247,
-                dataRowCurrentFilter: 0,
-                dataRowTotal: 1247,
-                filterRowHidden: 0,
-                filterRowSelected: 38,
-                filterRowTotal: 38
+            stats : {
+                totalRowCount: 38,
+                totalSelected: 38, 
+                filteredRowCount: 38,
+                filteredSelected: 38
             }
         })
+
     });
 
     test('no groupBy, filter on same column, getFilterData', () => {
@@ -192,35 +177,20 @@ describe('getFilterData', () => {
         view.setRange({ lo: 0, hi: 17 });
         view.filter({type: IN, colName: 'Sector', values:['Basic Industries']});
         let {size} = view.getFilterData({ name: 'Sector' });
-        expect(size).toEqual(12)        
+        expect(size).toEqual(12);
         const {rows} = view.setRange({lo:0,  hi:10}, true, DataTypes.FILTER_DATA);
         const {SELECTED} = view.filterRowSet.meta;
         expect(rows[0][SELECTED]).toEqual(1);
     });
 
-    test('no groupBy, getFilterData, with search', () => {
+    test('no groupBy, getFilterData, then search', () => {
         const view = new DataView(getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 10 });
-        let results = view.getFilterData({ name: 'IPO' });
-        results = view.getFilterData({ name: 'IPO' }, '198');
-        expect(results).toEqual({
-            rows: [],
-            range: { lo: 0, hi: 0 },
-            size: 10,
-            offset: 0,
-            dataCounts : {
-                dataRowAllFilters: 1247,
-                dataRowCurrentFilter: 0,
-                dataRowTotal: 1247,
-                filterRowHidden: 0,
-                filterRowSelected: 10,
-                filterRowTotal: 10
-            }
 
-        })
-
-        results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        let results = view.getFilterData({ name: 'IPO' },{ lo: 0, hi: 10 });
+        [, results] = view.filter({colName: 'name', type: STARTS_WITH, value: '198'}, DataTypes.FILTER_DATA, true);
         expect(results).toEqual({
+            dataType: 'filterData',
             rows: [
                 ['1980', 2,  2,  0, 0, 0, 0, '1980', 1],
                 ['1981', 7,  7,  1, 0, 0, 0, '1981', 1],
@@ -233,31 +203,29 @@ describe('getFilterData', () => {
                 ['1988', 4,  4,  8, 0, 0, 0, '1988', 1],
                 ['1989', 10, 10, 9, 0, 0, 0, '1989', 1]
             ],
-            range: { lo: 0, hi: 10 },
+            range: { lo: 0, hi: 10, reset: true, bufferSize: 0 },
             size: 10,
             offset: 0,
-            dataCounts : {
-                dataRowAllFilters: 1247,
-                dataRowCurrentFilter: 0,
-                dataRowTotal: 1247,
-                filterRowHidden: 0,
-                filterRowSelected: 10,
-                filterRowTotal: 10
+            stats : {
+                totalRowCount: 38,
+                totalSelected: 38,
+                filteredRowCount: 10,
+                filteredSelected: 10
             }
 
-
         })
+
     });
 
-    test('no groupBy, getFilterData, with search, then repeat with another column', () => {
+    test('no groupBy, getFilterData, then search, then repeat with another column', () => {
         const view = new DataView(getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 10 });
         let results = view.getFilterData({ name: 'IPO' });
-        results = view.getFilterData({ name: 'IPO' }, '198');
-        results = view.getFilterData({ name: 'Sector' });
-        results = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        [, results] = view.filter({colName: 'name', type: STARTS_WITH, value: '198'}, DataTypes.FILTER_DATA, true);
+        results = view.getFilterData({ name: 'Sector' },{ lo: 0, hi: 10 });
 
         expect(results).toEqual({
+            dataType: 'filterData',
             rows:
                 [['Basic Industries',     27,  27,  0, 0, 0, 0, 'Basic Industries', 1],
                 ['Capital Goods',         79,  79,  1, 0, 0, 0, 'Capital Goods', 1],
@@ -272,14 +240,11 @@ describe('getFilterData', () => {
             range: { lo: 0, hi: 10 },
             size: 12,
             offset: 0,
-            dataCounts: {
-                dataRowAllFilters: 1247,
-                dataRowCurrentFilter: 0,
-                dataRowTotal: 1247,
-                filterRowHidden: 0,
-                filterRowSelected: 12,
-                filterRowTotal: 12
-
+            stats : {
+                totalRowCount: 12,
+                totalSelected: 12,
+                filteredRowCount: 12,
+                filteredSelected: 12
             }
         })
 
@@ -403,14 +368,14 @@ describe('getFilterData', () => {
     });
 });
 
-describe('getFilterData + Search', () => {
+describe('filter filterData (SEarch)', () => {
     test('initial search, on filtered column, extend search text', () => {
         const view = new DataView(getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
         view.getFilterData({ name: 'Name' });
         view.filter({ type: IN, colName: 'Name', values: ['Google Inc.'] });
-        view.getFilterData({ name: 'Name' }, 'Go');
-        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'go'}, FILTER_DATA, true);
+        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, FILTER_DATA);
 
         const {IDX, SELECTED} = view.filterRowSet.meta;
         const selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
@@ -423,8 +388,14 @@ describe('getFilterData + Search', () => {
             ['Google Inc.',           1, 1, 3, 0, 0, 0, 'Google Inc.', 1],
             ['Gordmans Stores, Inc.', 1, 1, 4, 0, 0, 0, 'Gordmans Stores, Inc.', 0]
         ]);
-        view.getFilterData({ name: 'Name' }, 'Goo');
-        ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        const [, {stats}] = view.filter({colName: 'name', type: STARTS_WITH, value: 'goo'}, FILTER_DATA, true);
+        expect(stats).toEqual({
+            totalRowCount: 1241,
+            totalSelected: 1,
+            filteredRowCount: 1,
+            filteredSelected: 1
+        });
+        ({ rows } = view.setRange({ lo: 0, hi: 10 }, false, FILTER_DATA));
         expect(rows).toEqual([
             ['Google Inc.', 1, 1, 0, 0, 0, 0, 'Google Inc.', 1]
         ]);
@@ -436,22 +407,22 @@ describe('getFilterData + Search', () => {
         view.setRange({ lo: 0, hi: 17 });
         view.getFilterData({ name: 'Name' });
         view.filter({ type: IN, colName: 'Name', values: ['Google Inc.'] });
-        view.getFilterData({ name: 'Name' }, 'Goo');
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'Goo'}, FILTER_DATA, true);
 
-        view.getFilterData({ name: 'Name' }, 'F');
-        view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'F'}, FILTER_DATA, true);
+        view.setRange({ lo: 0, hi: 10 }, true, FILTER_DATA);
 
         view.filter({ type: IN, colName: 'Name', values: ['Google Inc.', 'Facebook, Inc.'] });
 
-        view.getFilterData({ name: 'Name' }, 'Fa');
-        let { rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'Fa'}, FILTER_DATA, true);
+        let { rows } = view.setRange({ lo: 0, hi: 10 }, false, FILTER_DATA);
         
         const {IDX, SELECTED} = view.filterRowSet.meta;
         let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([1]);
 
-        view.getFilterData({ name: 'Name' }, 'F');
-        ({ rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA));
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'F'}, FILTER_DATA, true);
+        ({ rows } = view.setRange({ lo: 0, hi: 10 }, false, FILTER_DATA));
         selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(selectedIndices).toEqual([5]);
 
@@ -462,11 +433,11 @@ describe('getFilterData + Search', () => {
         view.setRange({ lo: 0, hi: 17 });
         view.getFilterData({ name: 'Name' });
         view.filter({ type: IN, colName: 'Name', values: ['Google Inc.'] });
-        view.getFilterData({ name: 'Name' }, 'F');
-        let { size, rows } = view.setRange({ lo: 0, hi: 10 }, true, DataTypes.FILTER_DATA);
+        view.filter({colName: 'name', type: STARTS_WITH, value: 'F'}, FILTER_DATA, true);
+        let { size, rows } = view.setRange({ lo: 0, hi: 10 }, false, DataTypes.FILTER_DATA);
         expect(size).toBe(46);
-        view.getFilterData({ name: 'Name' });
-        ({ size, rows } = view.setRange({ lo: 0, hi: 500 }, true, DataTypes.FILTER_DATA));
+        view.filter({colName: 'name', type: STARTS_WITH, value: ''}, FILTER_DATA, true);
+        ({ size, rows } = view.setRange({ lo: 0, hi: 500 }, false, DataTypes.FILTER_DATA));
         const {IDX, SELECTED} = view.filterRowSet.meta;
         let selectedIndices = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
         expect(size).toBe(1241);

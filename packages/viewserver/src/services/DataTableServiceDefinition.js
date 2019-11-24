@@ -25,6 +25,8 @@ export const ServiceDefinition = {
       'sort',
       'filter',
       'select',
+      'selectAll',
+      'selectNone',
       'setGroupState',
       'ExpandGroup',
       'CollapseGroup',

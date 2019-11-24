@@ -29,11 +29,11 @@ export default class FilterDataView extends EventEmitter {
         console.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
         this.columns = columns;
         this.meta = metaData(columns);
-        //TODO make range s setter
+        //TODO make range s setter - DO WE EVEN NEED RANGE ?
         this.range = range;
         this.keyCount = range.hi - range.lo;
 
-        const cb = this.clientCallback = message => {
+        const cb = this.clientCallback = (message) => {
             if (message){
                 const {stats, ...data} = message;
                 console.log(`filter-data-local stats=${JSON.stringify(stats,null,2)}`)
@@ -45,9 +45,8 @@ export default class FilterDataView extends EventEmitter {
             }
         }
 
-        // this.dataView.subscribeToFilterData(this.column, this.range, cb)
+        this.dataView.subscribeToFilterData(this.column, range, cb);
 
-        cb(this.dataView.dataView.getFilterData({ name: this.column.name}, null, range));
     }
 
     unsubscribe(){
@@ -61,25 +60,27 @@ export default class FilterDataView extends EventEmitter {
 
     setRange(lo, hi){
         if (lo !== this.range.lo && hi !== this.range.hi){
-            this.clientCallback(this.dataView.dataView.setRange(this.range = { lo, hi }, true, DataTypes.FILTER_DATA));
+            this.range = {lo, hi};
+            this.dataView.setRange(lo, hi, DataTypes.FILTER_DATA);
         }
       }
   
     select(idx, rangeSelect, keepExistingSelection) {
-        this.clientCallback(this.dataView.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA))
+        this.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA);
       }
     
     selectAll(){
-        this.clientCallback(this.dataView.dataView.selectAll(DataTypes.FILTER_DATA));
+        this.dataView.selectAll(DataTypes.FILTER_DATA);
     }
 
     selectNone(){
-        this.clientCallback(this.dataView.dataView.selectNone(DataTypes.FILTER_DATA));
+        this.dataView.selectNone(DataTypes.FILTER_DATA);
     }
     
     filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
-        const [,filterData] = this.dataView.dataView.filter(filter, dataType, incremental);
-        this.clientCallback(filterData);
+        this.dataView.filter(filter, dataType, incremental);
+        // const [,filterData] = this.dataView.dataView.filter(filter, dataType, incremental);
+        // this.clientCallback(filterData);
     }
   
 }

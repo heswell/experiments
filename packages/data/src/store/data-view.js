@@ -128,6 +128,7 @@ export default class DataView {
 
             if (updates.length > 0){
                 return {
+                    dataType,
                     updates,
                     stats: rowset.stats
                 }
@@ -173,6 +174,7 @@ export default class DataView {
 
             if (updatesInViewport){
                 return {
+                    dataType,
                     updates,
                     stats: rowset.stats
                 }
@@ -204,19 +206,18 @@ export default class DataView {
             const { range } = rowSet;
             this._filter = filter;
             let filterResultset;
-            let filterCount = rowSet.totalCount;
     
             if (filter === null && _filter) {
                 rowSet.clearFilter();
             } else if (filter){
-                filterCount = this.rowSet.filter(filter);
+                this.rowSet.filter(filter);
             } else {
                 throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
             }
     
             if (filterRowSet && dataType === DataTypes.ROW_DATA && !ignoreFilterRowset) {
                 if (filter){
-                    filterResultset = filterRowSet.setSelected(filter, filterCount);
+                    filterResultset = filterRowSet.setSelectedFromFilter(filter);
                 } else {
                     // TODO examine this. Must be a more efficient way to reset counts in filterRowSet
                     const {columnName, range} = filterRowSet;
@@ -304,7 +305,7 @@ export default class DataView {
         return results;
     }
 
-    getFilterData(column, searchText = null, range) {
+    getFilterData(column, range) {
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -322,14 +323,6 @@ export default class DataView {
 
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
-        } else if (searchText) {
-            // range = range || filterRowSet.range;
-            filterRowSet.searchText = searchText;
-
-        } else if (filterRowSet && filterRowSet.searchText) {
-            // range = range || filterRowSet.range;
-            filterRowSet.clearFilter();
-            
         } else if (filterRowSet && filterRowSet.columnName === column.name) {
             // if we already have the data for this filter, nothing further to do except reset the filterdata range
             // so next request will return full dataset.
@@ -339,7 +332,7 @@ export default class DataView {
         // recreate the filterRowset: SHould this happen when filter happens ?
 
         if (filter) {
-            this.filterRowSet.setSelected(filter, this.rowSet.filterCount);
+            this.filterRowSet.setSelectedFromFilter(filter);
         } else {
             this.filterRowSet.selectAll();
         }

@@ -94,6 +94,7 @@ export default class BaseRowSet {
         const resultset = this.slice(lo, hi);
         this.range = range;
         return {
+            dataType: this.type,
             rows: resultset,
             range,
             size: this.size,
@@ -106,6 +107,7 @@ export default class BaseRowSet {
         const { lo, hi } = this.range;
         const resultset = this.slice(lo, hi);
         return {
+            dataType: this.type,
             rows: resultset,
             range: this.range,
             size: this.size,
@@ -176,7 +178,7 @@ export default class BaseRowSet {
             // Step 1: brute force approach, actually create list of selected indices
             // need to replace this with a structure that tracks ranges
             this.selected = {rows: arrayOfIndices(data.length), focusedIdx: -1, lastTouchIdx: -1};
-            this.selectedRowsIDX = this.selected.rows;
+            this.selectedRowsIDX = [...this.selected.rows];
         }   
 
         const updates = [];
@@ -294,6 +296,7 @@ export class RowSet extends BaseRowSet {
     //TODO consolidate API of rowSet, groupRowset
     constructor(table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
         super(table, columns, offset);
+        this.type = DataTypes.ROW_DATA;
         this.project = projectColumns(table.columnMap, columns, this.meta);
         this.sortCols = null;
         this.sortReverse = false;
@@ -575,7 +578,8 @@ export class RowSet extends BaseRowSet {
 // TODO need to retain and return any searchText
 export class SetFilterRowSet extends RowSet {
     constructor(table, columns, columnName, dataRowAllFilters, dataRowTotal) {
-        super(table, columns);        
+        super(table, columns);       
+        this.type = DataTypes.FILTER_DATA; 
         this.columnName = columnName;
         this._searchText = null;
         this.dataRowFilter = null;
@@ -636,11 +640,11 @@ export class SetFilterRowSet extends RowSet {
         return this.filterSet.map(idx => this.data[idx][key])
     }
 
-    setSelected(dataRowFilter, dataRowAllFilters) {
+    setSelectedFromFilter(dataRowFilter) {
 
         const columnFilter = extractFilterForColumn(dataRowFilter, this.columnName);
         const columnMap = this.table.columnMap;
-        const {dataCounts, data: rows, filterSet} = this;
+        const { data, filterSet, sortSet} = this;
 
         this.dataRowFilter = dataRowFilter;
         
@@ -648,38 +652,36 @@ export class SetFilterRowSet extends RowSet {
 
             const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
             const selectedRows = [];
+            const selectedRowsIDX = [];
 
-            dataCounts.filterRowSelected = filterSet
-                ? filterSet.reduce((count, i) => {
-                    if (fn(rows[i])){
+            if (filterSet){
+                for (let i=0;i<filterSet.length;i++){
+                    const rowIDX = filterSet[i];
+                    if (fn(data[rowIDX])){
                         selectedRows.push(i);
-                        return count + 1;
-                    } else {
-                        return count;
+                        selectedRowsIDX.push(rowIDX);
                     }
-                },0) 
-                : rows.reduce((count, row, i) => {
-                    if (fn(row)){
+                }
+            } else {
+                for (let i=0;i<data.length;i++){
+                    const rowIDX = sortSet[i][0];
+                    if (fn(data[rowIDX])){
                         selectedRows.push(i);
-                       return count + 1;     
-                    } else {
-                        return count;
+                        selectedRowsIDX.push(rowIDX);
                     }
-                },0) 
-            
-            this.selected = {rows: selectedRows, focusedIdx: -1, lastTouchIdx: -1 }
+                }
+
+            }
+          
+            this.selected = {rows: selectedRows, focusedIdx: -1, lastTouchIdx: -1 };
+            this.selectedRowsIDX = selectedRowsIDX;
+
         
         } else {
 
-            dataCounts.filterRowSelected = filterSet
-                ? filterSet.length
-                : rows.length;
-
             this.selectAll();    
+
         }
-
-        dataCounts.dataRowAllFilters = dataRowAllFilters;
-
 
         return this.currentRange();
 
@@ -693,7 +695,7 @@ export class BinFilterRowSet extends RowSet {
         this.columnName = columnName;
     }
 
-    setSelected(filter){
+    setSelectedFromFilter(filter){
         console.log(`need to apply filter to selected BinRowset`, filter)
     }
     // we don't currently have a concept of range here, but it will

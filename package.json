@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "clean": "lerna run --parallel clean",
-    "viewserver": "node --experimental-modules scripts/run-viewserver.mjs"
+    "viewserver": "node --experimental-modules scripts/run-viewserver.mjs",
+    "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs"
   },
   "workspaces": [
     "packages/*"

@@ -9,6 +9,7 @@ const _queued_subscriptions = {};
 // TODO unify these with DataTypes
 const DataType = {
     Rowset: 'rowset',
+    Update: 'update',
     Snapshot: 'snapshot',
     FilterData: 'filterData',
     SearchData: 'searchData',
@@ -150,11 +151,19 @@ export function sort(clientId, {viewport, sortCriteria}, queue){
 }
 
 export function filter(clientId, {viewport, filter, incremental, dataType}, queue){
-    _subscriptions[viewport].invoke('filter', queue, DataType.Rowset, filter, dataType, incremental);
+    _subscriptions[viewport].invoke('filter', queue, dataType, filter, dataType, incremental);
 }
 
-export function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection}, queue){
-    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection);
+export function select(clientId, {viewport, idx, rangeSelect, keepExistingSelection, dataType}, queue){
+    _subscriptions[viewport].invoke('select', queue, DataType.Selected, idx, rangeSelect, keepExistingSelection, dataType);
+}
+
+export function selectAll(clientId, {viewport, dataType}, queue){
+    _subscriptions[viewport].invoke('selectAll', queue, DataType.Selected, dataType);
+}
+
+export function selectNone(clientId, {viewport, dataType}, queue){
+    _subscriptions[viewport].invoke('selectNone', queue, DataType.Selected, dataType);
 }
 
 export function groupBy(clientId, {viewport, groupBy}, queue){

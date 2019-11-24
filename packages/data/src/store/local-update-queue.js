@@ -7,8 +7,9 @@ import {DataTypes} from './types';
 
 export default class UpdateQueue extends EventEmitter {
 
-    update(update) {
-        this.emit('update', [update]);
+    // not the right name
+    update(update, dataType = DataTypes.ROW_DATA) {
+        this.emit(dataType, update);
     }
 
     resize(size) {
@@ -21,7 +22,7 @@ export default class UpdateQueue extends EventEmitter {
 
     replace(rows, size, range, offset) {
         console.log(`localUpdateQueue replace ${JSON.stringify(rows)} size ${size} offset ${offset}`)
-        this.emit(DataTypes.ROW_DATA, rows, size, range, offset)
+        this.emit(DataTypes.ROW_DATA, {rows, size, range, offset})
     }
 
     popAll() {

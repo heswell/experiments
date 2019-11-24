@@ -134,24 +134,10 @@ export class ServerProxy {
                     this.subscribed(message);
                     break;
     
-                case Message.FILTER_DATA:
-                case Message.SEARCH_DATA:
-                    const { data: filterData } = message;
-                    // const { rowset: data } = subscription.putData(type, filterData);
-    
-                    // if (data.length || filterData.size === 0) {
-                    postMessageToClient({
-                        type,
-                        viewport,
-                        [type]: filterData
-                    });
-                    // }
-    
-                    break;
-                    
                 case 'rowset':    
                 case 'selected':
-                case Message.SNAPSHOT:{
+                case Message.FILTER_DATA:
+                        case Message.SNAPSHOT:{
                     postMessageToClient(message.data);
                 }
                     break;

@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
+    "build:dev": "rollup -c --environment BUILD:development",
     "publish:local": "npm run build && npm version patch && npm publish",
     "publish:npm": "npm publish --registry=https://registry.npmjs.org"
   },

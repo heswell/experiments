@@ -5,6 +5,8 @@ import { DataTypes } from '../store/types';
 import Table from '../store/table';
 import LocalUpdateQueue from '../store/local-update-queue';
 
+const {ROW_DATA} = DataTypes;
+
 const buildDataView = async url => {
   console.log(`import url ${url}`)
   return import(/* webpackIgnore: true */ url)
@@ -57,7 +59,7 @@ export default class LocalDataView {
     this.dataView = new DataView(table, {columns}, this.updateQueue);
     this.clientCallback = callback;
 
-    this.updateQueue.on(DataTypes.ROW_DATA, (evtName, rows, size, range, offset) => callback({rows, size, range, offset}));
+    this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
 
     //TODO can we eliminate all the following ?
     if (this.pendingRangeRequest){
@@ -70,8 +72,9 @@ export default class LocalDataView {
     }
 
     if (this.pendingFilterRangeRequest){
-      this.setFilterRange(...this.pendingFilterRangeRequest);
-      this.pendingFilterRangeRequest = null;
+      alert('seriously ?')
+      // this.setFilterRange(...this.pendingFilterRangeRequest);
+      // this.pendingFilterRangeRequest = null;
     }
   }
 
@@ -79,24 +82,59 @@ export default class LocalDataView {
 
   }
 
-  setRange(lo, hi) {
+  subscribeToFilterData(column, range, callback) {
+    logger.log(`<subscribeToFilterData>`)
+    this.clientFilterCallback = callback;
+    this.getFilterData(column, range);
+  }
+
+  unsubscribeFromFilterData() {
+    logger.log(`<unsubscribeFromFilterData>`)
+    this.clientFilterCallback = null;
+  }
+
+  setRange(lo, hi, dataType=ROW_DATA) {
     if (this.dataView === null){
-      this.pendingRangeRequest = [lo,hi]
+      this.pendingRangeRequest = [lo,hi, dataType]
     } else {
-      this.clientCallback(this.dataView.setRange({lo, hi}, true, DataTypes.ROW_DATA));
+      const result = this.dataView.setRange({lo, hi}, true, dataType);
+      if (dataType === ROW_DATA){
+        this.clientCallback(result);
+      } else {
+        this.clientFilterCallback(result);
+      }
     }
   }
 
-  select(idx, rangeSelect, keepExistingSelection) {
-    this.clientCallback(this.dataView.select(idx, rangeSelect, keepExistingSelection))
+  select(idx, rangeSelect, keepExistingSelection, dataType=ROW_DATA) {
+    const result = this.dataView.select(idx, rangeSelect, keepExistingSelection, dataType);
+    dataType === ROW_DATA
+      ? this.clientCallback(result)
+      : this.clientFilterCallback(result);
   }
 
-  selectAll(dataType){
-    this.clientCallback(this.dataView.selectAll(dataType));
+  selectAll(dataType=ROW_DATA){
+    const result = this.dataView.selectAll(dataType);
+    dataType === ROW_DATA
+      ? this.clientCallback(result)
+      : this.clientFilterCallback(result);
   }
 
-  selectNone(dataType){
-    this.clientCallback(this.dataView.selectNone(dataType));
+  selectNone(dataType=ROW_DATA){
+    const result = this.dataView.selectNone(dataType);
+    dataType === ROW_DATA
+      ? this.clientCallback(result)
+      : this.clientFilterCallback(result);
+  }
+
+  filter(filter, dataType = ROW_DATA, incremental = false) {
+    const [rowData, filterData] = this.dataView.filter(filter, dataType, incremental);
+    if (rowData){
+      this.clientCallback(rowData);
+    }
+    if (filterData && this.clientFilterCallback){
+      this.clientFilterCallback(filterData);
+    }
   }
 
   group(columns) {
@@ -111,66 +149,28 @@ export default class LocalDataView {
     this.clientCallback(this.dataView.sort(columns));
   }
 
-  filter(filter, dataType = DataTypes.ROW_DATA, incremental = false) {
-    // TODO filter call returns an array
-    const [rowData, filterData] = this.dataView.filter(filter, dataType, incremental);
-    // TODO can we eliminate the filterData callback ?
-    this.clientCallback(rowData);
-    // This will go
-    if (filterData){
-      if (this.clientFilterCallback){
-        this.clientFilterCallback({filterData});
-      } else {
-        this.filterDataMessage = filterData;
-      }
-      }
+
+  getFilterData(column, range) {
+      const filterData =  this.dataView.getFilterData(column, range);
+      this.clientFilterCallback(filterData);
   }
 
-  getFilterData(column, searchText) {
-    if (this.dataView){
-      const filterData =  this.dataView.getFilterData(column, searchText)
-      if (this.clientFilterCallback){
-        this.clientFilterCallback({filterData});
-      } else {
-        this.filterDataMessage = {filterData};
-      }
-    } else {
-      this.pendingFilterDataRequest = [column, searchText]
-    }
-  }
-
-  // don't think we'll need it any more
-  subscribeToFilterData(column, range, callback) {
-    logger.log(`<subscribeToFilterData>`)
-    this.clientFilterCallback = callback;
-    this.setFilterRange(range.lo, range.hi);
-    if (this.filterDataMessage) {
-      callback(this.filterDataMessage);
-      // do we need to nullify now ?
-    }
-  }
-
-  unsubscribeFromFilterData() {
-    logger.log(`<unsubscribeFromFilterData>`)
-    this.clientFilterCallback = null;
-  }
-
-  // To support multiple open filters, we need a column here
-  setFilterRange(lo, hi) {
-    if (this.dataView){
-      const message = {
-        filterData: this.dataView.setRange({lo, hi}, true, DataTypes.FILTER_DATA)
-      };
+  // // To support multiple open filters, we need a column here
+  // setFilterRange(lo, hi) {
+  //   if (this.dataView){
+  //     const message = {
+  //       filterData: this.dataView.setRange({lo, hi}, true, DataTypes.FILTER_DATA)
+  //     };
   
-      if (this.clientFilterCallback){
-        this.clientFilterCallback(message);
-      } else {
-        this.filterDataMessage = message;
-      }
+  //     if (this.clientFilterCallback){
+  //       this.clientFilterCallback(message);
+  //     } else {
+  //       this.filterDataMessage = message;
+  //     }
  
-    } else {
-      this.pendingFilterRangeRequest = [lo, hi];
-    }
-  }
+  //   } else {
+  //     this.pendingFilterRangeRequest = [lo, hi];
+  //   }
+  // }
 
 }
