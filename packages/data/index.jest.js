@@ -5,6 +5,8 @@ import {
   toKeyedColumn,
   buildColumnMap,
   metaData,
+  mapSortCriteria,
+  projectColumns,
   setFilterColumnMeta } from './src/store/columnUtils';
 
 import { sortByToMap } from './src/store/sort'
@@ -70,9 +72,11 @@ export const sortUtils = {
 export const columnUtils = {
   buildColumnMap,
   getFilterType,
+  mapSortCriteria,
+  metaData,
+  projectColumns,
   toColumn,
   toKeyedColumn,
-  metaData,
   setFilterColumnMeta
 }
 

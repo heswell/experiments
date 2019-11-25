@@ -55,12 +55,14 @@ export default class UpdateQueue {
           batch.offset = offset;
       }
 
-      replace(rows, size, range, offset) {
+      replace({rows, filter, size, range, offset}) {
           const batch = this.getCurrentBatch('rowset');
           batch.rows = rows;
           batch.size = size;
           batch.range = range;
           batch.offset = offset;
+          // HM, think we should fire an immediate response for filter change
+          batch.filter = filter;
       }
 
       popAll() {

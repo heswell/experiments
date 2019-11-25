@@ -71,7 +71,7 @@ export default class DataView {
         }
         if (replace) {
             const { rows, size, offset } = rowSet.currentRange()
-            _update_queue.replace(rows, size, offset);
+            _update_queue.replace({rows, size, offset});
         } else if (updates) {
             updates.forEach(update => {
                 _update_queue.update(update);
@@ -258,9 +258,8 @@ export default class DataView {
     }
 
     applyFilterSetChangeToFilter(partialFilter){
-        const [{filter, rows, offset, range, size}] = this.filter(partialFilter, DataTypes.ROW_DATA, true, true);
-        console.log(`filter applied size=${size}`, rows);
-        this._update_queue.replace(rows, size, range, offset);
+        const [result] = this.filter(partialFilter, DataTypes.ROW_DATA, true, true);
+        this._update_queue.replace(result);
     }
 
     applyFilter(){

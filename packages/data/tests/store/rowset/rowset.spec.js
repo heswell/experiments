@@ -207,6 +207,58 @@ describe('sort', () => {
 
     });
 
+    test('reverse sort filtered rowSet', () => {
+        const rowSet = getTestRowset();
+        rowSet.filter({type: 'EQ',colName: 'Qty',value: 100});
+        rowSet.sort([['Price', 'dsc']])
+        const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
+        expect(size).toBe(14);
+        expect(rows.map(row => row.slice(4,6))).toEqual([
+            [9,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [4,100],
+            [1,100],
+        ]);
+
+    });
+
+    test('sort, then reverse sort filtered rowSet', () => {
+        const rowSet = getTestRowset();
+        rowSet.filter({type: 'EQ',colName: 'Qty',value: 100});
+        rowSet.sort([['Price', 'asc']])
+        rowSet.sort([['Price', 'dsc']])
+        const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
+        expect(size).toBe(14);
+        expect(rows.map(row => row.slice(4,6))).toEqual([
+            [9,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [5,100],
+            [4,100],
+            [1,100],
+        ]);
+
+    });
+
+
 });
 
 describe('filter', () => {

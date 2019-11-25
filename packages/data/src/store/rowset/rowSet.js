@@ -322,13 +322,19 @@ export class RowSet extends BaseRowSet {
     slice(lo, hi) {
         const {data, selectedRowsIDX, filterSet, offset, sortCols, sortSet, sortReverse} = this;
         if (filterSet) {
-            const filteredData = filterSet.slice(lo, hi);
-            const filterMapper = typeof filteredData[0] === 'number'
+            const filterMapper = typeof filterSet[0] === 'number'
                 ? idx => data[idx]
                 : ([idx]) => data[idx];
-            return filteredData
-                .map(filterMapper)
-                .map(this.project(lo, offset, selectedRowsIDX));
+
+            const results = []
+            for (let i = lo, len = filterSet.length; i < len && i < hi; i++) {
+                const row = sortReverse
+                    ? filterMapper(filterSet[len - i - 1])
+                    : filterMapper(filterSet[i]);
+                results.push(row);
+            }
+            return results.map(this.project(lo, offset, selectedRowsIDX));
+
         } else if (sortCols) {
             const results = []
             for (let i = lo, len = data.length; i < len && i < hi; i++) {

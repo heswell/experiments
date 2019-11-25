@@ -79,14 +79,8 @@ export const SetFilter = ({
     const onDataCount = (_, stats) => setStats(stats)
     const filterView = useRef(filterViewFactory(dataView, column, onDataCount));
 
-    // useEffect(() => {
-    //     console.log(`add data-count listener (set-filter)`)
-    //     filterView.current.addListener('data-count', onDataCount);
-    //     return () => {
-    //         filterView.current.removeListener('data-count', onDataCount);
-    //         onHide();
-    //     }
-    // }, [dataView])
+    // on unmount only ...
+    useEffect(() => onHide, []);
 
     const toggleZeroRows = useCallback(() => {
         const showZero = !showZeroRows;
@@ -95,7 +89,6 @@ export const SetFilter = ({
     },[showZeroRows])
 
     const handleSearchText = value => {
-        // searchText.current = value;
         filterView.current.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
     }
 
