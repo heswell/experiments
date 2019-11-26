@@ -242,17 +242,18 @@ export function addFilter(existingFilter, filter) {
 // values to exist in the NOT_IN set (as long as user interaction is driving the filtering)
 function replaceOrInsert(filters, filter) {
     const {type, colName, values} = filter;
-    if (type === IN) {
-        // see if we have a NOT_IN entry
-        let idx = filters.findIndex(f => f.type === NOT_IN && f.colName === colName);
+    if (type === IN || type === NOT_IN) {
+        const otherType = type === IN ? NOT_IN : IN; 
+        // see if we have an 'other' entry
+        let idx = filters.findIndex(f => f.type === otherType && f.colName === colName);
         if (idx !== -1){
             const {values: existingValues} = filters[idx];
             if (values.every(value => existingValues.indexOf(value) !== -1)){
                 if (values.length === existingValues.length){
-                    // we simply remove the existing NOT_IN filter ...
+                    // we simply remove the existing 'other' filter ...
                     return filters.filter((f, i) => i !== idx);
                 } else {
-                    // ... or strip the IN values from the NOT_IN values
+                    // ... or strip the matching values from the 'other' filter values
                     let newValues = existingValues.filter(value => !values.includes(value));
                     return filters.map((filter,i) => i === idx ? {...filter, values: newValues}: filter)
 
@@ -262,12 +263,11 @@ function replaceOrInsert(filters, filter) {
                 console.log(`partial overlap between IN and NOT_IN`)
 
             }
-        }
-
-
-        idx = filters.findIndex(f => f.type === IN && f.colName === filter.colName);
-        if (idx !== -1) {
-            return filters.map((f, i) => i === idx ? merge(f, filter) : f);
+        } else {
+            idx = filters.findIndex(f => f.type === type && f.colName === filter.colName);
+            if (idx !== -1) {
+                return filters.map((f, i) => i === idx ? merge(f, filter) : f);
+            }    
         }
     }
 

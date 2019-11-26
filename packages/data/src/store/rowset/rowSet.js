@@ -40,6 +40,9 @@ export default class BaseRowSet {
         this.meta = metaData(columns);
         this.data = table.rows;
         this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+        /**
+         * data IDX of selected rows 
+         */
         this.selectedRowsIDX = [];
         this.selectionModel = this.createSelectionModel();
 
@@ -118,7 +121,6 @@ export default class BaseRowSet {
     select(idx, rangeSelect, keepExistingSelection){
 
         const {meta: {SELECTED}, selectionModel, range: {lo, hi}, filterSet, sortSet, offset} = this;
-        const previouslySelectedRows = this.selected.rows;
 
         const {selected, deselected, ...selectionState} = selectionModel.select(
             this.selected,
@@ -160,19 +162,17 @@ export default class BaseRowSet {
     }
 
     selectAll(){
-        const {data, meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
-        const previouslySelectedRows = this.selected.rows;
+        const {data, selected, selectedRowsIDX, meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
+        const previouslySelectedRows = [...this.selected.rows];
         if (filterSet){
-            const selectedRows = previouslySelectedRows.slice();
             // selection of a filtered subset is added to existing selection 
             for (let i =0; i< filterSet.length; i++){
                 const rowIDX = filterSet[i];
-                if (!selectedRows.includes(rowIDX)){
-                    selectedRows.push(i);
-                    this.selectedRowsIDX.push(rowIDX);
+                if (!selectedRowsIDX.includes(rowIDX)){
+                    selected.rows.push(i); // does it matter if thes eend up out of sequence ?
+                    selectedRowsIDX.push(rowIDX);
                 }
             }
-            this.selected = {rows: selectedRows, focusedIdx: -1, lastTouchIdx: -1};
 
         } else {
             // Step 1: brute force approach, actually create list of selected indices
@@ -184,7 +184,7 @@ export default class BaseRowSet {
         const updates = [];
         const max = Math.min(hi, (filterSet || data).length)
         for (let i=lo;i<max;i++){
-            if (this.selected.rows.includes(i) && !previouslySelectedRows.includes(i)){ 
+            if (selected.rows.includes(i) && !previouslySelectedRows.includes(i)){ 
                 updates.push([i+offset,SELECTED, 1]);
             }
         }
@@ -196,9 +196,9 @@ export default class BaseRowSet {
     selectNone(){
 
         const {meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
-        const previouslySelectedRows = this.selected.rows;
+        const previouslySelectedRows = this.selectedRowsIDX;
         if (filterSet){
-            this.selected = {rows: previouslySelectedRows.filter(idx => !filterSet.includes(idx)), focusedIdx: -1, lastTouchIdx: -1};
+            this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
             this.selectedRowsIDX = this.selectedRowsIDX.filter(idx => !filterSet.includes(idx));
         } else {
             this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
@@ -424,12 +424,16 @@ export class RowSet extends BaseRowSet {
         // recompute selected.rows from selectedRowIDX
         if (this.selected.rows.length){
             const {selectedRowsIDX, selected} = this;
+            const newSelectedRowsIDX = []; 
             selected.rows.length = 0;
             for (let i=0;i<newFilterSet.length;i++){
-                if (selectedRowsIDX.includes(newFilterSet[i])){
+                const rowIDX = newFilterSet[i];
+                if (selectedRowsIDX.includes(rowIDX)){
+                    newSelectedRowsIDX.push(rowIDX);
                     selected.rows.push(i);
                 }
             }
+            this.selectedRowsIDX = newSelectedRowsIDX;
         }
 
         this.filterSet = newFilterSet;
@@ -605,45 +609,28 @@ export class SetFilterRowSet extends RowSet {
     }
 
 
-    get searchText() {
-        return this._searchText;
-    }
-
-    set searchText(text) {
-        this.selectedCount = this.filter({ type: 'SW', colName: 'name', value: text });
-        this._searchText = text;
-        // reset range so next request will be met from top
-        this.clearRange();
-    }
-
-
-    currentRange(){
-        //TODO move these into a single struct
-
-            return {
-                ...super.currentRange(),
-                //TODO is this necessary, these won't change on a range request
-                dataCounts: this.dataCounts
-            }
-    
-    }
-
     clearRange(){
         this.range = {lo:0, hi: 0};
     }
     
-    // do we need this ?
-    clearFilter() {
-        this.currentFilter = null;
-        this.filterSet = null;
-        this._searchText = '';
-        this.clearRange();
-    }
-
-
     get values() {
         const key = this.columnMap['name'];
         return this.filterSet.map(idx => this.data[idx][key])
+    }
+
+    // will we ever need this on base rowset ?
+    getSelectedValue(idx){
+        const {data, sortSet, filterSet} = this;
+        if (filterSet){
+           const filterEntry= filterSet[idx];
+           const rowIDX = typeof filterEntry === 'number'
+             ? filterEntry
+             : filterEntry[0];
+           return data[rowIDX][0];  
+           
+        } else {
+            return sortSet[idx][1];
+        }
     }
 
     setSelectedFromFilter(dataRowFilter) {

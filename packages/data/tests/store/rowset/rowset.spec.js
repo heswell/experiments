@@ -1,4 +1,4 @@
-const {RowSet, filter: {IN}} = require('../../dist/index.js');
+const {RowSet, filter: {IN, GREATER_THAN}} = require('../../dist/index.js');
 
 const {
     getInstrumentRowset,
@@ -286,6 +286,30 @@ describe('filter', () => {
         expect(size).toBe(0);
         expect(rows).toEqual([])
     });
+
+    test('multiple filters', () => {
+        const rowSet = getInstrumentRowset();
+        rowSet.filter({colName: 'Industry', type: IN, values: ['Electronic Components']})
+        expect(rowSet.stats).toEqual({
+            totalRowCount: 1247,
+            totalSelected: 0,
+            filteredRowCount: 15,
+            filteredSelected: 0
+        });
+
+        const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Sector'});
+        filterRowset.selectAll();
+        filterRowset.filter({colName: 'count', type: GREATER_THAN, value: 0});
+
+        const {stats} = filterRowset.setRange({lo:0, hi:10}, true, true);
+        expect(stats).toEqual({
+            totalRowCount: 12,
+            totalSelected: 12,
+            filteredRowCount: 4,
+            filteredSelected: 4
+        });
+
+    })
 
 });
 
@@ -691,7 +715,6 @@ describe('selectAll', () => {
     test('no previous selection', () => {
         const rowSet = getTestRowset();
         rowSet.setRange({lo: 0, hi: 10});
-
         let result = rowSet.selectAll();
 
         expect(result).toEqual([

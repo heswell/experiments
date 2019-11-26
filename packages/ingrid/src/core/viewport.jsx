@@ -128,11 +128,12 @@ export const Viewport = React.memo(({
     useEffect(() => {
         const rowCount = Math.ceil(height / model.rowHeight) + 1;
         // careful model might be out of date
-        if (rowCount !== model.rowCount) {
-            dispatch({ type: Action.ROWCOUNT, rowCount })
+        // if (rowCount !== model.rowCount) {
+            // dispatch({ type: Action.ROWCOUNT, rowCount })
             const firstRow = firstVisibleRow.current;
+            // initial call to setRange
             setRange(firstRow, firstRow + rowCount);
-        }
+        // }
 
     }, [height])
 

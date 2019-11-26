@@ -191,6 +191,27 @@ describe('filter', () => {
       )
     })
 
+    test('adding a NOT_IN for a previously added IN removes the IN entry', () => {
+      const includesIn = {
+        type: 'AND',
+        filters: [
+          {colName: 'Col1', type: IN, values: ['A', 'B', 'C']},
+          {colName: 'otherCol', type: 'EQ', value: 'blah'}
+        ]
+      }
+      const notIn = {colName: 'Col1', type: NOT_IN, values: ['A']}
+
+      expect(addFilter(includesIn, notIn)).toEqual(
+        {
+          type: 'AND',
+          filters: [
+            {colName: 'Col1', type: IN, values: ['B', 'C']},
+            {colName: 'otherCol', type: 'EQ', value: 'blah'}
+          ]
+        }
+      )
+    })
+
     test('adding an exclude all (IN []) filter removes any IN or NOT_IN filters', () => {
       const EXCLUDE_ALL = {colName: 'Col1', type: IN, values: []};
 

@@ -117,7 +117,7 @@ export default class DataView {
         } else {
             // we need to handle this case here, as the filter we construct depends on the selection details
             // TODO we shouldn't be using the sortSet here, need an API method
-            const [, value] = rowset.sortSet[idx];
+            const value = rowset.getSelectedValue(idx);
             const isSelected = rowset.selected.rows.includes(idx);
             const filter = {
                 type: isSelected ? IN : NOT_IN,

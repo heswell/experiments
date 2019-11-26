@@ -131,7 +131,7 @@ function initialize(state, action) {
 
     // we're trying to avoid having to store rowCount (and therefore issuing a new model every time rowCount
     // changes, rather than just when displayWidth changes to allow for scrollbar)
-    // TODO we also need to check rowHeight, headerHeight, _totalCOlumnWidth - which may affect horizontal scrollbar)
+    // TODO we also need to check rowHeight, headerHeight, _totalColumnWidth - which may affect horizontal scrollbar)
     const displayWidth = width !== state.width || height !== state.height || rowCount !== 0
         ? getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize)
         : state.displayWidth;
