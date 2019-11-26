@@ -28,7 +28,7 @@ export class NumberFilter extends React.Component {
         const { column, filter, dataView } = this.props;
         const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
 
-        this.filterView = new BinView(dataView);
+        this.filterView = new BinView(dataView, column);
         
         this.state = {
             ...this.extractStateFromFilter(columnFilter)

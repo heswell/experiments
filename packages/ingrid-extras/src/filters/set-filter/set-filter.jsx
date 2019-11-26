@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect, useRef, useState, useReducer } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import { filter as filterUtils, DataTypes, FilterDataView as FilterView } from '@heswell/data';
 import {FlexBox} from '@heswell/inlay';
@@ -11,10 +11,8 @@ import {FilterCounts} from '../filter-counts.jsx';
 import './set-filter.css';
 
 const { 
-    IN,
     NOT_IN,
     STARTS_WITH,
-    NOT_STARTS_WITH, 
     SET_FILTER_DATA_COLUMNS
 } = filterUtils;
 
@@ -30,25 +28,6 @@ const ZeroRowFilter = {
     colName: 'count',
     type: NOT_IN,
     values: [0]
-}
-
-const SelectionStatus = {
-    Init: 'init',
-    All: 'all',
-    None: 'none',
-    Some : 'some'
-}
-
-function getSelectionStatus(totalCount, selectedCount){
-    if (totalCount === 0){
-        return SelectionStatus.Init;
-    } else if (selectedCount === 0){
-        return SelectionStatus.None;
-    } else if (totalCount === selectedCount) {
-        return SelectionStatus.All
-    } else {
-        return SelectionStatus.Some;
-    }
 }
 
 const filterViewFactory = (dataView, column, statsHandler) => {

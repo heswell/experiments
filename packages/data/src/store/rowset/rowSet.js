@@ -184,7 +184,7 @@ export default class BaseRowSet {
         const updates = [];
         const max = Math.min(hi, (filterSet || data).length)
         for (let i=lo;i<max;i++){
-            if (selected.rows.includes(i) && !previouslySelectedRows.includes(i)){ 
+            if (this.selected.rows.includes(i) && !previouslySelectedRows.includes(i)){ 
                 updates.push([i+offset,SELECTED, 1]);
             }
         }
@@ -424,16 +424,13 @@ export class RowSet extends BaseRowSet {
         // recompute selected.rows from selectedRowIDX
         if (this.selected.rows.length){
             const {selectedRowsIDX, selected} = this;
-            const newSelectedRowsIDX = []; 
             selected.rows.length = 0;
             for (let i=0;i<newFilterSet.length;i++){
                 const rowIDX = newFilterSet[i];
                 if (selectedRowsIDX.includes(rowIDX)){
-                    newSelectedRowsIDX.push(rowIDX);
                     selected.rows.push(i);
                 }
             }
-            this.selectedRowsIDX = newSelectedRowsIDX;
         }
 
         this.filterSet = newFilterSet;
