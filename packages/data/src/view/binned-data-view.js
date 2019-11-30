@@ -13,23 +13,20 @@ export default class BinnedDataView {
   }
 
   subscribe({range}, callback) {
-    logger.log(`<subscribe>`)
+    logger.log(`subscribe`)
 
     this.dataView.subscribeToFilterData(this.column, range, ({rows,size, range}) => {
 
       logger.log(`receive rows ${rows.length} of ${size} range ${JSON.stringify(range)}`)
 
-      // const mergedRows = this.processData(rows, size, 0)
-
       callback(rows);
-
-      // if (this.dataCountCallback){
-      //     this.dataCountCallback(dataCounts);
-      // }
-
 
     })
 
+  }
+
+  filter(filter){
+    logger.log(`filter ${JSON.stringify(filter)}`)
   }
 
   destroy(){

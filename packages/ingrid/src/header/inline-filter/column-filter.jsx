@@ -4,7 +4,7 @@ import {
     columnUtils,
     DataTypes,
     filter as filterUtils, 
-    FilterDataView as FilterView 
+    FilterDataView 
 } from '@heswell/data';
 import { SetFilter, NumberFilter, MultiColumnFilter, FilterPanel } from '@heswell/ingrid-extras';
 
@@ -22,8 +22,8 @@ const ZeroRowFilter = {
 }
 
 // TODO this can be pushed out to @heswell/data
-const filterViewFactory = (dataView, column, statsHandler) => {
-    const filterView = new FilterView(dataView, column);
+const dataViewFactory = (dataView, column, statsHandler) => {
+    const filterView = new FilterDataView(dataView, column);
     filterView.on('data-count', statsHandler);
     return filterView;
 }
@@ -45,7 +45,7 @@ export const ColumnFilter =  ({
     const [stats, setStats] = useState(NO_COUNT);
     const onDataCount = (_, stats) => setStats(stats);
     const [showZeroRows, setZeroRows] = useState(true);
-    const filterView = useRef(filterViewFactory(dataView, column, onDataCount));
+    const filterView = useRef(dataViewFactory(dataView, column, onDataCount));
     const rootEl = useRef(null);
     console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
     const toggleFilterDisplay = () => {
