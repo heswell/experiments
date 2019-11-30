@@ -1,12 +1,14 @@
 //TODO neither this file nor filter-data-view belong here - thye are not specific to remote views
 
-import { createLogger, logColor} from '@heswell/utils';
+import { createLogger, logColor, EventEmitter} from '@heswell/utils';
+import { DataTypes } from '../store/types';
 
 const logger = createLogger('BinnedDataView', logColor.brown);
 
-export default class BinnedDataView {
+export default class BinnedDataView extends EventEmitter {
 
   constructor(dataView, column) {
+    super();
     this.dataView = dataView;
     this.column = column;
     this.dataCountCallback = null;
@@ -15,7 +17,7 @@ export default class BinnedDataView {
   subscribe({range}, callback) {
     logger.log(`subscribe`)
 
-    this.dataView.subscribeToFilterData(this.column, range, ({rows,size, range}) => {
+    this.dataView.subscribeToFilterData(this.column, range, ({rows, size, range}) => {
 
       logger.log(`receive rows ${rows.length} of ${size} range ${JSON.stringify(range)}`)
 
@@ -26,7 +28,7 @@ export default class BinnedDataView {
   }
 
   filter(filter){
-    logger.log(`filter ${JSON.stringify(filter)}`)
+    this.dataView.filter(filter, DataTypes.ROW_DATA);
   }
 
   destroy(){

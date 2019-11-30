@@ -1,12 +1,20 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
 import { 
+    BinnedDataView,
     columnUtils,
     DataTypes,
     filter as filterUtils, 
     FilterDataView 
 } from '@heswell/data';
-import { SetFilter, NumberFilter, MultiColumnFilter, FilterPanel } from '@heswell/ingrid-extras';
+
+import {
+    FilterType,
+    SetFilter,
+    NumberFilter,
+    MultiColumnFilter,
+    FilterPanel
+} from '@heswell/ingrid-extras';
 
 import Draggable from '../../draggable/draggable.jsx';
 import { PopupService } from '../../services/index';
@@ -22,8 +30,13 @@ const ZeroRowFilter = {
 }
 
 // TODO this can be pushed out to @heswell/data
-const dataViewFactory = (dataView, column, statsHandler) => {
-    const filterView = new FilterDataView(dataView, column);
+const dataViewFactory = (dataView, filterType, column, statsHandler) => {
+    const filterView = filterType === FilterType.Set
+      ? new FilterDataView(dataView, column)
+      : filterType === FilterType.Number
+        ? new BinnedDataView(dataView, column)
+        : null
+
     filterView.on('data-count', statsHandler);
     return filterView;
 }
@@ -38,14 +51,14 @@ export const ColumnFilter =  ({
     onClearFilter,
     onFilterOpen,
     onFilterClose,
-    showFilter,
-    onFilter
+    showFilter
 }) => {
 
+    const [filterType] = useState(columnUtils.getFilterType(column)); 
     const [stats, setStats] = useState(NO_COUNT);
     const onDataCount = (_, stats) => setStats(stats);
     const [showZeroRows, setZeroRows] = useState(true);
-    const filterView = useRef(dataViewFactory(dataView, column, onDataCount));
+    const filterView = useRef(dataViewFactory(dataView, filterType, column, onDataCount));
     const rootEl = useRef(null);
     console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
     const toggleFilterDisplay = () => {
@@ -80,10 +93,6 @@ export const ColumnFilter =  ({
     const clearFilter = useCallback(() => {
         onClearFilter(column);
     },[])
-
-    const handleNumberFilterChange = (column, filter) => {
-        onFilter(column, filter);
-    }
 
     const handleFilter = (/*filter*/) => {
         // Do we still need - see Numberfilter and group
@@ -142,17 +151,16 @@ export const ColumnFilter =  ({
 
     const getFilterBody = () => {
         if (!column.isGroup || column.columns.length === 1) {
-            switch (columnUtils.getFilterType(column)) {
-                case 'number':
+            switch (filterType) {
+                case FilterType.Number:
                     return (
                         <NumberFilter
                             column={column}
                             style={{flex:1}}
-                            dataView={dataView}
+                            dataView={filterView.current}
                             filter={filter}
                             onHide={hideFilter}
-                            onClose={closeFilter}
-                            onApplyFilter={handleNumberFilterChange} />
+                            onClose={closeFilter} />
                     );
                 default:
                     return (

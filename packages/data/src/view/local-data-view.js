@@ -154,23 +154,4 @@ export default class LocalDataView {
       const filterData =  this.dataView.getFilterData(column, range);
       this.clientFilterCallback(filterData);
   }
-
-  // // To support multiple open filters, we need a column here
-  // setFilterRange(lo, hi) {
-  //   if (this.dataView){
-  //     const message = {
-  //       filterData: this.dataView.setRange({lo, hi}, true, DataTypes.FILTER_DATA)
-  //     };
-  
-  //     if (this.clientFilterCallback){
-  //       this.clientFilterCallback(message);
-  //     } else {
-  //       this.filterDataMessage = message;
-  //     }
- 
-  //   } else {
-  //     this.pendingFilterRangeRequest = [lo, hi];
-  //   }
-  // }
-
 }

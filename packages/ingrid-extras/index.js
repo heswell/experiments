@@ -8,3 +8,4 @@ export {ColumnPicker} from './src/columnPicker/column-picker.jsx';
 export {Dialog} from './src/dialog/index';
 export {FilterPanelHeader} from './src/filters/filter-panel-header';
 export {SearchBar} from './src/filters/filter-toolbar/filter-toolbar';
+export {FilterType} from './src/filters/filter-constants'; 

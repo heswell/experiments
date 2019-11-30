@@ -4,7 +4,6 @@ import {createGraph} from './number-filter-chart';
 import {extractStateFromFilter, buildFilter} from './number-filter-helpers.js';
 
 import {FlexBox} from '@heswell/inlay';
-import {BinnedDataView as BinView} from '@heswell/data';
 import {filter as filterUtils} from '@heswell/data';
 
 import './number-filter.css';
@@ -20,11 +19,9 @@ export class NumberFilter extends React.Component {
         this.chartEl = React.createRef();
         this.binnedValues = [];
 
-        const { column, filter, dataView } = this.props;
+        const { column, filter } = this.props;
         const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
 
-        this.filterView = new BinView(dataView, column);
-        
         this.state = {
             ...extractStateFromFilter(columnFilter)
         };
@@ -32,7 +29,7 @@ export class NumberFilter extends React.Component {
     }
 
     componentDidMount(){
-        this.filterView.subscribe({range:{lo:-1,hi:-1}}, values => this.onFilterBins(values));
+        this.props.dataView.subscribe({range:{lo:-1,hi:-1}}, values => this.onFilterBins(values));
         const {val1, val2} = this.state;
         this.graph = createGraph(
             this.chartEl.current, 
@@ -44,7 +41,7 @@ export class NumberFilter extends React.Component {
     }
 
     componentWillUnmount(){
-        this.filterView.destroy();
+        // this.filterView.destroy();
         this.graph.destroy();
         this.props.onHide();
     }
@@ -78,11 +75,10 @@ export class NumberFilter extends React.Component {
     }
 
     apply(){
-        const { column, onApplyFilter } = this.props;
+        const { column } = this.props;
         const { op1, val1, op2, val2 } = this.state;
         const filter = buildFilter(column, op1, val1, op2, val2);
-        onApplyFilter(column, filter);
-        this.filterView.filter(filter);
+        this.props.dataView.filter(filter);
     }
 
     selectRange(lo, hi) {

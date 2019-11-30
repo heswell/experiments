@@ -217,7 +217,12 @@ export default class DataView {
     
             if (filterRowSet && dataType === DataTypes.ROW_DATA && !ignoreFilterRowset) {
                 if (filter){
-                    filterResultset = filterRowSet.setSelectedFromFilter(filter);
+                    if (filterRowSet.type === DataTypes.FILTER_DATA){
+                        filterResultset = filterRowSet.setSelectedFromFilter(filter);
+                    } else if (filterRowSet.type === DataTypes.FILTER_BINS){
+                        this.filterRowSet = rowSet.getBinnedValuesForColumn({name:this.filterRowSet.columnName});
+                        filterResultset = this.filterRowSet.setRange();
+                    }
                 } else {
                     // TODO examine this. Must be a more efficient way to reset counts in filterRowSet
                     const {columnName, range} = filterRowSet;

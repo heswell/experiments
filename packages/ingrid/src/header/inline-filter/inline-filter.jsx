@@ -36,25 +36,6 @@ export default forwardRef(({
         setShowFilter(null);
     }
 
-    // not used for setfilter any more
-    const handleFilter = (column, newFilter) => {
-        //TODO move this into model
-        const filter = filterUtils.addFilter(serverFilter, newFilter);
-        console.log(`
-                add filter ${JSON.stringify(newFilter, null, 2)}
-                to filter ${JSON.stringify(serverFilter, null, 2)}
-                creates new filter = ${JSON.stringify(filter, null, 2)}
-            `)
-
-        dataView.filter(filter);
-
-        if (newFilter.isNumeric) {
-            // re-request the filterData, this will re-create bins on the filtered data
-            const { key, name } = column.isGroup ? column.columns[0] : column;
-            dataView.getFilterData({ key, name });
-        }
-    }
-
     const handleClearFilter = useCallback(column => {
         dataView.filter({
             type: NOT_IN,
@@ -73,7 +54,6 @@ export default forwardRef(({
             onFilterOpen={onFilterOpen}
             onFilterClose={onFilterClose}
             showFilter={showFilter === column.name}
-            onFilter={handleFilter}
         />;
 
     return (
