@@ -35,9 +35,9 @@ export function extractStateFromFilter(filter) {
       };
   } else {
       return {
-          op1: filter.type,
-          val1: filter.value,
-          op2: null,
+          op1: filter.type || 'GE',
+          val1: filter.value || '',
+          op2: '',
           val2: ''
       };
   }

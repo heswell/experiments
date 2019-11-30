@@ -159,8 +159,7 @@ export const ColumnFilter =  ({
                             style={{flex:1}}
                             dataView={filterView.current}
                             filter={filter}
-                            onHide={hideFilter}
-                            onClose={closeFilter} />
+                            onHide={hideFilter} />
                     );
                 default:
                     return (
