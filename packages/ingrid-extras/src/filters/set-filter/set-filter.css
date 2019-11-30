@@ -1,11 +1,4 @@
 
-.SetFilter .filter-toolbar .mass-select {
-    flex: 0 1 100px;  
-    text-align: center;  
-    line-height: 25px;
-    border-left: solid 1px #ccc;
-}
-
 .filter-count-section {
     display: flex;
     align-items: center;

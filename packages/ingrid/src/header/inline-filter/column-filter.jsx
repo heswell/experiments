@@ -1,14 +1,37 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
-import { columnUtils, filter as filterUtils } from '@heswell/data';
-import { SetFilter, NumberFilter, MultiColumnFilter } from '@heswell/ingrid-extras';
+import { 
+    columnUtils,
+    DataTypes,
+    filter as filterUtils, 
+    FilterDataView as FilterView 
+} from '@heswell/data';
+import { SetFilter, NumberFilter, MultiColumnFilter, FilterPanel } from '@heswell/ingrid-extras';
 
 import Draggable from '../../draggable/draggable.jsx';
 import { PopupService } from '../../services/index';
 
 import './column-filter.css';
 
-export default ({
+const {includesColumn, NOT_IN, STARTS_WITH} = filterUtils;
+
+const ZeroRowFilter = {
+    colName: 'count',
+    type: NOT_IN,
+    values: [0]
+}
+
+// TODO this can be pushed out to @heswell/data
+const filterViewFactory = (dataView, column, statsHandler) => {
+    const filterView = new FilterView(dataView, column);
+    filterView.on('data-count', statsHandler);
+    return filterView;
+}
+
+const NO_COUNT = {}
+
+//TODO do we nedd to tear down the filterView ?
+export const ColumnFilter =  ({
     column,
     dataView,
     filter,
@@ -19,11 +42,16 @@ export default ({
     onFilter
 }) => {
 
+    const [stats, setStats] = useState(NO_COUNT);
+    const onDataCount = (_, stats) => setStats(stats);
+    const [showZeroRows, setZeroRows] = useState(true);
+    const filterView = useRef(filterViewFactory(dataView, column, onDataCount));
     const rootEl = useRef(null);
     console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
     const toggleFilterDisplay = () => {
         onFilterOpen(column);
     }
+
 
     // close filter is a user action
     const closeFilter = () => {
@@ -42,7 +70,7 @@ export default ({
     const handleKeyDown = useCallback(e => {
         if (e.keyCode === 13) { // ENTER
             dataView.filter({
-                 type: filterUtils.STARTS_WITH,
+                 type: STARTS_WITH,
                  colName: column.name,
                  value: e.target.value
             })
@@ -71,21 +99,55 @@ export default ({
                 PopupService.showPopup({ left: Math.round(left), top: top - 26, component });
             })
         }
-    },[showFilter, filter]);
+    },[showFilter, filter, showZeroRows]);
 
     const moveFilter = (e, deltaX, deltaY) => {
         console.log(`move Filter by ${deltaX} ${deltaY}`)
         PopupService.movePopup(deltaX, deltaY);
     }
 
+    const handleSearchText = value => {
+        filterView.current.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
+    }
+
+
+    const toggleZeroRows = useCallback(() => {
+        const showZero = !showZeroRows;
+        setZeroRows(showZero);
+        filterView.current.filter(showZero ? null : ZeroRowFilter);
+    },[showZeroRows])
+
+    // on unmount only ...
+    useEffect(() => closeFilter, []);
+
     const getFilter = () => {
-        console.log(`getFilter ${JSON.stringify(column)}`)
+        // TODO how do we wire up the onMouseDown
+        const childFilter = getFilterBody();
+        return (
+            <Draggable onDrag={moveFilter}>
+                <FilterPanel 
+                    column={column}
+                    showZeroRows={showZeroRows}
+                    style={{width: 300, height: 350}} 
+                    onHide={closeFilter}
+                    onSearch={handleSearchText}
+                    showZeroRows={showZeroRows}
+                    toggleZeroRows={toggleZeroRows}>
+                    {childFilter}
+                </FilterPanel>
+            </Draggable>
+
+        )
+    }
+
+    const getFilterBody = () => {
         if (!column.isGroup || column.columns.length === 1) {
             switch (columnUtils.getFilterType(column)) {
                 case 'number':
                     return (
-                        <NumberFilter column={column} height={250}
-                            className='FilterPanel'
+                        <NumberFilter
+                            column={column}
+                            style={{flex:1}}
                             dataView={dataView}
                             filter={filter}
                             onHide={hideFilter}
@@ -94,17 +156,12 @@ export default ({
                     );
                 default:
                     return (
-                        <Draggable onDrag={moveFilter}>
-                            <SetFilter className='FilterPanel'
-                                column={column}
-                                filter={filter}
-                                height={350}
-                                width={column.width + 120}
-                                dataView={dataView}
-                                onHide={hideFilter}
-                                onClose={closeFilter}
-                            />
-                        </Draggable>
+                        <SetFilter
+                            style={{flex:1}}
+                            column={column}
+                            filter={filter}
+                            dataView={filterView.current}
+                            stats={stats} />
                     );
             }
 
@@ -120,9 +177,10 @@ export default ({
                 onApplyFilter={handleFilter}
             />;
         }
+       
     }
 
-    const isActive = filterUtils.includesColumn(filter, column);
+    const isActive = includesColumn(filter, column);
     const className = cx('HeaderCell', { 'filter-active': isActive, 'filter-showing': showFilter });
 
     return (

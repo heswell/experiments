@@ -5,10 +5,11 @@ const NOOP = () => {}
 export default allProps => {
     const {
         component:Component,
+        children: child,
         ...props
     } = allProps;
 
-    const {onDrag, onDragStart=NOOP, onDragEnd=NOOP, children: child} = allProps;
+    const {onDrag, onDragStart=NOOP, onDragEnd=NOOP} = allProps;
     const position = useRef({x:0,y:0});
     const dragState = useRef(null);
 
@@ -74,8 +75,7 @@ export default allProps => {
 
     if (child && !Array.isArray(child)){
         return React.cloneElement(child, {...props, onMouseDown: handleMouseDown});
-    } else 
-    if (Component){
+    } else if (Component){
         return <Component onMouseDown={handleMouseDown} {...props}/>;
     } else {
         return <div onMouseDown={handleMouseDown} {...props}/>;

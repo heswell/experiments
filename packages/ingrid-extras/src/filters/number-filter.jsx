@@ -7,8 +7,6 @@ import {FlexBox} from '@heswell/inlay';
 import {BinnedDataView as BinView} from '@heswell/data';
 import {filter as filterUtils} from '@heswell/data';
 
-import SearchBar from './filter-toolbar.jsx'
-
 import barChartPlotter from '../dygraphs/barchartPlotter';
 
 import './number-filter.css';
@@ -149,71 +147,51 @@ export class NumberFilter extends React.Component {
         const {
             column,
             className,
-            height,
             width = column.width + 100,
-            style=NO_STYLE,
-            suppressHeader=false,
-            suppressSearch=false,
-            suppressFooter=false
+            style=NO_STYLE
         } = this.props;
         const { op1, val1, op2, val2 } = this.state;
         // const width = column.width + 100;
 
         return (
-            <FlexBox className={cx('NumberFilter','ColumnFilter', className)} style={{width,height,visibility: style.visibility}}>
-                {suppressHeader !== true &&
-                <div className='col-header HeaderCell' style={{height: 25}}>
-                    <div className='col-header-inner' style={{width: column.width-1}}>{column.name}</div>
-                </div>}
-                <FlexBox className='filter-inner' style={{flex: 1}}>
-                {suppressSearch !== true &&
-                    <SearchBar style={{height: 25}}
-                        inputWidth={column.width-16}
-                        searchText={''}
-                        onSearchText={this.handleSearchText}
-                    />}
-                    <div className='filter-chart'
-                        ref={c => this._filterChart = ReactDOM.findDOMNode(c)}
-                        style={{width, height: 60}} />
-                    
-                    <div className="filter-control-row" style={{height: 24}}>
-                        <div className="input-wrapper">
-                            <input name='val1' type='text' value={val1} onChange={e => this.onChange(e)} />
-                        </div>
-                        <div className="input-wrapper">
-                            <input name='val2' type='text' value={val2} onChange={e => this.onChange(e)} />
-                        </div>
-                    </div>    
-                    
-                    <div className='filter-control-row filter-select' style={{height: 20}}>
-                        <div className="input-wrapper">
-                            <select name='op1' value={op1} onChange={e => this.onChange(e)}>
-                                <option value='GE'>GE</option>
-                                <option value='GT'>GT</option>
-                                <option value='LE'>LE</option>
-                                <option value='LT'>LT</option>
-                                <option value='EQ'>EQ</option>
-                                <option value='NE'>NE</option>
-                            </select>
-                        </div>
-                        <div className="input-wrapper">
-                            <select name='op2' value={op2} onChange={e => this.onChange(e)}>
-                                <option value='LE'>LE</option>
-                                <option value='LT'>LT</option>
-                                <option value='GE'>GE</option>
-                                <option value='GT'>GT</option>
-                            </select>
-                        </div>
+            <FlexBox className={cx('NumberFilter', className)} style={style}>
+                <div className='filter-chart'
+                    ref={c => this._filterChart = ReactDOM.findDOMNode(c)}
+                    style={{width, height: 60}} />
+                
+                <div className="filter-control-row" style={{height: 24}}>
+                    <div className="input-wrapper">
+                        <input name='val1' type='text' value={val1} onChange={e => this.onChange(e)} />
                     </div>
+                    <div className="input-wrapper">
+                        <input name='val2' type='text' value={val2} onChange={e => this.onChange(e)} />
+                    </div>
+                </div>    
+                
+                <div className='filter-control-row filter-select' style={{height: 20}}>
+                    <div className="input-wrapper">
+                        <select name='op1' value={op1} onChange={e => this.onChange(e)}>
+                            <option value='GE'>GE</option>
+                            <option value='GT'>GT</option>
+                            <option value='LE'>LE</option>
+                            <option value='LT'>LT</option>
+                            <option value='EQ'>EQ</option>
+                            <option value='NE'>NE</option>
+                        </select>
+                    </div>
+                    <div className="input-wrapper">
+                        <select name='op2' value={op2} onChange={e => this.onChange(e)}>
+                            <option value='LE'>LE</option>
+                            <option value='LT'>LT</option>
+                            <option value='GE'>GE</option>
+                            <option value='GT'>GT</option>
+                        </select>
+                    </div>
+                </div>
 
-                    <div className='filter-row' style={{flex: 1}}>
-                        <span>Save filter ...</span>
-                    </div>
-                    {suppressFooter !== true &&
-                    <div key='footer' className='footer' style={{height: 26}}>
-                        <button className='filter-done-button' onClick={this.props.onClose}>Done</button>
-                    </div>}
-                </FlexBox>
+                <div className='filter-row' style={{flex: 1}}>
+                    <span>Save filter ...</span>
+                </div>
             </FlexBox>        
 
         );

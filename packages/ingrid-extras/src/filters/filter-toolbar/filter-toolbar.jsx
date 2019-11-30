@@ -1,7 +1,7 @@
 import React from 'react';
 import './filter-toolbar.css';
 
-export default class SearchBar extends React.Component {
+export class SearchBar extends React.Component {
 
     constructor(props){
         super(props)
