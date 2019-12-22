@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+//const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const localPackages = [
   'data',
@@ -78,7 +78,7 @@ module.exports = (_, { mode = 'development' }) => {
         { from: '../../node_modules/@heswell/viewserver/dataTables/instruments/dataset.mjs', to: 'dataTables/instruments.js' },
         { from: '../../node_modules/@heswell/data-remote/dist/server-proxy', to: 'server-proxy' }
       ]),
-      // ...(production ? [new BundleAnalyzerPlugin()] : [])
+      //...(production ? [new BundleAnalyzerPlugin()] : [])
     ]
   });
 
