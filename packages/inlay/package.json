@@ -31,8 +31,7 @@
   "dependencies": {
     "d3-selection": "^1.4.0",
     "d3-transition": "^1.2.0",
-    "react": "^16.9.0",
-    "yoga-layout": "^1.9.3"
+    "stretch-layout": "^0.3.2"    
   },
   "peerDependencies": {
     "@heswell/utils": "^1.0.0"

@@ -5,8 +5,7 @@ import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import Container from './container';
-import {isLayout} from '../util/component-utils'
-import { registerClass } from '../componentRegistry';
+import { registerClass, isLayout } from '../component-registry';
 import {
     handleLayout as handleModelLayout,
     layout as applyLayout,
@@ -19,35 +18,33 @@ export default class FlexBox extends Container {
 
     render() {
 
-        var { style=NO_STYLE, isSelected, title } = this.props;
-        var { layout, header, style: {boxShadow} } = this.state.layoutModel;
+        var { isSelected, title } = this.props;
+        var { type, header, style } = this.state.layoutModel;
         if (this.state.layoutModel.$id === 'col-picker'){
             console.log(`FlexBox.render layout ${JSON.stringify(this.state.layoutModel,null,2)}`);
         }
-        const {backgroundColor, visibility} = style
-        var className = cx(
-            style.flexDirection === 'row' ? 'Terrace' : 'Tower',
-            this.props.className,
-            isSelected ? 'active' : null
-        );
+        // const {backgroundColor, visibility} = style
+        // var className = cx(
+        //     style.flexDirection === 'row' ? 'Terrace' : 'Tower',
+        //     this.props.className,
+        //     isSelected ? 'active' : null
+        // );
 
-        if (visibility === 'hidden') {
-            return null;
-        }
-        const position = this.isLayoutRoot()
-            ? 'relative'
-            : 'absolute'; 
+        // if (visibility === 'hidden') {
+        //     return null;
+        // }
+
+        const className = cx(type);
 
         return (
-            <div className={className} style={{ position, ...layout, backgroundColor, boxShadow }}>
+            <div className={className} style={style}>
                 {header &&
                      <ComponentHeader
                          title={`${title}`}
                          onMouseDown={e => this.handleMouseDown(e)}
-                         style={{height: header.height}}
+                         style={header.style}
                          menu={header.menu} />
                 }
-            
                 {this.renderFlexibleChildren()}
             </div>
         );
@@ -152,8 +149,8 @@ export default class FlexBox extends Container {
     }
 
     getManagedDimension() {
-        var { style: { flexDirection } } = this.state.layoutModel;
-        return flexDirection === 'row' ? 'width' : 'height';
+        var { layoutStyle: { flexDirection } } = this.state.layoutModel;
+        return flexDirection === 1 ? 'height' : 'width';
     }
 
     getDragPermission(component) {
@@ -189,7 +186,7 @@ export default class FlexBox extends Container {
         const [idx1, , idx2] = this.splitChildren;
         const dim = this.getManagedDimension();
         let layoutModel = this.state.layoutModel;
-        const measurements = layoutModel.children.map(child => child.layout[dim]);
+        const measurements = layoutModel.children.map(child => child.style[dim]);
         measurements[idx1] += distance;
         measurements[idx2] -= distance;
         const RESIZE = 'resize';

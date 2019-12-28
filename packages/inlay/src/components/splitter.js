@@ -13,8 +13,7 @@ export default class Splitter extends React.Component {
 
     render() {
 
-        const { layout } = this.props.layoutModel
-        var { top, left, width, height } = layout;
+        const { style } = this.props.layoutModel
 
         // onsole.log(`%c     Splitter ${top},${left},${width},${height}`,`background-color:brown;color:lime;`);
 
@@ -23,7 +22,7 @@ export default class Splitter extends React.Component {
             this.props.className
         );
 
-        var style = { position: 'absolute', top, left, width, height, cursor: this.props.cursor };
+        // var style = { position: 'absolute', top, left, width, height, cursor: this.props.cursor };
 
         return <div className={className} style={style} />
     }

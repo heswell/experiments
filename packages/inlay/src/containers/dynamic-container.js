@@ -2,9 +2,8 @@ import React from 'react';
 import Container from './container';
 import LayoutItem from './layout-item';
 import { DragContainer } from '../drag-drop/draggable';
-import { renderDynamicLayout } from '../util/componentFromLayout';
-import {isLayout} from '../util/component-utils'
-import { registerClass } from '../componentRegistry';
+import { renderDynamicLayout } from '../util/component-from-layout-json';
+import { registerClass, isLayout } from '../component-registry';
 
 export default class DynamicContainer extends Container {
 
@@ -30,9 +29,9 @@ export default class DynamicContainer extends Container {
         props.key = props.id = layoutModel.$id;
 
         if (isLayout(layoutModel.type)) {
-            return this.renderFromLayout(this, props, layoutModel);
+            return renderDynamicLayout(this, props, layoutModel);
         } else {
-            return <LayoutItem {...props} layout={layoutModel}>{this.renderFromLayout(this, props, layoutModel)}</LayoutItem>;
+            return <LayoutItem {...props} layout={layoutModel}>{renderDynamicLayout(this, props, layoutModel)}</LayoutItem>;
         }
     }
 
@@ -40,20 +39,6 @@ export default class DynamicContainer extends Container {
         return {
             dragging: -1
         };
-    }
-
-    // not currently called from FlexBox, but might need to be
-    // routinely called by top-level Container of Application
-    renderFromLayout(element, props, layout) {
-        return renderDynamicLayout(element, props, layout);
-    }
-
-    getLayoutModelChildren() {
-        if (this.props.contentModel) {
-            return [this.props.contentModel];
-        } else {
-            return super.getLayoutModelChildren();
-        }
     }
 
     drop(component, dropTarget) {

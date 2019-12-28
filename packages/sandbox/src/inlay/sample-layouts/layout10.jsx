@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { FlexBox, Component } from '@heswell/inlay';
 import ConfigurableLayout from '../configurable-layout.jsx';
 
-export default (width = 500, height = 400) => {
+export default (width = 820, height = 800) => {
 
   const [selectedPos, setSelectedPos] = useState(null)
 

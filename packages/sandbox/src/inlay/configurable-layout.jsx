@@ -62,7 +62,7 @@ export default class ConfigurableLayout extends React.Component {
 
         return (
         <div style={{width: 820, height: 800, position: 'relative'}}>
-            <Surface width={820} height={800} onLayoutModel={this.storeLayoutModel} layoutModel={layoutModel}>
+            <Surface style={{width: 820, height:800}} onLayoutModel={this.storeLayoutModel} layoutModel={layoutModel}>
                 {this.props.children}
 
                 <LayoutTreeViewer

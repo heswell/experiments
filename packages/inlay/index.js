@@ -11,4 +11,4 @@ export {default as PlaceHolder} from './src/components/place-holder/place-holder
 export * from './src/model/pathUtils';
 export * from './src/model/layoutModel';
 export * from './src/model/layoutUtils';
-export {registerClass} from './src/componentRegistry';
+export {registerClass} from './src/component-registry';

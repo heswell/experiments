@@ -4,7 +4,7 @@ import cx from 'classnames';
 import {uuid} from '@heswell/utils';
 
 import Surface from '../containers/surface';
-import '../components/ComponentIcon';
+import '../components/component-icon';
 import {followPath} from '../model/index';
 import {
     switchTab,
@@ -160,7 +160,6 @@ export default class Application extends React.Component {
     handleLayout(command, options) {
 
         if (command === 'dialog'){
-            // const dialog = componentFromLayout(layout(options.component));
             const {dialogs} = this.state;	
             this.setState({
                 dialogs: dialogs.concat(options.component)

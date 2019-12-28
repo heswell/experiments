@@ -151,13 +151,13 @@ export default class LayoutTreeViewer extends React.Component {
 
     render() {
         const {currentNode, zoomNode, zoomDirection, trail, selectedNode} = this.state;
-        const {width, height, style=NO_STYLE,tree=null} = this.props;
+        const {style=NO_STYLE,tree=null} = this.props;
         const isRoot = currentNode === tree;
         if (tree === null){
-            return <div className='LayoutTreeViewer' style={{...style, width, height}} />;
+            return <div className='LayoutTreeViewer' style={style} />;
         }
         return (
-            <div className='LayoutTreeViewer' style={{width, height}}>
+            <div className='LayoutTreeViewer' style={style}>
                 <div className='parent-row'>
                     <Tabs trail={trail} onNavigate={this.slideBack} onSelect={this.selectNode} selectedNode={selectedNode}/>
                 </div>

@@ -1,69 +1,8 @@
-import React from 'react';
 import {uuid} from '@heswell/utils';
 import { followPath, followPathToParent, nextStep } from './pathUtils';
-import { computeLayout as computeLayoutYoga, DEFAULT_HEADER_HEIGHT } from './layoutUtils';
-import { typeOf, isLayout } from '../util/component-utils';
+import { computeLayout as computeLayoutYoga, printLayout } from './layoutUtils';
 
 const EMPTY_OBJECT = {};
-
-const DEFAULT_HEADER_SPEC = {
-    height: DEFAULT_HEADER_HEIGHT,
-    menu: true
-}
-
-//TODO components should be able to register props here
-const LayoutProps = {
-	resizeable: true,
-	header: DEFAULT_HEADER_SPEC,
-	title: true,
-	active: true,
-	tabstripHeight: true,
-	dragStyle: true // still used ?
-}
-
-function layoutProps({props}){
-    const results = {};
-    let layoutProp;
-	Object.entries(props).forEach(([key, value]) => {
-			if (layoutProp = LayoutProps[key]){
-                if (layoutProp === true){
-                    results[key] = value;
-                } else if (value === true){
-                    results[key] = {...layoutProp};
-                } else {
-                    results[key] = {
-                        ...layoutProp,
-                        ...value
-                    };
-                }
-			}
-	})
-	return results;
-}
-
-export const getLayoutModel = (component) => ({
-	type: typeOf(component),
-	$id: component.props.id || uuid(),
-	...layoutProps(component),
-    style: component.props.style,
-    layout: null,
-    yogaNode: null,
-	children: isLayout(component) ? getLayoutModelChildren(component) : []
-})
-
-function getLayoutModelChildren(component){
-	var {children, contentModel=null} = component.props;
-	// TODO don't recurse into children of non-layout
-	if (React.isValidElement(children)){
-			return [getLayoutModel(children)];
-	} else if (Array.isArray(children)){
-			return children.filter(child => child).map(child => getLayoutModel(child));
-	} else if (contentModel !== null){
-			return [contentModel];
-	} else {
-			return []; // is this safe ?
-	}
-}
 
 export function containerOf(layout, target) {
 
@@ -146,26 +85,11 @@ export function layout(model, position = {}, path = '0', visibility = 'visible',
         }
     }
 
-    //TODO how do we make this model pluggable
 
-    switch (model.type) {
-    case 'FlexBox': return flexLayout(m, path, top, left, width, height, visibility, active);
-    case 'TabbedContainer': return flexLayout(m, path, top, left, width, height, visibility, active);
-    case 'Surface': return flexLayout(m, path, top, left, width, height, visibility, active);
-    default: return flexLayout(m, path, top, left, width, height, visibility, active);
+    if (typeof active === 'number' && active !== m.isActive){
+        m = {...m,active};
     }
-
-}
-
-function flexLayout(model, path, top, left, width, height, visibility, active) {
-
-    if (typeof active === 'number' && active !== model.isActive){
-        model = {
-            ...model,
-            active
-        }
-    }
-    return computeLayoutYoga(model, width, height, top, left, path);
+    return computeLayoutYoga(m, width, height, top, left, path);
 }
 
 function switchTab(layoutModel, { path, nextIdx }) {
@@ -411,26 +335,37 @@ function resizeLayout(model, { path, measurements, dimension }) {
     const position = dimension === 'width' ? 'left' : 'top';
     let shift = 0;
 
-    const resizedTarget = layout({
+    console.log(`resizeLayout target = ${target.type} ${path} dimension=${dimension} measureemts ${measurements}`)
+    printLayout(target)
+
+    // we are going to call stretchLayout on model, so we need to adjust flexBasis in the layoutStyle
+    const manualLayout = {
         ...model,
         children: model.children.map((child,i) => {
-            const {layout} = child;
+            const {style} = child;
             const measurement = measurements[i];
-            const { [dimension]: dim } = layout;
+            const { [dimension]: dim } = style;
             if (dim === measurement && shift === 0) {
                 return child;
             } else {
-                const newLayout = { ...layout, [dimension]: measurement, [position]: layout[position] + shift };
+                const newStyle = { ...style, [dimension]: measurement, [position]: layout[position] + shift };
                 shift += (measurement - dim);
                 return {
                     ...child,
-                    layout: newLayout
+                    style: newStyle
                 };
             }
         })
-    }, model.layout, model.$path);
+    };
 
-    return replaceChild(model, target, resizedTarget);
+    printLayout(manualLayout)
+
+
+    // const resizedTarget = layout(manualLayout, model.layout, model.$path);
+
+    // return replaceChild(model, target, resizedTarget);
+
+    return model;
 
 }
 

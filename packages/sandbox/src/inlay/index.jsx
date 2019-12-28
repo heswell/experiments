@@ -43,10 +43,40 @@ const SampleLayout = ({ sample, width, height }) => {
 
 }
 
+import('stretch-layout').then((stretch) => {
 
+  ReactDOM.render(
+    <>
+      <SampleLayout sample={13} />
+    </>,
+    document.getElementById('root')
+  );
 
-ReactDOM.render(
-  <>
-    <SampleLayout sample={6} />
-  </>,
-  document.getElementById('root'));
+  
+//   const { Allocator, Node, Display, AlignItems } = stretch;
+//   const allocator = new Allocator();
+ 
+//   const rootNode = new Node(allocator, {width: 600, height: 300, display: Display.Flex, alignItems: AlignItems.Stretch});
+
+//   const childNodes = [
+//     new Node(allocator, {flexShrink:1, flexGrow:1, flexBasis: 'auto'}),
+//     new Node(allocator, {flexShrink:1, flexGrow:1, flexBasis: 'auto'})
+//   ]
+//   rootNode.addChild(childNodes[0]);
+//   rootNode.addChild(childNodes[1]);
+
+//   const computedLayout = rootNode.computeLayout();
+ 
+//   logLayout(computedLayout)
+
+// })
+
+// function logLayout(computedLayout){
+//   const {x, y, width, height, childCount} = computedLayout;
+//   console.log(`x:${x}, y:${y}, width:${width}, height:${height}`);
+
+//   for (let i=0;i<childCount; i++) {
+//       logLayout(computedLayout.child(i));
+//   };
+
+});

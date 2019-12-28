@@ -4,7 +4,7 @@ import cx from 'classnames';
 import Tabstrip, {Tab} from '../components/tabstrip';
 import LayoutItem from './layout-item';
 import Container from './container';
-import {registerClass} from '../componentRegistry';
+import {registerClass} from '../component-registry';
 import {layout as applyLayout} from '../model/index';
 
 const DEFAULT_TABSTRIP_HEIGHT = 34;
@@ -17,9 +17,9 @@ export default class TabbedContainer extends Container {
     }
 
     render(){
-        var {style, tabstripHeight, children} = this.props;
+        var {tabstripHeight, children} = this.props;
         const {layoutModel} = this.state;
-        var {$id, $path, layout, $position=layout, active} = layoutModel;
+        var {$id, style, active} = layoutModel;
 
         // Don't allow either the tabs or the tabstrip itself to be dragged unless it is inside
         // the DragZone. We might further config-enable this eg. allow tabs but not the tabstrip
@@ -37,10 +37,10 @@ export default class TabbedContainer extends Container {
         );
 
         return (
-            <div id={$id} className={className} style={{...style,position: 'absolute',...$position}}>
+            <div id={$id} className={className} style={style}>
                 <Tabstrip className='header'
                     ref={component => this.tabstrip = component}
-                    style={{position: 'absolute',top: 0,left: 0, width: $position.width, height: tabstripHeight}}
+                    style={{position: 'absolute',top: 0,left: 0, width: style.width, height: 26}}
                     draggable={isDraggable}
                     selected={active}
                     dragging={this.state.dragging}

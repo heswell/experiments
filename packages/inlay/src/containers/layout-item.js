@@ -5,15 +5,9 @@ import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { remove as removeFromLayout } from '../redux/actions';
 import { layout as applyLayout } from '../model/index';
-import {getLayoutModel} from '../model/layoutModel';
+import {getLayoutModel} from '../model/layout-json';
 
 import './layout-item.css';
-
-// fixed style values
-const position = 'absolute';
-const border = 0;
-const padding = 0;
-const margin = 0;
 
 export default class LayoutItem extends React.Component {
 
@@ -40,12 +34,17 @@ export default class LayoutItem extends React.Component {
 
         const {
             header,
-            style: {backgroundColor, boxShadow}, 
-            layout,
-            children: [
-                {layout: {top,left,width,height}}
-            ]
+            style,
+            children: [{style: innerStyle}]
         } = this.state.layoutModel;
+        // const {
+        //     header,
+        //     style: {backgroundColor, boxShadow}, 
+        //     layout,
+        //     children: [
+        //         {layout: {top,left,width,height}}
+        //     ]
+        // } = this.state.layoutModel;
 
         const className = cx(
             'LayoutItem', {
@@ -56,15 +55,13 @@ export default class LayoutItem extends React.Component {
             }
         );
 
-        const style = { position, border, padding, margin, top, left, width, height };
-
         return (
             <div className={className} ref={this.el}
-                style={{ position, backgroundColor, boxShadow, ...layout }} >
+                style={style} >
                 {header &&
                     <ComponentHeader
                         title={`${title}`}
-                        style={{ height: header.height }}
+                        style={header.style}
                         menu={header.menu}
                         onMouseDown={e => this.handleMousedown(e)}
                         onAction={(key, opts) => this.handleAction(key, opts)}
@@ -72,13 +69,11 @@ export default class LayoutItem extends React.Component {
                 }
 
                 {component.type === 'div'
-                    ? React.cloneElement(component, { style })
+                    ? React.cloneElement(component, { style: innerStyle })
 
                     : React.cloneElement(component, {
                         ...props,
-                        style, // we may need to selectively merge style attributes from props
-                        width, // are not the values in style enough ?
-                        height,
+                        style: innerStyle, // we may need to selectively merge style attributes from props
                         onLayout: this.handleLayout // which component supports this ?
                     })
                 }

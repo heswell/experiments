@@ -6,9 +6,9 @@
 // import './ingrid/remote/viewserver-multiple.jsx';
 
 /* Local Grid */
-import './ingrid/local/index.jsx';
+// import './ingrid/local/index.jsx';
 
-// import './inlay/index.jsx';
+import './inlay/index.jsx';
 
 /* Ingrid Extras */
 // import './ingrid-extras/set-filter-standalone';

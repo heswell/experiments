@@ -1,6 +1,6 @@
 import React from 'react';
-import {registerClass} from '../componentRegistry';
-import {getLayoutModel} from '../model/layoutModel';
+import {registerClass} from '../component-registry';
+import {getLayoutModel} from '../model/layout-json';
 import LayoutItem from './layout-item';
 import {Draggable} from '../drag-drop/draggable';
 import {layout as applyLayout, handleLayout,followPath} from '../model/index';
@@ -27,13 +27,10 @@ export default class Container extends React.Component {
     }
 
     render(){
-        var {style} = this.props;
-        var layoutModel = this.getLayoutModel();
-        var {layout, $position=layout} = layoutModel;
-
+        var {type, style, children} = this.getLayoutModel();
         return (
-            <div className={layoutModel.type} style={{...style, position: 'absolute', ...$position}}>
-                {layoutModel.children.map((child,idx) => this.renderChild(child,idx))}
+            <div className={type} style={style}>
+                {children.map((child,idx) => this.renderChild(child,idx))}
             </div>
         );
     }

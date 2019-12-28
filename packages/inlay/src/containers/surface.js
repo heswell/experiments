@@ -3,10 +3,9 @@ import cx from 'classnames';
 import {uuid} from '@heswell/utils';
 import LayoutItem from './layout-item';
 import DynamicContainer from './dynamic-container';
-import {isLayout} from '../util/component-utils';
 import { handleLayout } from '../model/index';
-import {componentFromLayout} from '../util/componentFromLayout';
-import { registerClass } from '../componentRegistry';
+import {componentFromLayout} from '../util/component-from-layout-json';
+import { registerClass, isLayout } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
 
 

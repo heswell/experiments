@@ -1,7 +1,12 @@
 import React from 'react';
-import yoga, { Node } from 'yoga-layout';
-import {TABBED_CONTAINER, SURFACE} from './layoutTypes'
-import { isContainer } from '../componentRegistry';
+import {initStretch, stretchLayout, stretchStyle, extendLayout} from './stretch';
+
+let ready = false;
+
+import('stretch-layout').then(async (stretch) => {
+    initStretch(stretch);
+    ready = true;
+});
 
 const NO_CHILDREN = [];
 const NO_STYLE = {}
@@ -10,16 +15,6 @@ const CSS_MEASURE = `^(?:${CSS_DIGIT}(?:\\s${CSS_DIGIT}(?:\\s${CSS_DIGIT}(?:\\s$
 const CSS_REX = new RegExp(CSS_MEASURE)
 const BORDER_REX = /^(?:(\d+)(?:px)\ssolid\s([a-zA-Z,0-9().]+))$/;
 const ROW = 'row';
-const COLUMN = 'column';
-const FLEX_DIRECTION = {
-    [ROW]: yoga.FLEX_DIRECTION_ROW,
-    [COLUMN]: yoga.FLEX_DIRECTION_COLUMN
-}
-const LAYOUT = 'layout';
-const FLEXBOX = 'FlexBox';
-const SPLITTER = 'Splitter';
-
-export const DEFAULT_HEADER_HEIGHT = 26;
 
 const BORDER_STYLES = {
     border: true,
@@ -68,65 +63,46 @@ export function stripLayout(model){
             : undefined
     }
 }
-export function computeLayout(model, width, height, top=0, left=0, path){
-    // transform css (padding, borders etc) to canonical form
-    // insert splitters 
-    const tree = createTree(model, path || model.$path);
-    
-    // attach yoga node to each tree model node, apply css via yoga api calls on nodes
-    // the top-level node contains a parallel hierarchy
-    const layoutModel = createYogaTree(tree);
 
-    // call calculate on top-level yoga node
-    layoutModel.yogaNode.calculateLayout(width, height, yoga.DIRECTION_LTR);
-
-     const rootYogaNode = layoutModel.yogaNode;    
-    // for each model node, set layout by calling getComputedLAyout on attached node
-    // TODO can we remove the node here ?
-    setLayout(layoutModel)
-
-    // free references
-    rootYogaNode.freeRecursive();
-
-    if (left !== 0){
-        layoutModel.layout.left += left
+function defaultDimension(model, dimension){
+    if (model && model.style){
+        return model.style[dimension] || 'auto';
+    } else {
+        return 'auto';
     }
-    if (top !== 0){
-        layoutModel.layout.top += top
-    }
-    return layoutModel;
 }
 
-function createTree(model, path='0'){
-    return {
+
+export function computeLayout(
+    model, 
+    width=defaultDimension(model,'width'), 
+    height=defaultDimension(model,'height'), 
+    top=0, 
+    left=0, 
+    path){
+
+    if (!ready){
+        throw(`NOT READY TO LAYOUT YET`)
+    }
+    const layoutModel = extendLayout({
         ...model,
-        $path: path,
-        // TODO normalize style
-        // TODO do not override the existing styles
-        style: normalizeLayoutStyles(model.style),
-        // style: expandStyle(model.style),
-        children: expandChildren(model, path)
-    }
-}
+        style: {
+            ...model.style,
+            width,
+            height    
+        }
+    }, path || model.$path);
+    stretchLayout(layoutModel);
+   
+    // if (left !== 0){
+    //     layoutModel.layout.left += left
+    // }
+    // if (top !== 0){
+    //     layoutModel.layout.top += top
+    // }
 
-function expandChildren({type, children}, path){
-    if (children){
-        var splitters = type === FLEXBOX
-            ? getSplitterPositions(children)
-            : NO_CHILDREN;
-
-        return children.reduce((list, child, i) => {
-            if (splitters[i]) {
-                list.push({
-                    type: 'Splitter',
-                    $path: `${path}.${list.length}`,
-                    style: {flex: '0 0 6px', backgroundColor: 'black'}
-                });
-            }
-            list.push(createTree(child, `${path}.${list.length}`));
-            return list;
-        },[])
-    }
+    printLayout(layoutModel);
+    return layoutModel;
 }
 
 const NO_BORDERS = [0,null];
@@ -256,170 +232,9 @@ function normalizeBorderStyle(style=NO_STYLE){
     }
 }
 
-const DEFAULT_HEADER = {
-    height: DEFAULT_HEADER_HEIGHT, 
-    style: {backgroundColor: 'brown'}
-}
-// we may mutate the tree in here
-function createYogaTree(model, parent, idx){
-
-    let {style=NO_STYLE, children=NO_CHILDREN} = model;
-    const {type, layout=null} = model;
-    const {flexDirection=null, left=null, top=null, width=null, height=null, flex=null} = style;
-    const parentIsTabbedContainer = parent && parent.type === TABBED_CONTAINER;
-    const parentIsSurface = parent && parent.type === SURFACE;
-    const header = model.header === true
-        ? DEFAULT_HEADER
-        : typeof model.header === 'object'
-            ? {...DEFAULT_HEADER, ...model.header}
-            : null
-
-    if (type !== LAYOUT && type !== SPLITTER && children.length === 0 && !isContainer(type)){
-        style = {
-            ...style,
-            display: 'flex',
-            flexDirection: 'column'
-        }
-        // children has to be created inline as it will be mutated by yoga
-        model.children = children = [{type: LAYOUT, style: {flex: 1}}]
-    } else if (children.length === 1 && children[0].type === LAYOUT){
-        style = {
-            ...style,
-            display: 'flex',
-            flexDirection: 'column'
-        }
-        // children has to be created inline as it will be mutated by yoga
-        model.children = children = [{type: LAYOUT, style: {flex: 1}}]
-    }
-
-    let node = Node.create();
-
-    if (header){
-        //TODO we need to have normalized the css before we do this, otw a padding string value will ignore the paddingtop
-        style = increaseCSSMeasure(style, 'padding', header.height, 'top');
-    }
-
-    setCSSMeasure(node, style, 'margin');
-    setCSSMeasure(node, style, 'border');
-    setCSSMeasure(node, style, 'padding');
-
-    if (flexDirection !== null){
-        node.setDisplay(yoga.DISPLAY_FLEX);
-        node.setFlexDirection(FLEX_DIRECTION[flexDirection]);
-        node.setAlignItems(yoga.ALIGN_STRETCH); //TODO allow this to be overridden
-    } else if (type === TABBED_CONTAINER){
-        node.setDisplay(yoga.DISPLAY_FLEX);
-        node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
-        node.setAlignItems(yoga.ALIGN_STRETCH);
-    }
-
-    if (parentIsTabbedContainer){
-        const {active=0} = parent;
-        if (idx !== active){
-            node.setDisplay(yoga.DISPLAY_NONE);
-        } else {
-            node.setFlexGrow(1);
-            node.setFlexShrink(1);
-            node.setFlexBasis(0);
-            node.setMargin(yoga.EDGE_TOP,34)
-        }
-    } /*else if (parentHasHeader){
-        node.setMargin(yoga.EDGE_TOP,32); // how do we determine the header height
-    }*/
-
-    if (layout !== null && !parentIsSurface){
-        // if we already have a layout, we reapply it, by transforming it into a style specification. This allows us to
-        // manipulate the layout outside and preserve changes when we resize. If size has not changed, there is no need
-        // to re-compute layout
-        const {width: w, height: h} = layout;
-        if (model.type === 'Splitter'){
-            node.setFlexGrow(0);
-            node.setFlexShrink(0);
-            node.setFlexBasis(6);
-        } else {
-            node.setFlexGrow(1);
-            node.setFlexShrink(1);
-            node.setFlexBasis(getFlexDirection(parent) === ROW ? w : h); // need to know parent orientation
-        }
-    } else if (flex !== null){
-        // TODO how do we default the flex values
-        if (typeof flex === 'string'){
-            const [flexGrow, flexShrink, flexBasis] = flex.split(' ');
-            node.setFlexGrow(parseInt(flexGrow,0));
-            node.setFlexShrink(parseInt(flexShrink,0));
-            node.setFlexBasis(parseInt(flexBasis,0));
-        } else if (typeof flex === 'number'){
-            node.setFlexGrow(flex);
-            node.setFlexShrink(flex);
-            node.setFlexBasis(0);
-        }
-    } else {
-        if (parentIsSurface){
-            node.setPositionType(yoga.POSITION_TYPE_ABSOLUTE);
-        }
-        if (top !== null && left !== null){
-            node.setPosition(yoga.EDGE_TOP, top);
-        }
-        if (left !== null){
-            node.setPosition(yoga.EDGE_START, left);
-        }
-        if (width !== null){
-            node.setWidth(width)
-        }
-        if (height !== null){
-            node.setHeight(height)
-        }
-    }
-
-    children.forEach((child,i) => {
-        const expandedChild = createYogaTree(child, model, i);
-        node.insertChild(expandedChild.yogaNode,i);
-    })
-
-    model.yogaNode = node
-    return model;
-}
-
 function getFlexDirection(model){
     const style = (model && model.style) || NO_STYLE;
     return style.flexDirection || ROW;
-}
-
-function getSplitterPositions(children) {
-
-    var ret = [];
-
-    for (var i = 1; i < children.length; i++) {
-
-        var thisFlexible = isFlexible(children[i]);
-        var lastFlexible = isFlexible(children[i - 1]);
-
-        if (isSplitter(children[i]) || isSplitter(children[i - 1])) {
-            ret[i] = false;
-        } else if (thisFlexible && lastFlexible) {
-            ret[i] = true;
-        } else if (!(thisFlexible || lastFlexible)) {
-            ret[i] = false;
-        } else if (lastFlexible && children.slice(i + 1).some(isFlexible)) {
-            ret[i] = true;
-        } else if (thisFlexible && children.slice(0, i).some(isFlexible)) {
-            ret[i] = true;
-        } else {
-            ret[i] = false;
-        }
-
-    }
-
-    return ret;
-
-}
-
-function isSplitter(model){
-    return model.type === 'Splitter';
-}
-
-function isFlexible(model){
-    return model.resizeable;
 }
 
 export function elementsFromLayout(model){
@@ -430,17 +245,32 @@ export function elementsFromLayout(model){
 
 export function setLayout(model){
     // we should call this outputStyle or layoutStyle?
-    const {right, bottom, ...layout} = model.yogaNode.getComputedLayout();
-    const {borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth} = model.style;
-    layout.paddingTop = borderTopWidth || undefined; 
-    layout.paddingRight = borderRightWidth || undefined; 
-    layout.paddingBottom =borderBottomWidth || undefined; 
-    layout.paddingLeft = borderLeftWidth || undefined; 
+    const yogaLayout = model.yogaNode.computeLayout();
+    console.groupCollapsed('assignLayout')
+    assignLayout(model, yogaLayout)
+    console.groupEnd('assignLayout')
+    const {left, top, width, height} = yogaLayout;
+    // const {borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth} = model.style;
 
-    model.layout = layout;
-    model.children && model.children.forEach(child => setLayout(child));
-    model.yogaNode = null;
+    // layout.paddingTop = borderTopWidth || undefined; 
+    // layout.paddingRight = borderRightWidth || undefined; 
+    // layout.paddingBottom =borderBottomWidth || undefined; 
+    // layout.paddingLeft = borderLeftWidth || undefined; 
 }
+
+function assignLayout(model, yogaLayout){
+    const {x, y, width, height} = yogaLayout;
+    model.layout = {left:x, top:y, width, height};
+    console.log(`model.layout ${model.type}#${model.$id || ''}  ${JSON.stringify(model.layout)}`)
+
+    model.children && model.children.forEach((child, i) => {
+        assignLayout(child, yogaLayout.child(i));
+    });
+
+    // call free ?
+    model.yogaNode = null;
+
+};
 
 const CSS_MEASURE_SETTERS = {
     'margin': 'setMargin',
@@ -480,7 +310,7 @@ function setCSSMeasure(node, style, measure){
     const value = style[measure];
 
     if (typeof value === 'number'){
-        node[setMeasure](yoga.EDGE_ALL, value);
+        // node[setMeasure](yoga.EDGE_ALL, value);
     } else if (typeof value === 'string'){
         const match = CSS_REX.exec(value)
         if (match === null){
@@ -489,31 +319,51 @@ function setCSSMeasure(node, style, measure){
             const [, pos1, pos2, pos3, pos4] = match;
             const pos123 = pos1 && pos2 && pos3
             if (pos123 && pos4){
-                node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
-                node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
-                node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos3,10));
-                node[setMeasure](yoga.EDGE_START, parseInt(pos4,10));
+                // node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
+                // node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
+                // node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos3,10));
+                // node[setMeasure](yoga.EDGE_START, parseInt(pos4,10));
             } else if (pos123){
-                node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
-                node[setMeasure](yoga.EDGE_START, parseInt(pos2,10));
-                node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
-                node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos3,10));
+                // node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
+                // node[setMeasure](yoga.EDGE_START, parseInt(pos2,10));
+                // node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
+                // node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos3,10));
             } else if (pos1 && pos2){
-                node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
-                node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos1,10));
-                node[setMeasure](yoga.EDGE_START, parseInt(pos2,10));
-                node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
+                // node[setMeasure](yoga.EDGE_TOP, parseInt(pos1,10));
+                // node[setMeasure](yoga.EDGE_BOTTOM, parseInt(pos1,10));
+                // node[setMeasure](yoga.EDGE_START, parseInt(pos2,10));
+                // node[setMeasure](yoga.EDGE_END, parseInt(pos2,10));
             } else {
-                node[setMeasure](yoga.EDGE_ALL, parseInt(pos1,10));
+                // node[setMeasure](yoga.EDGE_ALL, parseInt(pos1,10));
             }
         }
     } else {
         const {measureTop, measureRight, measureBottom, measureLeft} = CSS_MEASURES[measure];
-        if (style[measureTop]) node[setMeasure](yoga.EDGE_TOP, style[measureTop]);
-        if (style[measureRight]) node[setMeasure](yoga.EDGE_END, style[measureRight]);
-        if (style[measureBottom]) node[setMeasure](yoga.EDGE_BOTTOM, style[measureBottom]);
-        if (style[measureLeft]) node[setMeasure](yoga.EDGE_START, style[measureLeft]);
+        // if (style[measureTop]) node[setMeasure](yoga.EDGE_TOP, style[measureTop]);
+        // if (style[measureRight]) node[setMeasure](yoga.EDGE_END, style[measureRight]);
+        // if (style[measureBottom]) node[setMeasure](yoga.EDGE_BOTTOM, style[measureBottom]);
+        // if (style[measureLeft]) node[setMeasure](yoga.EDGE_START, style[measureLeft]);
 
     }
 
+}
+
+
+export function printLayout(config){
+
+    console.log(`%c${JSON.stringify(logFriendlyLayout(config),null,2)}`, 'color: blue;font-weight:bold;')
+}
+
+function logFriendlyLayout(config){
+    const {type,$id,style,title, header,layoutStyle, visualStyle, children, yogaNode, ...rest} = config;
+    return {
+        type,
+        $id,
+        title,
+        header,
+        style,
+        ...rest,
+        layoutStyle,
+        children: children ? children.map(logFriendlyLayout) : undefined
+    };
 }
