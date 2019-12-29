@@ -19,7 +19,7 @@ export default class FlexBox extends Container {
     render() {
 
         var { isSelected, title } = this.props;
-        var { type, header, style } = this.state.layoutModel;
+        var { type, header, computedStyle: style } = this.state.layoutModel;
         if (this.state.layoutModel.$id === 'col-picker'){
             console.log(`FlexBox.render layout ${JSON.stringify(this.state.layoutModel,null,2)}`);
         }
@@ -186,16 +186,14 @@ export default class FlexBox extends Container {
         const [idx1, , idx2] = this.splitChildren;
         const dim = this.getManagedDimension();
         let layoutModel = this.state.layoutModel;
-        const measurements = layoutModel.children.map(child => child.style[dim]);
+        const measurements = layoutModel.children.map(child => child.computedStyle[dim]);
         measurements[idx1] += distance;
         measurements[idx2] -= distance;
-        const RESIZE = 'resize';
         var options = {
             path: layoutModel.$path,
-            measurements,
-            dimension: dim
+            measurements
         };
-        layoutModel = handleModelLayout(layoutModel, RESIZE, options);
+        layoutModel = handleModelLayout(layoutModel, 'splitter-resize', options);
         this.setState({ layoutModel });
     }
 

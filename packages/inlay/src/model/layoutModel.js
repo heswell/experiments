@@ -1,6 +1,6 @@
 import {uuid} from '@heswell/utils';
 import { followPath, followPathToParent, nextStep } from './pathUtils';
-import { computeLayout as computeLayoutYoga, printLayout } from './layoutUtils';
+import { computeLayout, recomputeChildLayout } from './layoutUtils';
 
 const EMPTY_OBJECT = {};
 
@@ -24,8 +24,8 @@ export function containerOf(layout, target) {
 export function handleLayout(model, command, options) {
 
     // This is called during splitter resize to resize children of model
-    if (command === 'resize') {
-        return resizeLayout(model, options);
+    if (command === 'splitter-resize') {
+        return resizeFlexLayout(model, options);
     } else if (command === 'replace') {
         return replaceChild(model, options.targetNode, options.replacementNode);
     } else if (command === 'remove') {
@@ -89,7 +89,7 @@ export function layout(model, position = {}, path = '0', visibility = 'visible',
     if (typeof active === 'number' && active !== m.isActive){
         m = {...m,active};
     }
-    return computeLayoutYoga(m, width, height, top, left, path);
+    return computeLayout(m, width, height, top, left, path);
 }
 
 function switchTab(layoutModel, { path, nextIdx }) {
@@ -329,43 +329,36 @@ function wrap(model, source, target, pos) {
 
 }
 
-function resizeLayout(model, { path, measurements, dimension }) {
-
+function resizeFlexLayout(model, { path, measurements }) {
+    // is target always the same as model ?
     const target = followPath(model, path);
-    const position = dimension === 'width' ? 'left' : 'top';
-    let shift = 0;
 
-    console.log(`resizeLayout target = ${target.type} ${path} dimension=${dimension} measureemts ${measurements}`)
-    printLayout(target)
-
-    // we are going to call stretchLayout on model, so we need to adjust flexBasis in the layoutStyle
     const manualLayout = {
         ...model,
         children: model.children.map((child,i) => {
-            const {style} = child;
+            const {type, style: {flex, ...childStyle}, layoutStyle: {flexBasis, flexShrink, flexGrow} } = child;
             const measurement = measurements[i];
-            const { [dimension]: dim } = style;
-            if (dim === measurement && shift === 0) {
+            if (type === 'Splitter' || flexBasis === measurement){
                 return child;
             } else {
-                const newStyle = { ...style, [dimension]: measurement, [position]: layout[position] + shift };
-                shift += (measurement - dim);
                 return {
                     ...child,
-                    style: newStyle
-                };
+                    layoutStyle: {
+                        ...child.layoutStyle,
+                        flexBasis: measurement
+                    },
+                    style: {
+                        ...childStyle,
+                        flexBasis: measurement,
+                        flexShrink,
+                        flexGrow
+                    }
+                }                
             }
         })
     };
-
-    printLayout(manualLayout)
-
-
-    // const resizedTarget = layout(manualLayout, model.layout, model.$path);
-
-    // return replaceChild(model, target, resizedTarget);
-
-    return model;
+    const resizedTarget = recomputeChildLayout(manualLayout);
+    return replaceChild(model, target, resizedTarget);
 
 }
 
@@ -518,7 +511,7 @@ function replaceChild(model, child, replacement) {
         children[idx] = replaceChild(children[idx], child, replacement);
     }
 
-    return layout({...model, children}, model.layout, model.$path)
+    return layout({...model, children}, model.computedStyle, model.$path)
 }
 
 // Note: withTheGrain is not the negative of againstTheGrain - the difference lies in the 

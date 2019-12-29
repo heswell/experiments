@@ -69,7 +69,7 @@ export default class Application extends React.Component {
     render(){
 
         const {width, height, backgroundColor, dragging, hasError} = this.state;
-        const style = {position: 'absolute', top: 0, left: 0,width,height, backgroundColor};
+        const style = {position: 'absolute', top: 0, left: 0, width, height, backgroundColor};
         const className = cx('Application', this.props.className);
 
         if (width === undefined || height === undefined){

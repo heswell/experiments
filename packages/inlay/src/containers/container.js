@@ -27,7 +27,7 @@ export default class Container extends React.Component {
     }
 
     render(){
-        var {type, style, children} = this.getLayoutModel();
+        var {type, computedStyle: style, children} = this.getLayoutModel();
         return (
             <div className={type} style={style}>
                 {children.map((child,idx) => this.renderChild(child,idx))}

@@ -17,6 +17,7 @@ import Layout14 from './sample-layouts/layout14.jsx';
 import Layout15 from './sample-layouts/layout15.jsx';
 import Layout16 from './sample-layouts/layout16.jsx';
 import Layout17 from './sample-layouts/layout17.jsx';
+import Layout18 from './sample-layouts/layout18.jsx';
 
 const SampleLayout = ({ sample, width, height }) => {
 
@@ -38,6 +39,7 @@ const SampleLayout = ({ sample, width, height }) => {
     case 15: return Layout15(width, height);  /* Quad FlexBox, Flexbox shuffle */
     case 16: return Layout16(width, height);  /* Nested FlexBox */
     case 17: return <Layout17 width={width} height={height} />;  /* Layout Builder */
+    case 18: return Layout18(width, height);  /* Nested, nested FlexBox */
     default: return Layout1(width, height);
   }
 
@@ -47,7 +49,7 @@ import('stretch-layout').then((stretch) => {
 
   ReactDOM.render(
     <>
-      <SampleLayout sample={13} />
+      <SampleLayout sample={18} />
     </>,
     document.getElementById('root')
   );

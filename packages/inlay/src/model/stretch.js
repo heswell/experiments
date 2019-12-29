@@ -28,13 +28,12 @@ const stretchLoading = new Promise(resolve => import('stretch-layout').then(s =>
 export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
 
   // alow tabstrip to be specified, like header
-  const {style, header, ...rest} = config;
-  const [layoutStyle, visualStyle] = collectStyles(style, styleOverrides);
+  const [layoutStyle, visualStyle] = collectStyles(config.style, styleOverrides);
 
   const result = {
-    ...rest,
+    ...config,
     $path: path === null ? undefined : path,
-    header: extendHeader(header, layoutStyle),
+    header: extendHeader(config.header, layoutStyle),
     layoutStyle,
     visualStyle,
     children: expandChildren(config, path)
@@ -165,22 +164,30 @@ export function initStretch(stretchModule){
 export function stretchLayout(config){
   const node = stretchNode(config);
   const layout = node.computeLayout();
-  setStyles(config, layout);
+  node.free();
+  setComputedStyle(config, layout);
+  setChildStyles(config, layout);
 }
 
-function setStyles(config, layout){
+export function stretchLayoutChildren(config){
+  const {computedStyle, layoutStyle} = config;
+  const wrapper = {
+    layoutStyle: {
+      ...layoutStyle,
+      ...computedStyle
+    },
+    children: config.children
+  };
 
-  setStyle(config, layout);
+  const node = stretchNode(wrapper);
+  const layout = node.computeLayout();
+  node.free();
 
-  for (let i=0, count=layout.childCount;i<count;i++){
-    const childConfig = config.children[i]
-    setStyles(childConfig, layout.child(i));
-  }
-
+  setChildStyles(config, layout);
 }
 
-function setStyle(config, {x:left,y:top,width,height}){
-  config.style = {
+function setComputedStyle(config, {x:left,y:top,width,height}){
+  config.computedStyle = {
     ...config.visualStyle,
     position: 'absolute',
     left,
@@ -189,6 +196,15 @@ function setStyle(config, {x:left,y:top,width,height}){
     height
   };
 }
+
+function setChildStyles(config, layout){
+  for (let i=0, count=layout.childCount;i<count;i++){
+    const childConfig = config.children[i]
+    setComputedStyle(childConfig, layout.child(i));
+    setChildStyles(childConfig, layout.child(i));
+  }
+}
+
 
 function stretchNode({layoutStyle, children=ARRAY}){
   const node = new stretch.Node(allocator, layoutStyle);

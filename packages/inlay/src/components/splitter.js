@@ -13,7 +13,7 @@ export default class Splitter extends React.Component {
 
     render() {
 
-        const { style } = this.props.layoutModel
+        const { computedStyle: style } = this.props.layoutModel
 
         // onsole.log(`%c     Splitter ${top},${left},${width},${height}`,`background-color:brown;color:lime;`);
 

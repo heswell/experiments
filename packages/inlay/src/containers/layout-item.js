@@ -34,8 +34,8 @@ export default class LayoutItem extends React.Component {
 
         const {
             header,
-            style,
-            children: [{style: innerStyle}]
+            computedStyle: style,
+            children: [{computedStyle: innerStyle}]
         } = this.state.layoutModel;
         // const {
         //     header,

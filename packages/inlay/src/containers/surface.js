@@ -37,13 +37,13 @@ export default class Surface extends DynamicContainer {
             'Surface'
         );
 
-        const {layoutModel: {children=NO_CHILDREN}, draggedComponent} = this.state;
+        const {layoutModel: {computedStyle: style, children=NO_CHILDREN}, draggedComponent} = this.state;
         const childrenToRender = draggedComponent
             ? [...children, draggedComponent]
             : children
         
         return (
-            <div id={this.state.id} className={className} style={this.props.style}>
+            <div id={this.state.id} className={className} style={style}>
                 {
                     childrenToRender.map(
                         (child, idx) => this.renderChild(child, idx)

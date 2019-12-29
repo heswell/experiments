@@ -19,7 +19,7 @@ export default class TabbedContainer extends Container {
     render(){
         var {tabstripHeight, children} = this.props;
         const {layoutModel} = this.state;
-        var {$id, style, active} = layoutModel;
+        var {$id, computedStyle: style, active} = layoutModel;
 
         // Don't allow either the tabs or the tabstrip itself to be dragged unless it is inside
         // the DragZone. We might further config-enable this eg. allow tabs but not the tabstrip
