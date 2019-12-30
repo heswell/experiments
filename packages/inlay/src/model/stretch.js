@@ -27,7 +27,7 @@ const stretchLoading = new Promise(resolve => import('stretch-layout').then(s =>
 
 export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
 
-  // alow tabstrip to be specified, like header
+  // allow tabstrip to be specified, like header
   const [layoutStyle, visualStyle] = collectStyles(config.style, styleOverrides);
 
   const result = {

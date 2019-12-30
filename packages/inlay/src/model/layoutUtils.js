@@ -81,7 +81,7 @@ export function computeLayout(
     //     layoutModel.layout.top += top
     // }
 
-    // printLayout(layoutModel);
+    printLayout(layoutModel);
     return layoutModel;
 }
 

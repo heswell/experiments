@@ -190,6 +190,7 @@ export default class FlexBox extends Container {
         measurements[idx1] += distance;
         measurements[idx2] -= distance;
         var options = {
+            dim,
             path: layoutModel.$path,
             measurements
         };

@@ -92,21 +92,6 @@ export function layout(model, position = {}, path = '0', visibility = 'visible',
     return computeLayout(m, width, height, top, left, path);
 }
 
-function switchTab(layoutModel, { path, nextIdx }) {
-
-    var container = followPath(layoutModel, path);
-    // var content = container.children.slice();
-    // we need to set height of selected child, even if it is not needed for 
-    // rendering - children will inherit the value;
-    // content[nextIdx] = content[nextIdx].set({height: content[idx].height});
-    // content[idx] = content[idx].set({height:0});
-    var { $path, visibility='visible' } = container;
-    var newContainer = layout(container, container.layout, $path, visibility, false, nextIdx);
-
-    return replaceChild(layoutModel, container, newContainer)
-
-}
-
 function drop(layoutModel, options) {
 
     var { draggedComponent: source, dropTarget: { component: target, pos } } = options;
@@ -329,14 +314,25 @@ function wrap(model, source, target, pos) {
 
 }
 
-function resizeFlexLayout(model, { path, measurements }) {
+function switchTab(model, { path, nextIdx }) {
+    var target = followPath(model, path);
+    const manualLayout = {
+        ...target,
+        active: nextIdx
+    };
+    const resizedTarget = recomputeChildLayout(manualLayout);
+    return replaceChild(model, target, resizedTarget);
+}
+
+function resizeFlexLayout(model, { dim, path, measurements }) {
     // is target always the same as model ?
     const target = followPath(model, path);
 
     const manualLayout = {
         ...model,
         children: model.children.map((child,i) => {
-            const {type, style: {flex, ...childStyle}, layoutStyle: {flexBasis, flexShrink, flexGrow} } = child;
+            const {type, style: {flex, [dim]: _, ...childStyle}, layoutStyle: {[dim]: _1, ...childLayoutStyle } } = child;
+            const {flexBasis, flexShrink=1, flexGrow=1} = childLayoutStyle;
             const measurement = measurements[i];
             if (type === 'Splitter' || flexBasis === measurement){
                 return child;
@@ -344,7 +340,7 @@ function resizeFlexLayout(model, { path, measurements }) {
                 return {
                     ...child,
                     layoutStyle: {
-                        ...child.layoutStyle,
+                        ...childLayoutStyle,
                         flexBasis: measurement
                     },
                     style: {
@@ -357,6 +353,7 @@ function resizeFlexLayout(model, { path, measurements }) {
             }
         })
     };
+
     const resizedTarget = recomputeChildLayout(manualLayout);
     return replaceChild(model, target, resizedTarget);
 
@@ -511,6 +508,7 @@ function replaceChild(model, child, replacement) {
         children[idx] = replaceChild(children[idx], child, replacement);
     }
 
+    // TODO avoid this recursive call to layout as we unroll the stack
     return layout({...model, children}, model.computedStyle, model.$path)
 }
 
