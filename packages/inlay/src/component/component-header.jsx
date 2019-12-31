@@ -3,7 +3,7 @@ import './component-header.css';
 
 const NOOP = () => {}
 
-export default ({menu = true, fixed, minimized, style, title, onAction=NOOP, onMouseDown}) => {
+const  ComponentHeader = ({menu = true, fixed, minimized, style, title, onAction=NOOP, onMouseDown}) => {
     const menuClick = useCallback(e => onAction('menu', { left: e.clientX, top: e.clientY }),[onAction]);
     const mouseDown = e => e.stopPropagation();
     return (
@@ -19,5 +19,7 @@ export default ({menu = true, fixed, minimized, style, title, onAction=NOOP, onM
             )}
         </header>
     );
-}
+};
+
+export default ComponentHeader;
 

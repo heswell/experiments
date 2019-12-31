@@ -9,7 +9,7 @@ export default class Component extends React.Component {
 
     render() {
         const className = cx('Component');
-        const {children, id, flexible, onLayout, position, _style, onClick, ...props} = this.props;
+        const {children, id, flexible, onLayout, onClick, ...props} = this.props;
         return (
             <div className={className} style={this.props.style} onClick={onClick}>
                 {children &&
@@ -24,9 +24,6 @@ export default class Component extends React.Component {
 }
 
 Component.defaultProps = {
-    style: {},
-    position: {},
-    _style: {},
     onClick: () => {}
 }
 

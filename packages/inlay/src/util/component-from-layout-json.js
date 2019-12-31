@@ -46,7 +46,7 @@ function _componentFromLayout(layoutModel) {
         return null
     }
 
-    const { $id, $path, type, ...props } = layoutModel;
+    const { $id, type, props } = layoutModel;
     const [ReactType, reactBuiltIn] = getComponentType(type);
 
     let children;

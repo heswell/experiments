@@ -2,8 +2,6 @@ import {uuid} from '@heswell/utils';
 import { followPath, followPathToParent, nextStep } from './pathUtils';
 import { computeLayout, recomputeChildLayout } from './layoutUtils';
 
-const EMPTY_OBJECT = {};
-
 export function containerOf(layout, target) {
 
     if (target === layout) {
@@ -53,6 +51,7 @@ export function handleLayout(model, command, options) {
 }
 
 export function layout(model, position = {}, path = '0', visibility = 'visible', force = false, active) {
+    console.log(`%clayout for ${model.type} #${model.$path}`,'color:brown;font-weight:bold;')
 
     function firstNumber(n1, n2, n3) {
         return typeof n1 === 'number' ? Math.round(n1) : typeof n2 === 'number' ? n2 : n3;
@@ -402,19 +401,6 @@ function simpleClone(o1, o2, unversioned) {
 
 }
 
-function clone(model, overrides, unversioned) {
-
-    var { /*type, $version,*/ style: s1, ...rest1 } = model;
-    var { style: s2 = EMPTY_OBJECT, ...rest2 } = overrides;
-
-    if (noEffectiveOverrides(s1, s2) && noEffectiveOverrides(rest1, rest2)) {
-        return model;
-    }
-
-    return simpleClone(model, overrides, unversioned);
-
-}
-
 function noEffectiveOverrides(source, overrides) {
     var properties = Object.getOwnPropertyNames(overrides);
     for (var i = 0; i < properties.length; i++) {
@@ -426,10 +412,13 @@ function noEffectiveOverrides(source, overrides) {
 }
 
 function removeChild(model, child) {
+    const manualLayout = _removeChild(model, child)
+    return recomputeChildLayout(manualLayout, model.computedStyle, model.$path)
+}
 
-    var { idx, finalStep } = nextStep(model.$path, child.$path);
-
-    var children = model.children.slice();
+function _removeChild(model, child){
+    const { idx, finalStep } = nextStep(model.$path, child.$path);
+    let children = model.children.slice();
 
     if (finalStep) {
 
@@ -441,52 +430,55 @@ function removeChild(model, child) {
             children.splice(idx, 1);
         }
 
-        var { layout: modelLayout, $path/*, active */} = model;
+        // var { layout: modelLayout, $path} = model;
 
         if (children.length === 1 && model.type.match(/FlexBox|TabbedContainer/)) {
-            // certain style attributes from the parent must be passed down to the 
-            // replacement child, eg flex - are there others ?
-            const { flex } = model.style;
-            return layout(clone(children[0], { style: { flex } }, true), modelLayout, $path);
-        } else {
-            var { top, left, width, height } = modelLayout;
-            // var props = {};
-            //var nowActive = active;
-            // if (active === children.length) {
-            //     nowActive = props.active = active - 1;
-            // }
-            const result = layout({
-                ...model,
-                children
-            }, {top, left, width, height}, model.$path);
-            return result;
+            console.log(`removing the only child of ${model.type} ${model.$path}`);
+            return children[0];
+            //     // certain style attributes from the parent must be passed down to the 
+        //     // replacement child, eg flex - are there others ?
+        //     const { flex } = model.style;
+        //     return layout(clone(children[0], { style: { flex } }, true), modelLayout, $path);
+        } 
+        // else {
+        //     var { top, left, width, height } = modelLayout;
+        //     // var props = {};
+        //     //var nowActive = active;
+        //     // if (active === children.length) {
+        //     //     nowActive = props.active = active - 1;
+        //     // }
+        //     const result = layout({
+        //         ...model,
+        //         children
+        //     }, {top, left, width, height}, model.$path);
+        //     return result;
 
-        }
+        // }
     } else {
-        children[idx] = removeChild(children[idx], child);
+        children[idx] = _removeChild(children[idx], child);
     }
 
     children = children.map((child, i) => {
         var $path = `${model.$path}.${i}`;
-        return child.$path === $path ? child : clone(child, { $path });
+        return child.$path === $path ? child : {...child, $path };
     })
-
-    return clone(model, { children })
-
+    return { ...model, children };
 }
 
 function replaceChild(model, child, replacement) {
-
     if (replacement.$path === model.$path) {
         return replacement;
+    } else {
+        const manualLayout = _replaceChild(model, child, replacement);
+        return recomputeChildLayout(manualLayout, model.computedStyle, model.$path)
     }
+}
 
-    var { idx, finalStep } = nextStep(model.$path, child.$path);
-
-    var children = model.children.slice();
+function _replaceChild(model, child, replacement){
+    const { idx, finalStep } = nextStep(model.$path, child.$path);
+    const children = model.children.slice();
 
     if (finalStep) {
-
         if (Array.isArray(replacement)) {
             //TODO - make this right
             // var dim = model.style.flexDirection === 'row' ? 'width' : 'height';
@@ -496,20 +488,16 @@ function replaceChild(model, child, replacement) {
             //     return clone(l, { $path: `${model.$path}.${idx + i}` })
             // });
             // [].splice.apply(children, [idx, 1].concat(replacement));
-
         } else {
             children[idx] = {
                 ...replacement,
                 layout: {...child.layout}
             };
         }
-
     } else {
-        children[idx] = replaceChild(children[idx], child, replacement);
+        children[idx] = _replaceChild(children[idx], child, replacement);
     }
-
-    // TODO avoid this recursive call to layout as we unroll the stack
-    return layout({...model, children}, model.computedStyle, model.$path)
+    return {...model, children};
 }
 
 // Note: withTheGrain is not the negative of againstTheGrain - the difference lies in the 

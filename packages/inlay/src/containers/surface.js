@@ -157,25 +157,25 @@ export default class Surface extends DynamicContainer {
     handleDrag(x,y){
 
         const {draggedComponent} = this.state;
-        let {layout, style} = draggedComponent;
+        let {computedStyle, style} = draggedComponent;
 
-        if (typeof x === 'number' && x !== layout.left){
-            layout = {...layout, left: x}
+        if (typeof x === 'number' && x !== computedStyle.left){
+            computedStyle = {...computedStyle, left: x}
             style = {...style, left: x}
         }
 
-        if (typeof y === 'number' && y !== layout.top){
-            layout = {...layout, top: y}
+        if (typeof y === 'number' && y !== computedStyle.top){
+            computedStyle = {...computedStyle, top: y}
             style = {...style, top: y}
         }
 
-        if (layout !== draggedComponent.layout){
+        if (computedStyle !== draggedComponent.computedStyle){
             this.setState({
                 dragging: true,
                 draggedComponent: {
                     ...draggedComponent,
                     style,
-                    layout
+                    computedStyle
                 }
             });
         }

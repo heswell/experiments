@@ -39,3 +39,12 @@ export function isLayout(element){
 	}
 	return isContainer(element);
 }
+
+const EMPTY_OBJECT = {};
+
+export function getDefaultProps({type}){
+	if (typeof type === 'function' && type.prototype.isReactComponent){
+		return type.defaultProps;
+	}
+	return EMPTY_OBJECT;
+}

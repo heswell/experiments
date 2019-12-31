@@ -5,12 +5,13 @@ import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import Container from './container';
-import { registerClass, isLayout } from '../component-registry';
+import { registerClass, isLayout, typeOf } from '../component-registry';
 import {
     handleLayout as handleModelLayout,
     layout as applyLayout,
     layoutStyleDiff
 } from '../model/index';
+import { componentFromLayout } from '../util/component-from-layout-json';
 
 const NO_STYLE = {}
 
@@ -18,7 +19,7 @@ export default class FlexBox extends Container {
 
     render() {
 
-        var { isSelected, title } = this.props;
+        var { title } = this.props;
         var { type, header, computedStyle: style } = this.state.layoutModel;
         if (this.state.layoutModel.$id === 'col-picker'){
             console.log(`FlexBox.render layout ${JSON.stringify(this.state.layoutModel,null,2)}`);
@@ -52,10 +53,10 @@ export default class FlexBox extends Container {
 
     renderFlexibleChildren() {
 
-        var { style: { flexDirection }, visibility } = this.props;
-        var cursor = flexDirection === 'column' ? 'ns-resize' : 'ew-resize';
-        var splitterIdx = 0;
-        var {children: layoutChildren} = this.state.layoutModel;
+        const { style: { flexDirection }, visibility } = this.props;
+        const {layoutModel} = this.state;
+
+        var {children: layoutChildren} = layoutModel;
         const propChildren = Array.isArray(this.props.children)
             ? this.props.children.filter(child => child)
             : [this.props.children];
@@ -68,14 +69,12 @@ export default class FlexBox extends Container {
 
             if (childLayoutModel.type === 'Splitter') {
 
-                //TODO do we still need the refs ?
                 results.push(
-                    <Splitter ref={'splitter-' + splitterIdx}
+                    <Splitter
                         key={'splitter-' + childIdx}
                         idx={childIdx}
                         absIdx={idx}
                         direction={flexDirection === 'column' ? 'vertical' : 'horizontal'}
-                        cursor={cursor}
                         onDragStart={this.splitterDragStart.bind(this)}
                         onDrag={this.splitterMoved.bind(this)}
                         onDragEnd={() => this.handleSplitterDragEnd()}
@@ -83,11 +82,11 @@ export default class FlexBox extends Container {
                         layoutModel={childLayoutModel} />
                 );
 
-                splitterIdx += 1;
-
             } else {
+                const child = typeOf(propChildren[childIdx]) === childLayoutModel.type
+                    ? propChildren[childIdx]
+                    : componentFromLayout(childLayoutModel);
 
-                var child = propChildren[childIdx];
                 var { style = {}, ...childProps } = child.props;
                 var id = childLayoutModel.$id;
 

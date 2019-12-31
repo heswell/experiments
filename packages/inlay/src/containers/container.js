@@ -85,34 +85,39 @@ export default class Container extends React.Component {
     }
 
     handleLayout(command, options){
-
+        const {layoutModel} = this.state;
         // is there some other way we can nominate the layout as a root, other than $path === '0'
-        if (this.state.layoutModel && this.state.layoutModel.$path === '0' /*&& !this.props.layoutModel*/){
+        if (layoutModel && layoutModel.$path === '0' /*&& !this.props.layoutModel*/){
             // This is a top=level layout and the owner has not taken responsibility for layout, so we need to
             // Note: this will currently work only when the top-level container maintains its layoutModel in 
             // state (FlexBox and TabbedContainer)- other containers CAN be nested. 
+            
             if (command === 'drag-start'){
                 if (this.handleDragStart){
                     Draggable.handleMousedown(options.evt, this.handleDragStart.bind(this, options));
                 }
             } else {
-                let layoutModel;
+                let newLayoutModel;
 
                 if (command === 'replace'){
                     const {model: replacementNode} = options;
-                    const targetNode = followPath(this.state.layoutModel, replacementNode.$path);
-                    layoutModel = handleLayout(this.state.layoutModel, command, {targetNode, replacementNode});
+                    const targetNode = followPath(layoutModel, replacementNode.$path);
+                    newLayoutModel = handleLayout(this.state.layoutModel, command, {targetNode, replacementNode});
                 } else if (command === 'switch-tab'){
-                    layoutModel = handleLayout(this.state.layoutModel, 'switch-tab', options);
+                    newLayoutModel = handleLayout(layoutModel, 'switch-tab', options);
                 } else if (command === 'drop'){
-                    layoutModel = handleLayout(this.state.layoutModel, 'drop', options);
+                    newLayoutModel = handleLayout(layoutModel, 'drop', options);
+                } else if (command === 'remove'){
+                    const targetNode = followPath(layoutModel, options.model.$path);
+                    newLayoutModel = handleLayout(layoutModel, 'remove', {targetNode});
+                    console.log(`%ccontainer ${JSON.stringify(newLayoutModel,null,2)}`,'color: green;font-weight: bold;')
                 } else {
                     throw Error(`Container: don't know how to handle command ${command}`);
                 }
-                if (layoutModel !== this.state.layoutModel){
-                    this.setState({layoutModel});
+                if (newLayoutModel !== layoutModel){
+                    this.setState({layoutModel: newLayoutModel});
                     if (this.props.onLayoutModel){
-                        this.props.onLayoutModel(layoutModel);
+                        this.props.onLayoutModel(newLayoutModel);
                     }
                 }
             }

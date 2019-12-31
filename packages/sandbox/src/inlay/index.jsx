@@ -49,7 +49,7 @@ import('stretch-layout').then((stretch) => {
 
   ReactDOM.render(
     <>
-      <SampleLayout sample={7} />
+      <SampleLayout sample={18} />
     </>,
     document.getElementById('root')
   );

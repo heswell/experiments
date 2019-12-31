@@ -169,8 +169,8 @@ export default class LayoutItem extends React.Component {
             this.props.onConfigChange(this, { fixed: !fixed })
         }
         else if (action === 'remove') {
-            this.dispatch(removeFromLayout(this.props.layoutModel));
-            // this.props.onLayout('remove', {model:this.props.layoutModel});
+            //this.dispatch(removeFromLayout(this.props.layoutModel));
+            this.props.onLayout('remove', {model: this.props.layoutModel});
         }
         else if (action === 'minimize') {
             this.props.onLayout('minimize', {/*path*/});

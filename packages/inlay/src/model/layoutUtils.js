@@ -86,6 +86,7 @@ export function computeLayout(
 }
 
 export function recomputeChildLayout(model){
+    console.log(`%crecomputeChildLayout for ${model.$path}`, 'color: brown; font-weight: bold')
     stretchLayoutChildren(model);
     return model;
 }

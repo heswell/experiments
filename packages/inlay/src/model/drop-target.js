@@ -1,6 +1,6 @@
 
 
-import {BoxModel, positionValues, pointPositionWithinRect} from './boxModel';
+import {BoxModel, positionValues, pointPositionWithinRect} from './box-model';
 import {containerOf} from './layoutModel';
 import { Position } from './index';
 
