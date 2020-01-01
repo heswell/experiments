@@ -24,6 +24,7 @@ export default class DynamicContainer extends Container {
         props.key = props.id = layoutModel.$id;
 
         if (isLayout(layoutModel.type)) {
+            // this is being called A LOT during drag
             return renderDynamicLayout(this, props, layoutModel);
         } else {
             return <LayoutItem {...props} layout={layoutModel}>{renderDynamicLayout(this, props, layoutModel)}</LayoutItem>;
@@ -39,16 +40,14 @@ export default class DynamicContainer extends Container {
     drop(component, dropTarget) {
 
         this.setState({
-            dragging: -1,
-            tempDimensions: undefined
+            dragging: -1
         });
     }
 }
 
 DynamicContainer.displayName = 'DynamicContainer';
 DynamicContainer.defaultProps = {
-    style: { flex: 1 },
-    config: {}
+    style: { flex: 1 }
 };
 
 

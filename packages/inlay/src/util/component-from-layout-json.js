@@ -23,7 +23,7 @@ export function renderDynamicLayout(container, props, layoutModel) {
         style: { ...layoutStyle, ...propStyle }
     };
 
-    //onsole.log('renderDynamicContainer about to create a new component (fom json) which will be cloned)',layout,finalProps);
+    // onsole.log('renderDynamicContainer about to create a new component (fom json) which will be cloned)',layoutModel, finalProps);
 
     return React.cloneElement(componentFromLayout(layoutModel), finalProps);
 

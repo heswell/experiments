@@ -82,6 +82,7 @@ export default class Surface extends DynamicContainer {
         }
     }
 
+    // shouldn't this be on Container ? Applicable for everyone
     componentWillReceiveProps(nextProps) {
         const {layoutModel} = nextProps;
         if (layoutModel && layoutModel !== this.state.layoutModel) {
@@ -94,10 +95,6 @@ export default class Surface extends DynamicContainer {
 
     renderChildren() {
         return null;
-    }
-
-    getDragPermission(/*component*/) {
-        return { x: true, y: true }
     }
 
     // _dragCallback from draggable, but bound to original handleLayout 'options' in container

@@ -15,30 +15,19 @@ import { componentFromLayout } from '../util/component-from-layout-json';
 
 const NO_STYLE = {}
 
+const getManagedDimension = style => style.flexDirection === 'column' ? 'height' : 'width';
+
 export default class FlexBox extends Container {
 
     render() {
 
         var { title } = this.props;
-        var { type, header, computedStyle: style } = this.state.layoutModel;
-        if (this.state.layoutModel.$id === 'col-picker'){
-            console.log(`FlexBox.render layout ${JSON.stringify(this.state.layoutModel,null,2)}`);
-        }
-        // const {backgroundColor, visibility} = style
-        // var className = cx(
-        //     style.flexDirection === 'row' ? 'Terrace' : 'Tower',
-        //     this.props.className,
-        //     isSelected ? 'active' : null
-        // );
-
-        // if (visibility === 'hidden') {
-        //     return null;
-        // }
+        var { type, header, computedStyle } = this.state.layoutModel;
 
         const className = cx(type);
 
         return (
-            <div className={className} style={style}>
+            <div className={className} style={computedStyle}>
                 {header &&
                      <ComponentHeader
                          title={`${title}`}
@@ -147,19 +136,6 @@ export default class FlexBox extends Container {
         }
     }
 
-    getManagedDimension() {
-        var { layoutStyle: { flexDirection } } = this.state.layoutModel;
-        return flexDirection === 1 ? 'height' : 'width';
-    }
-
-    getDragPermission(component) {
-        if (component.constructor.displayName === 'Splitter') {
-            return this.props.style.flexDirection === 'row' ? { y: false, x: true } : { x: false, y: true };
-        } else {
-            return { x: true, y: true };
-        }
-    }
-
     // copied from layoutItem
     handleMouseDown(e){
         if (this.props.onMouseDown) {
@@ -182,9 +158,9 @@ export default class FlexBox extends Container {
     }
 
     splitterMoved(distance) {
+        const {layoutModel} = this.state;
         const [idx1, , idx2] = this.splitChildren;
-        const dim = this.getManagedDimension();
-        let layoutModel = this.state.layoutModel;
+        const dim = getManagedDimension(layoutModel.style);
         const measurements = layoutModel.children.map(child => child.computedStyle[dim]);
         measurements[idx1] += distance;
         measurements[idx2] -= distance;
@@ -193,8 +169,7 @@ export default class FlexBox extends Container {
             path: layoutModel.$path,
             measurements
         };
-        layoutModel = handleModelLayout(layoutModel, 'splitter-resize', options);
-        this.setState({ layoutModel });
+        this.setState({ layoutModel: handleModelLayout(layoutModel, 'splitter-resize', options) });
     }
 
     identifySplitChildren(splitterIdx){

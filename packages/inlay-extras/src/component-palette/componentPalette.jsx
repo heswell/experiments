@@ -77,11 +77,6 @@ export default class ComponentPalette extends React.Component {
 
     }
 
-    getDragPermission(draggee) {
-        return { x: true, y: true }
-    }
-
-
 }
 
 const header = true;

@@ -108,23 +108,6 @@ export default class TabbedContainer extends Container {
         }
     }
 
-    getDragPermission(/* component */){
-        return {x: true,y: true};
-    }
-
-    // getDragBoundingRect(){
-    //     debugger;
-    //     var {top, left, width, height,right, bottom} = ReactDOM.findDOMNode(this).getBoundingClientRect();
-
-    //     var tabstripHeight = this.tabstrip.getDOMNode().clientHeight;
-
-    //     if (this.props.dragContainer === true){
-    //         return {top: top+tabstripHeight, left, width, height: height-tabstripHeight, right, bottom};
-    //     } else {
-    //         return {top, left, width, height, right, bottom};
-    //     }
-    // }
-
     handleTabSelection(selected, idx){
         const {onLayout=this.handleLayout} = this.props;
         const {layoutModel} = this.state;

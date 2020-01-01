@@ -9,32 +9,41 @@ export default class Container extends React.Component {
 
    constructor(props){
         super(props);
-        const layoutModel = this.getLayoutModel();
         this.state = {
-            layoutModel,
+            layoutModel: this.getLayoutModel(),
             ...this.getState()
         }
-
         this.handleLayout = this.handleLayout.bind(this);
+    }
+
+    getLayoutModel(){
+        // If layoutModel is not passed in via props - we are a layout 'root'. 
+        // LayoutModel for an entire layout tree is created here.
+        if (this.props.layoutModel === undefined){
+            console.log(`get layoit dynamically`)
+            return applyLayout(getLayoutModel(this));
+        } else {
+            console.log(`get layoit from props`)
+            return this.props.layoutModel;
+        }
     }
 
     getState(){
         return {};
     }
 
-    isLayoutRoot(){
-        return this.props.layoutModel === undefined;
-    }
-
     render(){
-        var {type, computedStyle: style, children} = this.getLayoutModel();
+        console.log(`render ${this.state.layoutModel.type}`)
+        // shouldn't this be state.layoutModel ?
+        var {type, computedStyle, children} = this.getLayoutModel();
         return (
-            <div className={type} style={style}>
+            <div className={type} style={computedStyle}>
                 {children.map((child,idx) => this.renderChild(child,idx))}
             </div>
         );
     }
 
+    // do we actually need this - does it ever make sense to create <Container /> in JSX ?
     renderChild(layoutModel){
 
         const {children: child , onLayout} = this.props;
@@ -47,7 +56,6 @@ export default class Container extends React.Component {
 
         const id = props.layoutModel.$id;
 
-        props.id = id;
         props.key = id;
         props.style = {...style, ...props.style};
 
@@ -59,6 +67,7 @@ export default class Container extends React.Component {
 
     }
 
+    // makes the layoutModel available to host, assuming this is the layout root
     componentDidMount(){
         const {layoutModel=null, onLayoutModel} = this.props;
         if (layoutModel === null && onLayoutModel){
@@ -68,20 +77,6 @@ export default class Container extends React.Component {
 
     shouldComponentUpdate(nextProps){
         return nextProps.dragging !== true;
-    }
-
-    getLayoutModel(){
-
-        if (this.isLayoutRoot()){
-            return applyLayout(getLayoutModel(this));
-        } else {
-            return this.props.layoutModel;
-        }
-
-    }
-
-    getManagedDimension(){
-        return null;
     }
 
     handleLayout(command, options){
@@ -126,10 +121,6 @@ export default class Container extends React.Component {
         }
     }
 
-}
-
-Container.defaultProps = {
-    style: {flex: 1}
 }
 
 registerClass('Container', Container, true);
