@@ -197,9 +197,16 @@ function transform(layoutModel, options) {
 }
 
 function insert(model, source, into, before, after, size) {
+    const manualLayout = _insert(model, source, into, before, after, size);
+    return layout(manualLayout, model.computedStyle, model.$path)
+}
+
+function _insert(model, source, into, before, after, size){
+
+    const { $path, type, style } = model;
     const target = before || after || into;
-    let { $path, /*active,*/ type, style, children } = model;
     let { idx, finalStep } = nextStep($path, target);
+    let children;
 
     // One more step needed when we're inserting 'into' a container
     var oneMoreStepNeeded = finalStep && into && idx !== -1;
@@ -210,28 +217,30 @@ function insert(model, source, into, before, after, size) {
         const dim = flexBox && (style.flexDirection === 'row' ? 'width' : 'height');
 
         if (type === 'Surface' && idx === -1) {
-            children = children.concat(source);
+            children = model.children.concat(source);
         } else {
             const hasSize = typeof size === 'number'; 
-            children = children.reduce((arr, child, i/*, all*/) => {
+            children = model.children.reduce((arr, child, i/*, all*/) => {
                 // idx of -1 means we just insert into end 
                 if (idx === i) {
                     if (flexBox) {
+                        
+                        // source only has position attributes because of dragging
+                        const {style: {left: _1, top: _2, ...sourceStyle}} = source;
+
                         if (!hasSize){
-                            size = (child.layout[dim] - 6) / 2;
+                            size = (child.computedStyle[dim] - 6) / 2;
                             child = {
                                 ...child,
-                                style: {...child.style, position: null, flex: undefined, [dim]: size},
-                                layout: {[dim]: size}
+                                style: {...child.style, [dim]: size}
                             };
                         }
                         source = {
                             ...source,
-                            layout: hasSize ? null : {[dim]: size},
-                            style: {...source.style, position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: size}
+                            style: {...sourceStyle, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: size}
                         };
                     } else {
-                        source = {...source, style: {...source.style, position: null, transform: null, transformOrigin: null}};
+                        source = {...source, style: {...sourceStyle, transform: null, transformOrigin: null}};
                     }
                     if (before) {
                         arr.push(source, child);
@@ -246,11 +255,10 @@ function insert(model, source, into, before, after, size) {
         }
     } else {
         children = model.children.slice();
-        children[idx] = insert(children[idx], source, into, before, after, size);
+        children[idx] = _insert(children[idx], source, into, before, after, size);
     }
 
-    const {layout: modelLayout} = model;
-    return layout({...model, children}, modelLayout, model.$path)
+    return {...model, children};
 
 }
 
@@ -266,17 +274,9 @@ function _wrap(model, source, target, pos){
     const children = model.children.slice();
 
     if (finalStep) {
-        var { type, flexDirection } = getLayoutSpec(pos); // roll dim into this
-        var dim = flexDirection === 'row' ? 'width' : 'height';
-
-        var active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
-        var $path = `${model.$path}.${idx}`;
+        const { type, flexDirection } = getLayoutSpec(pos);
+        const active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
         target = children[idx];
-        const hasSize = typeof pos[dim] === 'number' 
-
-        var size = hasSize
-            ? pos[dim]
-            : (target.computedStyle[dim] - 6) / 2;
 
         // var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
 
@@ -285,21 +285,20 @@ function _wrap(model, source, target, pos){
             wrapperStyle.flex = target.style.flex;
         }
 
+        // source only has position attributes because of dragging
         const {style: {left: _1, top: _2, ...sourceStyle}} = source;
 
-        // need to roll resizeable into the layoutModel. else we lose it here
         var wrapper = {
             type,
-            $path,
             active,
             $id: uuid(),
             style: wrapperStyle,
             resizeable: target.resizeable,
             children: (pos.position.SouthOrEast || pos.position.Header)
-                ? [{...target, $path: `${$path}.0`, style: {...target.style, flex: 1}, resizeable: true},
-                    {...source, $path: `${$path}.1`, style: {...sourceStyle}, resizeable: true}]
-                : [{...source, $path: `${$path}.0`, style: {...sourceStyle}, resizeable: true},
-                    {...target, $path: `${$path}.1`, style: {...target.style, flex: 1}, resizeable: true}]
+                ? [{...target, style: {...target.style, flex: 1}, resizeable: true},
+                    {...source, style: {...sourceStyle}, resizeable: true}]
+                : [{...source, style: {...sourceStyle}, resizeable: true},
+                    {...target, style: {...target.style, flex: 1}, resizeable: true}]
         };
 
         children.splice(idx, 1, wrapper);

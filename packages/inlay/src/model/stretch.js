@@ -58,39 +58,43 @@ function extendHeader(header, layoutStyle){
 function expandChildren({type, active, style, children=ARRAY}, path){
     if (type === 'layout' || type === 'Splitter'){
       return undefined;
-    } else if (children.length === 0){
-      // do we need to exclude splitters, or do we assume these are always added automatically ?
-      if (isContainer(type)){
-        return [];
-      } else {
-        return [extendLayout({type: 'layout', style: {flex: 1}}, null)];
-      }
     } else {
-      const splitters = type === 'FlexBox'
-        ? getSplitterPositions(children)
-        : ARRAY;
+      const {length: count, '0': child} = children;
 
-      const styleOverrides =
-        type === 'Surface' ? SURFACE_CHILD_STYLE :
-        type === 'TabbedContainer' ? (_,i) => ({ flex: 1, display:  i === active ? Display.Flex : Display.None}) : 
-        NOOP;
-
-      return children.reduce((list, child, i) => {
-          if (splitters[i]) {
-              list.push({
-                  type: 'Splitter',
-                  style: {
-                    flex: '0 0 6px',
-                    cursor: style.flexDirection === 'column' ? 'ns-resize' : 'ew-resize'
-                  }
-              });
-          }
-          list.push(child);
-          return list;
-      },[]).map(
-        (child,i) => extendLayout(child, `${path}.${i}`, styleOverrides(child,i))
-      )
-
+      if (count === 0 || child.type === 'layout'){
+        // do we need to exclude splitters, or do we assume these are always added automatically ?
+        if (isContainer(type)){
+          return [];
+        } else {
+          return [extendLayout({type: 'layout', style: {flex: 1}}, null)];
+        }
+      } else {
+        const splitters = type === 'FlexBox'
+          ? getSplitterPositions(children)
+          : ARRAY;
+  
+        const styleOverrides =
+          type === 'Surface' ? SURFACE_CHILD_STYLE :
+          type === 'TabbedContainer' ? (_,i) => ({ flex: 1, display:  i === active ? Display.Flex : Display.None}) : 
+          NOOP;
+  
+        return children.reduce((list, child, i) => {
+            if (splitters[i]) {
+                list.push({
+                    type: 'Splitter',
+                    style: {
+                      flex: '0 0 6px',
+                      cursor: style.flexDirection === 'column' ? 'ns-resize' : 'ew-resize'
+                    }
+                });
+            }
+            list.push(child);
+            return list;
+        },[]).map(
+          (child,i) => extendLayout(child, `${path}.${i}`, styleOverrides(child,i))
+        )
+  
+      }
     }
 }
 

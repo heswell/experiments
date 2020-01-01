@@ -159,6 +159,9 @@ export default class Surface extends DynamicContainer {
         const {draggedComponent} = this.state;
         let {computedStyle, style} = draggedComponent;
 
+        // we need th manilpulate the computedSTyle to effect the drag operation. 
+        // We only need to manipulate style if the dragged componnet is a dialog or
+        // suchlike, whose parent container is actually this surface.
         if (typeof x === 'number' && x !== computedStyle.left){
             computedStyle = {...computedStyle, left: x}
             style = {...style, left: x}
