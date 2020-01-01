@@ -117,7 +117,6 @@ export default class Application extends React.Component {
             type: 'Surface', // Should it be 'Application' ?
             $id: id,
             $path: '0',
-            $version: 1,
             style: {position: 'absolute', width, height},
             layout: {top: 0,left: 0, width, height},
             children: []

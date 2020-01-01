@@ -14,12 +14,7 @@ export default class DynamicContainer extends Container {
 
     renderChild(layoutModel, idx) {
 
-        var { layoutModel: { $version }, onLayout } = this.props;
-
-        if ($version === 1 && this.props.children) {
-            // WHAT wa sthis for ?
-            return super.renderChild(layoutModel, idx);
-        }
+        var { onLayout } = this.props;
 
         var props = {
             layoutModel,

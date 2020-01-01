@@ -119,7 +119,7 @@ function initDrag(evt, layoutModel, path, dragRect) {
     _measurements = BoxModel.measure(layoutModel);
     var end = window.performance.now();
 
-    console.log(`initDrag taking measurements took ${end - start} ms dragContainer version ${_dragContainer.$version}`);
+    console.log(`initDrag taking measurements took ${end - start} ms dragContainer `, _measurements);
 
     var { type, $path } = _dragContainer;
 
@@ -132,6 +132,7 @@ function initDrag(evt, layoutModel, path, dragRect) {
 
     if (type === 'Surface') {
 
+        // NO - only if immediate container of dragged component is surface
         _simpleDrag = true;
 
         return {};

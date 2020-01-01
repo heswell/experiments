@@ -57,10 +57,7 @@ export class BoxModel {
     static smallestBoxContainingPoint(layout, measurements, x, y) {
         return smallestBoxContainingPoint(layout, measurements, x, y);
     }
-
-
 }
-
 
 export function pointPositionWithinRect(x, y, rect) {
 
@@ -223,22 +220,20 @@ function collectChildMeasurements(model, measurements, x, y, preX, posX, preY, p
 
                 if (model.type === 'FlexBox') {
 
-                    var flexDirection = model.style.flexDirection;
                     var prev = all[idx - 1];
                     var next = all[idx + 1];
                     var n = all.length - 1;
 
-                    if (flexDirection === 'row') {
-                        localPreX = idx === 0 ? preX : isSplitter(prev) ? prev.layout.width / 2 : 0;
-                        localPosX = idx === n ? posX : isSplitter(next) ? next.layout.width / 2 : 0;
-                        localPreY = preY;
-                        localPosY = posY;
-                    }
-                    else if (flexDirection === 'column') {
+                    if (model.style.flexDirection === 'column') {
                         localPreX = preX;
                         localPosX = posX;
-                        localPreY = idx === 0 ? preY : isSplitter(prev) ? prev.layout.height / 2 : 0;
-                        localPosY = idx === n ? posY : isSplitter(next) ? next.layout.height / 2 : 0;
+                        localPreY = idx === 0 ? preY : isSplitter(prev) ? prev.computedStyle.height / 2 : 0;
+                        localPosY = idx === n ? posY : isSplitter(next) ? next.computedStyle.height / 2 : 0;
+                    } else {
+                        localPreX = idx === 0 ? preX : isSplitter(prev) ? prev.computedStyle.width / 2 : 0;
+                        localPosX = idx === n ? posX : isSplitter(next) ? next.computedStyle.width / 2 : 0;
+                        localPreY = preY;
+                        localPosY = posY;
                     }
                 }
                 else {

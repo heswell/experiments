@@ -117,7 +117,7 @@ export default class Surface extends DynamicContainer {
         const width = dragRect.right - dragRect.left;
         const height = dragRect.bottom - dragRect.top;
 
-        var {$path, layout: modelLayout, style, dragAsIcon, ...rest} = model;
+        var {$path, computedStyle: modelLayout, style, dragAsIcon, ...rest} = model;
         const layout = modelLayout
             ? {width, height, ...modelLayout, top, left, ...(!instructions.DoNotTransform && dragTransform)}
             : {top, left, width, height}
@@ -137,7 +137,7 @@ export default class Surface extends DynamicContainer {
             : {
                 ...rest,
                 style,
-                layout
+                computedStyle: layout
             };
 
         // don't set dragging yet, it will suppress the final render of app with draggedComonent

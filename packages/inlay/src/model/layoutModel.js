@@ -256,10 +256,14 @@ function insert(model, source, into, before, after, size) {
 
 // this is replaceChild with extras
 function wrap(model, source, target, pos) {
+    const manualLayout = _wrap(model, source, target, pos);
+    return layout(manualLayout, model.computedStyle, model.$path)
+}
 
-    var { idx, finalStep } = nextStep(model.$path, target.$path);
+function _wrap(model, source, target, pos){
 
-    var children = model.children.slice();
+    const { idx, finalStep } = nextStep(model.$path, target.$path);
+    const children = model.children.slice();
 
     if (finalStep) {
         var { type, flexDirection } = getLayoutSpec(pos); // roll dim into this
@@ -272,44 +276,39 @@ function wrap(model, source, target, pos) {
 
         var size = hasSize
             ? pos[dim]
-            : (target.layout[dim] - 6) / 2;
+            : (target.computedStyle[dim] - 6) / 2;
 
-        var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
+        // var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
 
         var wrapperStyle = { flexDirection };
         if (target.style.flex) {
             wrapperStyle.flex = target.style.flex;
         }
 
+        const {style: {left: _1, top: _2, ...sourceStyle}} = source;
+
         // need to roll resizeable into the layoutModel. else we lose it here
-        var wrapper = layout({
+        var wrapper = {
             type,
             $path,
             active,
             $id: uuid(),
             style: wrapperStyle,
-            layout: target.layout,
             resizeable: target.resizeable,
             children: (pos.position.SouthOrEast || pos.position.Header)
-                ? [{...target, $path: `${$path}.0`, style: {...target.style, flex: 1}, layout: null, resizeable: true},
-                    {...source, $path: `${$path}.1`, style: {...source.style, ...style}, layout: null, resizeable: true}]
-                : [{...source, $path: `${$path}.0`, style: {...source.style, ...style}, layout: null, resizeable: true},
-                    {...target, $path: `${$path}.1`, style: {...target.style, flex: 1}, layout: null, resizeable: true}]
-        },
-        target.layout,
-        $path,
-        'visible',
-        true);
+                ? [{...target, $path: `${$path}.0`, style: {...target.style, flex: 1}, resizeable: true},
+                    {...source, $path: `${$path}.1`, style: {...sourceStyle}, resizeable: true}]
+                : [{...source, $path: `${$path}.0`, style: {...sourceStyle}, resizeable: true},
+                    {...target, $path: `${$path}.1`, style: {...target.style, flex: 1}, resizeable: true}]
+        };
 
         children.splice(idx, 1, wrapper);
 
     } else {
-        children[idx] = wrap(children[idx], source, target, pos);
+        children[idx] = _wrap(children[idx], source, target, pos);
     }
 
-    const {layout: modelLayout} = model;
-    // we call layout too many times by invoking it at this level
-    return layout({...model, children}, modelLayout, model.$path)
+    return {...model, children};
 
 }
 
@@ -356,59 +355,6 @@ function resizeFlexLayout(model, { dim, path, measurements }) {
     const resizedTarget = recomputeChildLayout(manualLayout);
     return replaceChild(model, target, resizedTarget);
 
-}
-
-function simpleClone(o1, o2, unversioned) {
-
-    if (o2 === undefined) {
-        return o1;
-    }
-
-    var result = {};
-    var value1;
-    var value2;
-    var property;
-    var versionIncrement = unversioned === true ? 0 : 1;
-
-    // copy forward existing properties, making replacements and deletions...
-    for (property in o1) {
-
-        value1 = o1[property];
-        value2 = o2[property];
-
-
-        if (property === '$version') {
-            result.$version = value1 + versionIncrement;
-        } else if (property === 'style') {
-            result.style = simpleClone(value1, value2);
-        } else if (value2 !== null) {
-            if (typeof value2 !== 'undefined') {
-                result[property] = value2;
-            } else {
-                result[property] = o1[property];
-            }
-        }
-    }
-
-    /// ...then add new properties 
-    for (property in o2) {
-        if (o2[property] !== null && (typeof result[property] === 'undefined')) {
-            result[property] = o2[property];
-        }
-    }
-
-    return result;
-
-}
-
-function noEffectiveOverrides(source, overrides) {
-    var properties = Object.getOwnPropertyNames(overrides);
-    for (var i = 0; i < properties.length; i++) {
-        if (overrides[properties[i]] !== source[properties[i]]) {
-            return false;
-        }
-    }
-    return true;
 }
 
 function removeChild(model, child) {
