@@ -3,13 +3,12 @@ import './component-header.css';
 
 const NOOP = () => {}
 
-const  ComponentHeader = ({menu = true, fixed, minimized, style, title, onAction=NOOP, onMouseDown}) => {
+export default function ComponentHeader({menu = true, style, title, onAction=NOOP, onMouseDown}){
     const menuClick = useCallback(e => onAction('menu', { left: e.clientX, top: e.clientY }),[onAction]);
     const mouseDown = e => e.stopPropagation();
     return (
         <header className="ComponentHeader" onMouseDown={onMouseDown} style={style}>
             <span className="title">{title}</span>
-            {fixed && !minimized ? <span className="icon-pushpin"></span> : null}
             {menu && (
                 <button className="icon-menu" data-key="menu"
                     onClick={menuClick}
@@ -20,6 +19,4 @@ const  ComponentHeader = ({menu = true, fixed, minimized, style, title, onAction
         </header>
     );
 };
-
-export default ComponentHeader;
 

@@ -18,7 +18,7 @@ export function typeOf(element){
 
 	let type;
 
-	if (typeof element.type === 'function'){
+	if (typeof element.type === 'function' || typeof element.type === 'object'){
 		type = element.type.displayName || element.type.name; 
 	} else if (typeof element.type === 'string'){
 		type = element.type;
@@ -34,7 +34,8 @@ export function typeOf(element){
 
 export function isLayout(element){
 	if (typeof element !== 'string'){
-			element = (element.type && element.type.displayName) ||
+			element = (element.type && element.type.name) ||
+					(element.type && element.type.displayName) ||
 					(element.constructor && element.constructor.displayName);
 	}
 	return isContainer(element);

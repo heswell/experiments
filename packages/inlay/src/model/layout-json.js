@@ -1,6 +1,6 @@
 import React from 'react';
 import {uuid} from '@heswell/utils';
-import { typeOf, isLayout, getDefaultProps } from '../component-registry';
+import { typeOf, isLayout, isContainer, getDefaultProps } from '../component-registry';
 
 const DEFAULT_HEADER_HEIGHT = 26;
 const DEFAULT_HEADER_SPEC = {
@@ -16,6 +16,19 @@ const LayoutProps = {
     dragStyle: true // still used ? flexbox-shuffle ?
 }
 
+export const getLayoutModel2 = (type, {children, contentModel, style, ...props}) => {
+    const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined);
+  
+    return {
+        type,
+        $id: props.id || uuid(),
+        ...layoutProps(type, props),
+        style,
+        props: ownProps.length === 0 ? undefined : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
+        children: isContainer(type) ? getLayoutModelChildren(children, contentModel) : []
+    }
+  }
+  
 export const getLayoutModel = component => {
   const type = typeOf(component); 
   const {props: {children, contentModel, style, ...props}} = component;
@@ -25,7 +38,7 @@ export const getLayoutModel = component => {
   return {
       type,
       $id: props.id || uuid(),
-      ...layoutProps(type, component),
+      ...layoutProps(type, component.props),
       style,
       props: ownProps.length === 0 ? undefined : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
       children: isLayout(component) ? getLayoutModelChildren(children, contentModel) : []
@@ -37,7 +50,7 @@ function getLayoutModelChildren(children, contentModel=null){
     if (React.isValidElement(children)){
         return [getLayoutModel(children)];
     } else if (Array.isArray(children)){
-        return children.filter(child => child).map(child => getLayoutModel(child));
+        return children.filter(child => child).map(child => getLayoutModel2(typeOf(child), child.props));
     } else if (contentModel !== null){
         return [addDefaultProperties(contentModel)];
     } else {
@@ -52,7 +65,7 @@ function addDefaultProperties (model){
   return model;
 }
 
-function layoutProps(type, {props}){
+function layoutProps(type, props){
     const results = {};
     let layoutProp;
     Object.entries(props).forEach(([key, value]) => {

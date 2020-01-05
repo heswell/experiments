@@ -169,20 +169,3 @@ export function parseBorder(value){
 
 }
 
-
-// const [topWidth, rightWidth, bottomWidth, leftWidth] = values;
-// const borderColor = 'black';
-// entry[0] = `borderTop`;
-// entry[1] = topWidth;
-// entry[2] = `borderEnd`;
-// entry[3] = rightWidth;
-// entry[4] = `borderBottom`;
-// entry[5] = bottomWidth;
-// entry[6] = 'borderStart';
-// entry[7] = leftWidth;
-// entry[8] = 'boxShadow';
-// entry[9] = `
-//   ${borderColor} ${leftWidth || 0}px ${topWidth || 0}px 0 0 inset, 
-//   ${borderColor} ${-rightWidth || 0}px ${-bottomWidth || 0}px 0 0 inset`;
-// }
-

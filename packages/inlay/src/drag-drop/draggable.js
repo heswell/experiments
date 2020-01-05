@@ -34,12 +34,14 @@ function getDragContainer(layoutModel, path) {
     var pathToContainer = '';
     var maxSteps = 0;
 
+    //TODO still to be determined how this will work
+    if (layoutModel.$path === path){
+        return layoutModel;
+    } else if (path === undefined) {
     // If the model has no path (i.e. it hasn't been dragged out of the existing layout)
     // hiow do we decide the dragContainer to use (assuming there may be more than 1)
-    if (path === undefined) {
         pathToContainer = _dragContainers[0];
-    }
-    else {
+    } else {
         // find the longest container path that matches path (ie the smallest enclosing container); 
         for (var i = 0; i < _dragContainers.length; i++) {
             if (path.indexOf(_dragContainers[i]) === 0) {

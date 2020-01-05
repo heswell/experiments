@@ -22,13 +22,13 @@ import Layout18 from './sample-layouts/layout18.jsx';
 const SampleLayout = ({ sample, width, height }) => {
 
   switch (sample) {
-    case 1: return Layout1(width, height);  /* Component */
+    case 1: return Layout1(width, height);  /* Component with border and header */
     case 2: return Layout2(width, height);  /* Surface, no children */
     case 3: return Layout3(width, height);  /* Surface, single child */ 
     case 4: return Layout4(width, height);  /* Application, single child */
     case 5: return Layout5(width, height);  /* Tower > Terrace, with margins and Borders */
     case 6: return Layout6(width, height);  /* Complex nested layout */
-    case 7: return Layout7(width, height);  /* DynamicContainer (static content), within FlexBox */
+    case 7: return Layout7(width, height);  /* FlexBox containing DynamicContainer containing (static) TabbedContainer */
     case 8: return Layout8(width, height);  /* DynamicContainer (JSON content), within FlexBox */
     case 9: return Layout9(width, height);  /* Singleton FlexBox */
     case 10: return Layout10(width, height);  /* FlexBox, with Tree & Configutator */
@@ -47,6 +47,7 @@ const SampleLayout = ({ sample, width, height }) => {
 
 import('stretch-layout').then((stretch) => {
 
+  console.log(`reactDOM render`)
   ReactDOM.render(
     <>
       <SampleLayout sample={18} />

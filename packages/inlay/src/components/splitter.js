@@ -53,10 +53,6 @@ export default class Splitter extends React.Component {
 
 }
 
-Splitter.defaultProps = {
-    style: {}
-};
-
 function mouseMoved(evt) {
     return onDrag.call(_splitter, evt)
 }

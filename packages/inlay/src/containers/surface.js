@@ -78,7 +78,7 @@ export default class Surface extends DynamicContainer {
             return React.cloneElement(child, { ...props, style });
         } else {
             return (
-                <LayoutItem dragging={dragging} {...props} style={style}>{child}</LayoutItem>)
+                <LayoutItem dragging={dragging} {...props}>{child}</LayoutItem>)
         }
     }
 

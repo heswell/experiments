@@ -42,6 +42,49 @@ export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
   return result;
 }
 
+export default async function layout(){
+  initStretch(await stretchLoading)
+  return stretchLayout;
+}
+
+export function initStretch(stretchModule){
+  stretch = stretchModule;
+  allocator = new stretch.Allocator();
+  ({
+    Display,
+    FlexDirection,
+    AlignItems,
+    JustifyContent,
+    PositionType
+  } = stretch);
+}
+
+export function stretchLayout(config){
+  const node = stretchNode(config);
+  const layout = node.computeLayout();
+  node.free();
+  setComputedStyle(config, layout);
+  setChildStyles(config, layout);
+}
+
+export function stretchLayoutChildren(config){
+  const {computedStyle, layoutStyle} = config;
+  const wrapper = {
+    layoutStyle: {
+      ...layoutStyle,
+      ...computedStyle
+    },
+    children: config.children
+  };
+
+  const node = stretchNode(wrapper);
+  const layout = node.computeLayout();
+  node.free();
+
+  setChildStyles(config, layout);
+}
+
+
 // format a header config, increase top padding on layoutStyle
 function extendHeader(header, layoutStyle){
   if (header){
@@ -75,7 +118,7 @@ function expandChildren({type, active, style, children=ARRAY}, path){
   
         const styleOverrides =
           type === 'Surface' ? SURFACE_CHILD_STYLE :
-          type === 'TabbedContainer' ? (_,i) => ({ flex: 1, display:  i === active ? Display.Flex : Display.None}) : 
+          type === 'TabbedContainer' ? (_,i) => ({ flex: 1, display:  i === active ? 'block' : 'none'}) : 
           NOOP;
   
         return children.reduce((list, child, i) => {
@@ -146,48 +189,6 @@ function isSplitter(model){
 
 function isFlexible(model){
   return model.resizeable;
-}
-
-export default async function layout(){
-  initStretch(await stretchLoading)
-  return stretchLayout;
-}
-
-export function initStretch(stretchModule){
-  stretch = stretchModule;
-  allocator = new stretch.Allocator();
-  ({
-    Display,
-    FlexDirection,
-    AlignItems,
-    JustifyContent,
-    PositionType
-  } = stretch);
-}
-
-export function stretchLayout(config){
-  const node = stretchNode(config);
-  const layout = node.computeLayout();
-  node.free();
-  setComputedStyle(config, layout);
-  setChildStyles(config, layout);
-}
-
-export function stretchLayoutChildren(config){
-  const {computedStyle, layoutStyle} = config;
-  const wrapper = {
-    layoutStyle: {
-      ...layoutStyle,
-      ...computedStyle
-    },
-    children: config.children
-  };
-
-  const node = stretchNode(wrapper);
-  const layout = node.computeLayout();
-  node.free();
-
-  setChildStyles(config, layout);
 }
 
 function setComputedStyle(config, {x:left,y:top,width,height}){
@@ -299,7 +300,11 @@ function mapCSSProperties(entry){
       entry.splice(0,2,...parseBorder(value))
       break;
 
-    default:
+    case 'display': 
+      entry[1] = value === 'none' ? Display.None : Display.Flex;
+      break;
+
+      default:
       // return as-is. We only get passed layout properties, so all ara valid
   }
 

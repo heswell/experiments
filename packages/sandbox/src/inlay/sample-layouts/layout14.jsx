@@ -2,9 +2,7 @@ import React from 'react';
 import { Application, DynamicContainer, FlexBox, Component } from '@heswell/inlay';
 
 export default (width = 500, height = 400) =>
-<Application style={{width: 900, height: 500}}>
-  <DynamicContainer>
-    <FlexBox style={{flexDirection: 'column', width: '100%', height: '100%',}}>
+    <FlexBox style={{flexDirection: 'column', width: 500, height: 500,}}>
       <Component title='W Component' style={{height: 100, backgroundColor: 'rebeccapurple'}}/>
       <FlexBox style={{flex: 1, flexDirection: 'row'}}>
         <Component title='W Component' style={{flex:1, backgroundColor: 'red'}} resizeable header/>
@@ -13,5 +11,3 @@ export default (width = 500, height = 400) =>
         <Component title='R Component' style={{flex: 1, backgroundColor: 'yellow'}} resizeable header/>
       </FlexBox>
     </FlexBox>
-  </DynamicContainer>
-</Application>

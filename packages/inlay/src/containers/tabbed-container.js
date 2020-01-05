@@ -5,11 +5,76 @@ import Tabstrip, {Tab} from '../components/tabstrip';
 import LayoutItem from './layout-item';
 import Container from './container';
 import {registerClass} from '../component-registry';
-import {layout as applyLayout} from '../model/index';
+import { LayoutRoot } from './layout-root';
+import { Action } from '../model/layout-reducer';
+
 
 const DEFAULT_TABSTRIP_HEIGHT = 34;
 
-export default class TabbedContainer extends Container {
+export default function TabbedContainer(props){
+
+    const {layoutModel, dispatch, onTabSelectionChanged} = props;
+
+    if (layoutModel === undefined){
+        return (
+            <LayoutRoot><TabbedContainer {...props} /></LayoutRoot>
+        )
+    }
+
+    const handleMouseDown = evt => {}
+
+    const handleTabSelection = (idx, nextIdx) => {
+        console.log(`handleTabSelection prevSelectedIdx=${idx}, newSelectedIdx=${nextIdx}`);
+        dispatch({type: Action.SWITCH_TAB, path: layoutModel.$path, nextIdx });
+
+        if (onTabSelectionChanged){
+            onTabSelectionChanged(newSelectedIdx);
+        }
+    }
+    const handleMouseDownTab = (evt, childLayoutModel) => {}
+
+    const {$id, computedStyle, active} = layoutModel;
+    const className = cx('TabbedContainer', props.className );
+
+    return (
+        <div id={$id} className={className} style={computedStyle}>
+            <Tabstrip className='header'
+                // we used to store a 'ref' here
+                style={{position: 'absolute',top: 0,left: 0, width: computedStyle.width, height: 26}}
+                draggable={true} // To be investigated
+                selected={active}
+                dragging={false} // To be investigated
+                onMouseDown={handleMouseDown}
+                onSelectionChange={handleTabSelection}>{tabs()}</Tabstrip>
+            {renderChildren()}
+        </div>
+    );
+
+    function tabs(){
+        return layoutModel.children.map((child,idx) =>
+            <Tab key={idx} text={titleFor(child)} onMouseDown={e => handleMouseDownTab(e,child)} />
+        );
+    }
+
+
+    function renderChildren(){
+        const {active=0, children: {[active]: childLayoutModel}} = layoutModel;
+        const {children: {[active]: propsChild}} = props;
+        const commonProps = {
+            key: childLayoutModel.$id,
+            layoutModel: childLayoutModel
+        };
+
+        if (isLayout(propsChild)){
+            return React.cloneElement(propsChild, {...commonProps});
+        } else {
+            return <LayoutItem {...propsChild.props} {...commonProps}>{propsChild}</LayoutItem>;
+        }
+    }
+
+}
+
+export class XXXTabbedContainer extends Container {
 
     constructor(props){
         super(props);
