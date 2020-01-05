@@ -129,8 +129,12 @@ export function identifyDropTarget(x, y, model, measurements){
     // this could return all boxes containing point, which would make getNextDropTarget almost free
     // Also, if we are over  atabstrip, it could include the actual tab
     var component = BoxModel.smallestBoxContainingPoint(model, measurements, x, y);
-    
+
     if (component){
+
+        if (component.type === 'layout'){
+            debugger;
+        }
 
         const clientRect = measurements[component.$path];
         const pos = pointPositionWithinRect(x,y,clientRect);

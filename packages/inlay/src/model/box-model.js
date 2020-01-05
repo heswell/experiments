@@ -165,6 +165,7 @@ function addMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 function addClientMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
     var { $id, $path, header } = model;
+
     var { top, left, width, height } = model.computedStyle;
 
     left = x + left - preX;
@@ -216,7 +217,7 @@ function collectChildMeasurements(model, measurements, x, y, preX, posX, preY, p
             var localPreY = 0;
             var localPosY = 0;
 
-            if (child.type !== 'Splitter') {
+            if (child.type !== 'Splitter' && child.type !== 'layout') {
 
                 if (model.type === 'FlexBox') {
 
@@ -261,7 +262,6 @@ function collectChildMeasurements(model, measurements, x, y, preX, posX, preY, p
 
 
 function smallestBoxContainingPoint(layout, measurements, x, y) {
-
     //onsole.log('smallestBoxContainingPoint in ' + component.constructor.displayName);
 
     var rect = measurements[layout.$path];

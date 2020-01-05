@@ -12,6 +12,8 @@ const Display = {
 }
 
 export const Action = {
+  DRAG_START: 'drag-start',
+  DRAG_DROP: 'drag-drop',
   INITIALIZE: 'initialize',
   REMOVE: 'remove',
   SPLITTER_RESIZE: 'splitter-resize',
@@ -32,6 +34,8 @@ const MISSING_TYPE_HANDLER = (state) => {
 };
 
 const handlers = {
+  [Action.DRAG_START]: dragStart,
+  [Action.DRAG_DROP]: dragDrop,
   [Action.INITIALIZE]: initialize,
   [Action.REMOVE]: removeChild,
   [Action.SPLITTER_RESIZE]: splitterResize,
@@ -136,6 +140,28 @@ function _replaceChild(model, child, replacement){
       children[idx] = _replaceChild(children[idx], child, replacement);
   }
   return {...model, children};
+}
+
+function dragDrop({drag, ...state}, action){
+
+  const {component: source} = drag;
+  const {dropTarget: {component: target, pos}} = action;
+
+  console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor}`)
+
+  if (pos.position.header){
+    console.log(` ...position header`)
+  } else if (pos.position.Centre){
+    console.log(` ...position center`)
+  } else {
+    console.log(` ...position docked`)
+  }
+
+  return state;
+}
+
+function dragStart(state, {dragRect, dragPos,  ...action}){
+  return removeChild({...state, drag: {dragRect, dragPos, component: action.layoutModel}}, action);
 }
 
 function removeChild(state, {layoutModel: child}) {

@@ -3,7 +3,7 @@ import { followPath, followPathToParent, nextStep } from './pathUtils';
 import { computeLayout, recomputeChildLayout } from './layout-utils';
 
 export function containerOf(layout, target) {
-
+    console.log(`containerOf ${target.$path}`)
     if (target === layout) {
         return null;
     } else {

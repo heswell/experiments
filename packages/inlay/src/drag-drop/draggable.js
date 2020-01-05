@@ -73,11 +73,11 @@ export const Draggable = {
     },
 
     // called from surface handleDragSTart (_dragCallback)
-    initDrag(e, layoutModel, path, { top, left, right, bottom }, dragHandler) {
+    initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler) {
 
         _dragCallback = dragHandler;
 
-        return initDrag(e, layoutModel, path, { top, left, right, bottom });
+        return initDrag(layoutModel, path, { top, left, right, bottom }, dragPos);
 
     }
 };
@@ -111,7 +111,7 @@ function preDragMouseupHandler() {
 
 }
 
-function initDrag(evt, layoutModel, path, dragRect) {
+function initDrag(layoutModel, path, dragRect, dragPos) {
 
     _dragContainer = getDragContainer(layoutModel, path);
 
@@ -127,7 +127,7 @@ function initDrag(evt, layoutModel, path, dragRect) {
 
     var dragZone = _measurements[$path];
 
-    _dragState = new DragState(dragZone, evt.clientX, evt.clientY, dragRect);
+    _dragState = new DragState(dragZone, dragPos.x, dragPos.y, dragRect);
 
     var pctX = Math.round(_dragState.x.mousePct * 100);
     var pctY = Math.round(_dragState.y.mousePct * 100);

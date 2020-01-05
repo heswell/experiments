@@ -19,13 +19,13 @@ export default function LayoutItem(props){
 
     const handleMouseDown = evt => {
 
-        const position = el.current.getBoundingClientRect();
+        const dragRect = el.current.getBoundingClientRect();
 
         if (props.onMouseDown) {
             props.onMouseDown({ layoutModel, position });
         } else {
             // check if we are allowed to drag ?
-            dispatch({type: 'drag-start', evt, layoutModel, position });
+            dispatch({type: 'drag-start', evt, layoutModel, dragRect });
         }
     }
 
@@ -56,7 +56,7 @@ export default function LayoutItem(props){
             style={computedStyle} >
             {header &&
                 <ComponentHeader
-                    title={`${title}`}
+                    title={`${/*title*/ layoutModel.$path}`}
                     style={header.style}
                     menu={header.menu}
                     onMouseDown={handleMouseDown}
