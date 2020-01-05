@@ -1,4 +1,21 @@
 
+export function containerOf(layout, target) {
+    if (target === layout) {
+        return null;
+    } else {
+
+        let { idx, finalStep } = nextStep(layout.$path, target.$path);
+        if (finalStep) {
+            return layout;
+        } else if (layout.children === undefined || layout.children[idx] === undefined) {
+            return null;
+        } else {
+            return containerOf(layout.children[idx], target);
+        }
+    }
+}
+
+
 export function followPath(model, path) {
 
     if (path.indexOf(model.$path) !== 0) {

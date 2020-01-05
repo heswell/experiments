@@ -1,23 +1,6 @@
 import {uuid} from '@heswell/utils';
-import { followPath, followPathToParent, nextStep } from './pathUtils';
+import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
 import { computeLayout, recomputeChildLayout } from './layout-utils';
-
-export function containerOf(layout, target) {
-    console.log(`containerOf ${target.$path}`)
-    if (target === layout) {
-        return null;
-    } else {
-
-        let { idx, finalStep } = nextStep(layout.$path, target.$path);
-        if (finalStep) {
-            return layout;
-        } else if (layout.children === undefined || layout.children[idx] === undefined) {
-            return null;
-        } else {
-            return containerOf(layout.children[idx], target);
-        }
-    }
-}
 
 export function handleLayout(model, command, options) {
 

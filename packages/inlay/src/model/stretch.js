@@ -217,7 +217,7 @@ function stretchNode({layoutStyle, children=ARRAY}){
   return node;
 }
 
-function collectStyles(style, overrides){
+export function collectStyles(style, overrides){
 
   let [layoutStyle, visualStyle] = overrides ? collectStyles(overrides) : [{}, {}]
 

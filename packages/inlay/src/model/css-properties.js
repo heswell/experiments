@@ -69,6 +69,14 @@ export function normalize(name){
 export const isLayoutProperty = name => 
   stretchStyle[name] || compositeProperty[name];
 
+export const removeVisualStyles = style =>
+  Object.entries(style).reduce((style, [property, value]) => {
+    if (isLayoutProperty(property)){
+      style[property] = value;
+    }
+    return style;
+  },{});
+
 export const dimension = value => {
     if (typeof value === 'number')
       return value;

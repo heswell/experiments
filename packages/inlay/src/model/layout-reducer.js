@@ -1,9 +1,12 @@
+import {uuid} from '@heswell/utils';
 import { getLayoutModel2 as getLayoutModel } from './layout-json';
 import {
   layout as applyLayout,
 } from './layoutModel';
-import { followPath, nextStep } from './pathUtils';
-import { recomputeChildLayout } from './layout-utils';
+import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
+import { computeLayout, recomputeChildLayout } from './layout-utils';
+import { collectStyles } from './stretch';
+import { removeVisualStyles } from './css-properties';
 
 // These are stretch values, need to import (dynamically)
 const Display = {
@@ -154,7 +157,7 @@ function dragDrop({drag, ...state}, action){
   } else if (pos.position.Centre){
     console.log(` ...position center`)
   } else {
-    console.log(` ...position docked`)
+    return dropLayoutIntoContainer(state, pos, source, target);
   }
 
   return state;
@@ -201,4 +204,198 @@ function _removeChild(model, child){
 
 function isSplitter(model) {
   return model && model.type === 'Splitter';
+}
+
+function dropLayoutIntoContainer(layoutModel, pos, source, target) {
+
+  var targetContainer = followPathToParent(layoutModel, target.$path);
+
+  if (absoluteDrop(target, pos.position)) {
+      return transform(layoutModel, { insert: { source, target, pos } });
+  } else if (target === layoutModel || isDraggableRoot(layoutModel, target)) {
+      // Can only be against the grain...
+      if (withTheGrain(pos, target)) {
+          throw Error('How the hell did we do this');
+      } else { //onsole.log('CASE 4A) Works');
+          //return transform(layout, { wrap: {target, source, pos }, releaseSpace}); 
+      }
+  } else if (withTheGrain(pos, targetContainer)) {
+      if (pos.position.SouthOrEast) { //onsole.log(`CASE 4B) Works. Insert into container 'with the grain'`);
+          return transform(layoutModel, { insert: { source, after: target, pos } });
+      } else { //onsole.log('CASE 4C) Works');
+          return transform(layoutModel, { insert: { source, before: target, pos } });
+      }
+  } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
+      return transform(layoutModel, { wrap: { target, source, pos } });
+  } else if (isContainer(targetContainer)) {
+      return transform(layoutModel, { wrap: { target, source, pos } });
+  } else {
+      console.log('no support right now for position = ' + pos.position);
+  }
+  return layoutModel;
+
+}
+
+// TODO do we still need surface
+function absoluteDrop(target, position) {
+  return target.type === 'Surface' && position.Absolute;
+}
+
+function transform(layoutModel, options) {
+
+  var nodeToBeInserted;
+  var nodeAfterWhichToInsert;
+  var nodeBeforeWhichToInsert;
+  var targetContainer;
+  var nodeSize;
+
+  for (var op in options) {
+      var opts = options[op];
+      switch (op) {
+
+      case 'insert':
+
+          nodeToBeInserted = opts.source;
+
+          nodeSize = opts.pos ? (opts.pos.width || opts.pos.height) : undefined;
+
+          if (opts.before) {
+              //onsole.log(`transform: insert before ` + opts.before.$path);
+              nodeBeforeWhichToInsert = opts.before.$path;
+          } else if (opts.after) {
+              //onsole.log(`transform: insert after ` + opts.after.$path);
+              nodeAfterWhichToInsert = opts.after.$path;
+          } else {
+              targetContainer = opts.target.$path;
+          }
+
+          break;
+
+      case 'wrap':
+
+          layoutModel = wrap(layoutModel, opts.source, opts.target, opts.pos);
+
+          break;
+      default:
+
+      }
+  }
+
+  if (nodeToBeInserted) {
+      layoutModel = insert(layoutModel, nodeToBeInserted, targetContainer, nodeBeforeWhichToInsert, nodeAfterWhichToInsert, nodeSize);
+  }
+
+  return layoutModel;
+
+}
+
+// this is replaceChild with extras
+function wrap(model, source, target, pos) {
+  const manualLayout = _wrap(model, source, target, pos);
+  //return layout(manualLayout, model.computedStyle, model.$path)
+  // Can we get away with just a recomputeVhild here or do we need to computeLayout ?
+  const {width, height, top, left} = manualLayout.computedStyle;
+  return computeLayout(manualLayout, width, height, top, left, model.$path)
+
+}
+
+function _wrap(model, source, target, pos){
+
+  const { idx, finalStep } = nextStep(model.$path, target.$path);
+  const children = model.children.slice();
+
+  if (finalStep) {
+      const { type, flexDirection } = getLayoutSpec(pos);
+      const active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
+      target = children[idx];
+
+      // var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
+    // TODO handle scenario where items have been resized, so have flexBasis values set
+      const style = {
+        ...removeVisualStyles(target.style),
+        flexDirection
+      };
+
+      // source only has position attributes because of dragging
+      const {style: {left: _1, top: _2, ...sourceStyle}} = source;
+      var wrapper = {
+          type,
+          active,
+          $id: uuid(),
+          style,
+          resizeable: target.resizeable,
+          children: (pos.position.SouthOrEast || pos.position.Header)
+              ? [{...target, style: {...target.style, flex: 1}, resizeable: true},
+                  {...source, style: {...sourceStyle}, resizeable: true}]
+              : [{...source, style: {...sourceStyle}, resizeable: true},
+                  {...target, style: {...target.style, flex: 1}, resizeable: true}]
+      };
+
+      children.splice(idx, 1, wrapper);
+
+  } else {
+      children[idx] = _wrap(children[idx], source, target, pos);
+  }
+
+  return {...model, children};
+
+}
+
+//TODO how are we going to allow dgar containers to be defined ?
+function isDraggableRoot(layout, component) {
+
+  if (component.$path === '0') {
+      return true;
+  }
+
+  var container = containerOf(layout, component);
+  if (container) {
+      return container.type === 'App';
+  } else {
+      debugger;
+  }
+}
+
+// Note: withTheGrain is not the negative of againstTheGrain - the difference lies in the 
+// handling of non-Flexible containers, the response for which is always false;
+function withTheGrain(pos, container) {
+
+  return pos.position.NorthOrSouth ? isTower(container)
+      : pos.position.EastOrWest ? isTerrace(container)
+          : false;
+}
+
+function againstTheGrain(pos, layout) {
+
+  return pos.position.EastOrWest ? isTower(layout) || isTabset(layout)
+      : pos.position.NorthOrSouth ? isTerrace(layout) || isTabset(layout)
+          : false;
+
+}
+
+function isTower(model) {
+  return model.type === 'FlexBox' && model.style.flexDirection === 'column';
+}
+
+function isTerrace(model) {
+  return model.type === 'FlexBox' && model.style.flexDirection !== 'column';
+}
+
+// maybe in layout-json ?
+function getLayoutSpec(pos) {
+  var type, flexDirection;
+
+  if (pos.position.Header) {
+      type = 'TabbedContainer';
+      flexDirection = 'column';
+  } else {
+      type = 'FlexBox';
+      if (pos.position.EastOrWest) {
+          flexDirection = 'row';
+      } else {
+          flexDirection = 'column';
+      }
+  }
+
+  return { type, flexDirection };
 }
