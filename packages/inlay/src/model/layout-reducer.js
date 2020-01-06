@@ -1,10 +1,10 @@
 import {uuid} from '@heswell/utils';
-import { getLayoutModel2 as getLayoutModel } from './layout-json';
+import { getLayoutModel2 as getLayoutModel, resetPath } from './layout-json';
 import {
   layout as applyLayout,
 } from './layoutModel';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
-import { computeLayout, recomputeChildLayout } from './layout-utils';
+import { computeLayout, recomputeChildLayout, printLayout } from './layout-utils';
 import { collectStyles } from './stretch';
 import { removeVisualStyles } from './css-properties';
 
@@ -86,7 +86,7 @@ function switchTab(state, {path, nextIdx}){
 }
 
 function splitterResize(state, { layoutModel, dim, path, measurements }) {
-  console.log(`%csplitterResize ${dim} ${path} ${measurements}`,'color: blue;font-weight: bold;')
+  // onsole.log(`%csplitterResize ${dim} ${path} ${measurements}`,'color: blue;font-weight: bold;')
   // is target always the same as state ?
   const target = followPath(state, path);
 
@@ -168,7 +168,8 @@ function dragStart(state, {dragRect, dragPos,  ...action}){
 }
 
 function removeChild(state, {layoutModel: child}) {
-  const manualLayout = _removeChild(state, child)
+  const manualLayout = _removeChild(state, child);
+  printLayout(manualLayout);
   return recomputeChildLayout(manualLayout, state.computedStyle, state.$path)
 }
 
@@ -187,8 +188,7 @@ function _removeChild(model, child){
       }
 
       if (children.length === 1 && model.type.match(/FlexBox|TabbedContainer/)) {
-          console.log(`removing the only child of ${model.type} ${model.$path}`);
-          return children[0];
+        return unwrap(model, children[0]);
       } 
 
   } else {
@@ -200,6 +200,26 @@ function _removeChild(model, child){
       return child.$path === $path ? child : {...child, $path };
   })
   return { ...model, children };
+}
+
+function unwrap(layoutModel, child){
+  const {$path} = layoutModel;
+  let unwrappedChild = resetPath(child, $path);
+  if ($path === '0'){
+    const {style: {width, height}} = layoutModel;
+    unwrappedChild = {
+      ...unwrappedChild,
+      //TODO get this bit right, do we need top, left as well ?
+      style: {
+        ...child.style,
+        width,
+        height
+      },
+      computedStyle: layoutModel.computedStyle
+    }
+  } 
+  return unwrappedChild;
+
 }
 
 function isSplitter(model) {
@@ -335,6 +355,75 @@ function _wrap(model, source, target, pos){
 
   } else {
       children[idx] = _wrap(children[idx], source, target, pos);
+  }
+
+  return {...model, children};
+
+}
+
+function insert(model, source, into, before, after, size) {
+  const manualLayout = _insert(model, source, into, before, after, size);
+  const {width, height, top, left} = manualLayout.computedStyle;
+  console.log(`manual layout with insert ${JSON.stringify(manualLayout,null,2)}`)
+  return computeLayout(manualLayout, width, height, top, left, model.$path)
+
+}
+
+function _insert(model, source, into, before, after, size){
+
+  const { $path, type, style } = model;
+  const target = before || after || into;
+  let { idx, finalStep } = nextStep($path, target);
+  let children;
+
+  // One more step needed when we're inserting 'into' a container
+  var oneMoreStepNeeded = finalStep && into && idx !== -1;
+
+  if (finalStep && !oneMoreStepNeeded) {
+
+      const flexBox = type === 'FlexBox';
+      const dim = flexBox && (style.flexDirection === 'row' ? 'width' : 'height');
+
+      if (type === 'Surface' && idx === -1) {
+          children = model.children.concat(source);
+      } else {
+          const hasSize = typeof size === 'number'; 
+          children = model.children.reduce((arr, child, i/*, all*/) => {
+              // idx of -1 means we just insert into end 
+              if (idx === i) {
+                  if (flexBox) {
+                      
+                      // source only has position attributes because of dragging
+                      const {style: {left: _1, top: _2, ...sourceStyle}} = source;
+
+                      if (!hasSize){
+                          size = (child.computedStyle[dim] - 6) / 2;
+                          child = {
+                              ...child,
+                              style: {...child.style, [dim]: size}
+                          };
+                      }
+                      source = {
+                          ...source,
+                          style: {...sourceStyle, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: size}
+                      };
+                  } else {
+                      source = {...source, style: {...sourceStyle, transform: null, transformOrigin: null}};
+                  }
+                  if (before) {
+                      arr.push(source, child);
+                  } else {
+                      arr.push(child, source);
+                  }
+              } else {
+                  arr.push(child);
+              }
+              return arr;
+          }, []);
+      }
+  } else {
+      children = model.children.slice();
+      children[idx] = _insert(children[idx], source, into, before, after, size);
   }
 
   return {...model, children};

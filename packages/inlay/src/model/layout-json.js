@@ -45,6 +45,24 @@ export const getLayoutModel = component => {
   }
 }
 
+export function resetPath(layoutModel, path){
+    if (layoutModel.$path === path){
+        return layoutModel;
+    }
+    return {
+        ...layoutModel,
+        $path: path,
+        children: layoutModel.children &&
+            layoutModel.children.map((child, i) => {
+                if (!child.$path){
+                    return child;
+                } else {
+                    return resetPath(child, `${path}.${i}`);
+                }
+        })
+    };
+} 
+
 function getLayoutModelChildren(children, contentModel=null){
     // TODO don't recurse into children of non-layout
     if (React.isValidElement(children)){

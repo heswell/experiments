@@ -26,7 +26,7 @@ export default function FlexBox(props){
 
     const splitChildren = useRef(null);
 
-    console.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
+    // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
 
     const splitterDragStart = (idx) => {

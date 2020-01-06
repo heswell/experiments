@@ -53,6 +53,7 @@ function defaultDimension(model, dimension){
     }
 }
 
+
 export function computeLayout(
     model, 
     width=defaultDimension(model,'width'), 
@@ -86,7 +87,7 @@ export function computeLayout(
 }
 
 export function recomputeChildLayout(model){
-    console.log(`%crecomputeChildLayout for ${model.$path}`, 'color: brown; font-weight: bold')
+    // onsole.log(`%crecomputeChildLayout for ${model.$path}`, 'color: brown; font-weight: bold')
     stretchLayoutChildren(model);
     return model;
 }

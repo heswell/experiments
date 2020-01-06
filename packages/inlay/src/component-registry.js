@@ -17,15 +17,17 @@ export function registerClass(className, component, isContainer){
 export function typeOf(element){
 
 	let type;
-
-	if (typeof element.type === 'function' || typeof element.type === 'object'){
-		type = element.type.displayName || element.type.name; 
-	} else if (typeof element.type === 'string'){
-		type = element.type;
-	}else if (element.constructor){
-		type = element.constructor.displayName; 
-	} else {
-		debugger;
+	
+	if (element){
+		if (typeof element.type === 'function' || typeof element.type === 'object'){
+			type = element.type.displayName || element.type.name; 
+		} else if (typeof element.type === 'string'){
+			type = element.type;
+		}else if (element.constructor){
+			type = element.constructor.displayName; 
+		} else {
+			debugger;
+		}	
 	}
 
 	return type;
