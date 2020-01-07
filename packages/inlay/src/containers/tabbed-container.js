@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
 import Tabstrip, {Tab} from '../components/tabstrip';
@@ -21,44 +21,51 @@ export default function TabbedContainer(props){
         )
     }
 
-    const handleMouseDown = evt => {}
+    const el = useRef(null);
 
-    const handleTabSelection = (idx, nextIdx) => {
-        console.log(`handleTabSelection prevSelectedIdx=${idx}, newSelectedIdx=${nextIdx}`);
+    const onMouseDown = (evt, model=layoutModel) => {
+        evt.stopPropagation();
+        const dragRect = el.current.getBoundingClientRect();
+        console.log(`tabbedContainer onMouseDown ${JSON.stringify(model)}`)
+        dispatch({type: Action.DRAG_START, evt, layoutModel: model, dragRect });
+    }
+
+    const handleTabSelection = (nextIdx) => {
+        console.log(`handleTabSelection newSelectedIdx=${nextIdx}`);
         dispatch({type: Action.SWITCH_TAB, path: layoutModel.$path, nextIdx });
 
         if (onTabSelectionChanged){
             onTabSelectionChanged(newSelectedIdx);
         }
     }
-    const handleMouseDownTab = (evt, childLayoutModel) => {}
+
+    function closeTab(idx){
+        dispatch({type: Action.REMOVE, layoutModel: layoutModel.children[idx]});
+    }
+
+    const tabs = () => layoutModel.children.map((child,idx) =>
+        <Tab key={idx} text={titleFor(child)} onMouseDown={e => onMouseDown(e,child)} onClose={closeTab}/>
+    );
 
     const {$id, computedStyle, active} = layoutModel;
     const className = cx('TabbedContainer', props.className );
-
     return (
-        <div id={$id} className={className} style={computedStyle}>
+        <div id={$id} ref={el} className={className} style={computedStyle}>
             <Tabstrip className='header'
                 // we used to store a 'ref' here
+                // TODO use layoutModel.header
                 style={{position: 'absolute',top: 0,left: 0, width: computedStyle.width, height: 26}}
                 draggable={true} // To be investigated
                 selected={active}
                 dragging={false} // To be investigated
-                onMouseDown={handleMouseDown}
+                onMouseDown={onMouseDown}
                 onSelectionChange={handleTabSelection}>{tabs()}</Tabstrip>
             {renderChildren()}
         </div>
     );
 
-    function tabs(){
-        return layoutModel.children.map((child,idx) =>
-            <Tab key={idx} text={titleFor(child)} onMouseDown={e => handleMouseDownTab(e,child)} />
-        );
-    }
-
-
     function renderChildren(){
-        const {active=0, children: {[active]: childLayoutModel}} = layoutModel;
+        const {active=0, children: {[active]: childLayoutModel}} = layoutModel;        
         const {children: {[active]: propsChild}} = props;
         const commonProps = {
             key: childLayoutModel.$id,
@@ -71,7 +78,6 @@ export default function TabbedContainer(props){
             return <LayoutItem {...propsChild.props} {...commonProps}>{propsChild}</LayoutItem>;
         }
     }
-
 }
 
 export class XXXTabbedContainer extends Container {
@@ -82,7 +88,7 @@ export class XXXTabbedContainer extends Container {
     }
 
     render(){
-        var {tabstripHeight, children} = this.props;
+        var { children } = this.props;
         const {layoutModel} = this.state;
         var {$id, computedStyle: style, active} = layoutModel;
 
@@ -91,7 +97,6 @@ export class XXXTabbedContainer extends Container {
         // to be dragged when the TabbedContainer IS the DragZOne.
         var isDraggable = true;
 
-        // Note: if key is not assigned here, we will get a React warning, even though it is assigned in Tabstrip !
         var tabs = children.map((child,idx) => {
             return <Tab key={idx} text={titleFor(child)} onMouseDown={e => this.handleMouseDown(e,layoutModel.children[idx])} />
         });

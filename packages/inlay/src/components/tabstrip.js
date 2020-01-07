@@ -1,60 +1,78 @@
-import React from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import cx from 'classnames';
 import { PopupService, ContextMenu, MenuItem } from '@heswell/ui-controls';
 import './tabstrip.css';
 
 const OVERFLOW_WIDTH = 24;
+const noop = () => {}
 
-function handleClick(e,idx, onClick){
-    e.preventDefault();
-    onClick(idx);
+export const Tab = ({allowClose=true, idx, text, isSelected, onClick, onClose, onMouseDown}) => {
+
+    // don't use useCallback
+    const handleClick = e => {
+        e.preventDefault();
+        onClick(idx);
+    };
+    
+    const handleClose = e => {
+        e.stopPropagation();
+        onClose(idx);
+    };
+
+    return (
+        <li className={cx('Tab', {'active': isSelected})}
+            onClick={handleClick}
+            onMouseDown={onMouseDown}>
+            <a href="#" className="tab-caption" data-idx={idx}>{text}</a>
+            {allowClose &&
+                <i className='material-icons close' onClick={handleClose}>close</i>}
+        </li>
+    );
+
 }
-
-export const Tab = ({idx, text, isSelected, onClick, onMouseDown}) =>
-    <li className={cx('Tab', {'active': isSelected})}
-        onClick={e => handleClick(e, idx, onClick)}
-        onMouseDown={onMouseDown}>
-        <a href="#" className="tab-caption" data-idx={idx}>{text}</a>
-    </li>
 
 const TabstripOverflow = ({onClick}) =>
     <div className='TabstripOverflow' onClick={onClick} />;
 
-export default class Tabstrip extends React.Component {
+export default function Tabstrip({
+    children,
+    className,
+    onMouseDown,
+    onSelectionChange,
+    style,
+    selected=0
+}){
 
-    constructor(props){
-        super(props);
-        this.state = {
-            overflowing: false
-        };
-        this.el = null;
+    const el = useRef(null);
+    const [overflowing, setOverflowing] = useState(false);
+
+    function showOverflow(){
+
     }
 
-
-    render() {
-
-        const { style, children, onMouseDown, selected=0 } = this.props;
-        const {overflowing} = this.state;
-        const className = cx('Tabstrip', this.props.className, {overflowing});
-
-        const tabs = children.map((child, idx) => {
-            return (
-                React.cloneElement(child, {
-                    idx,
-                    isSelected: selected === idx,
-                    onClick: i => this.handleTabClick(i)
-                }));
+    const tabs = children.map((child, idx) => {
+        const isSelected = selected === idx;
+        return React.cloneElement(child, {
+                idx,
+                isSelected,
+                onClick: isSelected ? noop : onSelectionChange
         });
+    });
 
-        return (
-            <div className={className} style={style} onMouseDown={onMouseDown} ref={el => this.el = el}>
-                <div className="tabstrip-inner-sleeve">
-                    <ul className="tabstrip-inner">{tabs}</ul>
-                </div>
-                {overflowing && <TabstripOverflow onClick={() => this.showOverflow()} />}
+    return (
+        <div ref={el}
+            className={cx('Tabstrip', className, {overflowing})}
+            style={style}
+            onMouseDown={onMouseDown}>
+            <div className="tabstrip-inner-sleeve">
+                <ul className="tabstrip-inner">{tabs}</ul>
             </div>
-        );
-    }
+            {overflowing && <TabstripOverflow onClick={showOverflow} />}
+        </div>
+    );
+}
+
+class XXXTabstrip extends React.Component {
 
     componentDidMount() {
         this.checkOverflowState();
@@ -75,12 +93,6 @@ export default class Tabstrip extends React.Component {
             this.setState({ overflowing: true });
         } else if (freeSpace >= 0 && overflowing === true) {
             this.setState({ overflowing: false });
-        }
-    }
-
-     handleTabClick(selectedIdx){
-        if (selectedIdx !== this.props.selected) {
-            this.props.onSelectionChange(this.props.selected, selectedIdx);
         }
     }
 

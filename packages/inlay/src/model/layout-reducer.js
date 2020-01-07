@@ -150,7 +150,7 @@ function dragDrop({drag, ...state}, action){
   const {component: source} = drag;
   const {dropTarget: {component: target, pos}} = action;
 
-  console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor}`)
+  console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor || target.type}`)
 
   if (pos.position.header){
     console.log(` ...position header`)
@@ -185,6 +185,12 @@ function _removeChild(model, child){
           children.splice(0, 2);
       } else {
           children.splice(idx, 1);
+      }
+
+      if (model.type === 'TabbedContainer' && model.active === idx){
+        const nextActive = 0;
+        model.active = nextActive;
+        children[nextActive].layoutStyle.display = Display.Flex; 
       }
 
       if (children.length === 1 && model.type.match(/FlexBox|TabbedContainer/)) {
@@ -228,30 +234,38 @@ function isSplitter(model) {
 
 function dropLayoutIntoContainer(layoutModel, pos, source, target) {
 
-  var targetContainer = followPathToParent(layoutModel, target.$path);
+  if (target.$path === '0'){
+    
+    return wrap(layoutModel, source, target, pos );
 
-  if (absoluteDrop(target, pos.position)) {
-      return transform(layoutModel, { insert: { source, target, pos } });
-  } else if (target === layoutModel || isDraggableRoot(layoutModel, target)) {
-      // Can only be against the grain...
-      if (withTheGrain(pos, target)) {
-          throw Error('How the hell did we do this');
-      } else { //onsole.log('CASE 4A) Works');
-          //return transform(layout, { wrap: {target, source, pos }, releaseSpace}); 
-      }
-  } else if (withTheGrain(pos, targetContainer)) {
-      if (pos.position.SouthOrEast) { //onsole.log(`CASE 4B) Works. Insert into container 'with the grain'`);
-          return transform(layoutModel, { insert: { source, after: target, pos } });
-      } else { //onsole.log('CASE 4C) Works');
-          return transform(layoutModel, { insert: { source, before: target, pos } });
-      }
-  } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
-      return transform(layoutModel, { wrap: { target, source, pos } });
-  } else if (isContainer(targetContainer)) {
-      return transform(layoutModel, { wrap: { target, source, pos } });
   } else {
-      console.log('no support right now for position = ' + pos.position);
+
+    var targetContainer = followPathToParent(layoutModel, target.$path);
+
+    if (absoluteDrop(target, pos.position)) {
+        return transform(layoutModel, { insert: { source, target, pos } });
+    } else if (target === layoutModel || isDraggableRoot(layoutModel, target)) {
+        // Can only be against the grain...
+        if (withTheGrain(pos, target)) {
+            throw Error('How the hell did we do this');
+        } else { //onsole.log('CASE 4A) Works');
+            //return transform(layout, { wrap: {target, source, pos }, releaseSpace}); 
+        }
+    } else if (withTheGrain(pos, targetContainer)) {
+        if (pos.position.SouthOrEast) { //onsole.log(`CASE 4B) Works. Insert into container 'with the grain'`);
+            return transform(layoutModel, { insert: { source, after: target, pos } });
+        } else { //onsole.log('CASE 4C) Works');
+            return transform(layoutModel, { insert: { source, before: target, pos } });
+        }
+    } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
+        return transform(layoutModel, { wrap: { target, source, pos } });
+    } else if (isContainer(targetContainer)) {
+        return transform(layoutModel, { wrap: { target, source, pos } });
+    } else {
+        console.log('no support right now for position = ' + pos.position);
+    }  
   }
+
   return layoutModel;
 
 }
@@ -327,6 +341,7 @@ function _wrap(model, source, target, pos){
   if (finalStep) {
       const { type, flexDirection } = getLayoutSpec(pos);
       const active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
+      // if idx === -1 target === model
       target = children[idx];
 
       // var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };

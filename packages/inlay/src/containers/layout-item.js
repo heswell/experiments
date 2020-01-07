@@ -16,16 +16,14 @@ export default function LayoutItem(props){
 
     const el = useRef(null);
 
-
     const handleMouseDown = evt => {
-
+        evt.stopPropagation();
         const dragRect = el.current.getBoundingClientRect();
-
         if (props.onMouseDown) {
             props.onMouseDown({ layoutModel, position });
         } else {
             // check if we are allowed to drag ?
-            dispatch({type: 'drag-start', evt, layoutModel, dragRect });
+            dispatch({type: Action.DRAG_START, evt, layoutModel, dragRect });
         }
     }
 
