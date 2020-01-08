@@ -7,8 +7,7 @@ import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { LayoutRoot } from './layout-root';
 import { Action } from '../model/layout-reducer';
-
-const getManagedDimension = style => style.flexDirection === 'column' ? 'height' : 'width';
+import { getManagedDimension } from '../model/layout-json'; 
 
 const PureFlexBox = React.memo(FlexBox);
 PureFlexBox.displayName = 'FlexBox';

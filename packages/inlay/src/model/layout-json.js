@@ -8,6 +8,8 @@ const DEFAULT_HEADER_SPEC = {
   style: {height: DEFAULT_HEADER_HEIGHT}
 }
 
+export const getManagedDimension = style => style.flexDirection === 'column' ? 'height' : 'width';
+
 //TODO components should be able to register props here
 const LayoutProps = {
     resizeable: true,

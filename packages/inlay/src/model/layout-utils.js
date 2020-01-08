@@ -53,7 +53,6 @@ function defaultDimension(model, dimension){
     }
 }
 
-
 export function computeLayout(
     model, 
     width=defaultDimension(model,'width'), 

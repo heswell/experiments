@@ -83,7 +83,10 @@ export const LayoutRoot = ({ children: propsChildren }) => {
         dragOperation.current = null;
     }
 
-    const layoutRootComponent = React.cloneElement(propsChildren, rootProps);
+    const layoutRoot = typeOf(propsChildren) === layoutModel.type
+        ? propsChildren
+        : componentFromLayout(layoutModel);
+    const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
 
     if (dragOperation.current) {
         const { component: { computedStyle, ...rest }, position } = dragOperation.current;
