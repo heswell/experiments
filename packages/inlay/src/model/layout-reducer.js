@@ -152,8 +152,19 @@ function dragDrop({ drag, ...state }, action) {
 
     console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor || target.type}`)
 
-    if (pos.position.header) {
-        console.log(` ...position header`)
+    if (pos.position.Header) {
+        if (target.type === 'TabbedContainer') {
+            let before, after;
+            const tabIndex = pos.tab.index;
+            if (pos.tab.index === -1 || tabIndex >= target.children.length) {
+                after = target.children[target.children.length - 1];
+            } else {
+                before = target.children[tabIndex];
+            }
+            return transform(state, { insert: { source, before, after } });
+        } else { 
+            return transform(state, { wrap: { target, source, pos } });
+        }
     } else if (pos.position.Centre) {
         console.log(` ...position center`)
     } else {
@@ -258,7 +269,7 @@ function dropLayoutIntoContainer(layoutModel, pos, source, target) {
                 return transform(layoutModel, { insert: { source, before: target, pos } });
             }
         } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
-            return transform(layoutModel, { wrap: { target, source, pos } });
+            return wrap(layoutModel, source, target, pos );
         } else if (isContainer(targetContainer)) {
             return transform(layoutModel, { wrap: { target, source, pos } });
         } else {
@@ -387,6 +398,14 @@ function _wrap(model, source, target, pos) {
 
         // source only has position attributes because of dragging
         const { style: { left: _1, top: _2, ...sourceStyle } } = source;
+        const dim = getManagedDimension(style);
+        const sourceFlex = typeof pos[dim] === 'number'
+            ? {flexGrow: 0, flexShrink: 0, flexBasis: pos[dim]}
+            : {flex: 1};
+
+        const nestedSource = { ...source, style: { ...sourceStyle, ...sourceFlex }, resizeable: true };
+        const nestedTarget = { ...target, style: { ...target.style, flex: 1 }, resizeable: true };
+            
         var wrapper = {
             type,
             active,
@@ -394,10 +413,8 @@ function _wrap(model, source, target, pos) {
             style,
             resizeable: target.resizeable,
             children: (pos.position.SouthOrEast || pos.position.Header)
-                ? [{ ...target, style: { ...target.style, flex: 1 }, resizeable: true },
-                { ...source, style: { ...sourceStyle }, resizeable: true }]
-                : [{ ...source, style: { ...sourceStyle }, resizeable: true },
-                { ...target, style: { ...target.style, flex: 1 }, resizeable: true }]
+                ? [nestedTarget, nestedSource]
+                : [nestedSource, nestedTarget]
         };
 
         children.splice(idx, 1, wrapper);
@@ -439,9 +456,9 @@ function _insert(model, source, into, before, after, size) {
             children = model.children.reduce((arr, child, i/*, all*/) => {
                 // idx of -1 means we just insert into end 
                 if (idx === i) {
+                    const { style: { left: _1, top: _2, flex: _3, ...sourceStyle } } = source;
                     if (flexBox) {
                         // source only has position attributes because of dragging
-                        const { style: { left: _1, top: _2, flex: _3, ...sourceStyle } } = source;
                         const sourceFlex = hasSize
                             ? {flexGrow: 0, flexShrink: 0, flexBasis: size}
                             : {flex: 1};
@@ -512,6 +529,10 @@ function isTower(model) {
 
 function isTerrace(model) {
     return model.type === 'FlexBox' && model.style.flexDirection !== 'column';
+}
+
+function isTabset(model) {
+    return model.type === 'TabbedContainer';
 }
 
 // maybe in layout-json ?
