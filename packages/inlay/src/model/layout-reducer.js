@@ -92,21 +92,23 @@ function splitterResize(state, { layoutModel, dim, path, measurements }) {
     const manualLayout = {
         ...layoutModel,
         children: layoutModel.children.map((child, i) => {
-            const { type, style: { flex, [dim]: _, ...childStyle }, layoutStyle: { [dim]: _1, ...childLayoutStyle } } = child;
-            const { flexBasis, flexShrink = 1, flexGrow = 1 } = childLayoutStyle;
+            const { type, style: { flex, ...childStyle }, layoutStyle } = child;
+            const { [dim]: size, flexShrink = 1, flexGrow = 1 } = layoutStyle;
             const measurement = measurements[i];
-            if (type === 'Splitter' || flexBasis === measurement) {
+            if (type === 'Splitter' || size === measurement) {
                 return child;
             } else {
                 return {
                     ...child,
                     layoutStyle: {
-                        ...childLayoutStyle,
-                        flexBasis: measurement
+                        ...layoutStyle,
+                        flexBasis: 'auto',
+                        [dim]: measurement
                     },
                     style: {
                         ...childStyle,
-                        flexBasis: measurement,
+                        [dim]: measurement,
+                        flexBasis: 'auto',
                         flexShrink,
                         flexGrow
                     }
