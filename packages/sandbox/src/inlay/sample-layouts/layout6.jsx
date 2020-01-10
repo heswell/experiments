@@ -2,8 +2,7 @@ import React from 'react';
 import { Application, FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/inlay';
 
 export default (width = 900, height = 800) =>
-  <Application>
-    <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: "column", width: "100%", height: "100%" }}>
+    <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: "column", width: 1200, height: 1100 }}>
       <FlexBox className="SampleApp2" style={{ flexDirection: "row", flex: 1 }}>
         <Component title="test 1" style={{ width: 100, backgroundColor: 'red' }} resizeable/>
         <DynamicContainer resizeable>
@@ -43,4 +42,3 @@ export default (width = 900, height = 800) =>
       </FlexBox>
       <div style={{ height: 32, backgroundColor: 'green' }} />
     </FlexBox>
-  </Application>

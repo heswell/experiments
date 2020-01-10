@@ -40,7 +40,6 @@ export default {
         "@heswell/utils",
         "classnames",
         "react",
-        "react-dom",
-        "react-motion"
+        "react-dom"
     ]
 };

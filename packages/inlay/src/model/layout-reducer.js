@@ -4,7 +4,7 @@ import {
     layout as applyLayout,
 } from './layoutModel';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
-import { computeLayout, recomputeChildLayout, printLayout, assignFlex } from './layout-utils';
+import { computeLayout, recomputeChildLayout, printLayout } from './layout-utils';
 import { removeVisualStyles } from './css-properties';
 
 // These are stretch values, need to import (dynamically)
@@ -135,8 +135,7 @@ function _replaceChild(model, child, replacement) {
     if (finalStep) {
         // can replacement evcer be an array - there used to be provision for that here
         children[idx] = {
-            ...replacement,
-            layout: { ...child.layout }
+            ...replacement // do we need the cloning here ?
         };
     } else {
         children[idx] = _replaceChild(children[idx], child, replacement);

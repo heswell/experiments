@@ -1,8 +1,7 @@
 
 
-import {BoxModel, positionValues, pointPositionWithinRect} from './box-model';
+import {BoxModel, positionValues, pointPositionWithinRect, Position} from './box-model';
 import {containerOf} from './path-utils';
-import { Position } from './index';
 
 export const isTabstrip = dropTarget => dropTarget.pos.tab && dropTarget.component.type === 'TabbedContainer' && dropTarget.pos.position.Header;
 

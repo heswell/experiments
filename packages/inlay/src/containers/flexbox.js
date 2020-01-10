@@ -114,7 +114,8 @@ export default function FlexBox(props){
                 if (isLayout(child)) {
                     results.push(React.cloneElement(child, { ...layoutProps }));
                 } else {
-                    results.push(<LayoutItem {...child.props} {...layoutProps}>{child}</LayoutItem>);
+                    const {style, ...childProps} = child.props;
+                    results.push(<LayoutItem {...childProps} {...layoutProps}>{child}</LayoutItem>);
                 }
                 childIdx += 1;
             }
