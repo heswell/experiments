@@ -247,7 +247,11 @@ export function collectStyles(style, overrides){
 function mapCSSProperties(entry){
   const [name, value] = entry;
   const propertyName = normalizeCSSPropertyName(name);
-  
+
+  if (value === undefined){
+    return ARRAY;
+  }
+
   if (name !== propertyName){
     entry[0] = propertyName;
   }

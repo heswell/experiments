@@ -50,7 +50,7 @@ const SampleLayout = ({ sample, width, height }) => {
 console.log(`reactDOM render`)
 ReactDOM.render(
   <>
-    <SampleLayout sample={6} />
+    <SampleLayout sample={18} />
   </>,
   document.getElementById('root')
 );

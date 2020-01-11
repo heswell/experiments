@@ -224,7 +224,6 @@ function dragStart(state, { dragRect, dragPos, ...action }) {
 
 function removeChild(state, { layoutModel: child }) {
     const manualLayout = _removeChild(state, child);
-    printLayout(manualLayout);
     return recomputeChildLayout(manualLayout, state.computedStyle, state.$path)
 }
 

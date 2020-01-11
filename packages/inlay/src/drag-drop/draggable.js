@@ -72,7 +72,7 @@ export const Draggable = {
         e.preventDefault();
     },
 
-    // called from surface handleDragSTart (_dragCallback)
+    // called from handleDragStart (_dragCallback)
     initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler) {
 
         _dragCallback = dragHandler;
@@ -93,14 +93,9 @@ function preDragMousemoveHandler(e) {
     // when we do finally move the draggee, we are going to 'jump' by the amount of the drag threshold, should we
     // attempt to animate this ?    
     if (mouseMoveDistance > _dragThreshold) {
-
         window.removeEventListener('mousemove', preDragMousemoveHandler, false);
         window.removeEventListener('mouseup', preDragMouseupHandler, false);
-
-        if (_dragCallback(e, x_diff, y_diff) !== false) {
-            window.addEventListener('mousemove', dragMousemoveHandler, false);
-            window.addEventListener('mouseup', dragMouseupHandler, false);
-        }
+        _dragCallback(e, x_diff, y_diff);
     }
 }
 
@@ -132,6 +127,9 @@ function initDrag(layoutModel, path, dragRect, dragPos) {
     var pctX = Math.round(_dragState.x.mousePct * 100);
     var pctY = Math.round(_dragState.y.mousePct * 100);
 
+    window.addEventListener('mousemove', dragMousemoveHandler, false);
+    window.addEventListener('mouseup', dragMouseupHandler, false);
+
     if (type === 'Surface') {
 
         // NO - only if immediate container of dragged component is surface
@@ -150,6 +148,7 @@ function initDrag(layoutModel, path, dragRect, dragPos) {
             transformOrigin: pctX + "% " + pctY + "%"
         };
     }
+
 }
 
 function dragMousemoveHandler(evt) {

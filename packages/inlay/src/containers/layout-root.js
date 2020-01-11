@@ -25,8 +25,9 @@ function useLayout(reducer, initialData){
 export const LayoutRoot = ({ children: child }) => {
 
     const [layoutModel, dispatchLayoutAction] = useLayout(layoutReducer, { layoutType: typeOf(child), props: child.props });
-    // const [rootProps, setRootProps] = useState({ ...child.props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null })
     const rootProps = { ...child.props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
+    const [drag, setDrag] = useState(-1.0);
+    const dragOperation = useRef(null);
 
     useEffect(() => {
         if (layoutModel !== null){
@@ -34,12 +35,11 @@ export const LayoutRoot = ({ children: child }) => {
             if (layoutModel.drag) {
                 const {dragRect, dragPos, component} = layoutModel.drag;
                 dragStart(dragRect, dragPos, component);
+                setDrag(0.0);
             }    
         }
     }, [layoutModel])
 
-    const dragOperation = useRef(null);
-    const [dragPosition, setDragPosition] = useState(null);
 
     function dispatch(action) {
         if (action.type === 'drag-start') {
@@ -92,13 +92,14 @@ export const LayoutRoot = ({ children: child }) => {
         if (left !== position.left || top !== position.top) {
             dragOperation.current.position.left = left;
             dragOperation.current.position.top = top;
-            setDragPosition({ left, top });
+            setDrag(parseFloat(`${left}.${top}`));
         }
     }
 
     function handleDrop(dropTarget) {
         dispatch({type: Action.DRAG_DROP, dropTarget});
         dragOperation.current = null;
+        setDrag(-1.0);
     }
 
     if (layoutModel === null){
@@ -111,6 +112,7 @@ export const LayoutRoot = ({ children: child }) => {
     const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
 
     if (dragOperation.current) {
+
         const { component: { computedStyle, ...rest }, position } = dragOperation.current;
         const dragLayoutModel = {
             ...rest,
