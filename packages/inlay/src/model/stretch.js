@@ -17,13 +17,16 @@ let Display;
 
 let stretch;
 let allocator;
+let ready = false;
+
+export const isReady = () => ready;
 
 const ARRAY = [];
 const NO_OVERRIDES = {};
 const SURFACE_CHILD_STYLE = ({style}) => (style.width && style.height ? {position: 'absolute'}: undefined);
 const NOOP = () => undefined;
 
-const stretchLoading = new Promise(resolve => import('stretch-layout').then(s => resolve(s)));
+export const stretchLoading = import('stretch-layout').then(initStretch);
 
 export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
 
@@ -42,11 +45,6 @@ export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
   return result;
 }
 
-export default async function layout(){
-  initStretch(await stretchLoading)
-  return stretchLayout;
-}
-
 export function initStretch(stretchModule){
   stretch = stretchModule;
   allocator = new stretch.Allocator();
@@ -57,6 +55,8 @@ export function initStretch(stretchModule){
     JustifyContent,
     PositionType
   } = stretch);
+  console.log(`STRETCH LOADED`)
+  return ready = true;
 }
 
 export function stretchLayout(config){

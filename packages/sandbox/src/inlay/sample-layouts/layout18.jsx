@@ -7,8 +7,8 @@ export default (width = 500, height = 400) =>
         <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable>
             <FlexBox style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }} resizeable>
                 <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable>
-                    <Component title='B Component' style={{ height: 119, flexGrow: 1, flexShrink: 1, backgroundColor: 'orange' }} header resizeable />
-                    <Component title='R Component' style={{ height: 119, flexGrow: 1, flexShrink: 1, backgroundColor: 'brown' }} header resizeable />
+                    <Component title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'orange' }} header resizeable />
+                    <Component title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'brown' }} header resizeable />
                 </FlexBox>
                 <Component title='R Component' style={{ flex: 1, backgroundColor: 'rebeccapurple' }} header resizeable />
             </FlexBox>

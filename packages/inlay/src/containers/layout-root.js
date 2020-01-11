@@ -4,19 +4,37 @@ import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import LayoutItem from './layout-item';
+import {stretchLoading, stretchLayoutChildren} from '../model/stretch';
 
 const EMPTY_OBJECT = {};
 
-export const LayoutRoot = ({ children: propsChildren }) => {
+function useLayout(reducer, initialData){
+    const [layoutModel, dispatchLayoutAction] = useReducer(reducer, initialData, initModel);
 
-    const [layoutModel, dispatchLayoutAction] = useReducer(layoutReducer, { type: typeOf(propsChildren), props: propsChildren.props }, initModel);
-    const [rootProps, setRootProps] = useState({ ...propsChildren.props, layoutModel, dispatch, key: layoutModel.$id })
+    if (layoutModel === null){
+        stretchLoading.then(() => {
+            dispatchLayoutAction({type: Action.INITIALIZE, ...initialData});
+        });
+    }
+
+    return [layoutModel, dispatchLayoutAction];
+
+}
+
+
+export const LayoutRoot = ({ children: child }) => {
+
+    const [layoutModel, dispatchLayoutAction] = useLayout(layoutReducer, { layoutType: typeOf(child), props: child.props });
+    // const [rootProps, setRootProps] = useState({ ...child.props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null })
+    const rootProps = { ...child.props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
 
     useEffect(() => {
-        setRootProps({ ...propsChildren.props, layoutModel, dispatch, key: layoutModel.$id });
-        if (layoutModel.drag) {
-            const {dragRect, dragPos, component} = layoutModel.drag;
-            dragStart(dragRect, dragPos, component);
+        if (layoutModel !== null){
+            // this is too late - fires after w erender
+            if (layoutModel.drag) {
+                const {dragRect, dragPos, component} = layoutModel.drag;
+                dragStart(dragRect, dragPos, component);
+            }    
         }
     }, [layoutModel])
 
@@ -83,8 +101,12 @@ export const LayoutRoot = ({ children: propsChildren }) => {
         dragOperation.current = null;
     }
 
-    const layoutRoot = typeOf(propsChildren) === layoutModel.type
-        ? propsChildren
+    if (layoutModel === null){
+        return null;
+    }
+
+    const layoutRoot = typeOf(child) === layoutModel.type
+        ? child
         : componentFromLayout(layoutModel);
     const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
 

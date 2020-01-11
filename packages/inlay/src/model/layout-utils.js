@@ -1,12 +1,5 @@
 import React from 'react';
-import {initStretch, stretchLayout, stretchLayoutChildren, extendLayout} from './stretch';
-
-let ready = false;
-
-import('stretch-layout').then(async (stretch) => {
-    initStretch(stretch);
-    ready = true;
-});
+import { stretchLayout, stretchLayoutChildren, extendLayout, isReady} from './stretch';
 
 export const BORDER_STYLES = {
     border: true,
@@ -30,6 +23,9 @@ const LAYOUT_STYLES = {
     paddingBottom: true,
     paddingLeft: true
 }
+
+export const stretchLoaded = isReady;
+
 
 const LAYOUT_LIST = Object.keys(LAYOUT_STYLES);
 
@@ -61,9 +57,6 @@ export function computeLayout(
     left=0, 
     path){
 
-    if (!ready){
-        throw(`NOT READY TO LAYOUT YET`)
-    }
     const layoutModel = extendLayout({
         ...model,
         style: {

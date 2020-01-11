@@ -1,10 +1,7 @@
 import { uuid } from '@heswell/utils';
 import { getLayoutModel2 as getLayoutModel, getManagedDimension, resetPath } from './layout-json';
-import {
-    layout as applyLayout,
-} from './layoutModel';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
-import { computeLayout, recomputeChildLayout, printLayout } from './layout-utils';
+import { computeLayout, recomputeChildLayout, printLayout, stretchLoaded } from './layout-utils';
 import { removeVisualStyles } from './css-properties';
 
 // These are stretch values, need to import (dynamically)
@@ -45,14 +42,60 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 }
 
-export const initModel = ({ type, props }) =>
-    initialize(null, { type: Action.INITIALIZE, layoutType: type, props })
+export const initModel = ({ layoutType, props }) =>
+    initialize(null, { layoutType, props })
 
 export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
 
 function initialize(state, action) {
-    return applyLayout(getLayoutModel(action.layoutType, action.props));
+    if (stretchLoaded()){
+        return applyLayout(getLayoutModel(action.layoutType, action.props));
+    } else {
+        return null;
+    }
 }
+
+export function applyLayout(model, position = {}, path = '0', visibility = 'visible', force = false, active) {
+    console.log(`%clayout for ${model.type} #${model.$path}`,'color:brown;font-weight:bold;')
+
+    function firstNumber(n1, n2, n3) {
+        return typeof n1 === 'number' ? Math.round(n1) : typeof n2 === 'number' ? n2 : n3;
+    }
+
+    function firstDefined(n1, n2, n3) {
+        return n1 !== undefined
+            ? (typeof n1 === 'number' ? Math.round(n1) : n1)
+            : n2 !== undefined ? n2 : n3;
+    }
+
+    var style = model.style || {};
+    var top = firstNumber(position.top, style.top, 0);
+    var left = firstNumber(position.left, style.left, 0);
+    var width = firstDefined(position.width, style.width, 0);
+    var height = firstDefined(position.height, style.height, 0);
+
+    var { layout, ...m } = model;
+
+    if (layout && force !== true) {
+        if (path === model.$path &&
+            width === layout.width &&
+            height === layout.height &&
+            top === layout.top &&
+            left === layout.left &&
+            (visibility === undefined || visibility === model.style.visibility) &&
+            (active === undefined || active === model.active)) {
+
+            return model;
+        }
+    }
+
+
+    if (typeof active === 'number' && active !== m.isActive){
+        m = {...m,active};
+    }
+    return computeLayout(m, width, height, top, left, path);
+}
+
 
 function switchTab(state, { path, nextIdx }) {
     var target = followPath(state, path);
@@ -221,10 +264,15 @@ function _removeChild(model, child) {
 }
 
 function unwrap(layoutModel, child) {
-    const { $path } = layoutModel;
+    const {
+        $path,
+        type,
+        style: {flex, flexBasis, flexGrow, flexShrink, width, height},
+        layoutStyle: {flexBasis: layoutBasis, flexGrow: layoutGrow, flexShrink: layoutShrink}
+    } = layoutModel;
+
     let unwrappedChild = resetPath(child, $path);
     if ($path === '0') {
-        const { style: { width, height } } = layoutModel;
         unwrappedChild = {
             ...unwrappedChild,
             //TODO get this bit right, do we need top, left as well ?
@@ -235,6 +283,25 @@ function unwrap(layoutModel, child) {
             },
             computedStyle: layoutModel.computedStyle
         }
+    } else if (type === 'FlexBox'){
+        const dim = getManagedDimension(layoutModel.style);
+        const {style: {[dim]: size, ...style}, layoutStyle: {[dim]: layoutSize, ...layoutStyle}} = unwrappedChild;
+        unwrappedChild = {
+            ...unwrappedChild,
+            style: {
+                ...style,
+                flex,
+                flexGrow,
+                flexShrink,
+                flexBasis
+            },
+            layoutStyle: {
+                ...layoutStyle,
+                layoutGrow,
+                layoutShrink,
+                layoutBasis
+            }
+        }        
     }
     return unwrappedChild;
 
