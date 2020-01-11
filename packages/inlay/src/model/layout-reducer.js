@@ -1,5 +1,5 @@
 import { uuid } from '@heswell/utils';
-import { getLayoutModel2 as getLayoutModel, getManagedDimension, resetPath } from './layout-json';
+import { addDefaultLayoutProps, getLayoutModel2 as getLayoutModel, getManagedDimension, resetPath } from './layout-json';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
 import { computeLayout, recomputeChildLayout, printLayout, stretchLoaded } from './layout-utils';
 import { removeVisualStyles } from './css-properties';
@@ -453,10 +453,8 @@ function _wrap(model, source, target, pos) {
     if (finalStep) {
         const { type, flexDirection } = getLayoutSpec(pos);
         const active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
-        // if idx === -1 target === model
         target = children[idx];
 
-        // var style = { position: null, transform: null, transformOrigin: null, flex: hasSize ? null : 1, [dim]: hasSize? size : undefined };
         // TODO handle scenario where items have been resized, so have flexBasis values set
         const style = {
             ...removeVisualStyles(target.style),
@@ -483,6 +481,8 @@ function _wrap(model, source, target, pos) {
                 ? [nestedTarget, nestedSource]
                 : [nestedSource, nestedTarget]
         };
+
+        addDefaultLayoutProps(type, wrapper);
 
         children.splice(idx, 1, wrapper);
 

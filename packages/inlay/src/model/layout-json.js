@@ -105,7 +105,7 @@ function layoutProps(type, props){
     return addDefaultLayoutProps(type, results);
 }
 
-function addDefaultLayoutProps(type, layoutProps){
+export function addDefaultLayoutProps(type, layoutProps){
     if (type === 'TabbedContainer'){
         if (!layoutProps.header){
             layoutProps.header = {
