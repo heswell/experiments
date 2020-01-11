@@ -1,6 +1,5 @@
 import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
 import cx from 'classnames';
-import { createLogger, logColor } from '@heswell/utils';
 import Canvas from './canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
 // import SelectionModel from '../model/selectionModel';
@@ -10,8 +9,6 @@ import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
 
 import './viewport.css';
-
-const logger = createLogger('Viewport', logColor.green)
 
 const scrollbarSize = getScrollbarSize();
 
@@ -79,8 +76,9 @@ export const Viewport = React.memo(({
     const rowCount = useRef(model.rowCount);
 
     const { dispatch, callbackPropsDispatch } = useContext(GridContext);
-
     const [data, dispatchData] = useReducer(dataReducer(model), initialData);
+
+    console.log(`viewport height=${height}`)
 
     useEffect(() => {
         rowCount.current = model.rowCount
@@ -146,7 +144,7 @@ export const Viewport = React.memo(({
             setRange(firstRow, firstRow + numberOfRowsInViewport);
         }
 
-    }, []), 30);
+    }, [height]), 30);
 
     const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {

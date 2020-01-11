@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
-import {LocalDataView as View} from '@heswell/data';
+import {LocalDataView as View, FilterDataView} from '@heswell/data';
 import {SetFilter} from '@heswell/ingrid-extras';
 
 const tableName = 'Instruments'
@@ -27,6 +27,7 @@ const instrumentColumns = [
 ];
 
 const dataView = new View(dataConfig);
+const filterView = new FilterDataView(dataView, nameColumn);
 
 const SampleApp = () => {
 
@@ -37,19 +38,20 @@ const SampleApp = () => {
       columns: instrumentColumns},
       ({filter}) => {
         filter && setFilter(filter)
+      }).then(() => {
+        console.log(`SampleApp, subscribed`)
+        dataView.getFilterData(nameColumn)
       });
-      dataView.getFilterData(nameColumn)
   },[dataView])
 
   return (
         <div className='ColumnFilter FilterPanel'>
           <SetFilter
             className='test-filter'
-            height={500}
-            width={400}
+            style={{height: 500, width: 300}}
             column={nameColumn}
             filter={filter}
-            dataView={dataView}
+            dataView={filterView}
           />
         </div>
     )

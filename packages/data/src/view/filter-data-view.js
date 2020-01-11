@@ -59,7 +59,7 @@ export default class FilterDataView extends EventEmitter {
     }
 
     setRange(lo, hi){
-        if (lo !== this.range.lo && hi !== this.range.hi){
+        if (lo !== this.range.lo || hi !== this.range.hi){
             this.range = {lo, hi};
             this.dataView.setRange(lo, hi, DataTypes.FILTER_DATA);
         }

@@ -36,8 +36,8 @@ export default class LocalDataView {
     this.clientCallback = null;
 
     this.pendingRangeRequest = null;
-    this.pendingFilterDataRequest = null;
-    this.pendingFilterRangeRequest = null;
+    this.pendingFilterColumn= null;
+    this.pendingFilterRange = null;
   }
 
   async subscribe({
@@ -54,28 +54,28 @@ export default class LocalDataView {
     this.columns = columns;
     this.meta = metaData(columns);
 
+    console.log(`subscribe, wait for data`)
     const { default: data } = await this.eventualView
     const table = new Table({ data, columns });
     this.dataView = new DataView(table, {columns}, this.updateQueue);
+    console.log(`got data, dataView is assigned`)
     this.clientCallback = callback;
 
     this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
+
+    if (this.pendingFilterColumn){
+      console.log(`gor a pending filter requerst for ${this.pendingFilterColumn.name}`)
+      this.getFilterData(this.pendingFilterColumn, this.pendingFilterRange);
+      this.pendingFilterColumn = null;
+      this.pendingFilterRange = null;
+    }
 
     //TODO can we eliminate all the following ?
     if (this.pendingRangeRequest){
       this.setRange(...this.pendingRangeRequest);
       this.pendingRangeRequest = null;
     }
-    if (this.pendingFilterDataRequest){
-      this.getFilterData(...this.pendingFilterDataRequest);
-      this.pendingFilterDataRequest = null;
-    }
 
-    if (this.pendingFilterRangeRequest){
-      alert('seriously ?')
-      // this.setFilterRange(...this.pendingFilterRangeRequest);
-      // this.pendingFilterRangeRequest = null;
-    }
   }
 
   unsubscribe() {
@@ -151,7 +151,12 @@ export default class LocalDataView {
 
 
   getFilterData(column, range) {
-      const filterData =  this.dataView.getFilterData(column, range);
-      this.clientFilterCallback(filterData);
+      if (this.dataView){
+        const filterData =  this.dataView.getFilterData(column, range);
+        this.clientFilterCallback(filterData);
+      } else {
+        this.pendingFilterColumn = column;
+        this.pendingFilterRange = range;
+      }
   }
 }

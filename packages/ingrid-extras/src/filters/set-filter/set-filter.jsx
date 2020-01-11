@@ -34,7 +34,7 @@ export const SetFilter = ({
         : SET_FILTER_DATA_COLUMNS
 
     return (
-        <FlexBox className={cx('SetFilter', className)} style={style}>
+        <FlexBox className={cx('SetFilter', className)} style={{...style, flexDirection: 'column'}}>
             <CheckList style={{ flex: 1, border: '1px solid lightgray' }}
                 columns={filterColumns}
                 dataView={filterView} />

@@ -78,8 +78,8 @@ export default function Grid({
     const scrollLeft = useRef(0);
     const overTheLine = useRef(0);
     const prevColumns = useRef(null);
-    const inputWidth = props.width || style.width; 
-    const inputHeight = props.height || style.height; 
+    const inputWidth = style.width; 
+    const inputHeight = style.height; 
 
     const [showFilters, setShowFilters] = useState(showInlineFilter);
 
@@ -129,6 +129,8 @@ export default function Grid({
         ...props,
         columns,
         scrollbarSize,
+        width: inputWidth,
+        height: inputHeight,
         headerHeight,
         rowStripes
     }, initModel);
@@ -150,6 +152,8 @@ export default function Grid({
         groupState,
         sortBy,
         _overTheLine } = model;
+
+        console.log(`Grid model.height=${height} style=${style.height}`)
 
     useEffect(() => {
         overTheLine.current = _overTheLine;

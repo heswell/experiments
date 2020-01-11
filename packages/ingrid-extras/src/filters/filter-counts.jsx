@@ -1,6 +1,8 @@
 import React from 'react';
 
-export function FilterCounts({ column, stats/*, searchText*/ }) {
+const NO_STATS = {}
+
+export function FilterCounts({ column, stats=NO_STATS/*, searchText*/ }) {
   const { totalRowCount, filteredRowCount, filteredSelected } = stats;
   return (
       <div className="filter-count-section">
