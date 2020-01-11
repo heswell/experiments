@@ -3,16 +3,22 @@ import cx from 'classnames';
 import { PopupService } from '@heswell/ui-controls';
 import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
-import { remove as removeFromLayout } from '../redux/actions';
-import { layout as applyLayout } from '../model/index';
-import {getLayoutModel} from '../model/layout-json';
 import { Action } from '../model/layout-reducer';
-
+import { LayoutRoot } from './layout-root';
 import './layout-item.css';
+
+const PureLayoutItem = React.memo(LayoutItem);
+PureLayoutItem.displayName = 'LayoutItem';
 
 export default function LayoutItem(props){
     // TODO should we pass dispatch, title to the nested component ?
     const {children: component, layoutModel, dispatch, title, ...componentProps} = props;
+
+    if (layoutModel === undefined){
+        return (
+            <LayoutRoot><PureLayoutItem {...props} /></LayoutRoot>
+        )
+    }
 
     const el = useRef(null);
 

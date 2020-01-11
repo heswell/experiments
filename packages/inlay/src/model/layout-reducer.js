@@ -192,7 +192,7 @@ function _replaceChild(model, child, replacement) {
 function dragDrop({ drag, ...state }, action) {
 
     const { component: source } = drag;
-    const { dropTarget: { component: target, pos } } = action;
+    const { dropTarget: { component: target, pos }, targetPosition } = action;
 
     console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor || target.type}`)
 
@@ -212,7 +212,7 @@ function dragDrop({ drag, ...state }, action) {
     } else if (pos.position.Centre) {
         console.log(` ...position center`)
     } else {
-        return dropLayoutIntoContainer(state, pos, source, target);
+        return dropLayoutIntoContainer(state, pos, source, target, targetPosition);
     }
 
     return state;
@@ -310,11 +310,25 @@ function isSplitter(model) {
     return model && model.type === 'Splitter';
 }
 
-function dropLayoutIntoContainer(layoutModel, pos, source, target) {
+function dropLayoutIntoContainer(layoutModel, pos, source, target, targetPosition) {
 
     if (target.$path === '0') {
 
-        return wrap(layoutModel, source, target, pos);
+        if (target.type === 'Surface'){
+            const {style, layoutStyle, computedStyle} = source;
+            const {left, top} = targetPosition;
+            return {
+                ...layoutModel,
+                children: layoutModel.children.concat({
+                    ...source,
+                    style: { ...style, left, top },
+                    layoutStyle: { ...layoutStyle, left, top },
+                    computedStyle: { ...computedStyle, left, top }
+                })
+            }
+        } else {
+            return wrap(layoutModel, source, target, pos);
+        }
 
     } else {
 
@@ -503,7 +517,7 @@ function insert(model, source, into, before, after, size) {
 
 function _insert(model, source, into, before, after, size) {
 
-    const { $path, type, style } = model;
+    const { $path, type } = model;
     const target = before || after || into;
     let { idx, finalStep } = nextStep($path, target);
     let children;
@@ -514,7 +528,6 @@ function _insert(model, source, into, before, after, size) {
     if (finalStep && !oneMoreStepNeeded) {
 
         const flexBox = type === 'FlexBox';
-        const dim = flexBox && (style.flexDirection === 'row' ? 'width' : 'height');
 
         if (type === 'Surface' && idx === -1) {
             children = model.children.concat(source);

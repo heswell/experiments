@@ -1,200 +1,85 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import cx from 'classnames';
-import {uuid} from '@heswell/utils';
+import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
-import DynamicContainer from './dynamic-container';
-import { handleLayout } from '../model/index';
-import {componentFromLayout} from '../util/component-from-layout-json';
-import { registerClass, isLayout } from '../component-registry';
-import { Draggable } from '../drag-drop/draggable';
+import ComponentHeader from '../component/component-header.jsx';
+import { registerClass, isLayout, typeOf } from '../component-registry';
+import { componentFromLayout } from '../util/component-from-layout-json';
+import { LayoutRoot } from './layout-root';
+import { Action } from '../model/layout-reducer';
 
+const PureSurface = React.memo(Surface);
+PureSurface.displayName = 'Surface';
 
-const NO_CHILDREN = [];
-const EMPTY_OBJECT = {};
+export default function Surface(props){
 
-export default class Surface extends DynamicContainer {
+    const {layoutModel, dispatch} = props;
 
-    constructor(props){
-        super(props);
-        this.handleDragStart = this.handleDragStart.bind(this);
-        this.handleDrag = this.handleDrag.bind(this);
-        this.handleDrop = this.handleDrop.bind(this);
-    }
-
-    getState() {
-        return {
-            dragging: false,
-            draggedIcon: null,
-            draggedComponent: null
-        };
-    }
-
-    render() {
-        var className = cx(
-            this.props.className,
-            'rect-layout',
-            'rect-container',
-            'Surface'
-        );
-
-        const {layoutModel: {computedStyle: style, children=NO_CHILDREN}, draggedComponent} = this.state;
-        const childrenToRender = draggedComponent
-            ? [...children, draggedComponent]
-            : children
-        
+    if (layoutModel === undefined){
         return (
-            <div id={this.state.id} className={className} style={style}>
-                {
-                    childrenToRender.map(
-                        (child, idx) => this.renderChild(child, idx)
-                    )
-                }
-            </div>
-        );
+            <LayoutRoot><PureSurface {...props} /></LayoutRoot>
+        )
     }
-
-    renderChild(layoutModel, idx) {
-
-        const { children } = this.props;
-        const child = React.isValidElement(children) && idx === 0
-            ? children
-            : Array.isArray(children) && children[idx]
-                ? children[idx]
-                : componentFromLayout(layoutModel)
-
-        const props = {
-            key: layoutModel.$id,
-            onLayout: this.handleLayout,
-            layoutModel
-        };
-        const dragging = layoutModel === this.state.draggedComponent;
-
-        const style = {
-            ...child.props.style,
-            boxSizing: 'content-box'
-        };
-
-        if (isLayout(child)) {
-            return React.cloneElement(child, { ...props, style });
-        } else {
-            return (
-                <LayoutItem dragging={dragging} {...props}>{child}</LayoutItem>)
-        }
-    }
-
-    // shouldn't this be on Container ? Applicable for everyone
-    componentWillReceiveProps(nextProps) {
-        const {layoutModel} = nextProps;
-        if (layoutModel && layoutModel !== this.state.layoutModel) {
-            this.setState({layoutModel});
-        } else {
-
-        }
-
-    }
-
-    renderChildren() {
-        return null;
-    }
-
-    // _dragCallback from draggable, but bound to original handleLayout 'options' in container
-    handleDragStart({model, position: dragRect, instructions=EMPTY_OBJECT}, e){
-        var {top,left} = dragRect;
-
-        // Can we find a better way than these clumsy instructions
-        const layoutModel = !instructions.DoNotRemove
-            ? handleLayout(this.state.layoutModel,'remove', {targetNode: model})
-            : this.state.layoutModel;
-
-        const dragTransform = Draggable.initDrag(e, layoutModel, model.$path, dragRect, {
-            drag: this.handleDrag,
-            drop: this.handleDrop
-        });
-
-        const width = dragRect.right - dragRect.left;
-        const height = dragRect.bottom - dragRect.top;
-
-        var {$path, computedStyle: modelLayout, style, dragAsIcon, ...rest} = model;
-        const layout = modelLayout
-            ? {width, height, ...modelLayout, top, left, ...(!instructions.DoNotTransform && dragTransform)}
-            : {top, left, width, height}
+    // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
 
 
-        var draggedIcon = dragAsIcon
-            ? componentFromLayout({
-                type: 'ComponentIcon',
-                color: 'red',
-                style: {...style, position: 'absolute', width: 120, height: 45, visibility: 'visible'},
-                layout
-            })
-            : undefined;
+    // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
+    // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
 
-        var draggedComponent = dragAsIcon
-            ? {$id: uuid(), $path, layout, style, ...rest}
-            : {
-                ...rest,
-                style,
-                computedStyle: layout
+ 
+    var { type, title, header, computedStyle } = layoutModel;
+    const className = cx(type);
+
+    return (
+        <div className={className} style={computedStyle}>
+            {header &&
+                <ComponentHeader
+                    title={`${title}`}
+                    onMouseDown={e => this.handleMouseDown(e)}
+                    style={header.style}
+                    menu={header.menu} />
+            }
+            {renderChildren()}
+        </div>
+    );
+
+    function renderChildren(){
+
+        const { children: layoutChildren } = layoutModel;
+
+        const propChildren = Array.isArray(props.children)
+            ? props.children.filter(child => child)
+            : [props.children];
+
+        const results = [];
+
+        for (var idx = 0, childIdx = 0; idx < layoutChildren.length; idx++) {
+
+            var childLayoutModel = layoutChildren[idx];
+
+            const child = typeOf(propChildren[childIdx]) === childLayoutModel.type
+                ? propChildren[childIdx]
+                : componentFromLayout(childLayoutModel);
+
+            const layoutProps = {
+                key: childLayoutModel.$id,
+                idx: childIdx,
+                absIdx: idx,
+                layoutModel: childLayoutModel,
+                dispatch
             };
 
-        // don't set dragging yet, it will suppress the final render of app with draggedComonent
-        // removed.
-        this.setState({
-            dragX: left,
-            dragY: top,
-            draggedIcon,
-            draggedComponent,
-            layoutModel
-        });
-
-        return true;
-
-    }
-
-    handleDrag(x,y){
-
-        const {draggedComponent} = this.state;
-        let {computedStyle, style} = draggedComponent;
-
-        // we need th manilpulate the computedSTyle to effect the drag operation. 
-        // We only need to manipulate style if the dragged componnet is a dialog or
-        // suchlike, whose parent container is actually this surface.
-        if (typeof x === 'number' && x !== computedStyle.left){
-            computedStyle = {...computedStyle, left: x}
-            style = {...style, left: x}
+            if (isLayout(child)) {
+                results.push(React.cloneElement(child, { ...layoutProps }));
+            } else {
+                const {style, ...childProps} = child.props;
+                results.push(<LayoutItem {...childProps} {...layoutProps}>{child}</LayoutItem>);
+            }
+            childIdx += 1;
         }
-
-        if (typeof y === 'number' && y !== computedStyle.top){
-            computedStyle = {...computedStyle, top: y}
-            style = {...style, top: y}
-        }
-
-        if (computedStyle !== draggedComponent.computedStyle){
-            this.setState({
-                dragging: true,
-                draggedComponent: {
-                    ...draggedComponent,
-                    style,
-                    computedStyle
-                }
-            });
-        }
+        return results;
     }
-
-    handleDrop(dropTarget){
-        const {draggedComponent} = this.state;
-        this.setState({draggedComponent: undefined, draggedIcon: undefined, dragging: false});
-        // TODO need somehow to animate dropped component to final resting place
-        /* 
-            perhaps rerender new layout, bt mke new component a placeholder
-            measure new position
-            animate dragged component to new location
-            show new component & hide draggee
-            -- becomes a lot more efficient if we render all to a flat plane
-        */
-        this.handleLayout('drop', {draggedComponent, dropTarget});
-    }
-
 }
-Surface.displayName = 'Surface';
+
+// needs to be registerComponent
 registerClass('Surface', Surface, true);

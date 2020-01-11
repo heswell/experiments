@@ -97,7 +97,7 @@ export const LayoutRoot = ({ children: child }) => {
     }
 
     function handleDrop(dropTarget) {
-        dispatch({type: Action.DRAG_DROP, dropTarget});
+        dispatch({type: Action.DRAG_DROP, dropTarget, targetPosition: dragOperation.current.position});
         dragOperation.current = null;
         setDrag(-1.0);
     }
