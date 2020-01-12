@@ -1,8 +1,7 @@
 import babel from 'rollup-plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import filesize from 'rollup-plugin-filesize';
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
+import visualizer from 'rollup-plugin-visualizer'
 
 export default [{
     input: 'index.js',
@@ -12,14 +11,11 @@ export default [{
         sourcemap: true
     },
     plugins: [
-        // if we include these (to pull in d3-selection and d3-transition) everything is imported
-        // with them and they complain about JSX in our local files
-        // TODO use Pika for d3-selection and d3-transition
-        // resolve(),
-        // commonjs(),
         babel({
+            babelrc: false,
             exclude: 'node_modules/**',
-            "presets": [["@babel/react", {modules: false}]]
+            "presets": [["@babel/react", {modules: false}]],
+            "plugins": ["@babel/plugin-syntax-dynamic-import"]
         }),
         postcss({
             plugins: [],
@@ -27,7 +23,8 @@ export default [{
             extract: true,
             sourceMap: true
           }),
-          filesize()    
+          filesize(),
+          visualizer()  
     ],
     "external": [
         "@heswell/ui-controls",

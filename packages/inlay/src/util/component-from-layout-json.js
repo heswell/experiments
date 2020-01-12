@@ -9,26 +9,6 @@ registerClass('PlaceHolder', PlaceHolder);
 registerClass('LayoutItem', LayoutItem);
 registerClass('Component', Component);
 
-export function renderDynamicLayout(container, props, layoutModel) {
-
-    var { children, dragContainer, ...remainingProps } = container.props;
-    var { style: propStyle, ...rest } = props;
-    var { active, style: layoutStyle = {} } = layoutModel;
-
-    var finalProps = {
-        ...remainingProps,
-        active,
-        ...rest,
-        layoutModel,
-        style: { ...layoutStyle, ...propStyle }
-    };
-
-    // onsole.log('renderDynamicContainer about to create a new component (fom json) which will be cloned)',layoutModel, finalProps);
-
-    return React.cloneElement(componentFromLayout(layoutModel), finalProps);
-
-}
-
 export function componentFromLayout(layout) {
     // onsole.log(`%ccomponentFromLayout\n${JSON.stringify(layout,null,2)}`,'background-color:ivory;color:brown;')
     return _componentFromLayout(layout);

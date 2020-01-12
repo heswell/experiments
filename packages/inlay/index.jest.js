@@ -1,5 +1,4 @@
 export {default as Application} from './src/application/application';
-export {default as Container} from './src/containers/container';
 export {default as DynamicContainer} from './src/containers/dynamic-container';
 export {default as FlexBox} from './src/containers/flexbox';
 export {default as TabbedContainer} from './src/containers/tabbed-container';

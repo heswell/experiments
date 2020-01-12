@@ -54,7 +54,7 @@ export default function FlexBox(props){
         splitChildren.current =  [idx1, splitterIdx, idx2];
     }
   
-    var { type, title, header, computedStyle } = layoutModel;
+    const { type, title, header, computedStyle } = layoutModel;
     const className = cx(type);
 
     return (

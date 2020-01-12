@@ -5,3 +5,7 @@
 .LayoutItem.dragging {
     opacity: .8;
 }
+
+.Terrace, .Tower {
+    box-sizing: border-box;    
+}

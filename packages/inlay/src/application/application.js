@@ -5,12 +5,11 @@ import {uuid} from '@heswell/utils';
 
 import Surface from '../containers/surface';
 import '../components/component-icon';
-import {followPath} from '../model/index';
+import {followPath} from '../model/path-utils';
 import {
     switchTab,
     replace as replaceInLayout
 } from '../redux/actions';
-import {getLayoutModel} from '../redux/layoutReducer';
 import './application.css';
 
 const NO_STYLE = {}
@@ -84,7 +83,6 @@ export default class Application extends React.Component {
                 <Surface layoutModel={this.props.layoutModel}
                     style={{width,height}}
                     dragging={dragging}
-                    onLayout={(command, options) => this.handleLayout(command, options)}
                     onLayoutModel={this.props.onLayoutModel}>
                     {this.getContent()}
                 </Surface>
@@ -153,29 +151,6 @@ export default class Application extends React.Component {
 
         //     this.setState({	width, height });
         // }
-
-    }
-
-    handleLayout(command, options) {
-
-        if (command === 'dialog'){
-            const {dialogs} = this.state;	
-            this.setState({
-                dialogs: dialogs.concat(options.component)
-            });
-        } else {
-            var layoutModel = getLayoutModel(this.store.getState());
-
-            if (command === 'replace'){
-                this.store.dispatch(replaceInLayout(followPath(layoutModel, options.model.$path), options.model));
-            } else if (command === 'switch-tab'){
-                const {path, idx, nextIdx} = options;
-                this.store.dispatch(switchTab(path, idx, nextIdx));
-            } else {
-                console.error(`Application.handleLayout dont't know what to do with ${command}`);
-            }
-
-        }
 
     }
 

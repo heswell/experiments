@@ -4,8 +4,8 @@ import { PopupService } from '@heswell/ui-controls';
 import DropMenu, {computeMenuPosition} from './drop-menu/drop-menu.jsx'
 import {isTabstrip} from '../../model/drop-target';
 
-import {select} from 'd3-selection';
-import 'd3-transition';
+import {select} from '../../../web_modules/d3-selection';
+import '../../../web_modules/d3-transition';
 
 import './drop-target-renderer.css';
 

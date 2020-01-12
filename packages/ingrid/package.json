@@ -31,7 +31,7 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-plugin-transform-jsx": "^2.0.0",
-    "rollup": "1.26.3",
+    "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-filesize": "^6.2.1",

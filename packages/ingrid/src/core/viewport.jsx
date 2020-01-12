@@ -78,8 +78,6 @@ export const Viewport = React.memo(({
     const { dispatch, callbackPropsDispatch } = useContext(GridContext);
     const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
-    console.log(`viewport height=${height}`)
-
     useEffect(() => {
         rowCount.current = model.rowCount
     },[model.rowCount])

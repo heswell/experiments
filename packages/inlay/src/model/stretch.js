@@ -26,7 +26,7 @@ const NO_OVERRIDES = {};
 const SURFACE_CHILD_STYLE = ({style}) => (style.width && style.height ? {position: 'absolute'}: undefined);
 const NOOP = () => undefined;
 
-export const stretchLoading = import('stretch-layout').then(initStretch);
+export const stretchLoading = import(/* webpackChunkName: "stretch" */ 'stretch-layout').then(initStretch);
 
 export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
 
