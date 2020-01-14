@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useRef, useState } from 'react';
+import React, { useReducer, useCallback, useEffect, useRef, useState } from 'react';
 import layoutReducer, { initModel, Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
@@ -23,32 +23,32 @@ function useLayout(reducer, initialData){
 
 
 export const LayoutRoot = ({ children: child }) => {
-
-    const [layoutModel, dispatchLayoutAction] = useLayout(layoutReducer, { layoutType: typeOf(child), props: child.props });
-    const rootProps = { ...child.props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
+    const {props: {onLayoutModel, ...props}} = child;
+    const [layoutModel, dispatchLayoutAction] = useLayout(layoutReducer, { layoutType: typeOf(child), props });
     const [drag, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
 
     useEffect(() => {
         if (layoutModel !== null){
-            // this is too late - fires after w erender
             if (layoutModel.drag) {
                 const {dragRect, dragPos, component} = layoutModel.drag;
                 dragStart(dragRect, dragPos, component);
                 setDrag(0.0);
-            }    
+            } else if (onLayoutModel){
+                onLayoutModel(layoutModel, dispatchLayoutAction);
+            }
         }
     }, [layoutModel])
 
 
-    function dispatch(action) {
+    const dispatch = useCallback(action => {
         if (action.type === 'drag-start') {
             const { evt, ...options } = action;
             Draggable.handleMousedown(evt, prepareToDrag.bind(null, options));
         } else {
             dispatchLayoutAction(action);
         }
-    }
+    },[]);
 
     function prepareToDrag({ layoutModel, dragRect, instructions = EMPTY_OBJECT }, evt, xDiff, yDiff) {
         if (!instructions.DoNotRemove) {
@@ -106,6 +106,7 @@ export const LayoutRoot = ({ children: child }) => {
         return null;
     }
 
+    const rootProps = { ...props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
     const layoutRoot = typeOf(child) === layoutModel.type
         ? child
         : componentFromLayout(layoutModel);

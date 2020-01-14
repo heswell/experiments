@@ -114,11 +114,13 @@ class TreeNode extends React.Component {
 export default class LayoutTreeViewer extends React.Component {
     constructor(props){
         super(props);
-        this.slideContainer = null
+        this.slideContainer = null;
+        console.log(`LayoutTreeViewer constructor`)
+        const {tree} = props;
         this.state = {
-            rootNode: props.tree,
-            currentNode: props.tree,
-            trail: breadcrumb(props.tree, '0'),
+            rootNode: tree,
+            currentNode: tree,
+            trail: breadcrumb(tree, tree && tree.$path),
             zoomNode: null,
             zoomDirection: null,
             selectedNode: null

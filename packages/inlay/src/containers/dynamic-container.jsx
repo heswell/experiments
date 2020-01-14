@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-
+import { LayoutRoot } from './layout-root';
 import LayoutItem from './layout-item';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
@@ -8,12 +8,20 @@ import { componentFromLayout } from '../util/component-from-layout-json';
 const PureLayout = React.memo(DynamicContainer);
 PureLayout.displayName = 'DynamicContainer';
 
-export default function DynamicContainer(props){
-
-    const {layoutModel, dispatch} = props;
-
-    if (layoutModel === undefined){
-        return null;
+export default function DynamicContainer(props) {
+    // const prevProps = useRef(props);
+    // if (Object.keys(props).some(key => props[key] !== prevProps.current[key])){
+    //     const diffs = Object.keys(props).filter(key => props[key] !== prevProps.current[key]);
+    //     console.log(`root ${props.root} changed keys ${diffs.join(',')}`);
+    //     prevProps.current = props;
+    // }
+    const { layoutModel, dispatch } = props;
+    // We must allow for a layoutModel being passed in via props even when we are acting as root
+    if (props.root || layoutModel === undefined) {
+        const { root, ...rest } = props;
+        return (
+            <LayoutRoot><PureLayout {...rest} /></LayoutRoot>
+        )
     }
 
     const { title, header, computedStyle } = layoutModel;
@@ -32,7 +40,7 @@ export default function DynamicContainer(props){
         </div>
     );
 
-    function renderChild(){
+    function renderChild() {
         var [childLayoutModel] = layoutModel.children;
 
         const propChild = Array.isArray(props.children)
@@ -52,7 +60,7 @@ export default function DynamicContainer(props){
         if (isLayout(child)) {
             return React.cloneElement(child, { ...layoutProps });
         } else {
-            const {style, ...childProps} = child.props;
+            const { style, ...childProps } = child.props;
             return (<LayoutItem {...childProps} {...layoutProps}>{child}</LayoutItem>);
         }
     }

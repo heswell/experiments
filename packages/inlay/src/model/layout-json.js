@@ -18,7 +18,7 @@ const LayoutProps = {
     dragStyle: true // still used ? flexbox-shuffle ?
 }
 
-export const getLayoutModel2 = (type, {children, contentModel, style, ...props}) => {
+export const getLayoutModel = (type, {children, contentModel, style, ...props}) => {
     const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined);
   
     return {
@@ -31,7 +31,7 @@ export const getLayoutModel2 = (type, {children, contentModel, style, ...props})
     }
   }
   
-export const getLayoutModel = component => {
+const getLayoutModelDeprecated = component => {
   const type = typeOf(component); 
   const {props: {children, contentModel, style, ...props}} = component;
   const defaultProps = getDefaultProps(component);
@@ -68,9 +68,10 @@ export function resetPath(layoutModel, path){
 function getLayoutModelChildren(children, contentModel=null){
     // TODO don't recurse into children of non-layout
     if (React.isValidElement(children)){
-        return [getLayoutModel(children)];
+        // what if we have a contentModel ?
+        return [getLayoutModelDeprecated(children)];
     } else if (Array.isArray(children)){
-        return children.filter(child => child).map(child => getLayoutModel2(typeOf(child), child.props));
+        return children.filter(child => child).map(child => getLayoutModel(typeOf(child), child.props));
     } else if (contentModel !== null){
         return [addDefaultProperties(contentModel)];
     } else {

@@ -28,10 +28,8 @@ export default function FlexBox(props){
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
 
-    const splitterDragStart = (idx) => {
-        const splitChildren = identifySplitChildren(idx);
-        console.log(splitChildren)
-    }
+    const splitterDragStart = (idx) => identifySplitChildren(idx);
+
     const splitterMoved = distance => {
         const [idx1, , idx2] = splitChildren.current;
         const dim = getManagedDimension(layoutModel.style);

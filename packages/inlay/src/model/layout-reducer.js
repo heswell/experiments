@@ -1,5 +1,5 @@
 import { uuid } from '@heswell/utils';
-import { addDefaultLayoutProps, getLayoutModel2 as getLayoutModel, getManagedDimension, resetPath } from './layout-json';
+import { addDefaultLayoutProps, getLayoutModel, getManagedDimension, resetPath } from './layout-json';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
 import { computeLayout, recomputeChildLayout, printLayout, stretchLoaded } from './layout-utils';
 import { removeVisualStyles } from './css-properties';
@@ -15,6 +15,7 @@ export const Action = {
     DRAG_DROP: 'drag-drop',
     INITIALIZE: 'initialize',
     REMOVE: 'remove',
+    REPLACE: 'replace',
     SPLITTER_RESIZE: 'splitter-resize',
     SWITCH_TAB: 'switch-tab'
 }
@@ -39,6 +40,7 @@ const handlers = {
     [Action.REMOVE]: removeChild,
     [Action.SPLITTER_RESIZE]: splitterResize,
     [Action.SWITCH_TAB]: switchTab,
+    [Action.REPLACE]: replaceChild,
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 }
 
@@ -124,7 +126,7 @@ function switchTab(state, { path, nextIdx }) {
             }
         })
     };
-    return replaceChild(state, target, manualLayout);
+    return replaceChild(state, {target, replacement: manualLayout});
 }
 
 function splitterResize(state, { layoutModel, dim, path, measurements }) {
@@ -160,16 +162,16 @@ function splitterResize(state, { layoutModel, dim, path, measurements }) {
         })
     };
 
-    return replaceChild(state, target, manualLayout);
+    return replaceChild(state, {target, replacement: manualLayout});
 
 }
 
-function replaceChild(model, child, replacement) {
-    if (replacement.$path === model.$path) {
-        return recomputeChildLayout(replacement, model.computedStyle, model.$path)
+function replaceChild(state, {target:child, replacement}) {
+    if (replacement.$path === state.$path) {
+        return recomputeChildLayout(replacement, state.computedStyle, state.$path)
     } else {
-        const manualLayout = _replaceChild(model, child, replacement);
-        return recomputeChildLayout(manualLayout, model.computedStyle, model.$path)
+        const manualLayout = _replaceChild(state, child, replacement);
+        return recomputeChildLayout(manualLayout, state.computedStyle, state.$path)
     }
 }
 

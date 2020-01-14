@@ -90,6 +90,17 @@ export default class LayoutConfigurator extends React.Component {
         const value = parseInt(strValue || '0',10);
         const {layoutStyle} = this.state;
         const property = DIMENSIONS[feature][dimension];
+
+        //if border, check whether we have settings for style, color, if not
+        // set them
+        if (feature === 'border'){
+            const properties = Object.keys(layoutStyle)
+                .filter(property => property.indexOf('border' === 0));
+            if (properties.length === 0){
+                
+            }
+        }
+
         this.setState({
             layoutStyle: {
                 ...layoutStyle,
