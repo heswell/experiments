@@ -3,17 +3,19 @@ import {uuid} from '@heswell/utils';
 import { typeOf, isLayout, isContainer, getDefaultProps } from '../component-registry';
 
 const DEFAULT_HEADER_HEIGHT = 26;
-const DEFAULT_HEADER_SPEC = {
+const defaultHeaderSpec = () => ({
   menu: true,
   style: {height: DEFAULT_HEADER_HEIGHT}
-}
+})
+
+
 
 export const getManagedDimension = style => style.flexDirection === 'column' ? 'height' : 'width';
 
 //TODO components should be able to register props here
 const LayoutProps = {
     resizeable: true,
-    header: DEFAULT_HEADER_SPEC,
+    header: defaultHeaderSpec,
     active: true,
     dragStyle: true // still used ? flexbox-shuffle ?
 }
@@ -91,6 +93,9 @@ function layoutProps(type, props){
     let layoutProp;
     Object.entries(props).forEach(([key, value]) => {
         if (layoutProp = LayoutProps[key]){
+            if (typeof layoutProp === 'function'){
+                layoutProp = layoutProp();
+            }
             if (layoutProp === true){
                 results[key] = value;
             } else if (value === true){

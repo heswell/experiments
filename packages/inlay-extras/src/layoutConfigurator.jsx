@@ -9,10 +9,10 @@ const DIMENSIONS = {
         left: 'marginLeft'
     },
     border: {
-        top: 'borderTopWidth',
-        right: 'borderRightWidth',
-        bottom: 'borderBottomWidth',
-        left: 'borderLeftWidth'
+        top: 'borderTop',
+        right: 'borderRight',
+        bottom: 'borderBottom',
+        left: 'borderLeft'
     },
     padding: {
         top: 'paddingTop',
@@ -57,6 +57,12 @@ const LayoutBox = ({feature, children, style, onChange}) => {
 export const BORDER_STYLES = {
     border: true,
     borderWidth: true,
+    borderTop: true,
+    borderRight: true,
+    borderEnd: true,
+    borderBottom: true,
+    borderLeft: true,
+    borderStart: true,
     borderTopWidth: true,
     borderRightWidth: true,
     borderBottomWidth: true,
@@ -72,49 +78,55 @@ const BORDER_LIST = Object.keys(BORDER_STYLES);
 export default class LayoutConfigurator extends React.Component {
     constructor(props){
         super(props);
+
+        const [layoutStyle, visualStyle] = normalizeBorderStyle(props.layoutStyle, props.visualStyle);
         this.state = {
-            layoutStyle: normalizeLayoutStyles(props.layoutStyle)
+            layoutStyle,
+            visualStyle
         };
+
+        console.log(`LayoutConfigurator
+            ${JSON.stringify(this.state.layoutStyle)}
+            ${JSON.stringify(this.state.visualStyle)}
+        `)
+
         this.handleChange = this.handleChange.bind(this);
     }
 
     componentWillReceiveProps(nextProps){
-        if (nextProps.layoutStyle !== this.props.layoutStyle){
+        const {layoutStyle, visualStyle} = nextProps;
+
+        if (layoutStyle !== this.props.layoutStyle || visualStyle !== this.props.visualStyle){
+        
+            console.log(`LayoutConfigurator
+            ${JSON.stringify(layoutStyle)}
+            ${JSON.stringify(visualStyle)}
+            `)
+
+            const [nextLayoutStyle, nextVisualStyle] = normalizeBorderStyle(layoutStyle, visualStyle);
+
             this.setState({
-                layoutStyle: normalizeLayoutStyles(nextProps.layoutStyle)
+                layoutStyle: nextLayoutStyle,
+                visualStyle: nextVisualStyle
             });
+
+            console.log(`LayoutConfigurator
+            ${JSON.stringify(nextLayoutStyle)}
+            ${JSON.stringify(nextVisualStyle)}
+            `)
         }
     }
 
     handleChange(feature, dimension, strValue){
-        const value = parseInt(strValue || '0',10);
-        const {layoutStyle} = this.state;
+        const value = parseInt(strValue || '0', 10);
         const property = DIMENSIONS[feature][dimension];
-
-        //if border, check whether we have settings for style, color, if not
-        // set them
-        if (feature === 'border'){
-            const properties = Object.keys(layoutStyle)
-                .filter(property => property.indexOf('border' === 0));
-            if (properties.length === 0){
-                
-            }
-        }
-
-        this.setState({
-            layoutStyle: {
-                ...layoutStyle,
-                [property]: value
-            }
-        }, () => {
-            this.props.onChange(feature, dimension, value, this.state.layoutStyle)
-        });
+        this.props.onChange(property, value);
     }
 
     render(){
         const {width, height, style} = this.props
         const {marginTop: mt=0, marginRight: mr=0, marginBottom: mb=0, marginLeft: ml=0} = this.state.layoutStyle;
-        const {borderTopWidth: bt=0, borderRightWidth: br=0, borderBottomWidth: bb=0, borderLeftWidth: bl=0} = this.state.layoutStyle;
+        const {borderTop: bt=0, borderRight: br=0, borderBottom: bb=0, borderLeft: bl=0} = this.state.layoutStyle;
         const {paddingTop: pt=0, paddingRight: pr=0, paddingBottom: pb=0, paddingLeft: pl=0} = this.state.layoutStyle;
         return (
             <div className='LayoutConfigurator' style={{width, height, ...style}}>
@@ -131,8 +143,20 @@ export default class LayoutConfigurator extends React.Component {
 }
 
 // TODO merge the following two functions
-export function normalizeLayoutStyles({margin, marginTop, marginRight, marginBottom, marginLeft,
-    padding, paddingTop, paddingRight, paddingBottom, paddingLeft, ...style}=NO_STYLE){
+export function normalizeStyles(layoutStyle=NO_STYLE, visualStyle=NO_STYLE){
+
+    const {
+        margin, 
+        marginTop,
+        marginRight,
+        marginBottom,
+        marginLeft,
+        padding,
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft, 
+        ...style } = layoutStyle;
 
     if (typeof margin === 'number'){
         style.marginTop = style.marginRight = style.marginBottom = style.marginLeft = margin;
@@ -196,17 +220,25 @@ export function normalizeLayoutStyles({margin, marginTop, marginRight, marginBot
     if (typeof paddingBottom === 'number') style.paddingBottom = paddingBottom;
     if (typeof paddingLeft === 'number') style.paddingLeft = paddingLeft;
 
-    return normalizeBorderStyle(style);
+    return normalizeBorderStyle(style, visualStyle);
 }
 
-function normalizeBorderStyle(style=NO_STYLE){
+function normalizeBorderStyle(style=NO_STYLE, visualStyle){
 
     if (BORDER_LIST.some(bs => style[bs])){
         let match;
 
-        let {border, borderWidth, borderTopWidth, borderRightWidth, borderBottomWidth, borderLeftWidth, borderColor, ...rest} = style;
+        let {
+            border,
+            borderWidth,
+            borderTop=style.borderTopWidth,
+            borderRight=style.borderRightWidth,
+            borderBottom=style.borderBottomWidth,
+            borderLeft=style.borderLeftWidth,
+            borderColor, 
+            ...rest } = style;
 
-        if (border || borderWidth || borderTopWidth || borderRightWidth || borderBottomWidth || borderLeftWidth){
+        if (border || borderWidth || borderTop || borderRight || borderBottom || borderLeft){
             if (typeof border === 'string' && (match = BORDER_REX.exec(border))){
                 // what if both border and borderWidth are specified ?
                 ([,borderWidth,borderColor] = match);
@@ -214,32 +246,34 @@ function normalizeBorderStyle(style=NO_STYLE){
             }
 
             if (borderWidth){
-                borderTopWidth = borderTopWidth === undefined ? borderWidth : borderTopWidth;
-                borderRightWidth = borderRightWidth === undefined ? borderWidth : borderRightWidth;
-                borderBottomWidth = borderBottomWidth === undefined ? borderWidth : borderBottomWidth;
-                borderLeftWidth = borderLeftWidth === undefined ? borderWidth : borderLeftWidth;
+                borderTop = borderTop === undefined ? borderWidth : borderTop;
+                borderRight = borderRight === undefined ? borderWidth : borderRigh;
+                borderBottom = borderBottom === undefined ? borderWidth : borderBottom;
+                borderLeft = borderLeft === undefined ? borderWidth : borderLeft;
             }
 
             borderColor = borderColor || 'black';
             const boxShadow = `
-                ${borderColor} ${borderLeftWidth || 0}px ${borderTopWidth || 0}px 0 0 inset, 
-                ${borderColor} ${-borderRightWidth || 0}px ${-borderBottomWidth || 0}px 0 0 inset`;
+                ${borderColor} ${borderLeft || 0}px ${borderTop || 0}px 0 0 inset, 
+                ${borderColor} ${-borderRight || 0}px ${-borderBottom || 0}px 0 0 inset`;
 
-            return {
+            return [{
                 ...rest,
-                boxShadow,
+                borderTop,
+                borderRight,
+                borderBottom,
+                borderLeft
+            }, {
+                ...visualStyle,
                 borderColor,
                 borderStyle: 'solid',
-                borderTopWidth,
-                borderRightWidth,
-                borderBottomWidth,
-                borderLeftWidth
-            }
+                boxShadow
+            }]
 
         } else {
-            return style
+            return [style,visualStyle];
         }
     } else {
-        return style;
+        return [style, visualStyle];
     }
 }

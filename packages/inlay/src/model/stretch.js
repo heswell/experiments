@@ -1,11 +1,7 @@
 import {
-  normalize as normalizeCSSPropertyName,
   isLayoutProperty,
-  singleDimensionProperty,
-  dimension,
-  flexProperties,
-  parseBorder,
-  parseCompositeDimension
+  mapCSSProperties,
+  deriveVisualBorderStyle
 } from './css-properties';
 import { isContainer } from '../component-registry';
 
@@ -89,13 +85,30 @@ export function stretchLayoutChildren(config){
 function extendHeader(header, layoutStyle){
   if (header){
     increaseCSSMeasure(layoutStyle, 'paddingTop', header.style.height);  
+    return adjustHeaderPosition(header, layoutStyle);
+  }
+}
+
+export function adjustHeaderPosition(header, layoutStyle){
+  if (header){
     const {borderTop, borderStart, borderEnd} = layoutStyle;
-    if (borderTop) header.style.marginTop = borderTop;
-    if (borderStart) header.style.marginLeft = borderStart;
-    if (borderEnd) header.style.marginRight = borderEnd;
+    if (borderTop || borderStart || borderEnd){
+      const result = {
+        ...header,
+        style: {
+          ...header.style
+        }
+      }
+      if (borderTop) result.style.marginTop = borderTop;
+      if (borderStart) result.style.marginLeft = borderStart;
+      if (borderEnd) result.style.marginRight = borderEnd;
+      return result;
+      
+    } else {
+      return header;
+    }  
   }
 
-  return header;
 }
 
 function expandChildren({type, active, style, children=ARRAY}, path){
@@ -217,6 +230,7 @@ function stretchNode({layoutStyle, children=ARRAY}){
   return node;
 }
 
+// TODO move this into css-properties
 export function collectStyles(style, overrides){
 
   let [layoutStyle, visualStyle] = overrides ? collectStyles(overrides) : [{}, {}]
@@ -237,96 +251,28 @@ export function collectStyles(style, overrides){
           visualStyle[properties[i]] = properties[i+1];
         }
       }
-  
     }
   })
+
+  for (let i=0, properties = deriveVisualBorderStyle(layoutStyle); i<properties.length; i+=2){
+    visualStyle[properties[i]] = properties[i+1];
+  }
 
   return [layoutStyle, visualStyle];
 }
 
-function mapCSSProperties(entry){
-  const [name, value] = entry;
-  const propertyName = normalizeCSSPropertyName(name);
-
-  if (value === undefined){
-    return ARRAY;
-  }
-
-  if (name !== propertyName){
-    entry[0] = propertyName;
-  }
-
-  if (singleDimensionProperty[propertyName]){
-    
-    entry[1] = dimension(value);
-
-  } else switch (propertyName) {
-
-    case 'flexDirection': 
-      entry[1] = flexDirection(value);
-      break;
-
-    case 'alignItems': 
-      entry[1] = alignItems(value);
-      break;
-
-    case 'justifyContent': 
-      entry[1] = justifyContent(value);
-      break;
-
-    case 'positionType': 
-      entry[1] = positionType(value);
-      break;
-
-    case 'flexShrink':
-    case 'flexGrow':
-      break;
-
-    case 'flex':
-      entry.splice(0,2,...flexProperties(value));
-      break;
-
-    case 'padding':
-    case 'margin': {
-        const values = parseCompositeDimension(value)
-        entry[0] = `${propertyName}Top`;
-        entry[1] = values[0];
-        entry[2] = `${propertyName}End`;
-        entry[3] = values[1];
-        entry[4] = `${propertyName}Bottom`;
-        entry[5] = values[2];
-        entry[6] = `${propertyName}Start`;
-        entry[7] = values[3];
-      }
-      break;
-    
-    case 'border': 
-      entry.splice(0,2,...parseBorder(value))
-      break;
-
-    case 'display': 
-      entry[1] = value === 'none' ? Display.None : Display.Flex;
-      break;
-
-      default:
-      // return as-is. We only get passed layout properties, so all ara valid
-  }
-
-  return entry;
-}
-
-const flexDirection = value => value === 'column'
+export const flexDirection = value => value === 'column'
   ? FlexDirection.Column
   : FlexDirection.Row;
 
-const alignItems = value =>
+export const alignItems = value =>
   value === 'stretch' ? AlignItems.Stretch :
   value === 'flex-start' ? AlignItems.FlexStart :
   value === 'flex-end' ? AlignItems.FlexEnd :
   value === 'baseline' ? AlignItems.Baseline :
   AlignItems.Center;
 
-const justifyContent = value =>
+export const justifyContent = value =>
   value === 'center' ? JustifyContent.Center :
   value === 'flex-start' ? JustifyContent.FlexStart :
   value === 'flex-end' ? JustifyContent.FlexEnd :
@@ -335,6 +281,6 @@ const justifyContent = value =>
   value === 'space-evenly' ? JustifyContent.SpaceEvenly :
   -1;
 
-const positionType = value =>
+export const positionType = value =>
   value === 'absolute' ? PositionType.Absolute : PositionType.None;
 

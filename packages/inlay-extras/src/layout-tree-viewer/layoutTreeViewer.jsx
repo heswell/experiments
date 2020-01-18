@@ -39,7 +39,7 @@ class TreeNode extends React.Component {
         this.toggleNode = this.toggleNode.bind(this);
     }
     render(){
-        const {model, root, onSelect, onSlide, showRoot=true, selectedNode} = this.props;
+        const {model, root, onSelect, onSlide, showRoot=true, selectedPath} = this.props;
         const {expanded, collapsing} = this.state;
         return (
             <div className={cx('node-container',{root})} ref={el => this.rootEl = el}>
@@ -48,7 +48,7 @@ class TreeNode extends React.Component {
                     model={model}
                     root={root}
                     expanded={expanded}
-                    selected={selectedNode === model}
+                    selected={selectedPath === model.$path}
                     onToggle={this.toggleNode}
                     onSelect={onSelect}
                     onSlide={onSlide}/>}
@@ -60,7 +60,7 @@ class TreeNode extends React.Component {
                                     key={i}
                                     root={false}
                                     model={child}
-                                    selectedNode={selectedNode}
+                                    selectedPath={selectedPath}
                                     onSelect={onSelect}
                                     onSlide={onSlide}/>)}
                         </div>
@@ -123,16 +123,16 @@ export default class LayoutTreeViewer extends React.Component {
             trail: breadcrumb(tree, tree && tree.$path),
             zoomNode: null,
             zoomDirection: null,
-            selectedNode: null
+            selectedPath: null
         };
 
-        this.selectNode = this.selectNode.bind(this);
+        this.selectPath = this.selectPath.bind(this);
         this.slideNode = this.slideNode.bind(this);
         this.slideBack = this.slideBack.bind(this);
     }
 
     componentWillReceiveProps(nextProps){
-        const {tree, selectedNode} = nextProps;
+        const {tree, selectedPath} = nextProps;
         if (tree !== this.props.tree){
             this.setState({
                 rootNode: tree,
@@ -144,15 +144,15 @@ export default class LayoutTreeViewer extends React.Component {
             });
         }
 
-        if (selectedNode &&
-            selectedNode !== this.props.selectedNode &&
-            selectedNode !== this.state.selectedNode){
-            this.setState({selectedNode})
+        if (selectedPath &&
+            selectedPath !== this.props.selectedPath &&
+            selectedPath !== this.state.selectedPath){
+            this.setState({selectedPath})
         }
     }
 
     render() {
-        const {currentNode, zoomNode, zoomDirection, trail, selectedNode} = this.state;
+        const {currentNode, zoomNode, zoomDirection, trail, selectedPath} = this.state;
         const {style=NO_STYLE,tree=null} = this.props;
         const isRoot = currentNode === tree;
         if (tree === null){
@@ -161,17 +161,17 @@ export default class LayoutTreeViewer extends React.Component {
         return (
             <div className='LayoutTreeViewer' style={style}>
                 <div className='parent-row'>
-                    <Tabs trail={trail} onNavigate={this.slideBack} onSelect={this.selectNode} selectedNode={selectedNode}/>
+                    <Tabs trail={trail} onNavigate={this.slideBack} onSelect={this.selectPath} selectedPath={selectedPath}/>
                 </div>
                 <div className='slide-container' ref={el => this.slideContainer = el}>
                     <div className={zoomDirection === RTL ? 'slide slide-1' : 'slide slide-3'}>
                         <TreeNode
                             model={currentNode}
                             root={isRoot}
-                            selectedNode={selectedNode}
+                            selectedPath={selectedPath}
                             showRoot={false}
                             expanded={true}
-                            onSelect={this.selectNode}
+                            onSelect={this.selectPath}
                             onSlide={this.slideNode}/>
                     </div>
                     {zoomNode &&
@@ -197,8 +197,8 @@ export default class LayoutTreeViewer extends React.Component {
         }
     }
 
-    selectNode(selectedNode){
-        this.setState({selectedNode});
+    selectPath(selectedNode){
+        this.setState({selectedPath: selectedNode.$path});
         if (this.props.onSelectNode){
             this.props.onSelectNode(selectedNode);
         }

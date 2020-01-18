@@ -8630,7 +8630,7 @@ stream-shift@^1.0.0:
   resolved "https://registry.yarnpkg.com/stream-shift/-/stream-shift-1.0.0.tgz#d5c752825e5367e786f78e18e445ea223a155952"
   integrity sha1-1cdSgl5TZ+eG944Y5EXqIjoVWVI=
 
-stretch-layout@^0.3.2:
+stretch-layout@0.3.2, stretch-layout@^0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/stretch-layout/-/stretch-layout-0.3.2.tgz#981b96edde17a0b037fc75d5c9edb64d10a31dc8"
   integrity sha512-2qqb2mEB6mgDPeyZDWV0RBhhvI9Aq2voALc50mdFwq1/4d/hzzK7DfPzKtSQaVCoIu9dC84/BmPv0EDrjzkiBw==

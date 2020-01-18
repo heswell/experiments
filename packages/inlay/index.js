@@ -11,3 +11,5 @@ export * from './src/model/layoutModel';
 export * from './src/model/layout-utils';
 export {Action} from './src/model/layout-reducer.js';
 export {registerClass} from './src/component-registry';
+export {adjustHeaderPosition} from './src/model/stretch';
+export {isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle} from './src/model/css-properties';

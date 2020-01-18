@@ -26,7 +26,8 @@
     "dygraphs": "^2.1.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-motion": "^0.5.2"
+    "react-motion": "^0.5.2",
+    "stretch-layout": "0.3.2"
   },
   "devDependencies": {
     "babel-loader": "^8.0.6",

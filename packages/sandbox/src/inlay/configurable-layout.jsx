@@ -1,112 +1,116 @@
 import React, { useRef, useState, useCallback } from 'react';
-import {DynamicContainer, Surface, handleLayout, followPath, Action} from '@heswell/inlay';
-import {LayoutConfigurator,LayoutTreeViewer} from '@heswell/inlay-extras'
+import {
+    DynamicContainer, Surface, Action, adjustHeaderPosition,
+    isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle, followPath
+} from '@heswell/inlay';
+import { LayoutConfigurator, LayoutTreeViewer } from '@heswell/inlay-extras'
+
 
 const NO_STYLES = {};
 
-const SIZE = {width: 820, height: 400};
+const SIZE = { width: 820, height: 400 };
 
-export default function ConfigurableLayout({children}){
-    
+export default function ConfigurableLayout({ children }) {
+
     const [managedLayoutNode, setManagedLayoutNode] = useState(null);
-    const selectedLayoutNode = useRef(null);
+    const [selectedPath, setSelectedPath] = useState(null);
     const layoutDispatcher = useRef(null);
 
-    // constructor(props){
-    //     super(props)
-    //     this.state = {
-    //       layoutModel: undefined,
-    //       managedLayoutNode: null,
-    //       selectedLayoutNode: null
-    //     };
-    //     this.onChange = this.onChange.bind(this);      
-    //     this.onLayoutModel = this.onLayoutModel.bind(this);      
-    //     this.selectComponent = this.selectComponent.bind(this);      
-    //   }
+    function onChange(propertyName, value) {
+        const { $path, header, style, layoutStyle, visualStyle, ...model } = getSelectedLayoutNode();
 
-      function onChange(feature, dimension, value, editedStyle){
-          console.log(`${feature}  (${dimension}) = ${value}`, editedStyle)
-          const {$path, style, layoutStyle, ...model} = selectedLayoutNode.current;
-          const replacementNode = {
-                $path,
-                ...model,
-                style: {
-                  ...style,
-                  ...editedStyle
-                },
-                layoutStyle: {
-                  ...layoutStyle,
-                  ...editedStyle
-                }
-          };
-          layoutDispatcher.current({
-            type: Action.REPLACE,
-            target: selectedLayoutNode.current,
-            replacement: replacementNode
-          });
-          // find the selected node in the new layout model
-          // selectedLayoutNode = followPath(layoutModel, selectedLayoutNode.$path);          
+        const newLayoutStyle = {
+            ...layoutStyle,
+            [propertyName]: value
+        };
 
-          // const [managedLayoutNode] = layoutModel.children;  
-          // this.setState({
-          //   layoutModel,
-          //   managedLayoutNode,
-          //   selectedLayoutNode
-          // });
-      }
+        const newVisualStyle = {
+            ...visualStyle
+        };
 
-      // storeLayoutModel(layoutModel){
-      //   const [managedLayoutNode] = layoutModel.children;
-      //   this.setState({
-      //       layoutModel,
-      //       selectedLayoutNode: managedLayoutNode,
-      //       managedLayoutNode
-      //   })
-      // }
-
-       const onLayoutModel = useCallback((layoutModel, dispatcher) => {
-        if (layoutDispatcher.current === null){
-          layoutDispatcher.current = dispatcher;
+        for (let i = 0, properties = mapCSSProperties([propertyName, value]); i < properties.length; i += 2) {
+            if (isLayoutProperty(properties[i])) {
+                newLayoutStyle[properties[i]] = properties[i + 1];
+            } else {
+                newVisualStyle[properties[i]] = properties[i + 1];
+            }
         }
-        if (selectedLayoutNode.current === null){
-          selectedLayoutNode.current = layoutModel;
+
+        for (let i = 0, properties = deriveVisualBorderStyle(newLayoutStyle); i < properties.length; i += 2) {
+            newVisualStyle[properties[i]] = properties[i + 1];
+        }
+
+        const replacementNode = {
+            $path,
+            ...model,
+            header: adjustHeaderPosition(header, newLayoutStyle),
+            style: {
+                ...style,
+                [propertyName]: value
+            },
+            layoutStyle: newLayoutStyle,
+            visualStyle: newVisualStyle
+        };
+
+        layoutDispatcher.current({
+            type: Action.REPLACE,
+            target: selectedLayoutNode,
+            replacement: replacementNode
+        });
+    }
+
+    const onLayoutModel = useCallback((layoutModel, dispatcher) => {
+        if (layoutDispatcher.current === null) {
+            layoutDispatcher.current = dispatcher;
+        }
+        if (selectedPath === null) {
+            const [layoutChild] = layoutModel.children;
+            setSelectedPath(layoutChild.$path);
         }
         setManagedLayoutNode(layoutModel);
-      },[]);
+    }, [selectedPath]);
 
-      function selectComponent(layoutNode){
-        console.log(`select`,layoutNode)
-        selectedLayoutNode.current = layoutNode
-        // this.setState({selectedLayoutNode});
-      }
+    function selectComponent(layoutNode) {
+        setSelectedPath(layoutNode.$path);
+    }
 
-        // const {selectedLayoutNode, layoutModel} = this.state;
-        const layoutStyle = selectedLayoutNode.current === null
-          ? NO_STYLES
-          : selectedLayoutNode.current.style;
+    function getSelectedLayoutNode() {
+        if (managedLayoutNode && selectedPath) {
+            return followPath(managedLayoutNode, selectedPath);
+        } else {
+            return null;
+        }
+    }
 
-      return (
-        <div style={{width: 820, height: 800, position: 'relative'}}>
-            <Surface style={{width: 820, height:800}} >
+    // const {selectedLayoutNode, layoutModel} = this.state;
+    const selectedLayoutNode = getSelectedLayoutNode();
+    const [layoutStyle, visualStyle] = selectedLayoutNode === null
+        ? [NO_STYLES, NO_STYLES]
+        : [selectedLayoutNode.layoutStyle, selectedLayoutNode.visualStyle];
+
+    return (
+        <div style={{ width: 820, height: 800, position: 'relative' }}>
+            <Surface style={{ width: 820, height: 800 }} >
                 <DynamicContainer style={SIZE} root
-                  onLayoutModel={onLayoutModel} >
-                  {children}
+                    onLayoutModel={onLayoutModel}>
+                    {children}
                 </DynamicContainer>
 
                 <LayoutTreeViewer
-                  style={{position: 'absolute', top: 400, left: 0, width: 400, height: 400}} 
-                  tree={managedLayoutNode}
-                  selectedNode={selectedLayoutNode.current}
-                  onSelectNode={selectComponent}
+                    style={{ position: 'absolute', top: 400, left: 0, width: 400, height: 400 }}
+                    tree={managedLayoutNode}
+                    selectedPath={selectedPath}
+                    onSelectNode={selectComponent}
                 />
 
                 <LayoutConfigurator
-                  style={{position: 'absolute', top: 400, left: 420, width: 400, height: 400}}
-                  layoutStyle={layoutStyle}
-                  onChange={onChange}/>
+                    style={{ position: 'absolute', top: 400, left: 420, width: 400, height: 400 }}
+                    layoutStyle={layoutStyle}
+                    visualStyle={visualStyle}
+                    onChange={onChange} />
 
             </Surface>
         </div>
-      )
+    )
 
 }

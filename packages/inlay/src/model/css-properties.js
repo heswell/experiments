@@ -1,10 +1,16 @@
+import {alignItems, flexDirection, justifyContent, positionType} from './stretch';
+
 const stretchStyle = {
   "alignItems": "alignItems",
   "borderTop": "borderTop",
+  "borderTopWidth": "borderTop",
   "borderBottom": "borderBottom",
+  "borderBottomWidth": "borderBottom",
   "borderLeft": "borderStart",
+  "borderLeftWidth": "borderStart",
   "borderStart": "borderStart",
   "borderRight": "borderEnd",
+  "borderRightWidth": "borderEnd",
   "borderEnd": "borderEnd",
   "display": "display",
   "flexDirection": "flexDirection",
@@ -55,11 +61,7 @@ export const singleDimensionProperty = {
   'marginEnd': true,
   'minHeight': true,
   'maxHeight': true,
-  'borderTop': true,
-  'borderBottom': true,
-  'borderStart': true,
-  'borderEnd': true,
-  width: true
+  'width': true
 };
 
 export function normalize(name){
@@ -130,50 +132,148 @@ export function parseCompositeDimension(value){
   }
 }
 
-export function parseBorder(value){
-  let borderTop = 0;
-  let borderEnd = 0;
-  let borderBottom = 0;
-  let borderStart = 0;
-  let borderColor = 'black';
+export function mapCSSProperties(entry){
+  const [name, value] = entry;
+  const propertyName = normalize(name);
 
-  const values = value.split(/\s+/);
-  switch(values.length){
-    case 3: {
-      // NaN could be thin|medium|thick, decimal value
-        const n = parseInt(values[0],10);
-        borderTop = borderEnd = borderBottom = borderStart = n;
-        borderColor = values[2];
-    }
-    break;
-    case 2:{
-      throw Error(`border: '${value}' only border format supported now is 'width style color'`);
-    }
-    break;
-    case 1:{
-      throw Error(`border: '${value}' only border format supported now is 'width style color'`);
-    }
-    break;
-    default: 
-      throw Error(`border: '${value}' only border format supported now is 'width style color'`);
+  if (value === undefined){
+    return ARRAY;
   }
 
-  const result = [
-    'borderTop', borderTop,
-    'borderEnd', borderEnd,
-    'borderBottom', borderBottom,
-    'borderStart', borderStart
-  ]
+  if (name !== propertyName){
+    entry[0] = propertyName;
+  }
 
-  if (borderTop || borderStart || borderBottom || borderEnd){
-    result.push(
-      'boxShadow', 
-      `${borderColor} ${borderStart||0}px ${borderTop||0}px 0 0 inset,
-       ${borderColor} ${-borderEnd||0}px ${-borderBottom||0}px 0 0 inset`
+  if (singleDimensionProperty[propertyName]){
+    
+    entry[1] = dimension(value);
+
+  } else switch (propertyName) {
+
+    case 'flexDirection': 
+      entry[1] = flexDirection(value);
+      break;
+
+    case 'alignItems': 
+      entry[1] = alignItems(value);
+      break;
+
+    case 'justifyContent': 
+      entry[1] = justifyContent(value);
+      break;
+
+    case 'positionType': 
+      entry[1] = positionType(value);
+      break;
+
+    case 'flexShrink':
+    case 'flexGrow':
+      break;
+
+    case 'flex':
+      entry.splice(0,2,...flexProperties(value));
+      break;
+
+    case 'padding':
+    case 'margin': {
+        const values = parseCompositeDimension(value)
+        entry[0] = `${propertyName}Top`;
+        entry[1] = values[0];
+        entry[2] = `${propertyName}End`;
+        entry[3] = values[1];
+        entry[4] = `${propertyName}Bottom`;
+        entry[5] = values[2];
+        entry[6] = `${propertyName}Start`;
+        entry[7] = values[3];
+      }
+      break;
+    
+    case 'border': 
+    case 'borderTop': 
+    case 'borderStart': 
+    case 'borderEnd': 
+    case 'borderBottom': 
+      entry.splice(0,2,...parseBorder(propertyName, value))
+      break;
+
+    case 'display': 
+      entry[1] = value === 'none' ? Display.None : Display.Flex;
+      break;
+
+      default:
+      // return as-is. We only get passed layout properties, so all ara valid
+  }
+
+  return entry;
+}
+
+export function parseBorder(propertyName, value){
+  let borderColor = 'black';
+  let borderWidth = 0;
+
+  if (typeof value === 'number'){
+    borderWidth = value;
+  } else {
+
+    const values = value.split(/\s+/);
+    switch(values.length){
+      case 3: {
+        // NaN could be thin|medium|thick, decimal value
+          borderWidth = parseInt(values[0],10);
+          borderColor = values[2];
+      }
+      break;
+      case 2:{
+        throw Error(`border: '${value}' only border format supported now is 'width style color'`);
+      }
+      break;
+      case 1:{
+        throw Error(`border: '${value}' only border format supported now is 'width style color'`);
+      }
+      break;
+      default: 
+        throw Error(`border: '${value}' only border format supported now is 'width style color'`);
+    }
+  }
+
+  const result = [];
+
+  switch (propertyName){
+    case 'borderTop':
+    case 'borderBottom': 
+    case 'borderEnd': 
+    case 'borderStart': 
+      result.push(propertyName, borderWidth);
+      break;
+    default:
+      result.push(
+        'borderTop', borderWidth,
+        'borderEnd', borderWidth,
+        'borderBottom', borderWidth,
+        'borderStart', borderWidth,
       );
   }
 
   return result;
 
 }
+
+export function deriveVisualBorderStyle({
+  borderTop:t=0,
+  borderEnd:r=0,
+  borderBottom:b=0,
+  borderStart:l=0}){
+    
+    const borderColor = 'black';
+    if (t || r || b || l){
+      return ['boxShadow', 
+      `${borderColor} ${l||0}px ${t||0}px 0 0 inset,
+       ${borderColor} ${-r||0}px ${-b||0}px 0 0 inset`
+      ];
+
+    } else {
+      return [];
+    }
+} 
+
 

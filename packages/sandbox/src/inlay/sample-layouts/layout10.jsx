@@ -20,7 +20,10 @@ export default (width = 820, height = 800) => {
             style={{flex:1, backgroundColor: 'red'}}
             onClick={select}/>
           <Component resizeable title='R Component' header={true}
-            style={{flex: 1, backgroundColor: 'yellow'}}
+            style={{
+              flex: 1, backgroundColor: 'yellow',
+              borderTop: '3px solid black'
+            }}
             onClick={select}/>
         </FlexBox>
       </ConfigurableLayout>
