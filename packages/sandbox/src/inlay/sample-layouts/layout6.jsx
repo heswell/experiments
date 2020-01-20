@@ -2,13 +2,13 @@ import React from 'react';
 import { Application, FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/inlay';
 
 export default (width = 900, height = 800) =>
-    <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: "column", width: 1200, height: 1100 }}>
+    <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: "column", width: 1200, height: 1000 }}>
       <FlexBox className="SampleApp2" style={{ flexDirection: "row", flex: 1 }}>
         <Component title="test 1" style={{ width: 100, backgroundColor: 'red' }} resizeable/>
-        <DynamicContainer resizeable>
+        <DynamicContainer style={{flex: 1}} dropTarget resizeable>
           <FlexBox className="SampleApp3" style={{ flexDirection: "column", flex: 1 }}>
             <FlexBox id="blanco" style={{ flexDirection: "row", flex: 1 }} resizeable>
-              <Component title="Fixed Data Table" style={{ flex: 1 }} header={true} resizeable/>
+              <Component title="Fixed Data Table" style={{ flex: 1, backgroundColor: 'brown' }} header={true} resizeable/>
               <Component title="A Div" style={{ flex: 1, backgroundColor: 'cornflowerblue' }} header={true}  resizeable/>
               <Component title="Div 2" style={{ flex: 1, backgroundColor: 'ivory' }} header={true}  resizeable/>
               <FlexBox title='Div 3' style={{ flexDirection: "column", flex: 1 }} header={{ height: 24 }}  resizeable>

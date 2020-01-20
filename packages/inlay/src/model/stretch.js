@@ -18,13 +18,15 @@ let ready = false;
 export const isReady = () => ready;
 
 const ARRAY = [];
-const NO_OVERRIDES = {};
+const EMPTY_OBJECT = {};
 const SURFACE_CHILD_STYLE = ({style}) => (style.width && style.height ? {position: 'absolute'}: undefined);
 const NOOP = () => undefined;
 
+export const getDisplay = () => Display;
+
 export const stretchLoading = import(/* webpackChunkName: "stretch" */ 'stretch-layout').then(initStretch);
 
-export function extendLayout(config, path='0', styleOverrides=NO_OVERRIDES){
+export function extendLayout(config, path='0', styleOverrides=EMPTY_OBJECT){
 
   // allow tabstrip to be specified, like header
   const [layoutStyle, visualStyle] = collectStyles(config.style, styleOverrides);
@@ -231,8 +233,7 @@ function stretchNode({layoutStyle, children=ARRAY}){
 }
 
 // TODO move this into css-properties
-export function collectStyles(style, overrides){
-
+export function collectStyles(style=EMPTY_OBJECT, overrides){
   let [layoutStyle, visualStyle] = overrides ? collectStyles(overrides) : [{}, {}]
 
   Object.entries(style).forEach(entry => {

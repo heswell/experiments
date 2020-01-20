@@ -10,7 +10,7 @@ const defaultHeaderSpec = () => ({
 
 
 
-export const getManagedDimension = style => style.flexDirection === 'column' ? 'height' : 'width';
+export const getManagedDimension = style => style.flexDirection === 'column' ? ['height', 'width'] : ['width', 'height'];
 
 //TODO components should be able to register props here
 const LayoutProps = {
@@ -33,22 +33,6 @@ export const getLayoutModel = (type, {children, contentModel, style, ...props}) 
     }
   }
   
-const getLayoutModelDeprecated = component => {
-  const type = typeOf(component); 
-  const {props: {children, contentModel, style, ...props}} = component;
-  const defaultProps = getDefaultProps(component);
-  const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined && defaultProps[prop] === undefined);
-
-  return {
-      type,
-      $id: props.id || uuid(),
-      ...layoutProps(type, component.props),
-      style,
-      props: ownProps.length === 0 ? undefined : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
-      children: isLayout(component) ? getLayoutModelChildren(children, contentModel) : []
-  }
-}
-
 export function resetPath(layoutModel, path){
     if (layoutModel.$path === path){
         return layoutModel;
@@ -71,7 +55,8 @@ function getLayoutModelChildren(children, contentModel=null){
     // TODO don't recurse into children of non-layout
     if (React.isValidElement(children)){
         // what if we have a contentModel ?
-        return [getLayoutModelDeprecated(children)];
+        return [getLayoutModel(typeOf(children), children.props)];
+        // return [getLayoutModelDeprecated(children)];
     } else if (Array.isArray(children)){
         return children.filter(child => child).map(child => getLayoutModel(typeOf(child), child.props));
     } else if (contentModel !== null){

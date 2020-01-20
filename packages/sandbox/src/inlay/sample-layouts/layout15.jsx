@@ -3,7 +3,7 @@ import { Application, DynamicContainer, FlexBox, Component } from '@heswell/inla
 
 export default (width = 500, height = 400) =>
 <Application width={900} height={500}>
-  <DynamicContainer>
+  <DynamicContainer style={{width:900,height:500}}>
     <FlexBox style={{flexDirection: 'column', width: '100%', height: '100%',}}>
       <Component title='W Component' style={{height: 100, backgroundColor: 'rebeccapurple'}}/>
       <FlexBox style={{flex: 1, flexDirection: 'row'}} dragStyle='flexbox-shuffle'>

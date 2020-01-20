@@ -32,7 +32,7 @@ export default function FlexBox(props){
 
     const splitterMoved = distance => {
         const [idx1, , idx2] = splitChildren.current;
-        const dim = getManagedDimension(layoutModel.style);
+        const [dim] = getManagedDimension(layoutModel.style);
         const measurements = layoutModel.children.map(child => child.computedStyle[dim]);
         measurements[idx1] += distance;
         measurements[idx2] -= distance;

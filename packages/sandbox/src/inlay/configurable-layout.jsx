@@ -18,7 +18,7 @@ export default function ConfigurableLayout({ children }) {
 
     function onChange(propertyName, value) {
         const { $path, header, style, layoutStyle, visualStyle, ...model } = getSelectedLayoutNode();
-
+        // TODO refactor to use same code as stretch, using collectSTyles
         const newLayoutStyle = {
             ...layoutStyle,
             [propertyName]: value

@@ -1,5 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
+import { registerClass } from '@heswell/inlay';
 
 export class AppHeader extends React.Component {
 
@@ -10,12 +11,8 @@ export class AppHeader extends React.Component {
 			this.props.className
 		);
 
-		var style ={
-			backgroundColor: 'rgb(90,90,90)',
-			height: this.props.height
-		};
 
-		var {children, path} = this.props;
+		var {children, path, layoutModel: {computedStyle}, dispatch} = this.props;
 
 		var children = children === null ? [] : Array.isArray(children) ? children : [children];
 		var childs = children.map((child,idx) => 
@@ -26,12 +23,11 @@ export class AppHeader extends React.Component {
 			: React.cloneElement(child, {
 				key:idx,
 				path : path + '.' + idx,
-				dragContainer: this.props.dragContainer,
-				onLayout : child.props.onLayout || this.props.onLayout
+				dispatch
 			}));
 
 		return (
-			<div className={className} style={style}>{childs}</div>
+			<div className={className} style={computedStyle}>{childs}</div>
 		);
 	}
 
@@ -55,4 +51,6 @@ export class CustomAppHeader extends React.Component {
 export function Footer({style={}}){
 	return <div className="AppStatus rect-component" style={style}/>;
 }
+
+registerClass('AppHeader', AppHeader, true);
 

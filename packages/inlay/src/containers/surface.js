@@ -1,12 +1,10 @@
 import React, { useRef } from 'react';
 import cx from 'classnames';
-import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { LayoutRoot } from './layout-root';
-import { Action } from '../model/layout-reducer';
 
 const PureSurface = React.memo(Surface);
 PureSurface.displayName = 'Surface';

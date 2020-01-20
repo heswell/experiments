@@ -48,20 +48,19 @@ export const LayoutRoot = ({ children: child }) => {
         } else {
             dispatchLayoutAction(action);
         }
-    },[]);
+    },[layoutModel]);
 
     function prepareToDrag({ layoutModel, dragRect, instructions = EMPTY_OBJECT }, evt, xDiff, yDiff) {
-        if (!instructions.DoNotRemove) {
-            const dragPos = {x: evt.clientX, y: evt.clientY};
-            // we need to wait for this to take effect before we continue with the drag
-            dispatchLayoutAction({ type: Action.DRAG_START, layoutModel, dragRect, dragPos});
-        }
+        const dragPos = {x: evt.clientX, y: evt.clientY};
+        // we need to wait for this to take effect before we continue with the drag
+        dispatchLayoutAction({ type: Action.DRAG_START, layoutModel, dragRect, dragPos, instructions});
     }
 
     function dragStart(dragRect, dragPos, draggedLayoutModel) {
         var { top, left } = dragRect;
-
-        const dragTransform = Draggable.initDrag(layoutModel, layoutModel.$path, dragRect, dragPos, {
+        // note: by passing null as dragContainer path, we are relying on registered DragContainer. How do we allow an 
+        // override for this ?
+        const dragTransform = Draggable.initDrag(layoutModel, null, dragRect, dragPos, {
             drag: handleDrag,
             drop: handleDrop
         });
@@ -114,19 +113,24 @@ export const LayoutRoot = ({ children: child }) => {
 
     if (dragOperation.current) {
 
+        // better to leave style as-is and apply a scale transform.
+        // this doesn't change the nested children computed style
         const { component: { computedStyle, ...rest }, position } = dragOperation.current;
         const dragLayoutModel = {
             ...rest,
             computedStyle: {
                 ...computedStyle,
+                // position: 'absolute',
+                // width: 150,
+                // height: 100,
                 ...position
             }
         };
-
         const layoutItemProps = {
             key: dragLayoutModel.$id,
             title: dragLayoutModel.props.title,
-            layoutModel: dragLayoutModel
+            layoutModel: dragLayoutModel,
+            dispatch: dispatchLayoutAction
         };
 
         const dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(dragLayoutModel)}</LayoutItem>;

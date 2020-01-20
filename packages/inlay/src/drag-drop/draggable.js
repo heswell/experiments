@@ -40,7 +40,7 @@ function getDragContainer(layoutModel, path) {
     //TODO still to be determined how this will work
     if (layoutModel.$path === path){
         return layoutModel;
-    } else if (path === undefined) {
+    } else if (!path) {
     // If the model has no path (i.e. it hasn't been dragged out of the existing layout)
     // hiow do we decide the dragContainer to use (assuming there may be more than 1)
         pathToContainer = _dragContainers[0];
@@ -112,7 +112,7 @@ function preDragMouseupHandler() {
 function initDrag(layoutModel, path, dragRect, dragPos) {
 
     _dragContainer = getDragContainer(layoutModel, path);
-
+    console.log(`dragContainer = ${_dragContainer.$path}`);
     var start = window.performance.now();
 
     // translate the layout $position to drag-oriented co-ordinates, ignoring splitters

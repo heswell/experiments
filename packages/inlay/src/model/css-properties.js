@@ -1,4 +1,6 @@
-import {alignItems, flexDirection, justifyContent, positionType} from './stretch';
+import {alignItems, getDisplay, flexDirection, justifyContent, positionType} from './stretch';
+
+const ARRAY = [];
 
 const stretchStyle = {
   "alignItems": "alignItems",
@@ -135,6 +137,7 @@ export function parseCompositeDimension(value){
 export function mapCSSProperties(entry){
   const [name, value] = entry;
   const propertyName = normalize(name);
+  const {None, Flex} = getDisplay();
 
   if (value === undefined){
     return ARRAY;
@@ -197,7 +200,7 @@ export function mapCSSProperties(entry){
       break;
 
     case 'display': 
-      entry[1] = value === 'none' ? Display.None : Display.Flex;
+      entry[1] = value === 'none' ? None : Flex;
       break;
 
       default:

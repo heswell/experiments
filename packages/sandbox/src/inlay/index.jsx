@@ -38,7 +38,7 @@ const SampleLayout = ({ sample, width, height }) => {
     case 14: return Layout14(width, height);  /* Quad FlexBox, children can be moved, removed */
     case 15: return Layout15(width, height);  /* Quad FlexBox, Flexbox shuffle */
     case 16: return Layout16(width, height);  /* Nested FlexBox */
-    case 17: return <Layout17 width={width} height={height} />;  /* Layout Builder */
+    case 17: return <Layout17 />;  /* Layout Builder */
     case 18: return Layout18(width, height);  /* Nested, nested FlexBox */
     case 19: return Layout19(width, height);  /* TabbedContainer */
     default: return Layout1(width, height);
@@ -49,7 +49,7 @@ const SampleLayout = ({ sample, width, height }) => {
 console.log(`reactDOM render`)
 ReactDOM.render(
   <>
-    <SampleLayout sample={10} />
+    <SampleLayout sample={6} />
   </>,
   document.getElementById('root')
 );

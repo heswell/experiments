@@ -212,7 +212,7 @@ function dragDrop({ drag, ...state }, action) {
             return transform(state, { wrap: { target, source, pos } });
         }
     } else if (pos.position.Centre) {
-        console.log(` ...position center`)
+        return replaceChild(state, {target:followPath(state, target.$path), replacement: source});
     } else {
         return dropLayoutIntoContainer(state, pos, source, target, targetPosition);
     }
@@ -220,8 +220,13 @@ function dragDrop({ drag, ...state }, action) {
     return state;
 }
 
-function dragStart(state, { dragRect, dragPos, ...action }) {
-    return removeChild({ ...state, drag: { dragRect, dragPos, component: action.layoutModel } }, action);
+function dragStart(state, { dragRect, dragPos, instructions,  ...action }) {
+    const newState = { ...state, drag: { dragRect, dragPos, component: action.layoutModel } };
+    if (instructions && instructions.DoNotRemove){
+        return newState;
+    } else {
+        return removeChild(newState, action);
+    }
 }
 
 function removeChild(state, { layoutModel: child }) {
@@ -285,7 +290,7 @@ function unwrap(layoutModel, child) {
             computedStyle: layoutModel.computedStyle
         }
     } else if (type === 'FlexBox'){
-        const dim = getManagedDimension(layoutModel.style);
+        const [dim] = getManagedDimension(layoutModel.style);
         const {style: {[dim]: size, ...style}, layoutStyle: {[dim]: layoutSize, ...layoutStyle}} = unwrappedChild;
         unwrappedChild = {
             ...unwrappedChild,
@@ -422,11 +427,8 @@ function wrap(model, source, target, pos) {
     const manualLayout = target.$path === model.$path
         ? _wrapRoot(model, source, pos)
         : _wrap(model, source, target, pos);
-    //return layout(manualLayout, model.computedStyle, model.$path)
-    // Can we get away with just a recomputeVhild here or do we need to computeLayout ?
     const { width, height, top, left } = manualLayout.computedStyle;
     return computeLayout(manualLayout, width, height, top, left, model.$path)
-
 }
 
 function _wrapRoot(model, source, pos) {
@@ -439,7 +441,7 @@ function _wrapRoot(model, source, pos) {
     // source only has position attributes because of dragging
     const { style: { left: _1, top: _2, ...sourceStyle } } = source;
     const active = type === 'TabbedContainer' || pos.position.SouthOrEast ? 1 : 0;
-    const dim = getManagedDimension(style);
+    const [dim] = getManagedDimension(style);
     const sourceFlex = typeof pos[dim] === 'number'
         ? {flexGrow: 0, flexShrink: 0, flexBasis: pos[dim]}
         : {flex: 1};
@@ -477,9 +479,16 @@ function _wrap(model, source, target, pos) {
             flexDirection
         };
 
+        // If we're going to render source in a flex container, can we allow the cross-dimension
+        // to be managed by flex (default stretch) ? Assume yes if the component is resizeable
+        const [dim, contra] = getManagedDimension(style);
+        const purgeContra = source.resizeable && source.style[contra] !== undefined
+            ? contra
+            : undefined;
+
         // source only has position attributes because of dragging
-        const { style: { left: _1, top: _2, ...sourceStyle } } = source;
-        const dim = getManagedDimension(style);
+        const { style: { left: _1, top: _2, [purgeContra]: _,  ...sourceStyle } } = source;
+
         const sourceFlex = typeof pos[dim] === 'number'
             ? {flexGrow: 0, flexShrink: 0, flexBasis: pos[dim]}
             : {flex: 1};
@@ -603,6 +612,10 @@ function againstTheGrain(pos, layout) {
         : pos.position.NorthOrSouth ? isTerrace(layout) || isTabset(layout)
             : false;
 
+}
+
+function isContainer(model) {
+    return model.type === 'DynamicContainer';
 }
 
 function isTower(model) {

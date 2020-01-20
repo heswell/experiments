@@ -60,7 +60,7 @@ export default function LayoutItem(props){
             style={computedStyle} >
             {header &&
                 <ComponentHeader
-                    title={`${/*title*/ layoutModel.$path}`}
+                    title={`${/*title*/ layoutModel.$path || title}`}
                     style={header.style}
                     menu={header.menu}
                     onMouseDown={handleMouseDown}

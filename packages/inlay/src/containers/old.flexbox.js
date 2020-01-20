@@ -141,7 +141,7 @@ export class FlexBox2 extends Container {
   splitterMoved(distance) {
       const {layoutModel} = this.state;
       const [idx1, , idx2] = this.splitChildren;
-      const dim = getManagedDimension(layoutModel.style);
+      const [dim] = getManagedDimension(layoutModel.style);
       const measurements = layoutModel.children.map(child => child.computedStyle[dim]);
       measurements[idx1] += distance;
       measurements[idx2] -= distance;
