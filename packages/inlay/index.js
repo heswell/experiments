@@ -12,5 +12,5 @@ export * from './src/model/layoutModel'; // deprecated
 export * from './src/model/layout-utils';
 export {Action} from './src/model/layout-reducer.js';
 export {registerClass} from './src/component-registry';
-export {adjustHeaderPosition, extendLayout} from './src/model/stretch';
+export {adjustHeaderPosition, extendLayout, stretchLayout} from './src/model/stretch';
 export {isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle} from './src/model/css-properties';

@@ -5,12 +5,14 @@
 
 .ComponentPalette .ComponentIcon {
 	display: inline-block;
-	border: solid 4px rgba(200,200,200,0.4);
+	border: solid 2px rgba(200,200,200,0.4);
 	color: black;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight:bold;
 	margin-left: 6px;
-	line-height: 20px;
-	padding: 0 6px;
+	line-height: 24px;
 	cursor:pointer;
+	width: 100px;
+	box-sizing: border-box;
+	text-align: center;
 }

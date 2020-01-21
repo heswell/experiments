@@ -1,25 +1,37 @@
-import React, { Component } from 'react'
+import React, { Component, useState } from 'react'
 import './componentPalette.css';
 import { uuid } from '@heswell/utils';
-import { Action, getLayoutModel, extendLayout } from '@heswell/inlay';
+import { Action, getLayoutModel, extendLayout, stretchLayout } from '@heswell/inlay';
 
 const header = true;
 const resizeable = true;
 
 const getDefaultComponents = () => [
-    <Component title="Blue Monday" iconColor="blue" style={{backgroundColor: 'blue', flex: 1}} header resizeable />,
-    <Component title="Ivory Tower" iconColor="ivory" style={{backgroundColor: 'ivory', flex: 1}} header resizeable />
+    <Component title="Blue Monday" iconBg="blue" iconColor="white" style={{backgroundColor: 'blue', color: 'white'}} header resizeable />,
+    <Component title="Ivory Tower" iconBg="ivory" style={{backgroundColor: 'ivory', flex: 1}} header resizeable />
     // { type: 'Component', props:{title: 'Ketchup', }, style: { backgroundColor: 'tomato', flex: 1 }, resizeable, iconColor: 'tomato' },
     // { type: 'Component', props:{title: 'Army Drill'}, style: { backgroundColor: 'khaki', flex: 1 }, resizeable, iconColor: 'khaki' },
     // { type: 'Component', props:{title: 'Brown Study'}, style: { backgroundColor: 'brown', flex: 1 }, resizeable, iconColor: 'brown' },
     // { type: 'Component', props:{title: 'Corn Fields'}, style: { backgroundColor: 'cornflowerblue', flex: 1 }, resizeable, iconColor: 'cornflowerblue' }
-].map(component => extendLayout(getLayoutModel('Component', component.props), null));
+].map(component => {
+    const model = getLayoutModel('Component', component.props);
+    const layoutModel = extendLayout({
+        ...model,
+        style: {
+            ...model.style,
+            width: 150,
+            height: 200
+        }
+    }, null);
+    stretchLayout(layoutModel);
+    return layoutModel;
+});
 
-const ComponentIcon = ({children, color, idx, text, onMouseDown}) => {
+const ComponentIcon = ({children, color, backgroundColor, idx, text, onMouseDown}) => {
     const handleMouseDown = evt => onMouseDown(evt, idx)
     return (
         <div className='ComponentIcon' onMouseDown={handleMouseDown}
-            style={{ backgroundColor: color }}>
+            style={{ color, backgroundColor }}>
             <span>{text}</span>
             {children}
         </div>
@@ -27,9 +39,13 @@ const ComponentIcon = ({children, color, idx, text, onMouseDown}) => {
 }
 
 export default function ComponentPalette({
-    components = getDefaultComponents(),
+    components: propComponents,
     dispatch
 }) {
+
+    const [components] = useState(propComponents || getDefaultComponents());
+
+    console.log(JSON.stringify(components[0],null,2))
 
     function handleMouseDown(evt, idx) {
         console.log(`mouderDown ${idx}`)
@@ -39,7 +55,7 @@ export default function ComponentPalette({
             type: Action.DRAG_START, 
             evt, 
             layoutModel: {...component, $id: uuid(1)},
-            instructions: { DoNotRemove: true, DoNotTransform: true },
+            instructions: { DoNotRemove: true, DoNotTransform: true, dragThreshold: 1 },
             dragRect
         });
     }
@@ -72,7 +88,8 @@ export default function ComponentPalette({
                     key={idx}
                     idx={idx}
                     text={component.props.title}
-                    color={component.props.iconColor || '#ccc'}
+                    color={component.props.iconColor || '#000'}
+                    backgroundColor={component.props.iconBg || '#333'}
                     component={component}
                     onMouseDown={handleMouseDown}>
                 </ComponentIcon>

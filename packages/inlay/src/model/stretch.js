@@ -26,6 +26,7 @@ export const getDisplay = () => Display;
 
 export const stretchLoading = import(/* webpackChunkName: "stretch" */ 'stretch-layout').then(initStretch);
 
+// TODO this should just be rolled into getLayoutModel
 export function extendLayout(config, path='0', styleOverrides=EMPTY_OBJECT){
 
   // allow tabstrip to be specified, like header

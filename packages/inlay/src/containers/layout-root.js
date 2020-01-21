@@ -31,8 +31,8 @@ export const LayoutRoot = ({ children: child }) => {
     useEffect(() => {
         if (layoutModel !== null){
             if (layoutModel.drag) {
-                const {dragRect, dragPos, component} = layoutModel.drag;
-                dragStart(dragRect, dragPos, component);
+                const {dragRect, dragPos, component, instructions} = layoutModel.drag;
+                dragStart(dragRect, dragPos, component, instructions);
                 setDrag(0.0);
             } else if (onLayoutModel){
                 onLayoutModel(layoutModel, dispatchLayoutAction);
@@ -44,7 +44,7 @@ export const LayoutRoot = ({ children: child }) => {
     const dispatch = useCallback(action => {
         if (action.type === 'drag-start') {
             const { evt, ...options } = action;
-            Draggable.handleMousedown(evt, prepareToDrag.bind(null, options));
+            Draggable.handleMousedown(evt, prepareToDrag.bind(null, options), options.instructions);
         } else {
             dispatchLayoutAction(action);
         }
@@ -64,6 +64,8 @@ export const LayoutRoot = ({ children: child }) => {
             drag: handleDrag,
             drop: handleDrop
         });
+
+        // the dragTransform should happen here
         console.log(`%cdragTransform ${JSON.stringify(dragTransform)}`,'color:blue;font-weight:bold;')
         // see surface for draggedIcon
         var { $path, computedStyle, ...rest } = draggedLayoutModel;
@@ -96,9 +98,9 @@ export const LayoutRoot = ({ children: child }) => {
     }
 
     function handleDrop(dropTarget) {
-        dispatch({type: Action.DRAG_DROP, dropTarget, targetPosition: dragOperation.current.position});
-        dragOperation.current = null;
-        setDrag(-1.0);
+        // dispatch({type: Action.DRAG_DROP, dropTarget, targetPosition: dragOperation.current.position});
+        // dragOperation.current = null;
+        // setDrag(-1.0);
     }
 
     if (layoutModel === null){
@@ -112,7 +114,6 @@ export const LayoutRoot = ({ children: child }) => {
     const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
 
     if (dragOperation.current) {
-
         // better to leave style as-is and apply a scale transform.
         // this doesn't change the nested children computed style
         const { component: { computedStyle, ...rest }, position } = dragOperation.current;
@@ -120,12 +121,12 @@ export const LayoutRoot = ({ children: child }) => {
             ...rest,
             computedStyle: {
                 ...computedStyle,
-                // position: 'absolute',
-                // width: 150,
-                // height: 100,
                 ...position
             }
         };
+        console.log(`position ${JSON.stringify(position)}
+            ${JSON.stringify(dragOperation.current.component,null,2)} `)
+
         const layoutItemProps = {
             key: dragLayoutModel.$id,
             title: dragLayoutModel.props.title,

@@ -14,8 +14,9 @@ let _dragState;
 let _dropTarget = null;
 let _measurements;
 let _simpleDrag;
+let _dragThreshold;
 
-const _dragThreshold = 5;
+const DEFAULT_DRAG_THRESHOLD = 5;
 const _dropTargetRenderer = new DropTargetRenderer();
 const _dragContainers = [];
 const SCALE_FACTOR = 0.4;
@@ -63,7 +64,7 @@ function getDragContainer(layoutModel, path) {
 
 export const Draggable = {
 
-    handleMousedown(e, dragStartCallback) {
+    handleMousedown(e, dragStartCallback, dragOptions={}) {
         _dragCallback = dragStartCallback;
 
         _dragStartX = e.clientX;
@@ -72,11 +73,16 @@ export const Draggable = {
         window.addEventListener('mousemove', preDragMousemoveHandler, false);
         window.addEventListener('mouseup', preDragMouseupHandler, false);
 
+        _dragThreshold = dragOptions.dragThreshold === undefined
+            ? DEFAULT_DRAG_THRESHOLD
+            : dragOptions.dragThreshold;
+
+
         e.preventDefault();
     },
 
     // called from handleDragStart (_dragCallback)
-    initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler) {
+    initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler, dragThreshold=-1) {
 
         _dragCallback = dragHandler;
 

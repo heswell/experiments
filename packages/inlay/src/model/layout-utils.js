@@ -65,15 +65,8 @@ export function computeLayout(
             height    
         }
     }, path || model.$path);
-    stretchLayout(layoutModel, {width, height});
+    stretchLayout(layoutModel);
    
-    // if (left !== 0){
-    //     layoutModel.layout.left += left
-    // }
-    // if (top !== 0){
-    //     layoutModel.layout.top += top
-    // }
-
     // printLayout(layoutModel);
     return layoutModel;
 }
