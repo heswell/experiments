@@ -66,6 +66,7 @@ export const LayoutRoot = ({ children: child }) => {
         });
 
         // the dragTransform should happen here
+
         console.log(`%cdragTransform ${JSON.stringify(dragTransform)}`,'color:blue;font-weight:bold;')
         // see surface for draggedIcon
         var { $path, computedStyle, ...rest } = draggedLayoutModel;
@@ -98,9 +99,9 @@ export const LayoutRoot = ({ children: child }) => {
     }
 
     function handleDrop(dropTarget) {
-        // dispatch({type: Action.DRAG_DROP, dropTarget, targetPosition: dragOperation.current.position});
-        // dragOperation.current = null;
-        // setDrag(-1.0);
+        dispatch({type: Action.DRAG_DROP, dropTarget, targetPosition: dragOperation.current.position});
+        dragOperation.current = null;
+        setDrag(-1.0);
     }
 
     if (layoutModel === null){
@@ -124,8 +125,6 @@ export const LayoutRoot = ({ children: child }) => {
                 ...position
             }
         };
-        console.log(`position ${JSON.stringify(position)}
-            ${JSON.stringify(dragOperation.current.component,null,2)} `)
 
         const layoutItemProps = {
             key: dragLayoutModel.$id,

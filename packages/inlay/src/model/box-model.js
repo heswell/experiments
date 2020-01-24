@@ -140,8 +140,7 @@ export function pointPositionWithinRect(x, y, rect) {
 
 function addMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
-    if (model) {
-
+    if (model && model.$path) {
         //onsole.log(`\naddMeasurements			x:${x}	y:${y}	preX:${preX}	posX:${posX}	preY:${preY}	posY:${posY}   ${model.type} ${model.type === 'FlexBox' ? model.style.flexDirection :''} ${model.$path}`);
 
         const componentMeasurements = addClientMeasurements(model, measurements, x, y, preX, posX, preY, posY);
@@ -164,14 +163,13 @@ function addMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
 function addClientMeasurements(model, measurements, x, y, preX, posX, preY, posY) {
 
-    var { $id, $path, header } = model;
-
-    var { top, left, width, height } = model.computedStyle;
+    const { $id, $path, header } = model;
+    let { top, left, width, height } = model.computedStyle;
 
     left = x + left - preX;
     top = y + top - preY;
 
-    var right = preX + left + width + posX;
+    const right = preX + left + width + posX;
 
     measurements[$path] = {
         top,

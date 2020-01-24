@@ -181,9 +181,32 @@ function _replaceChild(model, child, replacement) {
 
     if (finalStep) {
         // can replacement evcer be an array - there used to be provision for that here
-        children[idx] = {
-            ...replacement // do we need the cloning here ?
-        };
+        let newChild = replacement;
+        const { style: { left: _1, top: _2, width, height,  ...style }} = newChild;
+        if (newChild.resizeable && newChild.layoutStyle.flexBasis !== 'auto' && (width !== undefined || height !== undefined)){
+            // taken from _wrap if we are replacing a flexboc child and the replacement is resizeable,
+            // we might need to lose the explicit contra dimension
+            if (model.type === 'FlexBox'){
+                const {layoutStyle: {width: _w, height: _h, ...layoutStyle}} = newChild;
+                newChild = {
+                    ...newChild,
+                    style,
+                    layoutStyle
+                };
+            } else {
+                newChild = {
+                    ...newChild,
+                    style: {
+                        ...style,
+                        ...child.layoutStyle
+                    },
+                    layoutStyle: child.layoutStyle // need to take just the 'outerLayoutStyles' from target, retaining innerLayoutSTyles
+                }
+            }
+        }
+
+        children[idx] = newChild;
+
     } else {
         children[idx] = _replaceChild(children[idx], child, replacement);
     }
@@ -342,7 +365,7 @@ function dropLayoutIntoContainer(layoutModel, pos, source, target, targetPositio
         var targetContainer = followPathToParent(layoutModel, target.$path);
 
         if (absoluteDrop(target, pos.position)) {
-            return transform(layoutModel, { insert: { source, target, pos } });
+            return insert(layoutModel, source, target.$path, null, null, pos.width || pos.height)
         } else if (target === layoutModel || isDraggableRoot(layoutModel, target)) {
             // Can only be against the grain...
             if (withTheGrain(pos, target)) {
@@ -351,10 +374,10 @@ function dropLayoutIntoContainer(layoutModel, pos, source, target, targetPositio
                 //return transform(layout, { wrap: {target, source, pos }, releaseSpace}); 
             }
         } else if (withTheGrain(pos, targetContainer)) {
-            if (pos.position.SouthOrEast) { //onsole.log(`CASE 4B) Works. Insert into container 'with the grain'`);
-                return transform(layoutModel, { insert: { source, after: target, pos } });
-            } else { //onsole.log('CASE 4C) Works');
-                return transform(layoutModel, { insert: { source, before: target, pos } });
+            if (pos.position.SouthOrEast) {
+                return insert(layoutModel, source, null, null, target.$path, pos.width || pos.height)
+            } else {
+                return insert(layoutModel, source, null, target.$path, null, pos.width || pos.height)
             }
         } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
             return wrap(layoutModel, source, target, pos );
@@ -479,16 +502,14 @@ function _wrap(model, source, target, pos) {
             flexDirection
         };
 
-        // If we're going to render source in a flex container, can we allow the cross-dimension
-        // to be managed by flex (default stretch) ? Assume yes if the component is resizeable
-        const [dim, contra] = getManagedDimension(style);
-        const purgeContra = source.resizeable && source.style[contra] !== undefined
-            ? contra
-            : undefined;
+        // If we're going to render source in a flex container, can we allow the dimensions
+        // to be managed by flex ? Assume yes if the component is resizeable.
+        const [dim] = getManagedDimension(style);
 
         // source only has position attributes because of dragging
-        const { style: { left: _1, top: _2, [purgeContra]: _,  ...sourceStyle } } = source;
+        const { style: { left: _1, top: _2, width: _w, height: _h,  ...sourceStyle } } = source;
 
+        // NO - we use dim + flexBasis 'auto'
         const sourceFlex = typeof pos[dim] === 'number'
             ? {flexGrow: 0, flexShrink: 0, flexBasis: pos[dim]}
             : {flex: 1};
@@ -522,7 +543,6 @@ function _wrap(model, source, target, pos) {
 function insert(model, source, into, before, after, size) {
     const manualLayout = _insert(model, source, into, before, after, size);
     const { width, height, top, left } = manualLayout.computedStyle;
-    console.log(`manual layout with insert ${JSON.stringify(manualLayout, null, 2)}`)
     return computeLayout(manualLayout, width, height, top, left, model.$path)
 }
 
@@ -537,38 +557,42 @@ function _insert(model, source, into, before, after, size) {
     var oneMoreStepNeeded = finalStep && into && idx !== -1;
 
     if (finalStep && !oneMoreStepNeeded) {
-
-        const flexBox = type === 'FlexBox';
+        console.log(`insert size=${size} before=${before} after=${after}`);
+        const isFlexBox = type === 'FlexBox';
 
         if (type === 'Surface' && idx === -1) {
             children = model.children.concat(source);
         } else {
             const hasSize = typeof size === 'number';
-            children = model.children.reduce((arr, child, i/*, all*/) => {
-                // idx of -1 means we just insert into end 
+            const [dim] = getManagedDimension(model.style);
+            // TODO take size into account here, within the calculateSizesOfFlexChildren function
+            const measurements = hasSize 
+                ? null
+                : calculateSizesOfFlexChildren(model, before || after, dim);
+
+            console.log(`measurements = [${measurements.join(',')}]`)
+
+            children = model.children.reduce((arr, child, i) => {
+                // idx of -1 means we just insert into end
+                const childIdx = arr.length;
                 if (idx === i) {
-                    const { style: { left: _1, top: _2, flex: _3, ...sourceStyle } } = source;
-                    if (flexBox) {
-                        // source only has position attributes because of dragging
-                        const sourceFlex = hasSize
-                            ? {flexGrow: 0, flexShrink: 0, flexBasis: size}
-                            : {flex: 1};
-                
-                        source = {
-                            ...source,
-                            resizeable: true,
-                            style: { ...sourceStyle, transform: null, transformOrigin: null, ...sourceFlex}
-                        };
+                    if (isFlexBox) {
+                        source = assignFlexDimension(source, dim, measurements[childIdx]);
+                        child = assignFlexDimension(child, dim, measurements[childIdx+1]);
                     } else {
-                        source = { ...source, style: { ...sourceStyle, transform: null, transformOrigin: null } };
+                        const { style: { left: _1, top: _2, flex: _3, width, height,transform:_4, transformOrigin:_5,  ...style } } = source;
+                        const dimensions = source.resizeable ? {} : {width, height}
+                        source = { ...source, style: { ...style, ...dimensions } };
                     }
                     if (before) {
                         arr.push(source, child);
                     } else {
                         arr.push(child, source);
                     }
-                } else {
+                } else if (child.type === 'Splitter' || !isFlexBox){
                     arr.push(child);
+                } else {
+                    arr.push(assignFlexDimension(child, dim, measurements[childIdx]));
                 }
                 return arr;
             }, []);
@@ -579,6 +603,56 @@ function _insert(model, source, into, before, after, size) {
     }
 
     return { ...model, children };
+
+}
+
+function assignFlexDimension(layoutModel, dim, size){
+    const {
+        style: {width:_1, height: _2, flex: _3, ...style}, 
+        layoutStyle: {width: _4, height: _5, ...layoutStyle}, 
+        ...rest 
+    } = layoutModel;
+
+    // TODO get this right
+    const resizeable = true;
+
+    const flexStyle = {
+        [dim]: size,
+        flexBasis: 'auto',
+        flexGrow: 1,
+        flexShrink: 1
+    };
+
+    return {
+        ...rest,
+        resizeable,
+        style: {
+            ...style,
+            ...flexStyle
+        },
+        layoutStyle: {
+            ...layoutStyle,
+            ...flexStyle
+        }
+    };
+
+}
+
+function calculateSizesOfFlexChildren(layoutModel, target, dim){
+    const children = layoutModel.children.map(
+        ({$path, computedStyle: {[dim]: size}}) => ({$path, size}));
+
+    return children.reduce((acc, {$path, size}) => {
+        if ($path === target){
+            const size1 = Math.ceil(size / 2);
+            const size2 = size - size1;
+            acc.push(size1, size2);
+
+        } else {
+            acc.push(size);
+        }
+        return acc;
+    }, []);    
 
 }
 
@@ -600,7 +674,6 @@ function isDraggableRoot(layout, component) {
 // Note: withTheGrain is not the negative of againstTheGrain - the difference lies in the 
 // handling of non-Flexible containers, the response for which is always false;
 function withTheGrain(pos, container) {
-
     return pos.position.NorthOrSouth ? isTower(container)
         : pos.position.EastOrWest ? isTerrace(container)
             : false;

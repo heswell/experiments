@@ -70,19 +70,22 @@ export const Draggable = {
         _dragStartX = e.clientX;
         _dragStartY = e.clientY;
 
-        window.addEventListener('mousemove', preDragMousemoveHandler, false);
-        window.addEventListener('mouseup', preDragMouseupHandler, false);
-
         _dragThreshold = dragOptions.dragThreshold === undefined
             ? DEFAULT_DRAG_THRESHOLD
             : dragOptions.dragThreshold;
 
+        if (_dragThreshold === 0){ // maybe this should be -1
+            _dragCallback(e, 0, 0);
+        } else {
+            window.addEventListener('mousemove', preDragMousemoveHandler, false);
+            window.addEventListener('mouseup', preDragMouseupHandler, false);
+        }
 
         e.preventDefault();
     },
 
     // called from handleDragStart (_dragCallback)
-    initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler, dragThreshold=-1) {
+    initDrag(layoutModel, path, { top, left, right, bottom }, dragPos, dragHandler) {
 
         _dragCallback = dragHandler;
 
@@ -153,6 +156,7 @@ function initDrag(layoutModel, path, dragRect, dragPos) {
         _dropTargetRenderer.prepare(dragZone);
 
         return {
+            // scale factor should be applied in caller, not here
             transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
             transformOrigin: pctX + "% " + pctY + "%"
         };

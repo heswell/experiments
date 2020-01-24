@@ -7,12 +7,11 @@ const header = true;
 const resizeable = true;
 
 const getDefaultComponents = () => [
-    <Component title="Blue Monday" iconBg="blue" iconColor="white" style={{backgroundColor: 'blue', color: 'white'}} header resizeable />,
+    <Component title="Blue Monday" iconBg="cornflowerblue" iconColor="white" style={{backgroundColor: 'cornflowerblue', color: 'white'}} header resizeable />,
     <Component title="Ivory Tower" iconBg="ivory" style={{backgroundColor: 'ivory', flex: 1}} header resizeable />
     // { type: 'Component', props:{title: 'Ketchup', }, style: { backgroundColor: 'tomato', flex: 1 }, resizeable, iconColor: 'tomato' },
     // { type: 'Component', props:{title: 'Army Drill'}, style: { backgroundColor: 'khaki', flex: 1 }, resizeable, iconColor: 'khaki' },
-    // { type: 'Component', props:{title: 'Brown Study'}, style: { backgroundColor: 'brown', flex: 1 }, resizeable, iconColor: 'brown' },
-    // { type: 'Component', props:{title: 'Corn Fields'}, style: { backgroundColor: 'cornflowerblue', flex: 1 }, resizeable, iconColor: 'cornflowerblue' }
+    // { type: 'Component', props:{title: 'Brown Study'}, style: { backgroundColor: 'brown', flex: 1 }, resizeable, iconColor: 'brown' }
 ].map(component => {
     const model = getLayoutModel('Component', component.props);
     const layoutModel = extendLayout({
@@ -45,18 +44,16 @@ export default function ComponentPalette({
 
     const [components] = useState(propComponents || getDefaultComponents());
 
-    console.log(JSON.stringify(components[0],null,2))
-
     function handleMouseDown(evt, idx) {
         console.log(`mouderDown ${idx}`)
         const component = components[idx];
-        const dragRect = evt.currentTarget.getBoundingClientRect();
+        const {left, top} = evt.currentTarget.getBoundingClientRect();
         dispatch({
             type: Action.DRAG_START, 
             evt, 
             layoutModel: {...component, $id: uuid(1)},
-            instructions: { DoNotRemove: true, DoNotTransform: true, dragThreshold: 1 },
-            dragRect
+            instructions: { DoNotRemove: true, DoNotTransform: true, dragThreshold: 0 },
+            dragRect: {left, top, right: left+100, bottom: top+150}
         });
     }
 
