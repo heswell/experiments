@@ -13,6 +13,13 @@ export default ({width = 800, height = 1000}) => {
     selectedLayoutNode: null
   })
 
+  const onLayoutModel = layoutModel => {
+    setState({
+      ...state,
+      managedLayoutNode: layoutModel
+    })
+  }
+
   const storeLayoutModel = layoutModel => {
 		console.log(`storeLayoutModel`,layoutModel)
         // const [{children: [,managedLayoutNode]}] = layoutModel.children;
@@ -53,42 +60,24 @@ export default ({width = 800, height = 1000}) => {
   : state.selectedLayoutNode.style;
 
   return (
-    <Surface style={{width: 900, height: 900, backgroundColor: 'red'}}>
-      <FlexBox style={{flexDirection:"column",width: '100%', height: '100%'}}>
-        <AppHeader style={{height: 60, backgroundColor: 'rgb(90,90,90)'}}>
+      <FlexBox style={{flexDirection:"column",width: 900, height: 900, backgroundColor: 'rgb(90,90,90)'}}>
+        <AppHeader style={{height: 60}}>
           <ComponentPalette />
         </AppHeader>
-        <DynamicContainer style={{flex:1}} dropTarget>
-          <PlaceHolder style={{width: '100%',height: '100%'}} resizeable/>
+        <DynamicContainer style={{flex:1}} dropTarget onLayoutModel={onLayoutModel}>
+          <PlaceHolder style={{width: '100%',height: '100%', backgroundColor: 'rgba(100,0,0,.2)'}} resizeable/>
         </DynamicContainer>
         <FlexBox style={{flexDirection: 'row', height: 400}}>
-          <LayoutTreeViewer style={{width: '50%', height: 400}} 
-                      tree={state.managedLayoutNode} onSelectNode={selectComponent}/>
-                <LayoutConfigurator
-                  style={{width: '50%', height: 400}}
-                  layoutStyle={layoutStyle}
-                  onChange={handleChange}/>
+          <LayoutTreeViewer
+            style={{width: '50%'}} 
+            tree={state.managedLayoutNode}
+            onSelectNode={selectComponent}/>
+          <LayoutConfigurator
+            style={{width: '50%'}}
+            layoutStyle={layoutStyle}
+            onChange={handleChange}/>
         </FlexBox>
       </FlexBox>
-    </Surface>	
   )
 
 }
-
-
-/*
-      <FlexBox style={{flexDirection:"column",width: 900, height: 600}}>
-        <CustomHeader style={{height:60}} />
-        <DynamicContainer style={{flex:1}}>
-          <PlaceHolder style={{width: '100%',height: '100%'}} resizeable/>
-        </DynamicContainer>
-        <FlexBox style={{flexDirection: 'row', height: 400}}>
-          <LayoutTreeViewer style={{width: 400, height: 400}} 
-                      tree={state.managedLayoutNode} onSelectNode={selectComponent}/>
-                <LayoutConfigurator
-                  style={{width: 400, height: 400}}
-                  layoutStyle={layoutStyle}
-                  onChange={handleChange}/>
-        </FlexBox>
-      </FlexBox>
-*/

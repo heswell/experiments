@@ -10,12 +10,10 @@ const PlaceHolder = ({className, onLayout, style}) => {
         onLayout('remove');
     }
 
-    const backgroundColor = 'rgb(60,60,60)';
-
     return (
         <div 
-            className={cx('place-holder',className)} 
-            style={{...style, backgroundColor}}>
+            className={cx('PlaceHolder',className)} 
+            style={style}>
             <div className="close icon-arrow" onClick={handleClose}>
                 <span>Close</span>
             </div>

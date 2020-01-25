@@ -44,14 +44,28 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 }
 
-export const initModel = ({ layoutType, props }) =>
-    initialize(null, { layoutType, props })
+export const initModel = ({ layoutType, props, layout }) =>
+    initialize(null, { layoutType, props, layout })
 
 export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
 
-function initialize(state, action) {
+function initialize(_, action) {
     if (stretchLoaded()){
-        return applyLayout(getLayoutModel(action.layoutType, action.props));
+        const {layoutType, props, layout} = action;
+        let layoutProps;
+        if (layout){
+            const {style: {flex, ...style} = {}} = props;
+            layoutProps = {
+                ...props,
+                style : {
+                    ...style,
+                    ...layout
+                }
+            }
+        } else {
+            layoutProps = props;
+        }
+        return applyLayout(getLayoutModel(layoutType, layoutProps));
     } else {
         return null;
     }
@@ -237,13 +251,13 @@ function dragDrop({ drag, ...state }, action) {
             let before, after;
             const tabIndex = pos.tab.index;
             if (pos.tab.index === -1 || tabIndex >= target.children.length) {
-                after = target.children[target.children.length - 1];
+                ({$path: after} = target.children[target.children.length - 1]);
             } else {
-                before = target.children[tabIndex];
+                ({$path: before} = target.children[tabIndex]);
             }
-            return transform(state, { insert: { source, before, after } });
+            return insert(state, source, null, before, after);
         } else { 
-            return transform(state, { wrap: { target, source, pos } });
+            return wrap(state, source, target, pos);
         }
     } else if (pos.position.Centre) {
         return replaceChild(state, {target:followPath(state, target.$path), replacement: source});
@@ -393,7 +407,7 @@ function dropLayoutIntoContainer(layoutModel, pos, source, target, targetPositio
         } else if (againstTheGrain(pos, targetContainer)) { //onsole.log('CASE 4D) Works.');
             return wrap(layoutModel, source, target, pos );
         } else if (isContainer(targetContainer)) {
-            return transform(layoutModel, { wrap: { target, source, pos } });
+            return wrap(layoutModel, source, target, pos );
         } else {
             console.log('no support right now for position = ' + pos.position);
         }
@@ -406,54 +420,6 @@ function dropLayoutIntoContainer(layoutModel, pos, source, target, targetPositio
 // TODO do we still need surface
 function absoluteDrop(target, position) {
     return target.type === 'Surface' && position.Absolute;
-}
-
-function transform(layoutModel, options) {
-
-    var nodeToBeInserted;
-    var nodeAfterWhichToInsert;
-    var nodeBeforeWhichToInsert;
-    var targetContainer;
-    var nodeSize;
-
-    for (var op in options) {
-        var opts = options[op];
-        switch (op) {
-
-            case 'insert':
-
-                nodeToBeInserted = opts.source;
-
-                nodeSize = opts.pos ? (opts.pos.width || opts.pos.height) : undefined;
-
-                if (opts.before) {
-                    //onsole.log(`transform: insert before ` + opts.before.$path);
-                    nodeBeforeWhichToInsert = opts.before.$path;
-                } else if (opts.after) {
-                    //onsole.log(`transform: insert after ` + opts.after.$path);
-                    nodeAfterWhichToInsert = opts.after.$path;
-                } else {
-                    targetContainer = opts.target.$path;
-                }
-
-                break;
-
-            case 'wrap':
-
-                layoutModel = wrap(layoutModel, opts.source, opts.target, opts.pos);
-
-                break;
-            default:
-
-        }
-    }
-
-    if (nodeToBeInserted) {
-        layoutModel = insert(layoutModel, nodeToBeInserted, targetContainer, nodeBeforeWhichToInsert, nodeAfterWhichToInsert, nodeSize);
-    }
-
-    return layoutModel;
-
 }
 
 // this is replaceChild with extras

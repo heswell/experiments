@@ -1,31 +1,17 @@
-import React, { useReducer, useCallback, useEffect, useRef, useState } from 'react';
-import layoutReducer, { initModel, Action } from '../model/layout-reducer';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import LayoutItem from './layout-item';
-import {stretchLoading, stretchLayoutChildren} from '../model/stretch';
+import useLayout from './layout-hook';
 
 const EMPTY_OBJECT = {};
 
-function useLayout(reducer, initialData){
-    const [layoutModel, dispatchLayoutAction] = useReducer(reducer, initialData, initModel);
-
-    if (layoutModel === null){
-        stretchLoading.then(() => {
-            dispatchLayoutAction({type: Action.INITIALIZE, ...initialData});
-        });
-    }
-
-    return [layoutModel, dispatchLayoutAction];
-
-}
-
-
-export const LayoutRoot = ({ children: child }) => {
+export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) => {
     const {props: {onLayoutModel, ...props}} = child;
-    const [layoutModel, dispatchLayoutAction] = useLayout(layoutReducer, { layoutType: typeOf(child), props });
-    const [drag, setDrag] = useState(-1.0);
+    const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(child), props }, inheritedLayout);
+    const [_, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
 
     useEffect(() => {
@@ -39,7 +25,6 @@ export const LayoutRoot = ({ children: child }) => {
             }
         }
     }, [layoutModel])
-
 
     const dispatch = useCallback(action => {
         if (action.type === 'drag-start') {
@@ -108,6 +93,11 @@ export const LayoutRoot = ({ children: child }) => {
         return null;
     }
 
+    if (inheritedLayout && inheritedLayout.computedStyle.top !== layoutModel.computedStyle.top){
+        // hack as stretch does not currently assign top correctly in absolute style
+        layoutModel.computedStyle.top = inheritedLayout.computedStyle.top;
+    }
+
     const rootProps = { ...props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
     const layoutRoot = typeOf(child) === layoutModel.type
         ? child
@@ -125,7 +115,7 @@ export const LayoutRoot = ({ children: child }) => {
                 ...position
             }
         };
-
+        // pass dispatch via context
         const layoutItemProps = {
             key: dragLayoutModel.$id,
             title: dragLayoutModel.props.title,

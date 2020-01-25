@@ -16,12 +16,12 @@ export default function DynamicContainer(props) {
     //     console.log(`root ${props.root} changed keys ${diffs.join(',')}`);
     //     prevProps.current = props;
     // }
-    const { layoutModel, dispatch, dropTarget } = props;
+    const { layoutModel, dispatch, dropTarget, onLayoutModel } = props;
     // We must allow for a layoutModel being passed in via props even when we are acting as root
     if (props.root || layoutModel === undefined) {
         const { root, ...rest } = props;
         return (
-            <LayoutRoot><PureLayout {...rest} /></LayoutRoot>
+            <LayoutRoot layoutModel={layoutModel}><PureLayout {...rest} /></LayoutRoot>
         )
     }
 
@@ -29,7 +29,13 @@ export default function DynamicContainer(props) {
         if (dropTarget){
             DragContainer.register(layoutModel.$path)
         }
-    },[])
+    },[]);
+
+    useEffect(() => {
+        if (onLayoutModel){
+            onLayoutModel(layoutModel);
+        }
+    },[layoutModel])
 
     const { title, header, computedStyle } = layoutModel;
     const className = cx("DynamicContainer");

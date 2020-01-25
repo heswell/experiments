@@ -61,6 +61,8 @@ export function computeLayout(
         ...model,
         style: {
             ...model.style,
+            top,
+            left,
             width,
             height    
         }

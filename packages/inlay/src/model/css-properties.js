@@ -52,6 +52,7 @@ const compositeProperty = {
 
 export const singleDimensionProperty = {
   'flexBasis': true,
+  'end': true,
   'height': true,
   'paddingTop': true,
   'paddingBottom': true,
@@ -63,6 +64,7 @@ export const singleDimensionProperty = {
   'marginEnd': true,
   'minHeight': true,
   'maxHeight': true,
+  'start': true,
   'width': true
 };
 

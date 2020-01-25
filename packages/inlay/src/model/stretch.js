@@ -59,6 +59,7 @@ export function initStretch(stretchModule){
 }
 
 export function stretchLayout(config){
+  // Note, when passed an absolute layoutStyle, top appears to be ignored
   const node = stretchNode(config);
   const layout = node.computeLayout();
   node.free();
