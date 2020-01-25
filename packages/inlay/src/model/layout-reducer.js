@@ -182,23 +182,34 @@ function _replaceChild(model, child, replacement) {
     if (finalStep) {
         // can replacement evcer be an array - there used to be provision for that here
         let newChild = replacement;
-        const { style: { left: _1, top: _2, width, height,  ...style }} = newChild;
+        const { style: { left: _1, top: _2, flex: _3, width, height,  ...style }} = newChild;
         if (newChild.resizeable && newChild.layoutStyle.flexBasis !== 'auto' && (width !== undefined || height !== undefined)){
-            // taken from _wrap if we are replacing a flexboc child and the replacement is resizeable,
-            // we might need to lose the explicit contra dimension
             if (model.type === 'FlexBox'){
+                const [dim] = getManagedDimension(model.style);
+                const {flexGrow, flexShrink, [dim]: size} = child.layoutStyle;
+                const flexStyle = {flexBasis: 'auto', flexGrow, flexShrink, [dim]: size};
                 const {layoutStyle: {width: _w, height: _h, ...layoutStyle}} = newChild;
                 newChild = {
                     ...newChild,
-                    style,
-                    layoutStyle
-                };
-            } else {
-                newChild = {
-                    ...newChild,
+                    $path: child.$path, // if replacement might be a layout, need to cascade path change
                     style: {
                         ...style,
-                        ...child.layoutStyle
+                        ...flexStyle
+                    },
+                    layoutStyle: {
+                        ...layoutStyle,
+                        ...flexStyle
+                    }
+                };
+            } else {
+                const {width, height} = child.layoutStyle; // what else do we need to copy across
+                newChild = {
+                    ...newChild,
+                    $path: child.$path, // if replacement might be a layout, need to cascade path change
+                    style: {
+                        ...style,
+                        width,
+                        height
                     },
                     layoutStyle: child.layoutStyle // need to take just the 'outerLayoutStyles' from target, retaining innerLayoutSTyles
                 }
@@ -506,16 +517,10 @@ function _wrap(model, source, target, pos) {
         // to be managed by flex ? Assume yes if the component is resizeable.
         const [dim] = getManagedDimension(style);
 
-        // source only has position attributes because of dragging
-        const { style: { left: _1, top: _2, width: _w, height: _h,  ...sourceStyle } } = source;
-
-        // NO - we use dim + flexBasis 'auto'
-        const sourceFlex = typeof pos[dim] === 'number'
-            ? {flexGrow: 0, flexShrink: 0, flexBasis: pos[dim]}
-            : {flex: 1};
-
-        const nestedSource = { ...source, style: { ...sourceStyle, ...sourceFlex }, resizeable: true };
-        const nestedTarget = { ...target, style: { ...target.style, flex: 1 }, resizeable: true };
+        const measurements = calculateSizesOfFlexChildren([target], target.$path, dim, pos);
+        console.log(`measurements [${measurements}]`)
+        const nestedSource = assignFlexDimension(source, dim, measurements[0]);
+        const nestedTarget = assignFlexDimension(target, dim, measurements[1]);
             
         var wrapper = {
             type,
@@ -557,7 +562,6 @@ function _insert(model, source, into, before, after, size) {
     var oneMoreStepNeeded = finalStep && into && idx !== -1;
 
     if (finalStep && !oneMoreStepNeeded) {
-        console.log(`insert size=${size} before=${before} after=${after}`);
         const isFlexBox = type === 'FlexBox';
 
         if (type === 'Surface' && idx === -1) {
@@ -566,11 +570,7 @@ function _insert(model, source, into, before, after, size) {
             const hasSize = typeof size === 'number';
             const [dim] = getManagedDimension(model.style);
             // TODO take size into account here, within the calculateSizesOfFlexChildren function
-            const measurements = hasSize 
-                ? null
-                : calculateSizesOfFlexChildren(model, before || after, dim);
-
-            console.log(`measurements = [${measurements.join(',')}]`)
+            const measurements = calculateSizesOfFlexChildren(model.children, before || after, dim, {[dim]: size});
 
             children = model.children.reduce((arr, child, i) => {
                 // idx of -1 means we just insert into end
@@ -607,6 +607,12 @@ function _insert(model, source, into, before, after, size) {
 }
 
 function assignFlexDimension(layoutModel, dim, size){
+
+    const {style: {flexBasis, [dim]: currentSize}} = layoutModel;
+    if (flexBasis === 'auto' && currentSize === size ){
+        return layoutModel;
+    }
+
     const {
         style: {width:_1, height: _2, flex: _3, ...style}, 
         layoutStyle: {width: _4, height: _5, ...layoutStyle}, 
@@ -638,16 +644,27 @@ function assignFlexDimension(layoutModel, dim, size){
 
 }
 
-function calculateSizesOfFlexChildren(layoutModel, target, dim){
-    const children = layoutModel.children.map(
-        ({$path, computedStyle: {[dim]: size}}) => ({$path, size}));
+function calculateSizesOfFlexChildren(layoutModels, target, dim, pos={}){
+    const children = layoutModels.map(
+        ({$path, layoutStyle: {flexBasis, [dim]: flexSize}, computedStyle: {[dim]: size}}) => ({$path, size, flexBasis, flexSize}));
 
-    return children.reduce((acc, {$path, size}) => {
+    const newSize = pos[dim];
+
+    return children.reduce((acc, {$path, flexBasis, flexSize, size}) => {
         if ($path === target){
-            const size1 = Math.ceil(size / 2);
-            const size2 = size - size1;
+            let size1;
+            let size2;
+            if (newSize === undefined){
+                size1 = Math.floor(size / 2);
+                size2 = size - size1;
+            } else {
+                // do we need to consider pos to determine which should be which ?
+                size1 = newSize;
+                size2 = size - size1;
+            }
             acc.push(size1, size2);
-
+        } else if (flexBasis === 'auto' && flexSize !== undefined){
+            acc.push(flexSize);
         } else {
             acc.push(size);
         }

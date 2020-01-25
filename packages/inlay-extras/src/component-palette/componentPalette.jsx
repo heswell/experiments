@@ -8,10 +8,10 @@ const resizeable = true;
 
 const getDefaultComponents = () => [
     <Component title="Blue Monday" iconBg="cornflowerblue" iconColor="white" style={{backgroundColor: 'cornflowerblue', color: 'white'}} header resizeable />,
-    <Component title="Ivory Tower" iconBg="ivory" style={{backgroundColor: 'ivory', flex: 1}} header resizeable />
-    // { type: 'Component', props:{title: 'Ketchup', }, style: { backgroundColor: 'tomato', flex: 1 }, resizeable, iconColor: 'tomato' },
-    // { type: 'Component', props:{title: 'Army Drill'}, style: { backgroundColor: 'khaki', flex: 1 }, resizeable, iconColor: 'khaki' },
-    // { type: 'Component', props:{title: 'Brown Study'}, style: { backgroundColor: 'brown', flex: 1 }, resizeable, iconColor: 'brown' }
+    <Component title="Ivory Tower" iconBg="ivory" style={{backgroundColor: 'ivory', flex: 1}} header resizeable />,
+    <Component title="Ketchup" iconBg="tomato" style={{backgroundColor: 'tomato', flex: 1}} header resizeable />,
+    <Component title="Army Drill" iconBg="khaki" style={{backgroundColor: 'khaki', flex: 1}} header resizeable />,
+    <Component title="Brown Study" iconBg="brown" style={{backgroundColor: 'brown', flex: 1}} header resizeable />
 ].map(component => {
     const model = getLayoutModel('Component', component.props);
     const layoutModel = extendLayout({
