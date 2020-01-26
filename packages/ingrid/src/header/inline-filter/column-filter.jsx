@@ -17,7 +17,7 @@ import {
 } from '@heswell/ingrid-extras';
 
 import Draggable from '../../draggable/draggable.jsx';
-import { PopupService } from '../../services/index';
+import { PopupService } from '@heswell/ui-controls';
 
 import './column-filter.css';
 

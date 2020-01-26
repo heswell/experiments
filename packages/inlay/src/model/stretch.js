@@ -24,7 +24,7 @@ const NOOP = () => undefined;
 
 export const getDisplay = () => Display;
 
-export const stretchLoading = import(/* webpackChunkName: "stretch" */ 'stretch-layout').then(initStretch);
+export const stretchLoading = import(/* webpackChunkName: "stretch" */ '@heswell/stretch').then(initStretch);
 
 // TODO this should just be rolled into getLayoutModel
 export function extendLayout(config, path='0', styleOverrides=EMPTY_OBJECT){
