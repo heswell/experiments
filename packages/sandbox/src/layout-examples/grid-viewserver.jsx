@@ -1,11 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {Grid } from '@heswell/ingrid';
 import {RemoteDataView as View} from '@heswell/data-remote';
 
 const tableName = 'Instruments'
 const dataConfig = {url: '127.0.0.1:9090', tableName};
-
   
 const instrumentColumns = [
   { name: 'Symbol', width: 120} ,
@@ -25,16 +23,14 @@ const instrumentColumns = [
 ];
 
 const columns = instrumentColumns;
-
 const dataView = new View(dataConfig);
 
-const SampleGrid = () => {
+export default () => {
 
   return (
       <div className='sample-grid'>
         <Grid
-          height={600}
-          width={1100}
+          style={{height:600, width: 1100}}
           rowStripes
           dataView={dataView}
           onSelectCell={(rowIdx, idx) => console.log(`sample-grid onSelectCell ${rowIdx}* ${idx}`)}
@@ -48,10 +44,4 @@ const colPickerStyle = {
   height: 300,
   backgroundColor: 'white'
 }  
-
-ReactDOM.render(
-  <>
-    <SampleGrid />
-  </>,
-  document.getElementById('root'));
   

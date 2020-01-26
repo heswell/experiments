@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { FlexBox, Component } from '@heswell/inlay';
-import ConfigurableLayout from '../configurable-layout.jsx';
+import ConfigurableLayout from './components/configurable-layout.jsx';
 
 export default ({width = 820, height = 800}) => {
 

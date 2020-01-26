@@ -209,7 +209,7 @@ export default function Grid({
     return (
         // we can roll context menu into the context once more of the child components are functions
         <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
-            <div style={{ position: 'relative', height, width, ...style }} className={className}>
+            <div style={{ position: 'relative', ...style }} className={className}>
                 {showColumnHeader && headerHeight !== 0 &&
                     <Header ref={header}
                         height={headingHeight}

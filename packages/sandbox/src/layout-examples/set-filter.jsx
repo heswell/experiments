@@ -29,7 +29,7 @@ const instrumentColumns = [
 const dataView = new View(dataConfig);
 const filterView = new FilterDataView(dataView, nameColumn);
 
-const SampleApp = () => {
+export default () => {
 
   const [filter, setFilter] = useState(null);
 
@@ -56,8 +56,4 @@ const SampleApp = () => {
         </div>
     )
 }
-
-ReactDOM.render(
-  <SampleApp />,
-  document.getElementById('root'));
   

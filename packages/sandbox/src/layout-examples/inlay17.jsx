@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Surface, FlexBox,  PlaceHolder, DynamicContainer, handleLayout, registerClass } from '@heswell/inlay';
 import {LayoutConfigurator,LayoutTreeViewer, ComponentPalette} from '@heswell/inlay-extras'
-import {AppHeader} from '../app-header';
+import {AppHeader} from './components/app-header';
 
 const NO_STYLES = {};
 
