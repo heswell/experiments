@@ -1,7 +1,7 @@
 import React from 'react';
 import { LayoutItem, Component } from '@heswell/inlay';
 
-export default (width = 500, height = 400) =>
+export default ({width = 500, height = 400}) =>
   <LayoutItem
     title="Tye Boss" 
     header

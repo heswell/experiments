@@ -1,7 +1,7 @@
 import React from 'react';
 import { Application, FlexBox, Component } from '@heswell/inlay';
 
-export default (width = 500, height = 400) =>
+export default ({width = 500, height = 400}) =>
   <Application width={width} height={height}>
     <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: 'column', width: '100%', height: '100%' }}>
       <div style={{ height: 32, backgroundColor: 'yellow' }}></div>

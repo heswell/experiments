@@ -100,6 +100,9 @@ export class PopupService {
     static showPopup({name='anon', group='all'/*, depth=0*/, position='', left=0, top=0, width='auto', component}) {
 
         // onsole.log(`PopupService.showPopup ${name} in ${group} ${left} ${top} ${width} depth ${depth}`);
+        if (!component){
+            throw Error(`PopupService showPopup, no component supplied`)
+        }
 
         popupOpened(name, group);
 

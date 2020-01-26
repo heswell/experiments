@@ -1,56 +1,62 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Layout1 from './sample-layouts/layout1.jsx';
-import Layout2 from './sample-layouts/layout2.jsx';
-import Layout3 from './sample-layouts/layout3.jsx';
-import Layout4 from './sample-layouts/layout4.jsx';
-import Layout5 from './sample-layouts/layout5.jsx';
-import Layout6 from './sample-layouts/layout6.jsx';
-import Layout7 from './sample-layouts/layout7.jsx';
-import Layout8 from './sample-layouts/layout8.jsx';
-import Layout9 from './sample-layouts/layout9.jsx';
-import Layout10 from './sample-layouts/layout10.jsx';
-import Layout11 from './sample-layouts/layout11.jsx';
-import Layout12 from './sample-layouts/layout12.jsx';
-import Layout13 from './sample-layouts/layout13.jsx';
-import Layout14 from './sample-layouts/layout14.jsx';
-import Layout15 from './sample-layouts/layout15.jsx';
-import Layout16 from './sample-layouts/layout16.jsx';
-import Layout17 from './sample-layouts/layout17.jsx';
-import Layout18 from './sample-layouts/layout18.jsx';
-import Layout19 from './sample-layouts/layout19.jsx';
+import { ContextMenu, MenuItem, Separator, PopupService } from '@heswell/ui-controls';
 
-const SampleLayout = ({ sample, width, height }) => {
+const handleMenuAction = (action, data) => {
+  render(action)
+}
 
-  switch (sample) {
-    case 1: return Layout1(width, height);  /* Component with border and header */
-    case 2: return Layout2(width, height);  /* Surface, no children */
-    case 3: return Layout3(width, height);  /* Surface, single child */ 
-    case 4: return Layout4(width, height);  /* Application, single child */
-    case 5: return Layout5(width, height);  /* Tower > Terrace, with margins and Borders */
-    case 6: return Layout6(width, height);  /* Complex nested layout */
-    case 8: return Layout8(width, height);  /* DynamicContainer (JSON content), within FlexBox */
-    case 9: return Layout9(width, height);  /* Singleton FlexBox */
-    case 10: return Layout10(width, height);  /* FlexBox, with Tree & Configutator */
-    case 11: return Layout11(width, height);  /* Twin FlexBox */
-    case 12: return Layout12(width, height);  /* Twin FlexBox, with header */
-    case 13: return Layout13(width, height);  /* Twin FlexBox Application */
-    case 14: return Layout14(width, height);  /* Quad FlexBox, children can be moved, removed */
-    case 15: return Layout15(width, height);  /* Quad FlexBox, Flexbox shuffle */
-    case 16: return Layout16(width, height);  /* Nested FlexBox */
-    case 17: return <Layout17 />;  /* Layout Builder */
-    case 18: return Layout18(width, height);  /* Nested, nested FlexBox */
-    case 19: return Layout19(width, height);  /* TabbedContainer */
-    default: return Layout1(width, height);
-  }
+const sampleContextMenu =  
+  <ContextMenu doAction={handleMenuAction}>
+    <MenuItem action='1' label='Component with border and header' />
+    <MenuItem action='2' label='Surface, no children' />
+    <MenuItem action='3' label='Surface, single child' />
+    <MenuItem action='4' label='Application, single child' />
+    <MenuItem action='5' label='Tower > Terrace, margins and borders' />
+    <MenuItem action='6' label='Complex nested layout' />
+    <MenuItem action='7' label='Dynamic container (JSON content), within Flexbox' />
+    <MenuItem action='8' label='Singleton FlexBox > Component, DynamicContainer > TabbedContainer' />
+    <MenuItem action='9' label='FlexBox, single child' />
+    <MenuItem action='10' label='FlexBox, with Tree & Configutator' />
+    <MenuItem action='11' label='FlexBox > 2 Components' />
+    <MenuItem action='12' label='FlexBox > 2 Components' />
+    <MenuItem action='13' label='FlexBox > 2 Components' />
+    <MenuItem action='14' label='Quad FlexBox' />
+    <MenuItem action='15' label='Quad FlexBox, Flexbox shuffle' />
+    <MenuItem action='16' label='Nested FlexBox' />
+    <MenuItem action='17' label='Layout Builder' />
+    <MenuItem action='18' label='Deeper nessting of FlexBoxes' />
+    <MenuItem action='19' label='TabbedContainer' />
+  </ContextMenu>
+
+
+async function load(sampleNo){
+  const {default: component} = await import(`./sample-layouts/layout${sampleNo}.jsx`);
+  return component;
+}
+
+async function render(id){
+
+  const SampleLayout = await load(id);
+  console.log(`reactDOM render`)
+  ReactDOM.render(
+    <>
+      <div style={{height: 32, backgroundColor: 'green'}} onContextMenu={onContextMenu}/>
+      <div style={{position: 'relative'}}>
+        <SampleLayout width={800} height={600}/>
+      </div>
+    </>,
+    document.getElementById('root')
+  );
 
 }
 
-console.log(`reactDOM render`)
-ReactDOM.render(
-  <>
-    <SampleLayout sample={17} />
-  </>,
-  document.getElementById('root')
-);
+render(1);
 
+function onContextMenu(e){
+  e.preventDefault();
+  e.stopPropagation();
+  const { clientX: left, clientY: top } = e;
+  PopupService.showPopup({ left: Math.round(left), top: Math.round(top), component: sampleContextMenu });
+
+}
