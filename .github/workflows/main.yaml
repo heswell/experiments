@@ -13,7 +13,7 @@ jobs:
         with: 
           node-version: '12.x'
       - run: yarn global add lerna
-      - run: yarn install --ignore-scripts
+      - run: yarn install
       - run: lerna run build 
       - run: lerna run test
 
