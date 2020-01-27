@@ -1,5 +1,6 @@
 import React from 'react';
-import { stretchLayout, stretchLayoutChildren, extendLayout, isReady} from './stretch';
+import { stretchLayout, stretchLayoutChildren, isReady} from './stretch';
+import { extendLayoutModel} from './layout-json';
 
 export const BORDER_STYLES = {
     border: true,
@@ -57,7 +58,7 @@ export function computeLayout(
     left=0, 
     path){
 
-    const layoutModel = extendLayout({
+    const layoutModel = extendLayoutModel({
         ...model,
         style: {
             ...model.style,

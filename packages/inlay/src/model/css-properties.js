@@ -282,3 +282,14 @@ export function deriveVisualBorderStyle({
 } 
 
 
+export function increaseCSSMeasure(style, measure, value){
+  if (measure === 'paddingTop'){
+    if (style.paddingTop){
+      // what about '%' values ?
+      style.paddingTop += value;
+    } else {
+      style.paddingTop = value;
+    }
+  }
+  return style;
+}

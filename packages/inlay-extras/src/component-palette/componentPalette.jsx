@@ -1,7 +1,7 @@
 import React, { Component, useState } from 'react'
 import './componentPalette.css';
 import { uuid } from '@heswell/utils';
-import { Action, getLayoutModel, extendLayout, stretchLayout } from '@heswell/inlay';
+import { Action, getLayoutModel, extendLayoutModel, stretchLayout } from '@heswell/inlay';
 
 const header = true;
 const resizeable = true;
@@ -14,7 +14,7 @@ const getDefaultComponents = () => [
     <Component title="Brown Study" iconBg="brown" style={{backgroundColor: 'brown', flex: 1}} header resizeable />
 ].map(component => {
     const model = getLayoutModel('Component', component.props);
-    const layoutModel = extendLayout({
+    const layoutModel = extendLayoutModel({
         ...model,
         style: {
             ...model.style,

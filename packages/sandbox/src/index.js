@@ -27,7 +27,7 @@ const sampleContextMenu =
     <MenuItem action='inlay14' label='Quad FlexBox' />
     <MenuItem action='inlay15' label='Quad FlexBox, Flexbox shuffle' />
     <MenuItem action='inlay16' label='Nested FlexBox' />
-    <MenuItem action='inlay17' label='Layout Builder' />
+    <MenuItem action='inlay-builder' label='Layout Builder' />
     <MenuItem action='inlay18' label='Deeper nessting of FlexBoxes' />
     <MenuItem action='inlay19' label='TabbedContainer' />
     <Separator />
@@ -63,7 +63,7 @@ async function render(id){
 
 }
 
-render('inlay1');
+render('inlay16');
 
 function onContextMenu(e){
   e.preventDefault();
