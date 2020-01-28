@@ -68,7 +68,7 @@ export default function LayoutItem(props){
 
             {component.type === 'div'
                 ? React.cloneElement(component, { style })
-                : React.cloneElement(component, { ...componentProps, style }) }
+                : React.cloneElement(component, { ...componentProps, style, dispatch }) }
         </div>
     );
 

@@ -63,7 +63,7 @@ async function render(id){
 
 }
 
-render('inlay16');
+render('inlay-builder');
 
 function onContextMenu(e){
   e.preventDefault();
