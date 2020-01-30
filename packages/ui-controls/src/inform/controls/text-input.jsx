@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Key from '../utils/key-code';
+import * as Key from '../../utils/key-code';
 
 export default class TextInput extends React.Component {
   constructor(props){

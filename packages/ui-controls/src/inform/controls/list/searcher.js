@@ -1,4 +1,4 @@
-import {getKeyboardEvent} from '../../utils/key-code';
+import {getKeyboardEvent} from '../../../utils/key-code';
 
 export function searcher(values, callback){
 

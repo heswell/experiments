@@ -1,16 +1,26 @@
-import React, { useState, Children } from 'react';
-import { Surface, FlexBox,  PlaceHolder, DynamicContainer, handleLayout, registerClass } from '@heswell/inlay';
+import React, { useState } from 'react';
+import { FlexBox,  PlaceHolder, DynamicContainer } from '@heswell/inlay';
+import { Control, Select } from '@heswell/ui-controls';
 import {LayoutConfigurator,LayoutTreeViewer, ComponentPalette} from '@heswell/inlay-extras'
-import {AppHeader} from './components/app-header';
+
+import './inlay-builder.css';
 
 const NO_STYLES = {};
+
+const availableValues = [
+  'test 1',
+  'test 2',
+  'test 3',
+  'test 4'
+]
 
 export default ({width = 800, height = 1000}) => {
 
   const [state, setState] = useState({
     layoutModel: undefined,
     managedLayoutNode: null,
-    selectedLayoutNode: null
+    selectedLayoutNode: null,
+    selectedLayoutId: null
   })
 
   const onLayoutModel = layoutModel => {
@@ -37,15 +47,25 @@ export default ({width = 800, height = 1000}) => {
     console.log(`save ${serializedLayout}`)
   }
 
+  const selectLayout = layoutId => setState({
+    ...state,
+    selectedLayoutId: layoutId
+  })
+
+
   const layoutStyle = state.selectedLayoutNode === null
   ? NO_STYLES
   : state.selectedLayoutNode.style;
+
+
+  const selectedIdx = availableValues.indexOf(state.selectedLayoutId)
 
   return (
       <FlexBox style={{flexDirection:"column",width: 900, height: 900, backgroundColor: 'rgb(90,90,90)'}}>
         <FlexBox style={{height: 60}}>
           <ComponentPalette style={{flex: 1, backgroundColor: 'inherit'}}/>
           <div className="layout-edit-controls" style={{backgroundColor: 'red',width: 150}}>
+            <Control><Select onCommit={selectLayout} availableValues={availableValues} selectedIdx={selectedIdx} value={state.selectedLayoutId}/></Control>
             <button onClick={saveLayout}>Save</button>
           </div>
         </FlexBox>
@@ -64,7 +84,6 @@ export default ({width = 800, height = 1000}) => {
         </FlexBox>
       </FlexBox>
   )
-
 }
 
 function layoutSerializer(key, value){

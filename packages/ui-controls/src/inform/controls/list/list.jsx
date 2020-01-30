@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
-import * as StateEvt from '../../state-machinery/state-events';
-import * as Key from '../../utils/key-code';
-import {getKeyboardEvent} from '../../utils/key-code';
+import * as StateEvt from '../../../state-machinery/state-events';
+import * as Key from '../../../utils/key-code';
+import {getKeyboardEvent} from '../../../utils/key-code';
 import {searcher} from './searcher';
 
 import './list.css';

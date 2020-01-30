@@ -1,5 +1,5 @@
 
-import * as Evt from '../state-machinery/state-events';
+import {StateEvent as Evt} from '@heswell/ui-controls';
 import {Empty, EditEmpty, SingleCellEdit, EditReadOnly} from './form-config';
 
 const UP = Evt.UP.type;

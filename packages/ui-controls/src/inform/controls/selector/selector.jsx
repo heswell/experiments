@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import Dropdown from '../dropdown';
 import List from '../list';
-import * as Key from '../../utils/key-code';
+import * as Key from '../../../utils/key-code';
 
 import './selector.css';
 
@@ -220,6 +220,9 @@ Selector.dropdown = 'dropdown'
 
 Selector.defaultProps = {
   selectedIdx: null,
-  availableValues: []
+  availableValues: [],
+  onFocus: () => console.log(`no onFocus prop for Selector`),
+  onPopupActive: () => console.log(`no onPopupActive prop for Selector`),
+  onCommit: () => console.log(`no onCommit prop for Selector`)
 }
 

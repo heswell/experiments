@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 import dateFns from 'date-fns';
-import * as StateEvt from '../../state-machinery/state-events';
-import {getKeyboardEvent} from '../../utils/key-code';
+import * as StateEvt from '../../../state-machinery/state-events';
+import {getKeyboardEvent} from '../../../utils/key-code';
 import CalendarModel, {getDates, getCalendarClassNames} from './calendar-model';
 
 import './calendar.css';

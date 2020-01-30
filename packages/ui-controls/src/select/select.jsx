@@ -1,6 +1,6 @@
 import React from 'react';
-import Selector from '../selector';
-import {searcher} from '../list';
+import Selector from '../inform/controls/selector';
+import {searcher} from '../inform/controls/list';
 
 import './select.css';
 
@@ -16,6 +16,7 @@ export default class Select extends React.Component {
     }
   }
 
+  // TODO don't need value AND selectedIdx
   render(){
     return (
       <Selector ref={this.selector}
