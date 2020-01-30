@@ -46,7 +46,9 @@ export default class List extends React.Component {
     const {values, selectedIdx, onCommit} = this.props;
     const dropdownClassName = "list"
 
-    return (
+    return values.length === 0 ? (
+        <div className="empty-list">Empty List</div>
+      ) : (
         <ul className={dropdownClassName} ref={this.listElement}>
         {values.map((value,idx) => (
           <li key={idx} 

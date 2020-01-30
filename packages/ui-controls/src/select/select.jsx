@@ -1,83 +1,56 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import Selector from '../inform/controls/selector';
 import {searcher} from '../inform/controls/list';
 
 import './select.css';
 
-export default class Select extends React.Component {
-  constructor(props){
-    super(props);
-    this.selector = React.createRef();
+const defaultValues = ["Alabama", "Arizona", "California", "Colorado", "Florida", "Georgia", "Idaho",
+  "Kentucky", "Louisiana", "Maine", "Montana", "Missouri", "Mississippi", "Nevada", "New England",
+  "New Jersey", "New Mexico", "New York", "North Dakota", "Ohio", "Philadelphia", "South Dakota",
+  "Tennessee", "Texas", "Virginia"];
 
-    this.onItemSelectedBySearch = this.onItemSelectedBySearch.bind(this);
-    this.searchKeyHandler = searcher(props.availableValues, this.onItemSelectedBySearch);
-    this.state = {
-      hilitedIdx: null
-    }
-  }
+export default forwardRef(function Select(props, ref){
 
-  // TODO don't need value AND selectedIdx
-  render(){
-    return (
-      <Selector ref={this.selector}
-        {...this.props}
-        typeaheadListNavigation
-        hilitedIdx={this.state.hilitedIdx}
-        onKeyDown={this.searchKeyHandler}>
-        {child =>
-          child === Selector.input && (
-            <div tabIndex={0} className="control-text select-input">
-              {this.props.value}
-            </div>
-          )
-        }
-      </Selector>
-    )
-  }
+  const selector = useRef(null);
+  const [state, setState] = useState({
+    hilitedIdx: null
+  });
 
-  onItemSelectedBySearch(hilitedIdx){
-    if (hilitedIdx !== this.state.hilitedIdx){
-      this.setState({
+  const onItemSelectedBySearch = (hilitedIdx) => {
+    if (hilitedIdx !== state.hilitedIdx){
+      setState({
+        ...state,
         hilitedIdx
       })
     }
   }
 
-  focus(){
-    if (this.selector.current){
-      this.selector.current.focus(false)
+  const availableValues = props.availableValues || defaultValues;
+  const searchKeyHandler = searcher(availableValues, onItemSelectedBySearch);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (selector.current){
+        selector.current.focus(false)
+      }
     }
-  }
+  }));
 
-}
-
-Select.defaultProps = {
-  selectedIdx: null,
-  availableValues : [
-    "Alabama",
-    "Arizona",
-    "California",
-    "Colorado",
-    "Florida",
-    "Georgia",
-    "Idaho",
-    "Kentucky",
-    "Louisiana",
-    "Maine",
-    "Montana",
-    "Missouri",
-    "Mississippi",
-    "Nevada",
-    "New England",
-    "New Jersey",
-    "New Mexico",
-    "New York",
-    "North Dakota",
-    "Ohio",
-    "Philadelphia",
-    "South Dakota",
-    "Tennessee",
-    "Texas",
-    "Virginia"
-  ]
-}
+  // TODO don't need value AND selectedIdx
+    return (
+      <Selector ref={selector}
+        {...props}
+        availableValues={availableValues}
+        typeaheadListNavigation
+        hilitedIdx={state.hilitedIdx}
+        onKeyDown={searchKeyHandler}>
+        {child =>
+          child === Selector.input && (
+            <div tabIndex={0} className="control-text select-input">
+              {props.value}
+            </div>
+          )
+        }
+      </Selector>
+    );
+});
