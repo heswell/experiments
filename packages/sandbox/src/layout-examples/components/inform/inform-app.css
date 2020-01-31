@@ -31,3 +31,7 @@
 .model-leg {
   padding: 12px;
 }
+
+.leggy-form .control {
+  background-color: inherit;;
+}

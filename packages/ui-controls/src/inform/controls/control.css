@@ -1,3 +1,7 @@
+.control {
+  position: relative;
+}
+
 .control-text {
   font-size: 11px;
   border: none;

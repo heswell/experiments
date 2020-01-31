@@ -1,7 +1,7 @@
 import React from 'react';
 import dateFns from 'date-fns';
 import Calendar from '../calendar';
-import Selector from '../selector';
+import Selector,  {ComponentType} from '../selector/selector';
 
 import './date-picker.css';
 
@@ -49,7 +49,7 @@ export default class DatePicker extends React.Component {
       >
       {
         child =>
-          child === Selector.dropdown && (
+          child === ComponentType.Dropdown && (
             <Calendar
               value={this.state.value}>
               {formattedDate =>

@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import Selector from '../inform/controls/selector';
+import Selector, {ComponentType} from '../inform/controls/selector/selector';
 import {searcher} from '../inform/controls/list';
 
 import './select.css';
@@ -45,7 +45,7 @@ export default forwardRef(function Select(props, ref){
         hilitedIdx={state.hilitedIdx}
         onKeyDown={searchKeyHandler}>
         {child =>
-          child === Selector.input && (
+          child === ComponentType.Input && (
             <div tabIndex={0} className="control-text select-input">
               {props.value}
             </div>
