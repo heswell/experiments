@@ -11,6 +11,7 @@ import Select from './src/select/select';
 export * from './src/services/index';
 export * from './src/inform/leggy-form';
 export * from './src/inform/leggy-field';
+export * from './src/inform/leggy-model';
 export {default as Control} from './src/inform/leggy-control';
 
 export const StateEvent = Evt;

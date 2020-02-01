@@ -24,6 +24,7 @@ export default class Field extends React.Component {
       return <div className="empty" />;
     }
     let child = render(field, leg);
+
     const props = {
       ref: this.control,
       onCancel: () => onCancel(field),
@@ -58,7 +59,11 @@ export default class Field extends React.Component {
     return (
       <div ref={this.el} className={className} 
         data-idx={field.tabIdx}
-        onClickCapture={() => onClick(field)}
+        onClickCapture={() => {
+            console.log(`[field] click captured`)
+            onClick(field);
+          }
+        }
         onKeyDownCapture={onKeyDown}>
           {this.renderChild()}
       </div>

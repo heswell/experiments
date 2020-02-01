@@ -1,3 +1,6 @@
+
+import { EditEmpty, MultiCellEdit, SingleCellEdit, EditReadOnly} from '@heswell/ui-controls';
+
 export const TEXT_INPUT = 'TextInput'
 
 const getLegValue = id => (model, i) => model.legs[i][id] || ''
@@ -18,49 +21,51 @@ export const COMBO = 'Combo'
 export const DATE = 'Date';
 export const TOGGLE = 'Toggle';
 
-export const MultiCellEdit = 'multi-cell-edit'
-export const EditReadOnly = 'edit-readonly'  
-export const EditEmpty = 'edit-empty'
-export const SingleCellEdit = 'single-cell-edit'  
-
 const Field1 = {
   id: 'field01',
-  label: 'Field 1',
+  label: 'Field 1 TXT*',
   getValue: getLegValue('field01'),
   type: TEXT,
   layout: MultiCellEdit
 }
 const Field2 = {
   id: 'field02',
-  label: 'Field 2 (Date)',
+  label: 'Field 2 DAT',
   getValue: getLegValue('field02'),
   type: DATE,
   layout: SingleCellEdit
 }
 const Field3 = {
   id: 'field03',
-  label: 'Field 3',
+  label: 'Field 3 CMB*',
   getValue: getLegValue('field03'),
   type: COMBO,
   layout: MultiCellEdit
 }
-const Field4 = {id: 'field04', label: 'Field 4', getValue: getLegValue('field04'), type: TEXT, layout: EditEmpty}
+const Field4 = {
+  id: 'field04',
+  label: 'Field 4 TXT*',
+  getValue: getLegValue('field04'),
+  type: TEXT,
+  layout: EditEmpty
+}
+
 const Field5 = {
   id: 'field05',
-  label: 'Field 5',
+  label: 'Field 5 SEL*',
   getValue: getLegValue('field05'),
   type: SELECT,
   layout: MultiCellEdit
 }
 const Field7 = {
   id: 'field07',
-  label: 'Field 7 (T/C)',
+  label: 'Field 7 T/C*',
   getValue: getCompositeLegValue('field07'),
   type: [TEXT, COMBO],
   layout: MultiCellEdit
 }
-const Field8 = {id: 'field08', label: 'Field 8', getValue: getLegValue('field08'), type: TEXT, layout: MultiCellEdit}
-const Field9 = {id: 'field09', label: 'Field 9', getValue: getLegValue('field09'), type: TEXT, layout: MultiCellEdit}
+const Field8 = {id: 'field08', label: 'Field 8 TXT*', getValue: getLegValue('field08'), type: TEXT, layout: MultiCellEdit}
+const Field9 = {id: 'field09', label: 'Field 9 TXT*', getValue: getLegValue('field09'), type: TEXT, layout: MultiCellEdit}
 
 const Field10 = {
   id: 'field10',
@@ -116,8 +121,6 @@ const Field15 = {
   type: TEXT,
   layout: MultiCellEdit
 }
-
-export const Empty = {id: 'empty', label: '', type: 'empty', isEmpty: true}
 
 const leggyModel = {
 

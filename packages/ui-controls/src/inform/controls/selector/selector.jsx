@@ -13,8 +13,21 @@ export const ComponentType = {
 
 export default forwardRef(function Selector({
   availableValues,
-  value: propsValue, 
-  ...props}, ref){
+  children: childRenderer,
+  dropdownClassName,
+  hilitedIdx,
+  inputClassName,
+  inputIcon = 'keyboard_arrow_down',
+  onCancel,
+  onChange,
+  onCommit,
+  onFocus,
+  onKeyDown,
+  onPopupActive,
+  selectedIdx, // sort out confusion between this and state value
+  typeaheadListNavigation,
+  value: propsValue 
+}, ref){
 
   const ignoreBlur = useRef(false);
   const inputEl = useRef(null);
@@ -32,7 +45,7 @@ export default forwardRef(function Selector({
   // untested
   useEffect(() => {
     if (value !== state.value){
-      console.log(`new value ${value} state.value ${state.value}`)
+      console.log(`new value state.value ${state.value}`, value)
       setState({...state, value, selectedIdx: availableValues.indexOf(value)})
     }
   },[value, availableValues])
@@ -56,62 +69,83 @@ useImperativeHandle(ref, () => ({
   }
 }));
 
-const onKeyDown = e => {
+const focusDropdown = () => {
+  ignoreBlur.current = true;
+  dropdown.current.focus();
+  if (onPopupActive){
+    onPopupActive(true);
+  }
+}
+
+const handleChange = evt => {
+  if (!state.open){
+    setState({...state, open: true})
+  }
+  onChange(evt);
+}
+
+const handleKeyDown = e => {
   const {keyCode} = e;
   const open = state.open;
   console.log(`[Selector] onKeyDown open=${open}`)
   if (keyCode === Key.ENTER){
-    if (state.open && props.selectedIdx !== null){
-      const val = availableValues[props.selectedIdx];
-      this.commit(val);
+    if (state.open && selectedIdx !== null){
+      const val = availableValues[selectedIdx];
+      commit(val);
     } else if (state.value !== state.initialValue){
       console.log(`selector ENTER state.value = '${state.value}' state.initialValue = '${state.initialValue}'`)
-      this.commit();
+      commit();
     } else if (!open){
       console.log(`selector ENTR => open`)
-      setState({...state, open: true})
+      setState({...state, open: true});
     }
   } else if (keyCode === Key.ESC){
+    if (open){
+      setState({...state, open: false});
+    }
     onCancel();
   } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
     focusDropdown();
-  } else if (props.onKeyDown){
-    props.onKeyDown(e)
+  } else if (onKeyDown){
+    onKeyDown(e)
   }
 }
 
-const onBlur = () => {
+const handleFocus = _evt => {
+  console.log(`[Selector.input] handleFocus => onFocus`)
+  onFocus();
+}
+
+const handleBlur = () => {
+  console.log(`[Selector.input] handleBlur ignoreBlur = ${ignoreBlur.current} ${state.value}`)
   if (!ignoreBlur.current && state.value !== state.initialValue){
-    console.log(`[Selector] onBlur => commit`)
+    console.log(`[Selector.input] handleBlur => commit`)
     commit();
   }
 }
 
-const onFocus = () => {
-  if (props.onFocus){
-    props.onFocus();
-  }
-}
-
-  const onClick = () => {
-    if (!state.open){
+const handleClick = () => {
+  console.log(`[Selector.input] handleClick (open=${state.open})`)
+  if (!state.open){
+      console.log(`\t...open`)
       setState({...state, open: true});
     }
   }
 
-  const onSelect = (val) => {
+  const handleCommit = (val) => {
     commit(val);
   }
 
-  const onCancel = () => {
+  // this just means dropdown has closed without selection, do we really need to cancel anuthing ?
+  // only if ESC was pressed ?
+  const handleCancel = () => {
     setState({
       ...state,
-      value: state.initialValue,
+      //value: state.initialValue,
       open: false
-    }/*, () => {
-      this.props.onPopupActive(false);
-    }*/);
-    props.onCancel()
+    });
+    //onPopupActive(false);
+    //onCancel()
   }
 
   const commit = (value=state.value) => {
@@ -124,44 +158,28 @@ const onFocus = () => {
     });
 
     // previously this was in setSTate callback
-    if (wasOpen && props.onPopupActive){
-      props.onPopupActive(false);
+    if (wasOpen && onPopupActive){
+      onPopupActive(false);
     }
-    props.onCommit(state.value);
+    onCommit(state.value);
 
     ignoreBlur.current = false;
   }
-
-  const focusDropdown = () => {
-    ignoreBlur.current = true;
-    dropdown.current.focus();
-    if (props.onPopupActive){
-      props.onPopupActive(true);
-    }
-  }
-
-
-  const {
-    inputClassName,
-    inputIcon = 'keyboard_arrow_down',
-    dropdownClassName,
-    children: childRenderer,
-    onCommit: onChange
-  } = props;
 
   const className = cx('control-text', inputClassName, {
     'dropdown-showing': state.open
   })
 
   const childComponent = typeof childRenderer === 'function'
-    ? childRenderer(Selector.input)
+    ? childRenderer(ComponentType.Input)
     : null;
 
-  const props2 = {
-    onKeyDown,
-    onBlur,
-    onFocus,
-    onClick,
+  const props = {
+    ref: inputEl,
+    onKeyDown: handleKeyDown,
+    onBlur: handleBlur,
+    onFocus: handleFocus,
+    onClick: handleClick,
     className: cx("control-text", inputClassName, 
     childComponent ? childComponent.props.className : null,
     {
@@ -173,11 +191,10 @@ const onFocus = () => {
     ? React.cloneElement(childComponent, props)
     : (
     <input
-      {...props2}
-      ref={inputEl}
+      {...props}
       type="text" 
       className={className}
-      onChange={onChange}
+      onChange={handleChange}
       value={state.value}
     />
   );
@@ -191,8 +208,8 @@ const onFocus = () => {
           className={dropdownClassName}
           componentName="List"
           position={state.position}
-          onCommit={onSelect}
-          onCancel={onCancel}>
+          onCommit={handleCommit}
+          onCancel={handleCancel}>
           {renderDropdownComponent()}
         </Dropdown>
       )}
@@ -200,7 +217,6 @@ const onFocus = () => {
   )
 
   function renderDropdownComponent(){
-    const {children: childRenderer, typeaheadListNavigation} = props;
     const dropdown = typeof childRenderer === 'function'
       ? childRenderer(ComponentType.Dropdown)
       : null;
@@ -209,7 +225,7 @@ const onFocus = () => {
       <List
         values={availableValues}
         selectedIdx={state.selectedIdx}
-        hilitedIdx={props.hilitedIdx}
+        hilitedIdx={hilitedIdx}
         typeaheadListNavigation={typeaheadListNavigation}
       />
     )

@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('inlay-builder');
+render('inform1');
 
 function onContextMenu(e){
   e.preventDefault();

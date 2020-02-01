@@ -21,8 +21,8 @@ const state = {
                 [Evt.COMMIT.type]: transitionNextComposite()
             }
         },
-        selector: {
-            id: 'edit-composite-selector',
+        combo: {
+            id: 'edit-composite-combo',
             on: {
                 [Evt.COMMIT.type]: transitionNextComposite()
             }

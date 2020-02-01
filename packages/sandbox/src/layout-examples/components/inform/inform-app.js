@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import formConfig from './form-config';
-import FormModel from './leggy-model';
-import { LeggyForm, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
+import { LeggyForm, FormModel, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
 import {COMBO, DATE, TOGGLE, SELECT} from './form-config';
 
 import './inform-app.css';

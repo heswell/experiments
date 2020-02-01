@@ -41,10 +41,11 @@ export class LeggyForm extends React.Component {
       actions: {
           setField: (model, evt) => {
             const {field, compositeFieldIdx: idx=null} = evt;
+            console.log(`%c[action] setField [${idx}]`,'color: brown; font-weight: bold');
             this.setCurrentField(model.setCurrentField(field, idx),idx);
           },
           setNextField: (model, evt) => {
-            console.log(`%c[action] setCurrentField`,'color: brown; font-weight: bold')
+            console.log(`%c[action] setCurrentField`,'color: brown; font-weight: bold');
             this.setCurrentField(model.setNextField(evt, evt.field));
           },
           setNextCompositeField: model => {
@@ -53,6 +54,7 @@ export class LeggyForm extends React.Component {
             this.setCompositeField();
           },
           resetField: (model) => {
+            console.log(`setNextCompositeField`)
             model.currentField = null;
           },
           resetCompositeType: model => model.resetCompositeFieldType(),
@@ -123,17 +125,20 @@ export class LeggyForm extends React.Component {
   }
 
 
-  handleFocus(field, compositeFieldIdx){
-    console.log(`[leggy-form] handleFocus ignoreFocus=${this.ignoreFocus}`)
-    if (!this.ignoreFocus || field !== this.state.model.currentField){
-      const stateEvt = {
-        ...StateEvt.CLICK,
-        field,
-        compositeFieldIdx
-      }
-      this.stateTransition(stateEvt);
+  handleFocus(field, compositeFieldIdx=0){
+    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} ignoreFocus=${this.ignoreFocus}`)
+    if (this.ignoreFocus){
+      this.ignoreFocus = false;
+    } else if (field !== this.state.model.currentField || compositeFieldIdx !== this.state.model.compositeFieldIdx){
+        console.log(`\t...StateTransition CLICK`)
+        const stateEvt = {
+          ...StateEvt.CLICK, // should this be FOCUS ?
+          field,
+          compositeFieldIdx
+        }
+        this.stateTransition(stateEvt);
     }
-    this.ignoreFocus = false;
+  
 } 
 
   handleCommit(field){
@@ -146,19 +151,21 @@ export class LeggyForm extends React.Component {
   }
 
   handleCancel(){
-    this.stateTransition(StateEvt.ESC);
+    this.stateTransition(StateEvt.ESC);// Should be cabcel
     // We may be receiving control back from focussed model, make sure focus
-    // returns to field...
-    this.setCurrentField(this.state.model.currentField)
+    // returns to same field...
+    const {currentField, compositeFieldIdx} = this.state.model;
+    this.setCurrentField(currentField, compositeFieldIdx);
   }
 
-  handleClick(field){
+  handleClick(field, compositeFieldIdx){
     if (field === this.state.model.currentField && this.currentState.matches('focus')){
       // we can't rely on focus to handle click events when element clicked already
       // had focus - what about composites ? 
       const stateEvt = {
         ...StateEvt.CLICK,
-        field
+        field,
+        compositeFieldIdx
       }
       this.stateTransition(stateEvt);
     }
@@ -168,10 +175,11 @@ export class LeggyForm extends React.Component {
     // if (stateEvt.type === 'click' && this.currentState.matches('edit')){
     //   debugger;
     // }
-    console.log(`%c${stateEvt.type} => from ${JSON.stringify(this.currentState.value)}  [${this.state.model.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
+    console.group(`%c${stateEvt.type} => from ${JSON.stringify(this.currentState.value)}  target=[${stateEvt.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
     const s2 = this.currentState = this.stateMachine.transition(this.currentState, stateEvt)
-    runActions(s2.actions, s2.context,stateEvt);
-    console.log(`%c    => ${JSON.stringify(this.currentState.value)}`, 'color: blue;font-weight: bold;')
+    runActions(s2.actions, s2.context, stateEvt);
+    console.log(`%c    => ${JSON.stringify(this.currentState.value)} [${this.currentState.context.compositeFieldIdx}]`, 'color: blue;font-weight: bold;');
+    console.groupEnd();
   }
 
   handleKeyDown(e){
@@ -200,18 +208,20 @@ export class LeggyForm extends React.Component {
     const idx = this.state.model.compositeFieldIdx;
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
-      // console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx}`);
-      this.ignoreFocus = true;
+      console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx} [${idx}] IGNORE_FOCUS=true`);
+      // this.ignoreFocus = true;
       fieldComponent.focus(idx)
     }
 
   }
 
   setCurrentField(field, idx=0){
+    console.log(`[leggy-form] setCurrentField [${idx}]`)
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
+      console.log(`setField focus on field ${field.id} [${idx}] IGNORE_FOCUS=true`);
       // console.log(`focus on field (${field.type}) [${idx}], set ignoreFocue === true`);
-      this.ignoreFocus = true;
+      // this.ignoreFocus = true;
       fieldComponent.focus(idx);
     }
     this.currentField = field;

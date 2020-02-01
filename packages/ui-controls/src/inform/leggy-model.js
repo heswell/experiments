@@ -1,6 +1,12 @@
 
-import {StateEvent as Evt} from '@heswell/ui-controls';
-import {Empty, EditEmpty, SingleCellEdit, EditReadOnly} from './form-config';
+import * as Evt from '../state-machinery/state-events';
+
+export const MultiCellEdit = 'multi-cell-edit'
+export const EditReadOnly = 'edit-readonly'  
+export const EditEmpty = 'edit-empty'
+export const SingleCellEdit = 'single-cell-edit'  
+
+export const Empty = {id: 'empty', label: '', type: 'empty', isEmpty: true}
 
 const UP = Evt.UP.type;
 const DOWN = Evt.DOWN.type;
@@ -25,7 +31,7 @@ const NavEvts = {
 const isFormNavigationEvent = ({type}) => NavEvts[type];
 const isRowNavigationEvent = ({type}) => type === LEFT || type === RIGHT
 
-export default class LeggyModel {
+export class FormModel {
 
   constructor(config, legCount, debugListener=()=>{}){
     this.config = config;
@@ -53,7 +59,7 @@ export default class LeggyModel {
   get compositeFieldIdx(){ return this._compositeFieldIdx; }
   set compositeFieldIdx(value){
     if (value !== this._compositeFieldIdx){
-      // console.log(`%c[LeggyModel] setter compositeFieldIdx ${this._compositeFieldIdx} => ${value}`,'color:brown;font-weight: bold;')
+      console.log(`%c[LeggyModel] setter compositeFieldIdx ${this._compositeFieldIdx} => ${value}`,'color:brown;font-weight: bold;')
       this._compositeFieldIdx = value;
       this._debugListener('compositeFieldIdx', value);
     }
@@ -195,7 +201,8 @@ export default class LeggyModel {
   }
 
   setCurrentField(field, idx=null){
-    const {rows,currentField,legCount} = this;
+      console.log(`[leggy-model] setCurrentField ${field.id} (${field.type}) [${idx}]`)
+      const {rows,currentField,legCount} = this;
     if (field !== currentField){
       // console.log(`[leggy-model] setCurrentField ${field.id} (${field.type}) idx=${idx}`)
       this.previousField = currentField
@@ -203,6 +210,10 @@ export default class LeggyModel {
       if (idx !== null){
         this.compositeFieldIdx = idx;
       }
+    } else if (idx !== this.compositeFieldIdx){
+      // only if this is a composite field
+      console.log(`%c but we have changed idx`,'color: red;');
+      this.compositeFieldIdx = idx;
     }
 
     const [rowIdx, colIdx] = findField(field, rows, legCount);

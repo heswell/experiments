@@ -47,7 +47,7 @@ export const transitionNext = (actions=[], cond= alwaysTrue) => [
     { target: '#focus-composite', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isComposite(c.nextField(e))},
     { target: '#focus-text-input', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isTextInput(c.nextField(e))},
     { target: '#focus-select', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isSelect(c.nextField(e))},
-    { target: '#focus-selector', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isCombo(c.nextField(e))},
+    { target: '#focus-combo', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isCombo(c.nextField(e))},
     { target: '#edit-toggle', actions: actions.concat('setNextField'), cond: (c,e) => cond(c, e) && isToggle(c.nextField(e))}
 ]
 
@@ -62,13 +62,13 @@ export const transitionNextComposite = () => [
 export const focusComposite = () => [
     { target: '#focus-composite', actions: ['setField'], cond: (c,e) => e.field.type[e.compositeFieldIdx] === TEXT },
     { target: '#edit-composite-select', actions: ['setField'], cond: (c,e) => e.field.type[e.compositeFieldIdx] === SELECT },
-    { target: '#edit-composite-selector', actions: ['setField'], cond: (c,e) => isComboType(e.field.type[e.compositeFieldIdx]) }
+    { target: '#edit-composite-combo', actions: ['setField'], cond: (c,e) => isComboType(e.field.type[e.compositeFieldIdx]) }
 ]
 
 export const clickAnyField = () => [
     { target: '#edit-toggle', actions: ['setField'], cond: (_, evt) => isToggle(evt.field)},
     { target: 'focus.focusTextInput', actions: ['setField'], cond: (_, evt) => isTextInput(evt.field)},
     { target: 'edit.editSelect', actions: ['setField'], cond: (_, evt) => isSelect(evt.field)},
-    { target: 'edit.editSelector', actions: ['setField'], cond: (_, evt) => isCombo(evt.field)},
+    { target: 'edit.editCombo', actions: ['setField'], cond: (_, evt) => isCombo(evt.field)},
     ...focusComposite()
 ]

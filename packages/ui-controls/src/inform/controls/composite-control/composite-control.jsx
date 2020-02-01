@@ -10,6 +10,7 @@ export default class CompositeControl extends React.Component {
       value: []
     }
   }
+
   focus(idx=0){
     const component = this.childRefs[idx];
     if (component && component.focus){
@@ -41,6 +42,7 @@ export default class CompositeControl extends React.Component {
           const props = {
             ref: c => this.setRef(c, idx),
             onFocus: () => {
+              console.log(`[composite-control] onFocus [${idx}]`)
               onFocus(idx)
             },
             onPopupActive,
