@@ -1,6 +1,17 @@
 import React from 'react';
 import cx from 'classnames';
-import Control from './leggy-control';
+import Control from './leggy-control.jsx';
+
+export function getFieldIdx(el){
+  if (!el || !el.className){
+    return null;
+  }
+
+  if (el.className.match('field')){
+    return el.getAttribute('data-idx')
+  }
+  return getFieldIdx(el.parentNode);
+}
 
 export default class Field extends React.Component {
 
@@ -51,7 +62,7 @@ export default class Field extends React.Component {
   }
 
   render(){
-    const {field, onKeyDown, onClick} = this.props;
+    const {field, onKeyDown, onClickCapture} = this.props;
     const className = cx("field", {
       "popup-active": this.state.popupActive
     })
@@ -61,7 +72,7 @@ export default class Field extends React.Component {
         data-idx={field.tabIdx}
         onClickCapture={() => {
             console.log(`[field] click captured`)
-            onClick(field);
+            onClickCapture(field);
           }
         }
         onKeyDownCapture={onKeyDown}>

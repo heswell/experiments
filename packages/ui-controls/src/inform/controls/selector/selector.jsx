@@ -1,7 +1,7 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import cx from 'classnames';
-import Dropdown from '../dropdown';
-import List from '../list';
+import Dropdown from '../dropdown/dropdown.jsx';
+import List from '../list/list.jsx';
 import * as Key from '../../../utils/key-code';
 
 import './selector.css';
@@ -10,6 +10,8 @@ export const ComponentType = {
   Input : 'input',
   Dropdown : 'dropdown'
 };
+
+const identity = val => val;
 
 export default forwardRef(function Selector({
   availableValues,
@@ -25,8 +27,10 @@ export default forwardRef(function Selector({
   onKeyDown,
   onPopupActive,
   selectedIdx, // sort out confusion between this and state value
+  showDropdownOnEdit=true,
   typeaheadListNavigation,
-  value: propsValue 
+  value: propsValue,
+  valueFormatter=identity
 }, ref){
 
   const ignoreBlur = useRef(false);
@@ -45,7 +49,7 @@ export default forwardRef(function Selector({
   // untested
   useEffect(() => {
     if (value !== state.value){
-      console.log(`new value state.value ${state.value}`, value)
+      console.log(`[Selector] useEffect<value, availableValues> state.value ${state.value} props.value ${value}`)
       setState({...state, value, selectedIdx: availableValues.indexOf(value)})
     }
   },[value, availableValues])
@@ -78,7 +82,8 @@ const focusDropdown = () => {
 }
 
 const handleChange = evt => {
-  if (!state.open){
+  // is this right ?
+  if (!state.open && showDropdownOnEdit){
     setState({...state, open: true})
   }
   onChange(evt);
@@ -117,10 +122,14 @@ const handleFocus = _evt => {
 }
 
 const handleBlur = () => {
-  console.log(`[Selector.input] handleBlur ignoreBlur = ${ignoreBlur.current} ${state.value}`)
+  console.log(`[Selector.input] handleBlur ignoreBlur = ${ignoreBlur.current}
+    value ${state.value} (initial value: ${state.initialValue})`);
+
   if (!ignoreBlur.current && state.value !== state.initialValue){
     console.log(`[Selector.input] handleBlur => commit`)
     commit();
+  } else if (ignoreBlur.current){
+    console.log(`ignoring blur, no commitment whilst dropdown is open`);
   }
 }
 
@@ -133,19 +142,20 @@ const handleClick = () => {
   }
 
   const handleCommit = (val) => {
-    commit(val);
+    console.log(`[Selector] commit val ${val} => (formatted) ${valueFormatter(val)}`)
+    commit(valueFormatter(val));
   }
 
   // this just means dropdown has closed without selection, do we really need to cancel anuthing ?
   // only if ESC was pressed ?
   const handleCancel = () => {
+    console.log(`[selector] handleCancel`)
     setState({
       ...state,
-      //value: state.initialValue,
       open: false
     });
-    //onPopupActive(false);
-    //onCancel()
+    onPopupActive(false);
+    onCancel()
   }
 
   const commit = (value=state.value) => {
@@ -161,7 +171,7 @@ const handleClick = () => {
     if (wasOpen && onPopupActive){
       onPopupActive(false);
     }
-    onCommit(state.value);
+    onCommit(value);
 
     ignoreBlur.current = false;
   }
@@ -204,6 +214,7 @@ const handleClick = () => {
       {controlText}
       {inputIcon && <i className="control-icon material-icons">{inputIcon}</i>}
       {state.open && (
+        // need to handle keyDOwn to capture TAB
         <Dropdown ref={dropdown}
           className={dropdownClassName}
           componentName="List"

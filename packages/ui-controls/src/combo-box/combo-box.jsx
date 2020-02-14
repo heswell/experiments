@@ -1,5 +1,5 @@
 import React from 'react';
-import Selector from '../inform/controls/selector/selector';
+import Selector from '../inform/controls/selector/selector.jsx';
 
 import './combo-box.css';
 

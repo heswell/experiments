@@ -7,6 +7,7 @@ import editComposite from './composite/edit-composite'
 
 const state = {
     on: {
+        [Evt.BLUR.type]: '#inactive',
         // [Evt.TAB.type]: '#next-cell',
         [Evt.CLICK.type]: clickAnyField()
         // [Evt.CLICK.type]: [

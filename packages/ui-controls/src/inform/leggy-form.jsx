@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Machine} from 'xstate';
 import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
-import Field from './leggy-field';
+import Field, {getFieldIdx} from './leggy-field.jsx';
 import {getKeyboardEvent} from '../utils/key-code';
 import './leggy-form.css';
 
@@ -73,8 +73,14 @@ export class LeggyForm extends React.Component {
     this.handleClick = this.handleClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
+    this.handleFocusCapture = this.handleFocusCapture.bind(this);
     this.createFieldRef = this.createFieldRef.bind(this);
+    this.handleBlurCapture = this.handleBlurCapture.bind(this);
   }
+
+  // componentDidMount(){
+  //   this.el.current.addEventListener('focusout', this.handleBlur);
+  // }
 
   createFieldRef(field){
     if (field.props.field){
@@ -85,8 +91,10 @@ export class LeggyForm extends React.Component {
   render(){
     const {model} = this.state;
 
+    // onBlurCapture={this.handleBlurCapture}
     return (
-      <div className="leggy-form" ref={this.el}>
+      <div className="leggy-form" ref={this.el}
+           onFocusCapture={this.handleFocusCapture}>
         <div className="add-leg-bar"><span>+</span></div>
         {this.buildRows(model)}
       </div>
@@ -106,11 +114,12 @@ export class LeggyForm extends React.Component {
           }
           {row.fields.map((field, idx) => 
             // maybe handle all these at the top level rather than register handlers on every field ?
+            // TODO the ref breaks when form is unmounted
             <Field key={idx}
               ref={this.createFieldRef}
               leg={idx}
               field={field}
-              onClick={this.handleClick}
+              onClickCapture={this.handleClick}
               onKeyDown={this.handleKeyDown}
               onCommit={this.handleCommit}
               onCancel={this.handleCancel}
@@ -124,10 +133,30 @@ export class LeggyForm extends React.Component {
 
   }
 
+  handleFocusCapture(e){
+    if (this.currentState.matches('inactive')){
+      // register clickAway listener
+      const fieldIdx = getFieldIdx(e.target);
+      const field = this.state.model.fields[fieldIdx];
+      console.log(`>>>>>>> focus in [${fieldIdx}]  ${JSON.stringify(field)}`)
+
+      const stateEvt = {
+        ...StateEvt.FOCUS,
+        field,
+        compositeFieldIdx: 0
+      }
+      this.stateTransition(stateEvt);
+
+    }
+    e.stopPropagation(); // so focus will not fire on control
+    // maybe we always stopPropagation to supress focus events ?
+  }
 
   handleFocus(field, compositeFieldIdx=0){
-    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} ignoreFocus=${this.ignoreFocus}`)
-    if (this.ignoreFocus){
+    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} ignoreFocus=${this.ignoreFocus}
+      field ${field.id} (current field ${this.state.model.currentField ? this.state.model.currentField.id: null})`)
+    
+      if (this.ignoreFocus){
       this.ignoreFocus = false;
     } else if (field !== this.state.model.currentField || compositeFieldIdx !== this.state.model.compositeFieldIdx){
         console.log(`\t...StateTransition CLICK`)
@@ -139,7 +168,18 @@ export class LeggyForm extends React.Component {
         this.stateTransition(stateEvt);
     }
   
-} 
+  } 
+
+  // prolem - this triggers when we open a popup list which captures focus
+  handleBlurCapture(e){
+    const focusWithin = this.el.current.contains(e.relatedTarget);
+    if (!focusWithin){
+      const stateEvt = {
+        ...StateEvt.BLUR
+      }
+      this.stateTransition(stateEvt);
+    }
+  }
 
   handleCommit(field){
     const {event} = this.currentState;
@@ -151,7 +191,7 @@ export class LeggyForm extends React.Component {
   }
 
   handleCancel(){
-    this.stateTransition(StateEvt.ESC);// Should be cabcel
+    this.stateTransition(StateEvt.ESC);// Should be cancel
     // We may be receiving control back from focussed model, make sure focus
     // returns to same field...
     const {currentField, compositeFieldIdx} = this.state.model;
@@ -159,16 +199,27 @@ export class LeggyForm extends React.Component {
   }
 
   handleClick(field, compositeFieldIdx){
-    if (field === this.state.model.currentField && this.currentState.matches('focus')){
-      // we can't rely on focus to handle click events when element clicked already
-      // had focus - what about composites ? 
+
+    if (field !== this.state.model.currentField){
       const stateEvt = {
         ...StateEvt.CLICK,
         field,
         compositeFieldIdx
       }
       this.stateTransition(stateEvt);
+
     }
+
+    // if (field === this.state.model.currentField && this.currentState.matches('focus')){
+    //   // we can't rely on focus to handle click events when element clicked already
+    //   // had focus - what about composites ? 
+    //   const stateEvt = {
+    //     ...StateEvt.CLICK,
+    //     field,
+    //     compositeFieldIdx
+    //   }
+    //   this.stateTransition(stateEvt);
+    // }
   }
 
   stateTransition(stateEvt){

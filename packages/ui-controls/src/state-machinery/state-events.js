@@ -1,10 +1,12 @@
+export const BLUR = {type: 'blur'};
 export const CLICK = {type: 'click'};
 export const COMMIT = {type: 'commit'};
+export const DOWN = {type: 'down'};
 export const ESC = {type: 'esc'};
+export const FOCUS = {type: 'focus'};
 export const TAB = {type: 'tab'};
 export const TAB_BWD = {type: 'tab-bwd'};
 export const UP = {type: 'up'};
-export const DOWN = {type: 'down'};
 export const LEFT = {type: 'left'};
 export const RIGHT = {type: 'right'};
 export const TEXT = {type: 'text'};
