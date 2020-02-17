@@ -40,7 +40,7 @@ export class LeggyForm extends React.Component {
     const stateOptions = {
       actions: {
           setField: (model, evt) => {
-            const {field, compositeFieldIdx: idx=null} = evt;
+            const {field, compositeFieldIdx: idx=0} = evt;
             console.log(`%c[action] setField [${idx}]`,'color: brown; font-weight: bold');
             this.setCurrentField(model.setCurrentField(field, idx),idx);
           },
@@ -130,7 +130,8 @@ export class LeggyForm extends React.Component {
     if (this.ignoreFocus){
       this.ignoreFocus = false;
     } else if (field !== this.state.model.currentField || compositeFieldIdx !== this.state.model.compositeFieldIdx){
-        console.log(`\t...StateTransition CLICK`)
+        console.log(`\t...StateTransition CLICK because field ${field ? field.id : null} !== ${this.state.model.currentField ? this.state.model.currentField.id : null} 
+          OR compositeFieldIdx (${compositeFieldIdx}) !== ${this.state.model.compositeFieldIdx}`)
         const stateEvt = {
           ...StateEvt.CLICK, // should this be FOCUS ?
           field,

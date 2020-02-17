@@ -39,7 +39,7 @@ export default class Field extends React.Component {
     } else {
       props.onCommit = () => onCommit(field)
     }
-    props.onFocus = (controlIdx=null) => onFocusControl(field, controlIdx)
+    props.onFocus = (controlIdx=0) => onFocusControl(field, controlIdx)
 
     child = React.cloneElement(child, props)
     
