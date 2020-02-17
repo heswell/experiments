@@ -6,11 +6,11 @@ export {default as Surface} from './src/containers/surface';
 export {default as LayoutItem} from './src/containers/layout-item';
 export {default as Component} from './src/component/component';
 export {default as PlaceHolder} from './src/components/place-holder/place-holder.jsx';
-export {adjustHeaderPosition, getLayoutModel, extendLayoutModel} from './src/model/layout-json';
+export {getLayoutModel, extendLayoutModel} from './src/model/layout-json';
 export * from './src/model/path-utils';
 export * from './src/model/layoutModel'; // deprecated
 export * from './src/model/layout-utils';
 export {Action} from './src/model/layout-reducer.js';
 export {registerClass} from './src/component-registry';
-export {stretchLayout} from './src/model/stretch';
+export {adjustHeaderPosition, stretchLayout} from './src/model/stretch';
 export {isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle} from './src/model/css-properties';

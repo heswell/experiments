@@ -1,18 +1,18 @@
 import * as Evt from './src/state-machinery/state-events';
-import TextInput from './src/inform/controls/text-input.jsx';
-import CompositeControl from './src/inform/controls/composite-control/composite-control.jsx';
-import DatePicker from './src/inform/controls/date-picker/date-picker.jsx';
-import Toggle from './src/inform/controls/toggle/toggle.jsx';
+import TextInput from './src/inform/controls/text-input';
+import CompositeControl from './src/inform/controls/composite-control';
+import DatePicker from './src/inform/controls/date-picker';
+import Toggle from './src/inform/controls/toggle';
 
-import ComboBox from './src/combo-box/combo-box.jsx';
-import Select from './src/select/select.jsx';
+import ComboBox from './src/combo-box/combo-box';
+import Select from './src/select/select';
 
 
 export * from './src/services/index';
-export * from './src/inform/leggy-form.jsx';
-export * from './src/inform/leggy-field.jsx';
+export * from './src/inform/leggy-form';
+export * from './src/inform/leggy-field';
 export * from './src/inform/leggy-model';
-export {default as Control} from './src/inform/leggy-control.jsx';
+export {default as Control} from './src/inform/leggy-control';
 
 export const StateEvent = Evt;
 export {TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle}

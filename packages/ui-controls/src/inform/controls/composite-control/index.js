@@ -1,1 +1,1 @@
-export {default} from './composite-control.jsx';
+export {default} from './composite-control';

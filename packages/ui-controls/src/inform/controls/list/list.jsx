@@ -72,7 +72,6 @@ export default class List extends React.Component {
 
   //TODO should accept a prop that configures whether we support
   // typeahead navigation a la Select
-  // need to pass TAB back to parent
   handleKeyDown(e){
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){

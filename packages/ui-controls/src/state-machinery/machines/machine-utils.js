@@ -72,10 +72,3 @@ export const clickAnyField = () => [
     { target: 'edit.editCombo', actions: ['setField'], cond: (_, evt) => isCombo(evt.field)},
     ...focusComposite()
 ]
-export const focusAnyField = () => [
-    { target: '#edit-toggle', actions: ['setField'], cond: (_, evt) => isToggle(evt.field)},
-    { target: 'focus.focusTextInput', actions: ['setField'], cond: (_, evt) => isTextInput(evt.field)},
-    { target: 'fous.editSelect', actions: ['setField'], cond: (_, evt) => isSelect(evt.field)},
-    { target: 'focus.editCombo', actions: ['setField'], cond: (_, evt) => isCombo(evt.field)},
-    ...focusComposite()
-]

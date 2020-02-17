@@ -8,7 +8,6 @@ import focusComposite from './composite/focus-composite'
 const state ={
     id: 'cell-focussed',
     on: {
-        [Evt.BLUR.type]: '#inactive',
         ...navigationEvents(),
         [Evt.CLICK.type]: clickAnyField()
     },

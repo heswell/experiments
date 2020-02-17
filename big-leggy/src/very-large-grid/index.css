@@ -1,0 +1,48 @@
+.debug {
+  margin-left: 400px;
+  width: 200px;
+  background: beige;
+  font-size: 9pt;
+  opacity: 0.5;
+  border: 1px solid gray;
+  padding: 10px;
+}
+
+.viewport {
+  float: left;
+  border: 1px solid black;
+  overflow: scroll;
+  width: 350px;
+}
+
+.content {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.row {
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  border-bottom: 1px solid #ccc;
+  font-size: 9pt;
+  height: 25px;
+  line-height: 24px;
+  box-sizing: border-box;
+}
+
+.row:hover {
+  background: rgba(0,0,255,0.05);
+}
+
+/*
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0,0,0,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}*/

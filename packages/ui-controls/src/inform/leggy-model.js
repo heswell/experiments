@@ -200,7 +200,7 @@ export class FormModel {
     return this.setCurrentField(this.nextField(evt, field, field2))
   }
 
-  setCurrentField(field, idx=0){
+  setCurrentField(field, idx=null){
       console.log(`[leggy-model] setCurrentField ${field.id} (${field.type}) [${idx}]`)
       const {rows,currentField,legCount} = this;
     if (field !== currentField){

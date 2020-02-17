@@ -36,6 +36,8 @@ const sampleContextMenu =
     <MenuItem action='grid-vuu' label='Grid, remote Instruments (VUU ViewServer)' />
     <Separator />
     <MenuItem action='set-filter' label='Set filter' />
+    <Separator />
+    <MenuItem action='inform1' label='Form' />
   </ContextMenu>
 
 
@@ -63,7 +65,7 @@ async function render(id){
 
 }
 
-render('grid1');
+render('inform1');
 
 function onContextMenu(e){
   e.preventDefault();

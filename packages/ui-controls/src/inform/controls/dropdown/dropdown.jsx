@@ -47,6 +47,7 @@ export default class Dropdown extends React.Component {
   }
 
   componentWillUnmount(){
+    console.log(`Dropdown. componentWillUnmount`)
     if (env.isElectron){
       console.log(`about to remove commit listener`)
       window.ipcRenderer.removeListener('modal.calendar', this.handlePopupMessage)

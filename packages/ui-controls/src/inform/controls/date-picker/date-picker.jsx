@@ -1,11 +1,9 @@
 import React from 'react';
 import dateFns from 'date-fns';
-import Calendar from '../calendar/calendar-layout.jsx';
-import Selector,  {ComponentType} from '../selector/selector.jsx';
+import Calendar from '../calendar';
+import Selector,  {ComponentType} from '../selector/selector';
 
 import './date-picker.css';
-
-const formatDate = value => dateFns.format(value,'YYYY-MM-DD');
 
 export default class DatePicker extends React.Component {
 
@@ -19,12 +17,12 @@ export default class DatePicker extends React.Component {
     }
     this.selector = React.createRef();
     this.onChange = this.onChange.bind(this);
+    this.onCommit = this.onCommit.bind(this);
 
   }
 
   componentWillReceiveProps(nextProps){
     if (nextProps.value !== this.props.value){
-      console.log(`[DatePicker] componentWillReceiveProps value : ${this.props.value} => ${nextProps.value}`)
       this.setState({
         value: nextProps.value
       })
@@ -37,7 +35,6 @@ export default class DatePicker extends React.Component {
     }
   }
 
-
   render(){
     return (
       <Selector ref={this.selector}
@@ -45,12 +42,10 @@ export default class DatePicker extends React.Component {
         value={this.state.value}
         availableValues={this.state.values}
         onChange={this.onChange}
-        onCommit={this.props.onCommit}
-        valueFormatter={formatDate}
+        onCommit={this.onCommit}
         inputClassName="date-input"
         inputIcon="date_range"
         dropdownClassName="date-picker-dropdown"
-        showDropdownOnEdit={false}
       >
       {
         child =>
@@ -71,6 +66,10 @@ export default class DatePicker extends React.Component {
   matchingValues(value){
     const pattern = new RegExp(`^${value}`,'i')
     return this.props.availableValues.filter(value => pattern.test(value))
+  }
+
+  onCommit(value){
+    this.props.onCommit(dateFns.format(value,'YYYY-MM-DD'));
   }
 
   onChange(e){

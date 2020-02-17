@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import formConfig from './form-config';
 import { LeggyForm, FormModel, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
-import {COMBO, DATE, TOGGLE, SELECT} from './form-config1';
+import {COMBO, DATE, TOGGLE, SELECT} from './form-config';
 
 import './inform-app.css';
 
@@ -23,11 +24,10 @@ class App extends Component {
   constructor(props){
     super(props)
 
-    const formModel = new FormModel(props.config, model.legs.length, (fieldName, value) => {
+    const formModel = new FormModel(formConfig, model.legs.length, (fieldName, value) => {
       switch (fieldName){
         case 'rowIdx':
         case 'colIdx':
-        case 'currentField':
         case 'compositeFieldIdx':
           // console.log(`${fieldName} => ${value} existingState: ${JSON.stringify(debug)}`)
           this.setState(state => ({ debug: { ...state.debug, [fieldName]: value}}))
@@ -40,8 +40,7 @@ class App extends Component {
       debug: {
         rowIdx: formModel.rowIdx,
         colIdx: formModel.columnIdx,
-        compositeFieldIdx: formModel.compositeFieldIdx,
-        field: formModel.currentField
+        compositeFieldIdx: formModel.compositeFieldIdx
       },
       model,
       formModel
@@ -109,7 +108,6 @@ class App extends Component {
   }
   
   render() {
-    const {debug} = this.state;
     return (
       <div className="App">
         <div className="app-header">
@@ -123,9 +121,8 @@ class App extends Component {
         </div>
 
         <div className="debug-panel">
-          <span>{`rowIdx: ${debug.rowIdx}`}</span>
-          <span>{`colIdx: ${debug.colIdx}`}</span>
-          <span>{`field: ${debug.currentField ? debug.currentField.id : null}`}</span>
+          <span>{`rowIdx: ${this.state.debug.rowIdx}`}</span>
+          <span>{`colIdx: ${this.state.debug.colIdx}`}</span>
           <span>{`compositeFieldIdx: ${this.state.debug.compositeFieldIdx}`}</span>
         </div>
         <div className="model-debug">
