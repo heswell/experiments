@@ -91,9 +91,14 @@ export default class Dropdown extends React.Component {
   handleClickAway(evt){
     const {target} = evt;
     const el = this.el.current;
-    if (el && target !== el && !el.contains(target)){
-      this.listenforClickAway(false);
-      this.props.onCancel();
+    const maybeAway = !equalsOrContains(el, target);
+    if (maybeAway){
+      const definatelyAway = !equalsOrContains(this.props.inputEl, target);
+      if (definatelyAway){
+        console.log(` ... ClickAway`)
+        this.listenforClickAway(false);
+        this.props.onCancel();
+      }
     }
   }
 
@@ -101,6 +106,7 @@ export default class Dropdown extends React.Component {
     if (env.isElectron){
       window.ipcRenderer.send('modal.window', {type: 'focus'});
     } else {
+      console.log(`dropdown focus`)
       this.childComponent.current.focus();
     }
   }
@@ -126,3 +132,6 @@ export default class Dropdown extends React.Component {
    }
 
 }
+
+const equalsOrContains = (el, targetEl) =>
+  el && (el === targetEl || el.contains(targetEl));

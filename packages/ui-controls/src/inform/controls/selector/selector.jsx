@@ -11,6 +11,8 @@ export const ComponentType = {
   Dropdown : 'dropdown'
 };
 
+const identity = val => val;
+
 export default forwardRef(function Selector({
   availableValues,
   children: childRenderer,
@@ -25,8 +27,11 @@ export default forwardRef(function Selector({
   onKeyDown,
   onPopupActive,
   selectedIdx, // sort out confusion between this and state value
+  showDropdownOnEdit=true,
   typeaheadListNavigation,
-  value: propsValue 
+  value: propsValue,
+  valueFormatter=identity
+
 }, ref){
 
   const ignoreBlur = useRef(false);
@@ -45,7 +50,7 @@ export default forwardRef(function Selector({
   // untested
   useEffect(() => {
     if (value !== state.value){
-      console.log(`new value state.value ${state.value}`, value)
+      console.log(`[Selector] useEffect<value, availableValues> state.value ${state.value} props.value ${value}`)
       setState({...state, value, selectedIdx: availableValues.indexOf(value)})
     }
   },[value, availableValues])
@@ -70,6 +75,7 @@ useImperativeHandle(ref, () => ({
 }));
 
 const focusDropdown = () => {
+  console.log(`focusDropdown`)
   ignoreBlur.current = true;
   dropdown.current.focus();
   if (onPopupActive){
@@ -78,7 +84,7 @@ const focusDropdown = () => {
 }
 
 const handleChange = evt => {
-  if (!state.open){
+  if (!state.open && showDropdownOnEdit){
     setState({...state, open: true})
   }
   onChange(evt);
@@ -107,7 +113,10 @@ const handleKeyDown = e => {
   } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
     focusDropdown();
   } else if (onKeyDown){
+    console.log(`calback onKeyDown`)
     onKeyDown(e)
+  } else {
+    console.log(`no handler`)
   }
 }
 
@@ -132,8 +141,9 @@ const handleClick = () => {
     }
   }
 
-  const handleCommit = (val) => {
-    commit(val);
+  const handleCommit = val => {
+    console.log(`[Selector] commit val ${val} => (formatted) ${valueFormatter(val)}`)
+    commit(valueFormatter(val));
   }
 
   // this just means dropdown has closed without selection, do we really need to cancel anuthing ?
@@ -161,7 +171,7 @@ const handleClick = () => {
     if (wasOpen && onPopupActive){
       onPopupActive(false);
     }
-    onCommit(state.value);
+    onCommit(value);
 
     ignoreBlur.current = false;
   }
@@ -207,6 +217,7 @@ const handleClick = () => {
         <Dropdown ref={dropdown}
           className={dropdownClassName}
           componentName="List"
+          inputEl={inputEl.current}
           position={state.position}
           onCommit={handleCommit}
           onCancel={handleCancel}>

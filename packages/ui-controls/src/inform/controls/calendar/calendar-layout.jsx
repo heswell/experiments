@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import dateFns from 'date-fns';
+import {addDays, differenceInCalendarMonths, format, toDate, startOfWeek} from 'date-fns';
 import * as StateEvt from '../../../state-machinery/state-events';
 import {getKeyboardEvent} from '../../../utils/key-code';
 import CalendarModel, {getDates, getCalendarClassNames} from './calendar-model';
@@ -35,11 +35,12 @@ export default class Calendar extends React.Component {
   }
 
   componentDidMount(){
-    this.setCurrentDate(this.model.currentDate);
+    this.focusCurrentDate(this.model.currentDate);
   }
 
   componentDidUpdate(){
-    this.setCurrentDate(this.model.currentDate);
+    console.log(`calendar-layout componentDidUpdate ${this.model.currentDate}`)
+    //this.focusCurrentDate(this.model.currentDate);
   }
 
   nextMonth(){
@@ -72,14 +73,14 @@ export default class Calendar extends React.Component {
         const nextDate = model.nextDate(stateEvt);
         console.log(`next date = ${nextDate}`)
         if (nextDate !== currentDate){
-          const monthDiff = dateFns.differenceInCalendarMonths(nextDate, currentDate);
+          const monthDiff = differenceInCalendarMonths(nextDate, currentDate);
           if (monthDiff){
             const weeks = monthDiff > 0
               ? getDates(model.nextMonth(),this.model.selectedDate,currentMonth)
               : getDates(model.prevMonth(),this.model.selectedDate, null, currentMonth);
             this.setState({weeks, classNames: getCalendarClassNames(weeks)})
           } else {
-            this.setCurrentDate(nextDate)
+            this.focusCurrentDate(nextDate)
           }
         }
       } 
@@ -87,6 +88,7 @@ export default class Calendar extends React.Component {
   }
 
   render(){
+    console.log(`calendar layout render`)
     return (
       <div className="calendar">
         {this.renderHeader()}
@@ -97,14 +99,14 @@ export default class Calendar extends React.Component {
   }
 
   renderHeader(){
-    const dateFormat = "MMMM YYYY";
+    const dateFormat = "MMMM yyyy";
     const {currentMonth} = this.model;
     return (
       <div className="calendar-header calendar-row">
         <div className="icon" onClick={this.prevMonth}>chevron_left</div>
         <div className="current-month">
           <span>
-            {dateFns.format(currentMonth, dateFormat)}
+            {format(currentMonth, dateFormat)}
           </span>
         </div>
         <div className="icon"  onClick={this.nextMonth}>chevron_right</div>
@@ -116,11 +118,11 @@ export default class Calendar extends React.Component {
     const dateFormat = "dd";
     const {currentMonth} = this.model;
     const days = [];
-    let startDate = dateFns.startOfWeek(currentMonth);
+    let startDate = startOfWeek(currentMonth);
     for (let i = 0; i < 7; i++) {
       days.push(
         <div className="calendar-cell" key={i}>
-          {dateFns.format(dateFns.addDays(startDate, i), dateFormat)}
+          {format(addDays(startDate, i), dateFormat)}
         </div>
       );
     }
@@ -138,9 +140,9 @@ export default class Calendar extends React.Component {
             <div className="calendar-row" key={idx}>
               {week.days.map(({day, formattedDate, disabled,selected, otherMonth}) => 
                 <div key={day} tabIndex={0}
-                  data-day={dateFns.format(day, "YYYY-MM-DD")}
+                  data-day={format(day, "yyyy-MM-dd")}
                   className={cx("calendar-cell", {disabled,selected, otherMonth})}
-                  onClick={() => onCommit(dateFns.parse(day))}
+                  onClick={() => onCommit(toDate(day))}
                   onKeyDown={this.handleKeyDown}>
                   {dateRenderer(formattedDate)}
                 </div>
@@ -151,9 +153,8 @@ export default class Calendar extends React.Component {
     )
   }
 
-  setCurrentDate(date){
-    const key = dateFns.format(date, "YYYY-MM-DD");
-
+  focusCurrentDate(date){
+    const key = format(date, "yyyy-MM-dd");
     const dateCell = this.calendarBody.current.querySelector(`.calendar-cell[data-day = '${key}']`);
     if (dateCell){
       dateCell.focus();

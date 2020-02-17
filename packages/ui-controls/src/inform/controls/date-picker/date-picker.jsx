@@ -1,9 +1,11 @@
 import React from 'react';
-import dateFns from 'date-fns';
+import {format, parseISO} from 'date-fns';
 import Calendar from '../calendar';
 import Selector,  {ComponentType} from '../selector/selector';
 
 import './date-picker.css';
+
+const formatDate = value => format(value,'yyyy-MM-dd');
 
 export default class DatePicker extends React.Component {
 
@@ -23,6 +25,7 @@ export default class DatePicker extends React.Component {
 
   componentWillReceiveProps(nextProps){
     if (nextProps.value !== this.props.value){
+      console.log(`DatePickerr componentWillReceiveProps ${nextProps.value}`)
       this.setState({
         value: nextProps.value
       })
@@ -43,9 +46,11 @@ export default class DatePicker extends React.Component {
         availableValues={this.state.values}
         onChange={this.onChange}
         onCommit={this.onCommit}
+        valueFormatter={formatDate}
         inputClassName="date-input"
         inputIcon="date_range"
         dropdownClassName="date-picker-dropdown"
+        showDropdownOnEdit={false}
       >
       {
         child =>
@@ -69,7 +74,7 @@ export default class DatePicker extends React.Component {
   }
 
   onCommit(value){
-    this.props.onCommit(dateFns.format(value,'YYYY-MM-DD'));
+    this.props.onCommit(format(parseISO(value),'yyyy-MM-dd'));
   }
 
   onChange(e){

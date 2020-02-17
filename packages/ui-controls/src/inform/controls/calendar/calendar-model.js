@@ -1,7 +1,7 @@
-import dateFns from 'date-fns';
+import {addDays,subDays, addMonths, isSameDay, isSameMonth, subMonths, format, startOfMonth, endOfMonth, startOfWeek, endOfWeek} from 'date-fns';
 import * as StateEvt from '../../../state-machinery/state-events';
 
-const DAY_D = 'D';
+const DAY_D = 'd';
 
 export default class CalendarModel {
 
@@ -23,41 +23,41 @@ export default class CalendarModel {
   }
 
   nextMonth(){
-    return this.currentMonth = dateFns.addMonths(this.currentMonth, 1)
+    return this.currentMonth = addMonths(this.currentMonth, 1)
   }
 
   prevMonth(){
-    return this.currentMonth = dateFns.subMonths(this.currentMonth, 1)
+    return this.currentMonth = subMonths(this.currentMonth, 1)
   }
 
   nextDate(stateEvt){
     switch (stateEvt.type){
       case StateEvt.DOWN.type:
-        return this.currentDate = dateFns.addDays(this.currentDate, 7);
+        return this.currentDate = addDays(this.currentDate, 7);
       case StateEvt.UP.type:
-        return this.currentDate = dateFns.subDays(this.currentDate, 7);
+        return this.currentDate = subDays(this.currentDate, 7);
       case StateEvt.LEFT.type:
-        return this.currentDate = dateFns.subDays(this.currentDate, 1);
+        return this.currentDate = subDays(this.currentDate, 1);
       case StateEvt.RIGHT.type:
-        return this.currentDate = dateFns.addDays(this.currentDate, 1);
+        return this.currentDate = addDays(this.currentDate, 1);
       case StateEvt.PAGEUP.type:
-        return this.currentDate = dateFns.subMonths(this.currentDate, 1);
+        return this.currentDate = subMonths(this.currentDate, 1);
       case StateEvt.PAGEDOWN.type:
-        return this.currentDate = dateFns.addMonths(this.currentDate, 1);
+        return this.currentDate = addMonths(this.currentDate, 1);
       case StateEvt.HOME.type:
-        return this.currentDate = dateFns.startOfMonth(this.currentDate);
+        return this.currentDate = startOfMonth(this.currentDate);
       case StateEvt.END.type:
-        return this.currentDate = dateFns.endOfMonth(this.currentDate);
+        return this.currentDate = endOfMonth(this.currentDate);
       default:
     }
   }
 } 
 
 export function getDates(currentMonth=new Date(), selectedDate=null, leadingMonth=null, trailingMonth=null){
-  const monthStart = dateFns.startOfMonth(leadingMonth || currentMonth);
-  const monthEnd = dateFns.endOfMonth(trailingMonth || currentMonth);
-  const startDate = dateFns.startOfWeek(monthStart);
-  const endDate = dateFns.endOfWeek(monthEnd);
+  const monthStart = startOfMonth(leadingMonth || currentMonth);
+  const monthEnd = endOfMonth(trailingMonth || currentMonth);
+  const startDate = startOfWeek(monthStart);
+  const endDate = endOfWeek(monthEnd);
   const weeks = [];
 
   let day = startDate;
@@ -66,12 +66,12 @@ export function getDates(currentMonth=new Date(), selectedDate=null, leadingMont
     for (let i = 0; i < 7; i++) {
       week.days.push({
         day,
-        formattedDate: dateFns.format(day, DAY_D),
-        otherMonth: !dateFns.isSameMonth(day, currentMonth),
+        formattedDate: format(day, DAY_D),
+        otherMonth: !isSameMonth(day, currentMonth),
         disabled: false,
-        selected: dateFns.isSameDay(day, selectedDate)
+        selected: isSameDay(day, selectedDate)
       });
-      day = dateFns.addDays(day, 1);
+      day = addDays(day, 1);
     }
     
     if (week.days.every(day => day.otherMonth)){
