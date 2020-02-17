@@ -76,7 +76,7 @@ export default class List extends React.Component {
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
       if (stateEvt === StateEvt.ESC){
-        this.props.onCancel()
+        this.props.onCancel();
       } else if (stateEvt === StateEvt.ENTER){
         const {hilitedIdx} = this;
         const {values} = this.props;

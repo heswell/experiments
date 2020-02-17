@@ -64,22 +64,28 @@ export default forwardRef(function Selector({
 });
 
 useImperativeHandle(ref, () => ({
-  focus: (selectText=true) => {
-    if (inputEl.current){
-      inputEl.current.focus();
-      if (selectText){
-        inputEl.current.select();
-      }
+  focus
+}));
+
+const focus = (selectText=true) => {
+  if (inputEl.current){
+    inputEl.current.focus();
+    if (selectText){
+      inputEl.current.select();
     }
   }
-}));
+}
 
 const focusDropdown = () => {
   console.log(`focusDropdown`)
   ignoreBlur.current = true;
-  dropdown.current.focus();
-  if (onPopupActive){
-    onPopupActive(true);
+  try {
+    dropdown.current.focus();
+    if (onPopupActive){
+      onPopupActive(true);
+    }
+  } catch {
+
   }
 }
 
@@ -104,10 +110,12 @@ const handleKeyDown = e => {
     } else if (!open){
       console.log(`selector ENTR => open`)
       setState({...state, open: true});
+      onPopupActive(true);
     }
   } else if (keyCode === Key.ESC){
     if (open){
       setState({...state, open: false});
+      onPopupActive(false);
     }
     onCancel();
   } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
@@ -138,6 +146,9 @@ const handleClick = () => {
   if (!state.open){
       console.log(`\t...open`)
       setState({...state, open: true});
+      if (onPopupActive){
+        onPopupActive(true);
+      }
     }
   }
 
@@ -148,13 +159,14 @@ const handleClick = () => {
 
   // this just means dropdown has closed without selection, do we really need to cancel anuthing ?
   // only if ESC was pressed ?
-  const handleCancel = () => {
+  const handleDropdownCancel = () => {
     setState({
       ...state,
       //value: state.initialValue,
       open: false
     });
-    //onPopupActive(false);
+    onPopupActive(false);
+    focus(false);
     //onCancel()
   }
 
@@ -220,7 +232,7 @@ const handleClick = () => {
           inputEl={inputEl.current}
           position={state.position}
           onCommit={handleCommit}
-          onCancel={handleCancel}>
+          onCancel={handleDropdownCancel}>
           {renderDropdownComponent()}
         </Dropdown>
       )}

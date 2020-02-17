@@ -28,7 +28,10 @@ export default class Field extends React.Component {
     const props = {
       ref: this.control,
       onCancel: () => onCancel(field),
-      onPopupActive: popupActive => this.setState({popupActive})
+      onPopupActive: popupActive => {
+        console.log(`[LeggyField] onPopupActive ${popupActive}`)
+        this.setState({popupActive});
+      }
     }
     if (child.props.onCommit){
       const _commit = child.props.onCommit;
