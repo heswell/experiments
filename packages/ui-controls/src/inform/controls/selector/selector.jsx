@@ -34,7 +34,6 @@ export default forwardRef(function Selector({
 
 }, ref){
 
-  const ignoreBlur = useRef(false);
   const inputEl = useRef(null);
   const dropdown = useRef(null);
 
@@ -63,9 +62,7 @@ export default forwardRef(function Selector({
     position: null
 });
 
-useImperativeHandle(ref, () => ({
-  focus
-}));
+useImperativeHandle(ref, () => ({ focus }));
 
 const focus = (selectText=true) => {
   if (inputEl.current){
@@ -78,7 +75,6 @@ const focus = (selectText=true) => {
 
 const focusDropdown = () => {
   console.log(`focusDropdown`)
-  ignoreBlur.current = true;
   try {
     dropdown.current.focus();
     if (onPopupActive){
@@ -134,8 +130,7 @@ const handleFocus = _evt => {
 }
 
 const handleBlur = () => {
-  console.log(`[Selector.input] handleBlur ignoreBlur = ${ignoreBlur.current} ${state.value}`)
-  if (!ignoreBlur.current && state.value !== state.initialValue){
+  if (state.value !== state.initialValue){
     console.log(`[Selector.input] handleBlur => commit`)
     commit();
   }
@@ -162,12 +157,10 @@ const handleClick = () => {
   const handleDropdownCancel = () => {
     setState({
       ...state,
-      //value: state.initialValue,
       open: false
     });
     onPopupActive(false);
     focus(false);
-    //onCancel()
   }
 
   const commit = (value=state.value) => {
@@ -185,7 +178,6 @@ const handleClick = () => {
     }
     onCommit(value);
 
-    ignoreBlur.current = false;
   }
 
   const className = cx('control-text', inputClassName, {
