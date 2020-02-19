@@ -1,6 +1,6 @@
 import React, {forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import cx from 'classnames';
-import Control from './leggy-control';
+import Control from './control';
 
 export default forwardRef(function Field({
   field,

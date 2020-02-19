@@ -5,7 +5,7 @@ import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
 import Field from './field';
 import {getKeyboardEvent} from '../utils/key-code';
-import './leggy-form.css';
+import './form.css';
 
 export const DOWN = 'down';
 export const UP = 'up';
