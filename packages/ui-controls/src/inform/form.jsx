@@ -25,7 +25,6 @@ export class LeggyForm extends React.Component {
     super(props);
     this.currentField = null;
     this.currentColumn = null;
-    this.ignoreFocus = false;
     this.el = React.createRef();
     this.fieldRefs = [];
 
@@ -126,10 +125,8 @@ export class LeggyForm extends React.Component {
 
 
   handleFocus(field, compositeFieldIdx=0){
-    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} ignoreFocus=${this.ignoreFocus}`)
-    if (this.ignoreFocus){
-      this.ignoreFocus = false;
-    } else if (field !== this.state.model.currentField || compositeFieldIdx !== this.state.model.compositeFieldIdx){
+    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} `)
+    if (field !== this.state.model.currentField || compositeFieldIdx !== this.state.model.compositeFieldIdx){
         console.log(`\t...StateTransition CLICK because field ${field ? field.id : null} !== ${this.state.model.currentField ? this.state.model.currentField.id : null} 
           OR compositeFieldIdx (${compositeFieldIdx}) !== ${this.state.model.compositeFieldIdx}`)
         const stateEvt = {
@@ -210,7 +207,6 @@ export class LeggyForm extends React.Component {
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
       console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx} [${idx}] IGNORE_FOCUS=true`);
-      // this.ignoreFocus = true;
       fieldComponent.focus(idx)
     }
 
@@ -221,8 +217,6 @@ export class LeggyForm extends React.Component {
     const fieldComponent = this.fieldRefs[field.tabIdx];
     if (fieldComponent){
       console.log(`setField focus on field ${field.id} [${idx}] IGNORE_FOCUS=true`);
-      // console.log(`focus on field (${field.type}) [${idx}], set ignoreFocue === true`);
-      // this.ignoreFocus = true;
       fieldComponent.focus(idx);
     }
     this.currentField = field;
