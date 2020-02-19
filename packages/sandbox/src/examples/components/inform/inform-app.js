@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import formConfig from './form-config';
-import { LeggyForm, FormModel, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
+import { Form, FormModel, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
 import {COMBO, DATE, TOGGLE, SELECT} from './form-config';
 
 import './inform-app.css';
@@ -113,9 +113,9 @@ class App extends Component {
         <div className="app-header">
           <TextInput />
         </div>
-        <LeggyForm model={this.state.formModel} data={this.state.data}>
+        <Form model={this.state.formModel} data={this.state.data}>
           {this.renderFormControl}
-        </LeggyForm>
+        </Form>
         <div className="app-footer">
           <TextInput />
         </div>
