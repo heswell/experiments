@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames'
-import env from '../../../utils/browser';
+import env from '../utils/browser';
 import {getUrlForComponent} from './standalone-urls';
 
 export default class Dropdown extends React.Component {

@@ -1,6 +1,6 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import cx from 'classnames';
-import Dropdown from '../dropdown';
+import Dropdown from '../../../dropdown';
 import List from '../../../list';
 import * as Key from '../../../utils/key-code';
 

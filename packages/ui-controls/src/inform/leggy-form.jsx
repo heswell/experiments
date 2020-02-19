@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Machine} from 'xstate';
 import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
-import Field from './leggy-field';
+import Field from './field';
 import {getKeyboardEvent} from '../utils/key-code';
 import './leggy-form.css';
 
@@ -76,9 +76,9 @@ export class LeggyForm extends React.Component {
     this.createFieldRef = this.createFieldRef.bind(this);
   }
 
-  createFieldRef(field){
-    if (field.props.field){
-      this.fieldRefs[field.props.field.tabIdx] = field;
+  createFieldRef(target){
+    if (target && target.field){
+      this.fieldRefs[target.field.tabIdx] = target;
     }
   }
 
