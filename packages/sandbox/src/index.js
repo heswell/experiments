@@ -47,7 +47,7 @@ const sampleContextMenu =
 // import './ingrid/remote/viewserver-multiple.jsx';
 
 async function load(id){
-  const {default: component} = await import(`./layout-examples/${id}.jsx`);
+  const {default: component} = await import(`./examples/${id}.jsx`);
   return component;
 }
 

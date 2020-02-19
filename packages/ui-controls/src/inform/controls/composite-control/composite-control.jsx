@@ -7,7 +7,7 @@ export default class CompositeControl extends React.Component {
     super(props);
     this.childRefs = [];
     this.state = {
-      value: []
+      value: props.children.map(child => child.props.value)
     }
   }
 
@@ -29,7 +29,8 @@ export default class CompositeControl extends React.Component {
     const value = [...this.state.value];
     value[idx] = newValue;
     this.setState({value},() => {
-      controlCommitCallback(this.state.value[idx])
+      // controlCommitCallback(this.state.value[idx])
+      controlCommitCallback(this.state.value)
     })
     this.props.onCommit(field);
   }

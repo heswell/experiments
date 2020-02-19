@@ -5,7 +5,7 @@ import {COMBO, DATE, TOGGLE, SELECT} from './form-config';
 
 import './inform-app.css';
 
-const model = {
+const data = {
 
   legs: [
     {
@@ -24,7 +24,7 @@ class App extends Component {
   constructor(props){
     super(props)
 
-    const formModel = new FormModel(formConfig, model.legs.length, (fieldName, value) => {
+    const formModel = new FormModel(formConfig, data.legs.length, (fieldName, value) => {
       switch (fieldName){
         case 'rowIdx':
         case 'colIdx':
@@ -42,7 +42,7 @@ class App extends Component {
         colIdx: formModel.columnIdx,
         compositeFieldIdx: formModel.compositeFieldIdx
       },
-      model,
+      data,
       formModel
     }
 
@@ -50,11 +50,11 @@ class App extends Component {
   }
 
   onChange(field, legIdx, value){
-    const {model} = this.state;
+    const {data} = this.state;
     this.setState({
-      model: {
-        ...model,
-        legs: model.legs.map((leg,i) => 
+      data: {
+        ...data,
+        legs: data.legs.map((leg,i) => 
           i === legIdx
             ? {...leg, [field.id]: value}
             : leg
@@ -69,7 +69,7 @@ class App extends Component {
     if (resolveType && field.getType){
       return this.renderFormControl({
         ...field,
-        type: field.getType(this.state.model.legs[leg])
+        type: field.getType(this.state.data.legs[leg])
       }, leg, false);
     } else if (Array.isArray(type)){
       return (
@@ -78,7 +78,7 @@ class App extends Component {
         </CompositeControl>
       )
     } else if (typeof type === 'function'){
-      const currentType = type(this.state.model);
+      const currentType = type(this.state.data);
       return this.renderFormControl({
         ...field,
         type: currentType
@@ -89,10 +89,10 @@ class App extends Component {
   }
 
   _renderControl(type, field, leg, idx, onCommit = value => this.onChange(field, leg, value)){
-    const {model} = this.state;
+    const {data} = this.state;
     const props = {
       key: idx,
-      value: field.getValue(model,leg, idx),
+      value: field.getValue(data,leg, idx),
       onCommit
     }
 
@@ -113,7 +113,7 @@ class App extends Component {
         <div className="app-header">
           <TextInput />
         </div>
-        <LeggyForm model={this.state.formModel} data={this.state.model}>
+        <LeggyForm model={this.state.formModel} data={this.state.data}>
           {this.renderFormControl}
         </LeggyForm>
         <div className="app-footer">
@@ -127,7 +127,7 @@ class App extends Component {
         </div>
         <div className="model-debug">
           {
-            this.state.model.legs.map((leg,i) => (
+            this.state.data.legs.map((leg,i) => (
               <div key={i} className="model-leg">
                 {Object.keys(leg).sort().map((key) => (
                   <div key={key} className="model-leg-property">{`${key} : ${leg[key]}`}</div>
