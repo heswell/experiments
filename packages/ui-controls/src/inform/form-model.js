@@ -33,7 +33,7 @@ const isRowNavigationEvent = ({type}) => type === LEFT || type === RIGHT
 
 export class FormModel {
 
-  constructor(config, legCount, debugListener=()=>{}){
+  constructor(config, legCount){
     this.config = config;
     this.legCount = legCount;
     this.fields = [];
@@ -45,14 +45,12 @@ export class FormModel {
     this._rowIdx = -1;
     this._columnIdx = -1;
 
-    this._debugListener = debugListener;
   } 
   /* currentField */
   get currentField(){ return this._currentField; }
   set currentField(value){
     if (value !== this._currentField){
       this._currentField = value;
-      this._debugListener('currentField', value);
     }
   }
   /* compositeFieldIdx */
@@ -61,7 +59,6 @@ export class FormModel {
     if (value !== this._compositeFieldIdx){
       console.log(`%c[LeggyModel] setter compositeFieldIdx ${this._compositeFieldIdx} => ${value}`,'color:brown;font-weight: bold;')
       this._compositeFieldIdx = value;
-      this._debugListener('compositeFieldIdx', value);
     }
   }
   /* rowIdx */
@@ -69,7 +66,6 @@ export class FormModel {
   set rowIdx(value){
     if (value !== this._rowIdx){
       this._rowIdx = value;
-      this._debugListener('rowIdx', value);
     }
   }
   /* columnIdx */
@@ -84,7 +80,6 @@ export class FormModel {
       } else{
         this._columnIdx = value;
       }
-      this._debugListener('colIdx', this._columnIdx);
     }
   }
 

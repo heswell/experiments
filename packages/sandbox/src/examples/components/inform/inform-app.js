@@ -1,102 +1,67 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import formConfig from './form-config';
-import { Form, FormModel, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
+import { Form, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
 import {COMBO, DATE, TOGGLE, SELECT} from './form-config';
 
 import './inform-app.css';
 
-const data = {
+export default function App(){
 
-  legs: [
-    {
-      field01: 'tinsel',
-      field07: ['stevo', 'Java'],
-      field11: 'a'
-    },
-    {
-      field01: 'town'
-    }
-  ]
-
-}
-
-class App extends Component {
-  constructor(props){
-    super(props)
-
-    const formModel = new FormModel(formConfig, data.legs.length, (fieldName, value) => {
-      switch (fieldName){
-        case 'rowIdx':
-        case 'colIdx':
-        case 'compositeFieldIdx':
-          // console.log(`${fieldName} => ${value} existingState: ${JSON.stringify(debug)}`)
-          this.setState(state => ({ debug: { ...state.debug, [fieldName]: value}}))
-          break;
-        default:
-      }
-    })
-
-    this.state = {
-      debug: {
-        rowIdx: formModel.rowIdx,
-        colIdx: formModel.columnIdx,
-        compositeFieldIdx: formModel.compositeFieldIdx
+  const [data, setData] = useState({
+    legs: [
+      {
+        field01: 'tinsel',
+        field07: ['stevo', 'Java'],
+        field11: 'a'
       },
-      data,
-      formModel
-    }
+      {
+        field01: 'town'
+      }
+    ]
+  });
 
-    this.renderFormControl = this.renderFormControl.bind(this);
-  }
-
-  onChange(field, legIdx, value){
-    const {data} = this.state;
-    this.setState({
-      data: {
+  const onChange = (field, legIdx, value) => {
+    setData({
         ...data,
         legs: data.legs.map((leg,i) => 
           i === legIdx
             ? {...leg, [field.id]: value}
             : leg
         )
-      }
     })
   }
 
-  renderFormControl(field, leg, resolveType=true){
+  function renderFormControl(field, leg, resolveType=true){
     const {type} = field;
 
     if (resolveType && field.getType){
-      return this.renderFormControl({
+      return renderFormControl({
         ...field,
-        type: field.getType(this.state.data.legs[leg])
+        type: field.getType(data.legs[leg])
       }, leg, false);
     } else if (Array.isArray(type)){
       return (
         <CompositeControl field={field}>
-          {type.map((type,idx) => this._renderControl(type, field, leg, idx))}
+          {type.map((type,idx) => _renderControl(type, field, leg, idx))}
         </CompositeControl>
       )
     } else if (typeof type === 'function'){
-      const currentType = type(this.state.data);
-      return this.renderFormControl({
+      const currentType = type(data);
+      return renderFormControl({
         ...field,
         type: currentType
       }, leg)
     } else {
-      return this._renderControl(type, field, leg);
+      return _renderControl(type, field, leg);
     }
   }
 
-  _renderControl(type, field, leg, idx, onCommit = value => this.onChange(field, leg, value)){
-    const {data} = this.state;
+  function _renderControl(type, field, leg, idx, onCommit = value => onChange(field, leg, value)){
     const props = {
       key: idx,
-      value: field.getValue(data,leg, idx),
+      value: field.getValue(data, leg, idx),
       onCommit
     }
-
-    // console.log(`value for ${field.id}[${leg}][${idx}] = ${props.value}`)
 
     switch (type) {
       case COMBO: return  <ComboBox {...props} />
@@ -107,27 +72,21 @@ class App extends Component {
     }
   }
   
-  render() {
-    return (
+  return (
       <div className="App">
         <div className="app-header">
           <TextInput />
         </div>
-        <Form model={this.state.formModel} data={this.state.data}>
-          {this.renderFormControl}
+        <Form config={formConfig} data={data}>
+          {renderFormControl}
         </Form>
         <div className="app-footer">
           <TextInput />
         </div>
 
-        <div className="debug-panel">
-          <span>{`rowIdx: ${this.state.debug.rowIdx}`}</span>
-          <span>{`colIdx: ${this.state.debug.colIdx}`}</span>
-          <span>{`compositeFieldIdx: ${this.state.debug.compositeFieldIdx}`}</span>
-        </div>
         <div className="model-debug">
           {
-            this.state.data.legs.map((leg,i) => (
+            data.legs.map((leg,i) => (
               <div key={i} className="model-leg">
                 {Object.keys(leg).sort().map((key) => (
                   <div key={key} className="model-leg-property">{`${key} : ${leg[key]}`}</div>
@@ -139,7 +98,4 @@ class App extends Component {
 
       </div>
     );
-  }
 }
-
-export default App;

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { Machine} from 'xstate';
 import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
+import {FormModel} from './form-model';
 import Field from './field';
 import {getKeyboardEvent} from '../utils/key-code';
 import './form.css';
@@ -20,7 +21,7 @@ const Row = ({className, children}) => (
   <div className={className}>{children}</div>
 )
 
-export function Form({ children: renderCallback, data, model }){
+export function Form({ children: renderCallback, data, config }){
 
   const stateOptions = {
     actions: {
@@ -49,6 +50,8 @@ export function Form({ children: renderCallback, data, model }){
     }
   }
 
+  const formModel = useRef(new FormModel(config, 2));
+  const model = formModel.current;
   const fieldRefs = useRef([]);
   const stateMachine = useRef(new Machine(states, stateOptions, model));
   const state = useRef(stateMachine.current.initialState);
