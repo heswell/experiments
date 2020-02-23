@@ -92,7 +92,8 @@ export function Form({ children: renderCallback, data, config }){
     focusField(model.currentField, model.compositeFieldIdx);
   }
 
-  function handleClick(field, compositeFieldIdx){
+  function handleClickCapture(field, compositeFieldIdx){
+    console.log(`handleClickCapture ${field.id} [${compositeFieldIdx}]`)
     if (field === modelRef.current.currentField && state.current.matches('focus')){
       // we can't rely on focus to handle click events when element clicked already
       // had focus - what about composites ? 
@@ -134,17 +135,8 @@ export function Form({ children: renderCallback, data, config }){
     const {currentField, compositeFieldIdx} = modelRef.current;
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
-      const startingField = currentField;
       stateTransition(stateEvt);
-      // TODO how can we eliminate this logic - we need a simple indication of whether
-      // key has been handled already - a model method ? 
-      // Don't swallow tab if the control being edited may need it 
-      // const tabbed = (StateEvt.isTabNavEvt(stateEvt)) &&
-      //   (model.currentField !== startingField ||
-      //     compositeFieldIdx !== model.compositeFieldIdx );
-      // In what scenario do we need this treatment of ESC ?
-      if ((state.current.matches('focus') && stateEvt !== StateEvt.ESC) /* || tabbed*/){
-        console.log(`stop event propagation`)
+      if ((state.current.matches('focus') && stateEvt !== StateEvt.ESC)){
         e.stopPropagation();
         e.preventDefault();
       }
@@ -168,15 +160,6 @@ export function Form({ children: renderCallback, data, config }){
     }
   }
 
-  function setCompositeField(field=model.currentField){
-    const idx = model.compositeFieldIdx;
-    const fieldComponent = fieldRefs.current[field.tabIdx];
-    if (fieldComponent){
-      console.log(`setCompositeField focus on composite field, tabIndex ${field.tabIdx} [${idx}] IGNORE_FOCUS=true`);
-      fieldComponent.focus(idx)
-    }
-  }
-
   function buildRows(){
     return modelX.rows.map((row,idx) => {
       const className = cx('field-row', {
@@ -196,7 +179,7 @@ export function Form({ children: renderCallback, data, config }){
               field={field}
               model={data}
               onCancel={handleCancel}
-              onClick={handleClick}
+              onClickCapture={handleClickCapture}
               onCommit={handleCommit}
               onFocusControl={handleFocus}
               onKeyDown={handleKeyDown}

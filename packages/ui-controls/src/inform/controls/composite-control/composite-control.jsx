@@ -6,6 +6,7 @@ export default forwardRef(function CompositeControl({
   children: nestedControls,
   field,
   onCancel,
+  onClickCapture,
   onCommit,
   onFocus,
   onPopupActive
@@ -51,8 +52,12 @@ export default forwardRef(function CompositeControl({
         } // suppose it doesn't have commit, shouldn't we commit anyway ?
         const component = React.cloneElement(child, props)
 
+        const handleClickCapture = e => {
+          onClickCapture(e, idx);
+        }
+
       return (
-        <div className="composite-item" key={idx}>
+        <div className="composite-item" key={idx} onClickCapture={handleClickCapture}>
           {component}
         </div>
       )

@@ -6,7 +6,7 @@ export default forwardRef(function Field({
   field,
   leg,
   onCancel,
-  onClick,
+  onClickCapture,
   onCommit,
   onFocusControl,
   onKeyDown,
@@ -16,6 +16,8 @@ export default forwardRef(function Field({
   const control = useRef(null);
   const [popupActive, setPopupActive] = useState(false);
 
+  const isComposite = Array.isArray(field.type);
+
   useImperativeHandle(ref, () => ({ field, focus }));
 
   function focus(idx){
@@ -24,7 +26,7 @@ export default forwardRef(function Field({
     }
   }
 
-  const handleClickCapture = () => onClick(field);
+  const handleClickCapture = (_, compositeFieldIdx) => onClickCapture(field, compositeFieldIdx);
   const handleCancel = () => onCancel(field);
   const handleCommit = () => onCommit(field);
   const handleFocus = (controlIdx=0) => onFocusControl(field, controlIdx);
@@ -40,7 +42,8 @@ export default forwardRef(function Field({
       ref: control,
       onCancel: handleCancel,
       onPopupActive: setPopupActive,
-      onFocus: handleFocus
+      onFocus: handleFocus,
+      onClickCapture : isComposite ? handleClickCapture : undefined
     }
 
     if (child.props.onCommit){
@@ -67,7 +70,7 @@ export default forwardRef(function Field({
   return (
     <div className={className} 
       data-idx={field.tabIdx}
-      onClickCapture={handleClickCapture}
+      onClickCapture={isComposite ? undefined : handleClickCapture}
       onKeyDownCapture={onKeyDown}>
         {renderChild()}
     </div>
