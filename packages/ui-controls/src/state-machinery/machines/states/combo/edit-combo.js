@@ -6,7 +6,6 @@ const state = {
     on: {
         [Evt.ESC.type]: { target: '#focus-combo' },
         [Evt.COMMIT.type]: transitionNext()
-        // [Evt.ENTER.type]: transitionNext(['commit'])
 
     }
 }

@@ -10,7 +10,6 @@ import Select from './src/select/select';
 export * from './src/services/index';
 export * from './src/inform/form';
 export * from './src/inform/field';
-export * from './src/inform/form-model';
 export {default as Control} from './src/inform/control';
 
 export const StateEvent = Evt;
