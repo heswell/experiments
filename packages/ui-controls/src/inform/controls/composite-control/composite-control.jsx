@@ -7,6 +7,7 @@ export default forwardRef(function CompositeControl({
   field,
   onCancel,
   onClickCapture,
+  
   onCommit,
   onFocus,
   onPopupActive

@@ -10,9 +10,11 @@
   top: 0;
   right: 0px;
   bottom: 0;
-  left: 3px;
-  width: calc(100% - 3px); /* shouldn't need it ! */
+  left: 0px;
+  width: calc(100% - 3px);
+  padding: 0 0 0 3px;
 }
+
 
 .control-text:focus {
   outline: none;

@@ -1,4 +1,4 @@
-import {findField, nextField, nextCompositeField} from './form-selectors';
+import {findField, nextField} from './form-selectors';
 
 const DEFAULT_MODEL_STATE = {};
 
@@ -12,15 +12,15 @@ export const Empty = {id: 'empty', label: '', type: 'empty', isEmpty: true}
 export const initModel = config =>
     initialize(DEFAULT_MODEL_STATE, {type: 'INITIALIZE', config})
 
-export default config => (state, action) => {
+export default (state, action) => {
   switch(action.type){
-    case 'SET_NEXT_FIELD':
+    case 'setNextField':
       return setNextField(state, action);
-    case 'SET_NEXT_COMPOSITE_FIELD':
+    case 'setNextCompositeField':
       return setNextCompositeField(state, action);
-    case 'SET_FIELD':
+    case 'setField':
       return setField(state, action);
-    case 'CLEAR_FIELD':
+    case 'resetField':
       return clearCurrentField(state);
     default:
       return state;

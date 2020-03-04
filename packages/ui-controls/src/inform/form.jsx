@@ -14,33 +14,18 @@ export const UP = 'up';
 export const RIGHT = 'right';
 export const LEFT = 'left';
 
-function runActions(actions, ctx, evt) {
-  actions.forEach(action => action.exec(ctx, evt))
-}
-
 const Row = ({className, children}) => (
   <div className={className}>{children}</div>
 )
 
 export function Form({ children: renderCallback, data, config }){
 
-  const stateOptions = {
-    actions: {
-        setField: (_, evt) => dispatch({type: 'SET_FIELD', evt}),
-        setNextField: (_, evt) => dispatch({type: 'SET_NEXT_FIELD', evt}),
-        setNextCompositeField: (_, evt) => dispatch({type: 'SET_NEXT_COMPOSITE_FIELD'}),
-        // setNextCompositeField: () => dispatch({type: 'SET_NEXT_COMPOSUTE_FIELD', compositeFieldIdx: modelRef.current.compositeFieldIdx+1}),
-        resetField: () => dispatch({type: 'CLEAR_FIELD'})
-    }
-  }
-
-  const [modelX, dispatch] = useReducer(formReducer(stateOptions), config, initModel);
-  const modelRef = useRef(modelX);
+  const [model, dispatch] = useReducer(formReducer, config, initModel);
+  const modelRef = useRef(model);
 
   useEffect(() => {
-    console.log(`model has changed`)
-    modelRef.current = modelX;
-  },[modelX])
+    modelRef.current = model;
+  },[model])
 
   // how can we eliminate this ?
   const ctx = {
@@ -64,17 +49,14 @@ export function Form({ children: renderCallback, data, config }){
     }
   }
 
-
-
   useEffect(() => {
-    console.log(`%cfield or compositeIdx has changed ${modelX.currentField ? modelX.currentField.id : null}`,'color:blue;font-weight:bold;');
-    if (modelX.currentField){
-      focusField(modelX.currentField, modelX.compositeFieldIdx)
+    if (model.currentField){
+      focusField(model.currentField, model.compositeFieldIdx)
     }
-  },[modelX.currentField, modelX.compositeFieldIdx])
+  },[model.currentField, model.compositeFieldIdx])
 
 
-  const stateMachine = useRef(new Machine(states, stateOptions, ctx));
+  const stateMachine = useRef(new Machine(states, null, ctx));
 
   const fieldRefs = useRef([]);
   const state = useRef(stateMachine.current.initialState);
@@ -143,16 +125,16 @@ export function Form({ children: renderCallback, data, config }){
     }
   }
 
-  function stateTransition(stateEvt){
-    console.group(`%c${stateEvt.type} => from ${JSON.stringify(state.current.value)}  target=[${stateEvt.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
-    const s2 = state.current = stateMachine.current.transition(state.current, stateEvt)
-    runActions(s2.actions, s2.context, stateEvt);
+  function stateTransition(evt){
+    console.group(`%c${evt.type} => from ${JSON.stringify(state.current.value)}  target=[${evt.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
+    const s2 = state.current = stateMachine.current.transition(state.current, evt)
+    s2.actions.forEach(({type}) => dispatch({type, evt}));
     console.log(`%c    => ${JSON.stringify(state.current.value)} [${state.current.context.compositeFieldIdx}]`, 'color: blue;font-weight: bold;');
     console.groupEnd();
   }
 
   function focusField(field, idx=0){
-    console.log(`[leggy-form] focusField ${field.id} [${idx}] (model current field = ${modelX.currentField.id})`)
+    console.log(`[leggy-form] focusField ${field.id} [${idx}] (model current field = ${model.currentField.id})`)
     const fieldComponent = fieldRefs.current[field.tabIdx];
     if (fieldComponent){
       console.log(`setField focus on field ${field.id} [${idx}] IGNORE_FOCUS=true`);
@@ -161,7 +143,7 @@ export function Form({ children: renderCallback, data, config }){
   }
 
   function buildRows(){
-    return modelX.rows.map((row,idx) => {
+    return model.rows.map((row,idx) => {
       const className = cx('field-row', {
         'head-row': idx === 0,
         'empty-row': row.isEmpty
@@ -187,8 +169,7 @@ export function Form({ children: renderCallback, data, config }){
           )}
         </Row>
       )
-    })
-
+    });
   }
 
   return (

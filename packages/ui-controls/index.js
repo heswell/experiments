@@ -9,6 +9,7 @@ import Select from './src/select/select';
 
 export * from './src/services/index';
 export * from './src/inform/form';
+export * from './src/inform/form-reducer';
 export * from './src/inform/field';
 export {default as Control} from './src/inform/control';
 
