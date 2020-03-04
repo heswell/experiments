@@ -77,8 +77,8 @@ module.exports = (_, { mode = 'development' }) => {
         // {from : '../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2', to: 'assets/fonts'},
         { from: '../../node_modules/@heswell/viewserver/dataTables/instruments/dataset.mjs', to: 'dataTables/instruments.js' },
         { from: '../../node_modules/@heswell/data-remote/dist/server-proxy', to: 'server-proxy' }
-      ]),
-      ...(production ? [new BundleAnalyzerPlugin()] : [])
+      ])
+      // ...(production ? [new BundleAnalyzerPlugin()] : [])
     ]
   });
 
