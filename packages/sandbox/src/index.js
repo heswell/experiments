@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('inform1');
+render('grid1');
 
 function onContextMenu(e){
   e.preventDefault();

@@ -76,6 +76,14 @@ export default function App(){
       <div className="App">
         <div className="app-header">
           <TextInput />
+          <select defaultValue="">
+            <option value=""></option>
+            <option value="audi">Audi</option>
+            <option value="bmw">BMW</option>
+            <option value="seat">Seat</option>
+            <option value="volkswagen">Volkswagen</option>
+            <option value="volvo">Volvo</option>
+          </select>
         </div>
         <Form config={formConfig} data={data}>
           {renderFormControl}

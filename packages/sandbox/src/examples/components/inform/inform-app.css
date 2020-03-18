@@ -25,6 +25,9 @@ body {
   align-items: center;
 }
 
+.app-header > * {
+  margin-right: 6px;
+}
 
 .app-header .control-text,
 .app-footer .control-text {
