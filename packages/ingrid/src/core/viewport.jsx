@@ -83,6 +83,11 @@ export const Viewport = React.memo(({
     },[model.rowCount])
 
     useEffect(() => {
+        console.log(`%c[viewport] scrollLeft => ${model.scrollLeft}`,'color:green;font-weight:bold;')
+        setSrollLeft(model.scrollLeft);
+    },[model.scrollLeft])
+
+    useEffect(() => {
 
         // todo move into model
         const viewportSize = Math.ceil(height / model.rowHeight) + 1
@@ -154,6 +159,12 @@ export const Viewport = React.memo(({
 
     const setSrollTop = useCallback((value) => {
         verticalScrollContainer.current.scrollTop = scrollTop.current = value;
+    }, [])
+
+    const setSrollLeft = useCallback((value) => {
+        if (scrollableContainerEl.current){
+            scrollableContainerEl.current.scrollLeft = value;
+        }
     }, [])
 
     const setRange = useCallback((lo, hi) => {

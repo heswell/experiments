@@ -90,9 +90,10 @@ const handlers = {
     [MISSING_TYPE]: MISSING_TYPE_HANDLER
 };
 
-export const initModel = model =>
-    initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
-  
+export const initModel = model => {
+    console.log(JSON.stringify(model,null,2))
+    return initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
+}
 
 
 function initialize(state, action) {
@@ -403,6 +404,7 @@ function columnResizeEnd(state, {column}) {
 // }
 
 function autoScrollLeft(state, {scrollDistance}) {
+    console.log(`[model-reducer] autoScrollLeft ${scrollDistance}`)
     const {_overTheLine,  _movingColumn: column} = state;
 
     const scrollLeft = Math.max(state.scrollLeft + scrollDistance, 0);
@@ -420,6 +422,7 @@ function autoScrollLeft(state, {scrollDistance}) {
 }
 
 function autoScrollRight(state, {scrollDistance}) {
+    console.log(`[model-reducer] autoScrollRight ${scrollDistance}`)
     const {totalColumnWidth, displayWidth, _movingColumn: column, _overTheLine} = state;
     const maxScroll = totalColumnWidth - displayWidth;
     const scrollLeft = Math.min(state.scrollLeft + scrollDistance, maxScroll);
@@ -428,6 +431,7 @@ function autoScrollRight(state, {scrollDistance}) {
             ? state
             : { ...state, _overTheLine: 0 };
     } else if (column) {
+        console.log(`[model-reducer] scrollLeft=${scrollLeft}`)
         const _virtualLeft = column.left + scrollLeft;
         const _movingColumn = {...column, _virtualLeft};
         return _updateColumnPosition({...state, scrollLeft,_movingColumn}, column);
@@ -451,6 +455,7 @@ function moveBegin(state, {column, scrollLeft=0}) {
 }
 
 function move(state, {distance, scrollLeft=0}) {
+    console.log(`[model-reducer] move ${distance} scrollLeft=${scrollLeft}`)
     const column = state._movingColumn;    
     const oldPosLeft = column.left;
     const canScroll = state.displayWidth < state.totalColumnWidth;
@@ -472,6 +477,7 @@ function move(state, {distance, scrollLeft=0}) {
                 ? newPosLeft - rightLine
                 : 0;
 
+    console.log(`[model-reducer] move overTheLine=${_overTheLine}`);
     return _updateColumnPosition({...state, _overTheLine, _movingColumn},column);
 }
 
