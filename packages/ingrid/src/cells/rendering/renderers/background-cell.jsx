@@ -36,7 +36,7 @@ function useDirection(key, value, column) {
   return direction;
 }
 
-export default React.memo(props => {
+export default React.memo(function BackgroundCell(props){
   //TODO what baout click handling
   const { column, row, meta}  = props;
   const { key, width, type: { renderer: { flashStyle } } } = column;

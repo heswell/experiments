@@ -4,6 +4,7 @@ import cx from 'classnames';
 import Draggable from '../draggable/draggable.jsx';
 import SortIndicator from './sort-indicator.jsx';
 import ToggleIcon from './toggle-icon.jsx';
+import {getFormatter} from '../registry/datatype-registry.jsx';
 
 import './header-cell.css';
 
@@ -121,10 +122,13 @@ export default ({
         return right - left;
     }
 
+    // relic
+    const {cellCSS} = getFormatter(col.type);
+
     const className = cx(
         'HeaderCell',
         col.className,
-        col.cellCSS,
+        cellCSS(col.type), // deprecated
         propClassName, {
             'HeaderCell--resizing': col.resizing,
             'hidden': col.hidden,

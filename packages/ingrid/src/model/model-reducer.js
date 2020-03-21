@@ -2,7 +2,6 @@ import {columnUtils, groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswe
 
 import * as Action from './actions';
 import {Selection} from '../types';
-import {getFormatter} from '../registry/datatype-registry.jsx';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
 
@@ -124,7 +123,7 @@ function initialize(state, action) {
         :EMPTY_ARRAY;
 
     const keyedColumns = columns.map(columnUtils.toKeyedColumn)
-    const _columns = preCols.concat(keyedColumns.map(toColumn));
+    const _columns = preCols.concat(keyedColumns.map(addLabel));
 
     const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
     // problem, this doesn't account for width of grouped cols, as we do it on the raw columns
@@ -447,9 +446,9 @@ function moveBegin(state, {column, scrollLeft=0}) {
     const {updatedGroups: _groups, groupIdx, groupColIdx} = replaceGroupColumn(state._groups,column,{ 
         key: 'move-target',
         isPlaceHolder: true, 
-        width: column.width,
-        formatter: column.formatter
+        width: column.width
     });
+
     const _movingColumn = {...column, moving: true,left,_virtualLeft,moveBoundaries,groupIdx,groupColIdx};
     return {...state, _groups, _movingColumn, _columnDragPlaceholder: {groupIdx, groupColIdx}, scrollLeft};
 }
@@ -541,12 +540,14 @@ function _updateColumnPosition(state,prevColumn) {
                 insertionIdx = (adjustment ? idx+1 : idx) - earlierGroupColCount;
             }
         }
+
     }
 
     if (insertionIdx !== -1) {
         const {groupIdx, groupColIdx} = state._columnDragPlaceholder;
         const _columnDragPlaceholder = {groupIdx: insertionGroupIdx, groupColIdx: insertionIdx};
         const {updatedGroups: _groups} = moveGroupColumn(state._groups, groupIdx, groupColIdx, insertionGroupIdx, insertionIdx);  
+
         return {...state, _groups, _columnDragPlaceholder};
     } else {
         return state;
@@ -734,21 +735,13 @@ function getColumnPositions(groups, keys) {
 }
 
 
-// TODO missing presenter/formatter etc details
-function toColumn(column) {
-    //TODO roll cellCSS into className
+function addLabel(column) {
     const {name, label=name} = column;
-    // >>>>> Don't like rolling functions into model, think about this
-    // we should keep the model clean here and enrich it beofre passing into render tree
-    // type is not sufficient, need to look at formatting metadata
-    const presenter = getFormatter(column.type);
     return { 
         ...column, 
         label: column.heading 
             ? Array.isArray(column.heading) ? column.heading[0] : column.heading
-            : label,
-        formatter: presenter.formatter, 
-        cellCSS: presenter.cellCSS(column.type)            
+            : label
     };
 }
 
