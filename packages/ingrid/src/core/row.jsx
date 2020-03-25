@@ -1,4 +1,4 @@
-import React, {useCallback, useContext/*, useEffect, useRef*/} from 'react';
+import React, {useCallback, useContext} from 'react';
 import cx from 'classnames';
 import Cell from '../cells/cell.jsx';
 import GroupCell from '../cells/group-cell.jsx';

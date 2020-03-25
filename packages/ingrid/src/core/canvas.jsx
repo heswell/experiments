@@ -1,20 +1,12 @@
+// @ts-check
 import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
 import Row from './row.jsx';
 import GridContext from '../grid-context';
 
+import './canvas.css';
+
 const byKey = ([key1], [key2]) => key1 - key2;
-
-const cssCanvas = {
-  position: 'absolute',
-  top:0,
-  overflow:'hidden'
-};
-
-const cssCanvasContent = {
-  position: 'absolute',
-  overflow : 'hidden'
-};
 
 export default forwardRef(Canvas)
 
@@ -64,11 +56,11 @@ export function Canvas ({
   });
 
   return (
-    <div style={{ ...cssCanvas, left, width, height }} className={className}
+    <div style={{ left, width, height }} className={className}
       onContextMenu={handleContextMenuFromCanvas}
       onKeyDown={onKeyDown} >
-      <div ref={contentEl}
-        style={{ ...cssCanvasContent, width: Math.max(columnGroup.width, width), height }}>
+      <div ref={contentEl} className="canvas-content"
+        style={{ width: Math.max(columnGroup.width, width), height }}>
         {gridRows}
       </div>
     </div>
