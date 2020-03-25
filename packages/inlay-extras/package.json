@@ -1,6 +1,6 @@
 {
   "name": "@heswell/inlay-extras",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Heswell Layout Components",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -29,7 +29,7 @@
     "rollup-plugin-postcss": "^2.0.3"
   },
   "dependencies": {
-    "@heswell/utils": "^1.0.9"
+    "@heswell/utils": "^1.1.0"
   },
   "peerDependencies": {
     "react": "^16.9.0"
