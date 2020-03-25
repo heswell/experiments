@@ -34,7 +34,6 @@ describe('model-reducer', () => {
       expect(state).toEqual({
         ...DEFAULT_MODEL_STATE,
 
-        _columns: [],
         _groups: [],
         _headingDepth: 0,
 
@@ -84,15 +83,6 @@ describe('model-reducer', () => {
           {name: "Industry", key: 6 }
         ],
 
-        _columns: [
-          {name: "Symbol", key: 0, label: "Symbol", width: 120 },
-          {name: "Name", key: 1, label: "Name", width: 200 },
-          {name: "Price", key: 2, label: "Price", type: "number", aggregate: "avg"},
-          {name: "MarketCap", key: 3, label: "MarketCap", type: "number", aggregate: "sum"},
-          {name: "IPO", key: 4, label: "IPO" },
-          {name: "Sector", key: 5, label: "Sector"},
-          {name: "Industry", key: 6, label: "Industry"}
-        ],
         _groups: [{
           columns: [
             {name: "Symbol", key: 0, label: "Symbol", width: 120, hidden, sorted},

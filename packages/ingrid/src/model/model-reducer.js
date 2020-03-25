@@ -37,7 +37,6 @@ export const DEFAULT_MODEL_STATE = {
 
     meta: null,
 
-    _columns: null,
     _movingColumn: null,
     _groups: null,
     _overTheLine: 0,
@@ -161,7 +160,6 @@ function initialize(state, action) {
         collapsedColumns,
         selectionModel,
         _headingDepth,
-        _columns,
         _groups,
         totalColumnWidth,
         displayWidth
