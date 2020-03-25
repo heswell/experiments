@@ -1,0 +1,10 @@
+.Canvas {
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+}
+
+.Canvas .canvas-content {
+  overflow: hidden;
+  position: absolute;
+}

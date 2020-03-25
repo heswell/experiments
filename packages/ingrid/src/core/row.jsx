@@ -1,17 +1,19 @@
-import React, {useCallback, useContext/*, useEffect, useRef*/} from 'react';
+import React, {useCallback, useContext} from 'react';
 import cx from 'classnames';
-import {getCellRenderer} from '../registry/datatype-registry.jsx';
-import GridContext from '../grid-context';
+
 import * as Action from '../model/actions';
+import Cell from '../cells/cell.jsx';
+import GridContext from '../grid-context';
+import GroupCell from '../cells/group-cell.jsx';
 
 import './row.css';
 
-export default React.memo(({
+export default React.memo(function Row({
     row,
     idx,
     columns,
     gridModel
-}) => {
+}){
 
     const {meta, rowHeight} = gridModel;
     const handleContextMenu = useCallback(e => showContextMenu(e, 'row', {idx, row}),[idx, row]);
@@ -48,22 +50,11 @@ export default React.memo(({
         }
     );
 
-    //TODO load default formatters here and pass formatter/cellClass down to cell 
-    const cells = columns.filter(column => !column.hidden).map((column,i) => {
-
-        const props = {
-            key: i,
-            idx: i,
-            column,
-            meta,
-            row,
-            onClick
-        }
-
-        return React.isValidElement(column.renderer) 
-            ? React.cloneElement(column.renderer,props)
-            : (column.renderer && column.renderer(props)) || getCellRenderer(props); 
-    });
+    const cells = columns.filter(column => !column.hidden).map((column,idx) => 
+        column.isGroup
+            ? <GroupCell key={idx} idx={idx} column={column} meta={meta} row={row} onClick={onClick} />
+            : <Cell key={column.key} idx={idx} column={column} meta={meta} row={row} onClick={onClick} />
+    );
 
     return (
         <div className={className}

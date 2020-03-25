@@ -7,7 +7,7 @@ import {terser} from 'rollup-plugin-terser';
 
 const isProd = process.env.BUILD === 'production';
 
-export default {
+export default [{
     input: 'index.js',
     output: {
         file: 'dist/index.js',
@@ -42,4 +42,33 @@ export default {
         "react",
         "react-dom"
     ]
-};
+}, /* Just for Jest */{
+    input: 'index.jest.js',
+    output: {
+        file: 'tests/dist/index.js',
+        format: 'cjs'
+    },
+    plugins: [
+        resolve(),
+        commonjs(),
+        babel({
+            babelrc: false,
+            exclude: 'node_modules/**',
+            "presets": [["@babel/react", {modules: false}]]
+        }),
+        postcss({
+            plugins: [],
+            minimize: false,
+            extract: true,
+            sourceMap: true
+          })
+    ],
+    "external": [
+        "@heswell/ingrid-extras",
+        "@heswell/ui-controls",
+        "classnames",
+        "react",
+        "react-dom"
+    ]
+
+}];

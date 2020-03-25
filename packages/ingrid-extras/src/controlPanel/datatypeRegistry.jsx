@@ -1,4 +1,4 @@
-//TODO where does this belong ?
+//TODO where does this belong ? This is in ingrid too
 import React from 'react';
 import Cell from '@heswell/fingrid/src/core/cell';
 

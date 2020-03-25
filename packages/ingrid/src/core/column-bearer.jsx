@@ -1,6 +1,7 @@
 import React from 'react';
 import HeaderCell from '../header/header-cell.jsx';
-import {getCellRenderer} from '../registry/datatype-registry.jsx';
+import Cell from '../cells/cell.jsx';
+import GroupCell from '../cells/group-cell.jsx';
 
 import './column-bearer.css';
 
@@ -22,13 +23,12 @@ const ColumnBearer = (props) => {
             {
                 rows.map((row,idx) => 
                     <div key={idx} className='Row'>
-                        {getCellRenderer({
-                            idx,
-                            column,
-                            meta,
-                            formatter: column.formatter || NULL_FORMATTER,
-                            row,
-                            value:row[column.key]})}
+                        {
+                            column.isGroup
+                            ? <GroupCell key={idx} idx={idx} column={column} meta={meta} row={row} />
+                            : <Cell key={idx} idx={idx} column={column} meta={meta} row={row} />
+
+                        }
                     </div>
                 )
             }

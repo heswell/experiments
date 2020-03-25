@@ -34,7 +34,9 @@ export function ColumnGroupHeader({
                 dispatch({ type: Action.RESIZE_HEADING, column, width });
             } else {
                 // TODO do we need to consider scrolling ?
-                dispatch({ type: Action.COLUMN_RESIZE, column, width });
+                if (width !== column.width){
+                    dispatch({ type: Action.COLUMN_RESIZE, column, width });
+                }
             }
         } else if (phase === 'begin') {
             dispatch({ type: Action.COLUMN_RESIZE_BEGIN, column });

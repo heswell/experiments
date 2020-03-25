@@ -1,15 +1,28 @@
 import React, {useCallback} from 'react';
 import {renderCellContent} from './formatting/cellValueFormatter';
 import {getGridCellClassName} from './cell-utils'
+import useCellComponent from './use-cell-renderer';
 
 import './cell.css';
 
-export default React.memo(({
+export default React.memo(function Cell({
     idx,
     column,
+    meta,
     row,
     onClick
-}) => {
+}){
+    // get the cell renderer here, using column
+    // if there isn't one, use the default rendering below
+    const cellComponent = useCellComponent(column);
+
+    if (cellComponent.current){
+        console.log(`we have a custom component for column ${column.name} at ${column.key}`);
+        if (!column.name){
+            debugger;
+        }
+    }
+
     const style = {width: column.width};
     const value = row[column.key]
 
@@ -17,6 +30,10 @@ export default React.memo(({
         onClick(idx);
     },[idx, onClick])
     
+    const Type = cellComponent.current;
+    if (Type){
+        return <Type idx={idx} column={column} meta={meta} row={row} onClick={clickHandler}/>
+    }
 
     return (
         <div className={getGridCellClassName(column, value)} 
