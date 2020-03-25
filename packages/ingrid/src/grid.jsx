@@ -153,8 +153,6 @@ export default function Grid({
         sortBy,
         _overTheLine } = model;
 
-        console.log(`Grid model.height=${height} style=${style.height}`)
-
     useEffect(() => {
         overTheLine.current = _overTheLine;
         logger.log(`<useEffect _overTheLine>`);

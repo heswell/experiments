@@ -139,5 +139,41 @@ describe('model-reducer', () => {
 
   });
 
+  describe('column resize', () => {
+
+    test('resize Instruments column', () => {
+      let state = ModelReducer(DEFAULT_MODEL_STATE, {
+        type: Action.INITIALIZE,
+        gridState: INSTRUMENTS_CONFIG
+      });
+
+      expect(state.totalColumnWidth).toEqual(1100);
+
+      let [, column] = state._groups[0].columns;
+
+      state = ModelReducer(state, {type: Action.COLUMN_RESIZE_BEGIN, column});
+      ([, column] = state._groups[0].columns);
+
+      expect(column.resizing).toBe(true);
+
+      state = ModelReducer(state, {type: Action.COLUMN_RESIZE, column, width: 201});
+      ([, column] = state._groups[0].columns);
+
+      expect(state.totalColumnWidth).toEqual(1101);
+      expect(column.width).toEqual(201);
+
+      state = ModelReducer(state, {type: Action.COLUMN_RESIZE, column, width: 205});
+      ([, column] = state._groups[0].columns);
+
+      expect(state.totalColumnWidth).toEqual(1105);
+      expect(column.width).toEqual(205);
+
+    })
+
+
+  })
+
+
+
 
 })

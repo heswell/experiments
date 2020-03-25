@@ -7,7 +7,9 @@ import {getColumnWidth} from '../utils/domUtils';
 
 const {metaData} = columnUtils;
 
-export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
+export default (state, action) => {
+     return  (handlers[action.type] || MISSING_HANDLER)(state, action);
+}
 
 export const DEFAULT_MODEL_STATE = {
     width: 400,
@@ -90,7 +92,6 @@ const handlers = {
 };
 
 export const initModel = model => {
-    console.log(JSON.stringify(model,null,2))
     return initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
 }
 
@@ -168,12 +169,10 @@ function initialize(state, action) {
 }
 
 function columnsChange(state, action){
-    console.log(`columns changed ${action.columns.map(c=>c.name)}`)
     return initialize(state, {gridState: {columns: action.columns}});
 }
 
 function subscribed(state, action){
-    console.log(`subscribed ${JSON.stringify(action.columns)}`);
     if (state.columns.length === 0){
         return initialize(state, {gridState: {columns: action.columns}});
     } else {
@@ -223,7 +222,6 @@ function sortGroup(state, {column}) {
 
 function extendGroup(state, {column, rowCount=state.rowCount}) {
     const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
-    console.log(`modelReducer applyGroup new Group ${groupBy}`)
     return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
@@ -351,7 +349,6 @@ function groupColumnWidth(state, {/*column, */width}){
 }
 
 function columnResize(state, {column, width}) {
-
     if (column.width <= state.minColumnWidth && width <= column.width) {
         return state;
     }
@@ -403,7 +400,6 @@ function columnResizeEnd(state, {column}) {
 // }
 
 function autoScrollLeft(state, {scrollDistance}) {
-    console.log(`[model-reducer] autoScrollLeft ${scrollDistance}`)
     const {_overTheLine,  _movingColumn: column} = state;
 
     const scrollLeft = Math.max(state.scrollLeft + scrollDistance, 0);
@@ -421,7 +417,6 @@ function autoScrollLeft(state, {scrollDistance}) {
 }
 
 function autoScrollRight(state, {scrollDistance}) {
-    console.log(`[model-reducer] autoScrollRight ${scrollDistance}`)
     const {totalColumnWidth, displayWidth, _movingColumn: column, _overTheLine} = state;
     const maxScroll = totalColumnWidth - displayWidth;
     const scrollLeft = Math.min(state.scrollLeft + scrollDistance, maxScroll);
@@ -430,7 +425,6 @@ function autoScrollRight(state, {scrollDistance}) {
             ? state
             : { ...state, _overTheLine: 0 };
     } else if (column) {
-        console.log(`[model-reducer] scrollLeft=${scrollLeft}`)
         const _virtualLeft = column.left + scrollLeft;
         const _movingColumn = {...column, _virtualLeft};
         return _updateColumnPosition({...state, scrollLeft,_movingColumn}, column);
@@ -454,7 +448,6 @@ function moveBegin(state, {column, scrollLeft=0}) {
 }
 
 function move(state, {distance, scrollLeft=0}) {
-    console.log(`[model-reducer] move ${distance} scrollLeft=${scrollLeft}`)
     const column = state._movingColumn;    
     const oldPosLeft = column.left;
     const canScroll = state.displayWidth < state.totalColumnWidth;
@@ -476,7 +469,6 @@ function move(state, {distance, scrollLeft=0}) {
                 ? newPosLeft - rightLine
                 : 0;
 
-    console.log(`[model-reducer] move overTheLine=${_overTheLine}`);
     return _updateColumnPosition({...state, _overTheLine, _movingColumn},column);
 }
 
@@ -968,7 +960,6 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {
             lockedGroupWidth += group.width;
         }
         if (group.headings){
-            console.log(`group headings ${JSON.stringify(group.headings,null,2)}`)
             group.headings.forEach(heading =>
                 heading.forEach(colHeading => {
                     colHeading.width = sumWidth(columnKeysToColumns(splitKeys(colHeading.key),group.columns).filter(col => !col.hidden));

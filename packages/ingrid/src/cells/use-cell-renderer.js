@@ -6,7 +6,7 @@ export default column => {
   const cellComponent = useRef(getCellComponent(column.type));
 
   useEffect(() => {
-    console.log(`[useCellRenderer] column type has changed column at ${column.key} (${column.name})`, column)
+    // console.log(`[useCellRenderer] column type has changed column at ${column.key} (${column.name})`, column)
   }, [column.type])
 
   return cellComponent;

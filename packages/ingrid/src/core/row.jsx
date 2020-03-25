@@ -1,9 +1,10 @@
 import React, {useCallback, useContext} from 'react';
 import cx from 'classnames';
-import Cell from '../cells/cell.jsx';
-import GroupCell from '../cells/group-cell.jsx';
-import GridContext from '../grid-context';
+
 import * as Action from '../model/actions';
+import Cell from '../cells/cell.jsx';
+import GridContext from '../grid-context';
+import GroupCell from '../cells/group-cell.jsx';
 
 import './row.css';
 

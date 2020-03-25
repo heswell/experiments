@@ -15,7 +15,7 @@ const Label = ({ column }) =>
 
 export default ({
     className: propClassName,
-    column: col,
+    column,
     multiColumnSort,
     onClick=() => {},
     onResize,
@@ -23,22 +23,23 @@ export default ({
     onContextMenu
 }) => {
 
+    const col = useRef(column);
+    // essential that handlers for resize do not use stale column
+    // we could mitigate this by only passing column key and passing delta,
+    // so we don't rely on current width in column
+    col.current = column;
+
     const dragging = useRef(false);
     const wasDragging = useRef(false);
-    const column = useRef(col);
     const el = useRef(null);
     const position = useRef({x:0,y:0})
-
-    useEffect(() => {
-        column.current = col;
-    }, [col])
 
     const handleClick = () => {
 
         if (wasDragging.current) {
             wasDragging.current = false;
         } else {
-            onClick(column.current);
+            onClick(column);
         }
     }
 
@@ -48,14 +49,13 @@ export default ({
 
             wasDragging.current = true;
             // shouldn't we set dragging to false ?
-            onMove('end', column.current);
+            onMove('end', col.current);
         } else {
             // drag aborted
         }
-    },[])
+    },[column])
 
     const onMouseMove = useCallback(e => {
-        console.log(`onMouseMove`)
         if (e.stopPropagation) {
             e.stopPropagation();
         }
@@ -71,7 +71,7 @@ export default ({
         if (dragging.current) {
             position.current.x = x;
             position.current.y = y;
-            onMove('move', column.current, deltaX);
+            onMove('move', col.current, deltaX);
 
         } else {
             if (Math.abs(deltaX) > 3) {
@@ -79,10 +79,10 @@ export default ({
                 dragging.current = true;
                 position.current.x = x;
                 position.current.y = y;
-                onMove('begin', column.current, deltaX);
+                onMove('begin', col.current, deltaX);
             }
         }
-    },[])
+    },[column])
 
     const handleMouseDown = e => {
         position.current = {x: e.clientX, y: e.clientY};
@@ -96,24 +96,23 @@ export default ({
     }
 
     const handleContextMenu = e => {
-        onContextMenu(e, 'header', { column: column.current });
+        onContextMenu(e, 'header', { column });
     }
 
-    const handleResizeStart = () => onResize('begin', column.current);
+    const handleResizeStart = () => onResize('begin', column);
     
 
     const handleResize = useCallback((e) => {
         const width = getWidthFromMouseEvent(e);
         if (width > 0) {
-            console.log(`resize ${width} resizing ? ${column.resizing}`)
-            onResize('resize', column.current, width);
+            onResize('resize', col.current, width);
         }
     },[])
 
     const handleResizeEnd = (e) => {
         wasDragging.current = true; // is this right ?
         const width = getWidthFromMouseEvent(e);
-        onResize('end', column.current, width);
+        onResize('end', col.current, width);
     }
 
     const getWidthFromMouseEvent = e => {
@@ -123,35 +122,35 @@ export default ({
     }
 
     // relic
-    const {cellCSS} = getFormatter(col.type);
+    const {cellCSS} = getFormatter(column.type);
 
     const className = cx(
         'HeaderCell',
-        col.className,
-        cellCSS(col.type), // deprecated
+        column.className,
+        cellCSS(column.type), // deprecated
         propClassName, {
-            'HeaderCell--resizing': col.resizing,
-            'hidden': col.hidden,
-            'collapsed': col.collapsed
+            'HeaderCell--resizing': column.resizing,
+            'hidden': column.hidden,
+            'collapsed': column.collapsed
         });
 
-    const style = { width: col.width };
+    const style = { width: column.width };
 
-    if (col.hidden && col.width === 0) {
+    if (column.hidden && column.width === 0) {
         style.display = 'none';
     }
 
     return (
         <div ref={el} className={className} style={style}
             onClick={handleClick} onMouseDown={handleMouseDown} onContextMenu={handleContextMenu}>
-            <SortIndicator column={col} multiColumnSort={multiColumnSort}/>
-            <ToggleIcon column={col}/>
+            <SortIndicator column={column} multiColumnSort={multiColumnSort}/>
+            <ToggleIcon column={column}/>
             <div className='InnerHeaderCell'>
                 <div className='cell-wrapper'>
-                    <Label column={col}/>
+                    <Label column={column}/>
                 </div>
             </div>
-            {col.resizeable !== false &&
+            {column.resizeable !== false &&
                 <Draggable className='resizeHandle'
                     onDrag={handleResize}
                     onDragStart={handleResizeStart}
