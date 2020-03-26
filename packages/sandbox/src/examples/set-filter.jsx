@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import {LocalDataView as View, FilterDataView} from '@heswell/data';
-import {SetFilter} from '@heswell/ingrid-extras';
+import {FilterPanel, SetFilter} from '@heswell/ingrid-extras';
 
 const tableName = 'Instruments'
 const dataConfig = {url: '/dataTables/instruments.js', tableName};
@@ -45,15 +45,15 @@ export default () => {
   },[dataView])
 
   return (
-        <div className='ColumnFilter FilterPanel'>
+        <FilterPanel style={{width: 300, height: 350}} column={nameColumn}>
           <SetFilter
             className='test-filter'
-            style={{height: 500, width: 300}}
+            style={{flex:1}}
             column={nameColumn}
             filter={filter}
             dataView={filterView}
           />
-        </div>
+        </FilterPanel>
     )
 }
   

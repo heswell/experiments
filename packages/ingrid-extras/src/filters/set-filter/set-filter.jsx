@@ -26,6 +26,7 @@ export const SetFilter = ({
 
 }) => {
 
+    console.log(`[SetFilter]`, stats)
     const columnFilter = filterUtils.extractFilterForColumn(filter, column.name);
 
     // somehow this needs to dispatch model-reducer if it's a change

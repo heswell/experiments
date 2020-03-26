@@ -18,9 +18,9 @@ export const FilterPanel = ({
 }) => {
 
     return (
-      <FlexBox className="FilterPanel" style={style}>
+      <FlexBox className="FilterPanel" style={{...style, flexDirection: 'column'}}>
         <FilterPanelHeader column={column} style={{ height: 25 }} onMouseDown={onMouseDown} />
-        <FlexBox className='filter-inner' style={{ flex: 1 }}>
+        <FlexBox className='filter-inner' style={{ flex: 1, flexDirection: 'column' }}>
             <SearchBar style={{ height: 25 }}
                 inputWidth={column.width - 16}
                 // searchText={searchText}

@@ -56,7 +56,10 @@ export const ColumnFilter =  ({
 
     const [filterType] = useState(columnUtils.getFilterType(column)); 
     const [stats, setStats] = useState(NO_COUNT);
-    const onDataCount = (_, stats) => setStats(stats);
+    const onDataCount = (_, stats) => {
+        console.log(`setStats`, stats)
+        setStats(stats);
+    }
     const [showZeroRows, setZeroRows] = useState(true);
     const filterView = useRef(dataViewFactory(dataView, filterType, column, onDataCount));
     const rootEl = useRef(null);
@@ -108,7 +111,7 @@ export const ColumnFilter =  ({
                 PopupService.showPopup({ left: Math.round(left), top: top - 26, component });
             })
         }
-    },[showFilter, filter, showZeroRows]);
+    },[showFilter, filter, showZeroRows, stats]);
 
     const moveFilter = (e, deltaX, deltaY) => {
         console.log(`move Filter by ${deltaX} ${deltaY}`)

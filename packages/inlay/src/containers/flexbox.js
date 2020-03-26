@@ -53,7 +53,7 @@ export default function FlexBox(props){
     }
   
     const { type, title, header, computedStyle } = layoutModel;
-    const className = cx(type);
+    const className = cx(type, props.className);
 
     return (
         <div className={className} style={computedStyle}>

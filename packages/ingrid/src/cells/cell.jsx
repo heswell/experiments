@@ -15,14 +15,6 @@ export default React.memo(function Cell({
     // get the cell renderer here, using column
     // if there isn't one, use the default rendering below
     const cellComponent = useCellComponent(column);
-
-    if (cellComponent.current){
-        console.log(`we have a custom component for column ${column.name} at ${column.key}`);
-        if (!column.name){
-            debugger;
-        }
-    }
-
     const style = {width: column.width};
     const value = row[column.key]
 
