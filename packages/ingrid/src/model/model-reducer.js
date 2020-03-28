@@ -1,5 +1,9 @@
-import {columnUtils, groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswell/data'
+// @ts-check
+/** @typedef {import('./model').GridModel} GridModel  */
+/** @typedef {import('./model').GridModelReducer} GridModelReducer  */
+/** @typedef {import('./model').ReducerTable} ReducerTable  */
 
+import {columnUtils, groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswell/data'
 import * as Action from './actions';
 import {Selection} from '../types';
 // will have to be mocked for testing
@@ -7,21 +11,22 @@ import {getColumnWidth} from '../utils/domUtils';
 
 const {metaData} = columnUtils;
 
-export default (state, action) => {
-     return  (handlers[action.type] || MISSING_HANDLER)(state, action);
-}
+/** @type {GridModelReducer} */
+export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
 
+
+/** @type  {GridModel} */
 export const DEFAULT_MODEL_STATE = {
+    availableColumns: [],
+    columnMap: undefined,
+    columns: [],
     width: 400,
     height: 300,
     headerHeight: 25,
     rowHeight: 23,
     minColumnWidth: 80,
     groupColumnWidth: 'auto',
-    columns: [],
-    availableColumns: [],
     // Note: values which have never been set are undefined, once set, they are unset to null
-    range: undefined,
     sortBy: undefined,
     groupBy: undefined,
     groupState: undefined,
@@ -62,6 +67,8 @@ const MISSING_TYPE_HANDLER = (state) => {
 const MAX_OVER_THE_LINE = 20;
 
 const MISSING_TYPE = undefined;
+
+/** @type {ReducerTable} */
 const handlers = {
     [Action.INITIALIZE]: initialize,
     [Action.SUBSCRIBED]: subscribed,
@@ -80,7 +87,6 @@ const handlers = {
     [Action.MOVE]: move,
     [Action.MOVE_END]: moveEnd,
     [Action.TOGGLE]: toggle,
-    [Action.RANGE]: setRange,
     // [Action.SCROLLLEFT]: setScrollLeft,
     [Action.SCROLL_LEFT]: autoScrollLeft,
     [Action.SCROLL_RIGHT]: autoScrollRight,
@@ -94,7 +100,7 @@ export const initModel = model => {
     return initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
 }
 
-
+/** @type {GridModelReducer} */
 function initialize(state, action) {
     const {
         collapsedColumns=state.collapsedColumns,
@@ -106,7 +112,6 @@ function initialize(state, action) {
         height=state.height,
         headerHeight=state.headerHeight,
         minColumnWidth=state.minColumnWidth,
-        range=state.range,
         rowCount=0,
         rowHeight=state.rowHeight,
         rowStripes=state.rowStripes,
@@ -125,7 +130,7 @@ function initialize(state, action) {
     const keyedColumns = columns.map(columnUtils.toKeyedColumn)
     const _columns = preCols.concat(keyedColumns.map(addLabel));
 
-    const [_groups, _headingDepth] = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
+    const {_groups, _headingDepth} = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
     // problem, this doesn't account for width of grouped cols, as we do it on the raw columns
     const _totalColumnWidth = sumWidth(_columns, minColumnWidth);
 
@@ -155,7 +160,6 @@ function initialize(state, action) {
         columnMap: map,
         sortBy,
         groupBy,
-        range,
         groupState,
         collapsedColumns,
         selectionModel,
@@ -178,6 +182,7 @@ function subscribed(state, action){
     }
 }
 
+/** @type {GridModelReducer} */
 function setRowCount(state, {rowCount}) {
     const {height, headerHeight,rowHeight,width,totalColumnWidth,scrollbarSize} = state;
     const displayWidth = getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, totalColumnWidth, scrollbarSize);
@@ -188,6 +193,7 @@ function setRowCount(state, {rowCount}) {
     }
 }
 
+/** @type {GridModelReducer} */
 function sort(state, {column, direction, preserveExistingSort=false}) {
     const newSortCriteria = [[column.name, direction || (column.sorted === 1 ? DSC : ASC)]];
     const sortBy = state.sortBy === null || preserveExistingSort !== true
@@ -198,6 +204,7 @@ function sort(state, {column, direction, preserveExistingSort=false}) {
     return initialize(state, {gridState: {sortBy}});
 }
 
+/** @type {GridModelReducer} */
 function sortGroup(state, {column}) {
     const {groupBy: existingGroupBy} = state;
     if (existingGroupBy) {
@@ -218,16 +225,19 @@ function sortGroup(state, {column}) {
     return state;
 }
 
+/** @type {GridModelReducer} */
 function extendGroup(state, {column, rowCount=state.rowCount}) {
     const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
     return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
+/** @type {GridModelReducer} */
 function setGroupBy(state, {column, rowCount=state.rowCount}) {
     const groupBy = [[column.name, ASC]];
     return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
+/** @type {GridModelReducer} */
 function toggle(state, {groupRow}) {
     const groupState = toggleGroupState(groupRow, state)
     return {...state, groupState};
@@ -270,22 +280,9 @@ function toggleGroupState(groupedRow, model) {
 
 }
 
-function setRange(state, {lo, hi}) {
-    const {range} = state;
-    if (range && lo === range.lo && hi === range.hi){
-        return state;
-    } else {
-        return {
-            ...state,
-            range: {
-                lo, hi
-            }
-        };
-    }
-}
-
 const splitKeys = compositeKey => `${compositeKey}`.split(':').map(k => parseInt(k,10));
 
+/** @type {GridModelReducer} */
 function columnResizeBegin(state, {column}) {
     const {updatedGroups: _groups} = column.isHeading
         ? updateGroupHeading(state._groups, column, RESIZING,RESIZING,RESIZING)
@@ -298,6 +295,7 @@ function columnResizeBegin(state, {column}) {
     return {...state, _groups, _headingResize};
 }
 
+/** @type {GridModelReducer} */
 function resizeHeading(state, {column, width}) {
     if (width === column.width){
         return state;
@@ -337,15 +335,20 @@ function getColumnAdjustments(pos, numCols, diff){
     return [pos, results];
 }
 
+/** @type {GridModelReducer} */
 function gridResize(state, {width,height}) {
     return initialize(state, {gridState: {width,height}});
 }
 
-// called as a one-off rather than continuous resize, e.g. for grouped column
+/** 
+ * called as a one-off rather than continuous resize, e.g. for grouped column
+ * @type {GridModelReducer}
+ */
 function groupColumnWidth(state, {/*column, */width}){
     return initialize(state, {gridState: {groupColumnWidth: width}});
 }
 
+/** @type {GridModelReducer} */
 function columnResize(state, {column, width}) {
     if (column.width <= state.minColumnWidth && width <= column.width) {
         return state;
@@ -382,6 +385,7 @@ function columnResize(state, {column, width}) {
 
 }
 
+/** @type {GridModelReducer} */
 function columnResizeEnd(state, {column}) {
     const columns = column.isHeading
         ? state.columns // TODO
@@ -397,6 +401,7 @@ function columnResizeEnd(state, {column}) {
 //     return {...state,scrollLeft};
 // }
 
+/** @type {GridModelReducer} */
 function autoScrollLeft(state, {scrollDistance}) {
     const {_overTheLine,  _movingColumn: column} = state;
 
@@ -414,6 +419,7 @@ function autoScrollLeft(state, {scrollDistance}) {
     }
 }
 
+/** @type {GridModelReducer} */
 function autoScrollRight(state, {scrollDistance}) {
     const {totalColumnWidth, displayWidth, _movingColumn: column, _overTheLine} = state;
     const maxScroll = totalColumnWidth - displayWidth;
@@ -431,6 +437,7 @@ function autoScrollRight(state, {scrollDistance}) {
     }
 }
 
+/** @type {GridModelReducer} */
 function moveBegin(state, {column, scrollLeft=0}) {
     const _virtualLeft = getColumnLeft(state._groups,column);
     const left = _virtualLeft - scrollLeft;
@@ -445,6 +452,7 @@ function moveBegin(state, {column, scrollLeft=0}) {
     return {...state, _groups, _movingColumn, _columnDragPlaceholder: {groupIdx, groupColIdx}, scrollLeft};
 }
 
+/** @type {GridModelReducer} */
 function move(state, {distance, scrollLeft=0}) {
     const column = state._movingColumn;    
     const oldPosLeft = column.left;
@@ -470,6 +478,7 @@ function move(state, {distance, scrollLeft=0}) {
     return _updateColumnPosition({...state, _overTheLine, _movingColumn},column);
 }
 
+/** @type {GridModelReducer} */
 function collapseColumn(state, {column}) {
     const collapsedColumns = state.collapsedColumns === null
         ? [column.label]
@@ -478,6 +487,7 @@ function collapseColumn(state, {column}) {
     return initialize(state, {gridState: {collapsedColumns}});
 }
 
+/** @type {GridModelReducer} */
 function expandColumn(state, {column}) {
     const updatedCollapsedColumns = state.collapsedColumns.filter(name => name !== column.label);
     const collapsedColumns = updatedCollapsedColumns.length === 0
@@ -544,6 +554,7 @@ function _updateColumnPosition(state,prevColumn) {
     }
 }
 
+/** @type {GridModelReducer} */
 function moveEnd(state, {column}) {
     // eslint-disable-next-line no-unused-vars
     const {groupIdx, groupColIdx,moveBoundaries,left, ...movingColumn} = state._movingColumn;
@@ -821,7 +832,7 @@ function splitIntoGroups(columns, sortBy=null, groupBy=EMPTY_ARRAY, collapsedCol
           
     }
 
-    return [groups, maxHeadingDepth];
+    return {_groups: groups, _headingDepth: maxHeadingDepth};
 }
 
 function extractGroupColumn(columns, groupBy, minColumnWidth){

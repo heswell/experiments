@@ -1,17 +1,29 @@
+// @ts-check
+/**
+ * Used in conjunction with a Checkbox selection model to offer select all and deselect all.
+ * 
+ * @typedef {import('./select-header').default} SelectHeader 
+ * @typedef {import('./select-header').Stats} Stats 
+ */
 import React, {memo, useEffect, useState} from 'react';
-import {filter, DataTypes} from '@heswell/data';
 
 import './select-header.css';
 
-export default memo(({
+/** @type {Stats} */
+const defaultStats = {
+  filteredRowCount: 0,
+  filteredSelected: 0
+};
+
+/** @type {SelectHeader} */
+const SelectHeader = memo(({
   dataView,
-  isSelected=false,
   style
 }) => {
+  
+  const [stats, setStats] = useState(defaultStats);
 
-  const [stats, setStats] = useState({});
-
-  const onStats = (_, stats={}) => setStats(stats)
+  const onStats = (_, stats) => setStats(stats)
   const {filteredRowCount=0, filteredSelected=0} = stats;
   console.log(`render select header filteredRowCount ${filteredRowCount} filteredSelected ${filteredSelected}`)
   const selectionState = filteredRowCount === 0
@@ -52,3 +64,5 @@ export default memo(({
       </div>
   )
 });
+
+export default SelectHeader;

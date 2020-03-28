@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @typedef {import('./row').default} Row
+ */
 import React, {useCallback, useContext} from 'react';
 import cx from 'classnames';
 
@@ -8,7 +12,8 @@ import GroupCell from '../cells/group-cell.jsx';
 
 import './row.css';
 
-export default React.memo(function Row({
+/** @type {Row}  */
+const Row = React.memo(function Row({
     row,
     idx,
     columns,
@@ -68,3 +73,4 @@ export default React.memo(function Row({
     );
 })
  
+export default Row;

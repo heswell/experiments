@@ -1,4 +1,4 @@
-
+// @ts-check
 // TODO calculate width, height if not specified
 /*global requestAnimationFrame cancelAnimationFrame */
 import React, { useRef, useState, useReducer, useEffect, useCallback } from 'react';
@@ -9,7 +9,7 @@ import modelReducer, { initModel } from './model/model-reducer';
 import Header from './header/header.jsx';
 import InlineFilter from './header/inline-filter/inline-filter.jsx';
 import SelectHeader from './header/select-header/select-header.jsx';
-import { Viewport } from './core/viewport.jsx';
+import Viewport from './core/viewport.jsx';
 import { getScrollbarSize } from './utils/domUtils';
 import GridContext from './grid-context';
 import gridReducer from './grid-reducer';
@@ -34,10 +34,6 @@ const defaultHeaders = {
  * @property {object} dataView 
  */
 
-/**
- * @type React.FunctionComponent 
- * @param {GridProps} props 
- */
 export default function Grid({
     dataView,
     columns=[],

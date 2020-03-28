@@ -1,3 +1,7 @@
+// @ts-check
+/**
+ * @typedef {import('./cell').default} Cell
+ */
 import React, {useCallback} from 'react';
 import {renderCellContent} from './formatting/cellValueFormatter';
 import {getGridCellClassName} from './cell-utils'
@@ -5,7 +9,8 @@ import useCellComponent from './use-cell-renderer';
 
 import './cell.css';
 
-export default React.memo(function Cell({
+/** @type {Cell} */
+const Cell = React.memo(function Cell({
     idx,
     column,
     meta,
@@ -37,3 +42,4 @@ export default React.memo(function Cell({
     );
 })
 
+export default Cell;

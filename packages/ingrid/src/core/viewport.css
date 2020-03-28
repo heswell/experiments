@@ -1,5 +1,21 @@
 .Viewport {
-	background-color: white;
+  background-color: white;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: 0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  padding:0 !important;
+
+ 
+}
+
+.ViewportContent.scrollable-content {
+  position: absolute !important;
+  top: 0  !important;
+  left: 0  !important;
+  right:0  !important;
+  padding:0 !important;
 }
 
 .scrolling-canvas-container { 

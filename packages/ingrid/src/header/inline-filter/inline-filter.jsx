@@ -1,3 +1,6 @@
+// @ts-check
+/** @typedef {import('./inline-filter').default} InlineFilter */
+
 import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
 import { filter as filterUtils, DataTypes } from '@heswell/data'
 import Header from '../header.jsx';
@@ -7,8 +10,8 @@ import './inline-filter.css';
 
 const { NOT_IN } = filterUtils;
 
-export default forwardRef(({ 
-    // we should pass the dataView via context
+/** @type {InlineFilter} */
+const InlineFilter = forwardRef(({ 
     dataView,
     height,
     model,
@@ -69,3 +72,5 @@ export default forwardRef(({
     );
 
 })
+
+export default InlineFilter;

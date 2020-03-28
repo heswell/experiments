@@ -1,3 +1,5 @@
+// @ts-check
+/** @typedef {import('./header').default} Header */
 
 import React, { memo, useRef, forwardRef, useContext, useImperativeHandle} from 'react';
 import cx from 'classnames';
@@ -7,15 +9,16 @@ import GridContext from '../grid-context';
 
 import './header.css';
 
-export default memo(forwardRef(({
+/** @type {Header} */
+export default memo(forwardRef(function Header({
     className: propClassName,
     colGroupHeaderRenderer,
     colHeaderRenderer,
     height,
     ignoreHeadings=false,
     model,
-    style: propStyle
-}, ref) => {
+    style: propStyle = {}
+}, ref){
 
     const { dispatch } = useContext(GridContext);
     const scrollingHeader = useRef(null);

@@ -15,8 +15,7 @@ export function Canvas ({
   firstVisibleRow,
   gridModel,
   height,
-  rows,
-  onKeyDown
+  rows
 }, ref) {
   const contentEl = useRef(null);
   const {showContextMenu} = useContext(GridContext);
@@ -57,8 +56,7 @@ export function Canvas ({
 
   return (
     <div style={{ left, width, height }} className={className}
-      onContextMenu={handleContextMenuFromCanvas}
-      onKeyDown={onKeyDown} >
+      onContextMenu={handleContextMenuFromCanvas} >
       <div ref={contentEl} className="canvas-content"
         style={{ width: Math.max(columnGroup.width, width), height }}>
         {gridRows}

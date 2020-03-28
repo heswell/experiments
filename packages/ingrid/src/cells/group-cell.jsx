@@ -1,9 +1,15 @@
+// @ts-check
+/**
+ * @typedef {import('./group-cell').default} GroupCell
+ */
+
 import React, {useCallback} from 'react';
 import {getGridCellClassName} from './cell-utils';
 
 import './group-cell.css';
 
-export default React.memo(({value, idx, cellClass, row, column, onClick, meta}) => {
+/** @type {GroupCell} */
+const GroupCell = React.memo(({idx, row, column, onClick, meta}) => {
 
     const clickHandler = useCallback(e => {
         e.preventDefault();
@@ -15,7 +21,7 @@ export default React.memo(({value, idx, cellClass, row, column, onClick, meta}) 
 
     return (
         <div 
-            className={getGridCellClassName(column, value, cellClass)}
+            className={getGridCellClassName(column)}
             style={{ width: column.width }} tabIndex={0} >
             {getContent(row, column.columns, meta, isExpanded, clickHandler)}
         </div>
@@ -50,3 +56,5 @@ function getValue(row, columns, meta){
     }
     return null;
 }
+
+export default GroupCell;

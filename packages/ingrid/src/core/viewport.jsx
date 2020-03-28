@@ -1,9 +1,15 @@
+// @ts-check
+/**
+ * 
+ * @typedef {import('./viewport').default} Viewport
+ * @typedef {import('./viewport').DataReducer} DataReducer
+ */
 import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
 import cx from 'classnames';
+
+import * as Action from '../model/actions';
 import Canvas from './canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
-// import SelectionModel from '../model/selectionModel';
-import * as Action from '../model/actions';
 import dataReducer, { initialData } from '../model/data-reducer';
 import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
@@ -11,24 +17,6 @@ import GridContext from '../grid-context';
 import './viewport.css';
 
 const scrollbarSize = getScrollbarSize();
-
-const cssViewport = {
-    position: 'absolute',
-    top: 25,
-    left:0,
-    right:0,
-    bottom:0,
-    padding:0,
-    overflow: 'hidden'
-};
-
-const cssViewportContent = {
-    position: 'absolute',
-    top:0,
-    left:0,
-    right:0,
-    padding:0
-};
 
 function useThrottledScroll(callback) {
 
@@ -59,12 +47,13 @@ function useThrottledScroll(callback) {
     return throttledCallback;
 }
 
-export const Viewport = React.memo(({
-    style,
-    height,
+/** @type {Viewport} */
+const Viewport = React.memo(({
     dataView,
+    height,
     model,
-    onFilterChange
+    onFilterChange,
+    style
     // selectedRows
 }) => {
     const scrollingCanvas = useRef(null);
@@ -76,6 +65,7 @@ export const Viewport = React.memo(({
     const rowCount = useRef(model.rowCount);
 
     const { dispatch, callbackPropsDispatch } = useContext(GridContext);
+    /** @type {DataReducer} */
     const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
     useEffect(() => {
@@ -147,7 +137,7 @@ export const Viewport = React.memo(({
             setRange(firstRow, firstRow + numberOfRowsInViewport);
         }
 
-    }, [height]), 30);
+    }, [height]));
 
     const handleHorizontalScroll = useCallback(e => {
         if (e.target === e.currentTarget) {
@@ -194,7 +184,7 @@ export const Viewport = React.memo(({
 
     return (
         <>
-            <div className={className} style={{ ...cssViewport, ...style }}>
+            <div className={className} style={style}>
 
                 {horizontalScrollingRequired &&
                     model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
@@ -210,7 +200,7 @@ export const Viewport = React.memo(({
 
                 <div className='ViewportContent scrollable-content'
                     ref={verticalScrollContainer}
-                    style={{ ...cssViewportContent, bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
+                    style={{ bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
                     onScroll={handleVerticalScroll} >
 
                     <div className='scrolling-canvas-container'
@@ -237,3 +227,6 @@ export const Viewport = React.memo(({
     );
 
 })
+
+
+export default Viewport;
