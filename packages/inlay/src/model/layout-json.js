@@ -34,7 +34,7 @@ export const getLayoutModel = (type, {children, contentModel, style, ...props}) 
     const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined);
     
     const $id = props.id || uuid();
-    console.log(`[model] getLayoutModel > ${$id.slice(24)} ${type}`)
+    // console.log(`[model] getLayoutModel > ${$id.slice(24)} ${type}`)
 
     return {
         type,
@@ -126,7 +126,7 @@ export function addDefaultLayoutProps(type, layoutProps){
   
 export function extendLayoutModel(config, path='0', styleOverrides=EMPTY_OBJECT){
 
-    console.log(`[extend] ${config.$id ? config.$id.slice(24) : null} ${config.type} ${path}`)
+    // console.log(`[extend] ${config.$id ? config.$id.slice(24) : null} ${config.type} ${path}`)
   
     // allow tabstrip to be specified, like header
     const [layoutStyle, visualStyle] = collectStyles(config.style, styleOverrides);

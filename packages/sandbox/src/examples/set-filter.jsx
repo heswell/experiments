@@ -1,11 +1,14 @@
+// @ts-check
 import React, {useEffect, useState} from 'react';
-import ReactDOM from 'react-dom';
-import {LocalDataView as View, FilterDataView} from '@heswell/data';
+import {LocalDataSource, FilterDataSource} from '@heswell/data';
 import {FilterPanel, SetFilter} from '@heswell/ingrid-extras';
 
 const tableName = 'Instruments'
 const dataConfig = {url: '/dataTables/instruments.js', tableName};
 
+const initialStats = {
+  totalRowCount:0, filteredRowCount:0, filteredSelected :0
+}
 
 const nameColumn = { name: 'Name', width: 200};
 
@@ -26,32 +29,55 @@ const instrumentColumns = [
   { name: 'Industry'}
 ];
 
-const dataView = new View(dataConfig);
-const filterView = new FilterDataView(dataView, nameColumn);
+const noop = () => undefined;
+const dataSource = new LocalDataSource(dataConfig);
+const filterSource = new FilterDataSource(dataSource, nameColumn);
 
 export default () => {
 
   const [filter, setFilter] = useState(null);
+  const [stats, setStats] = useState(initialStats);
+
+  console.log(`filter = ${JSON.stringify(filter)}`)
+
+  filterSource.on('data-count', (_, stats) => {
+    console.log(`%cstats from filterSource ${JSON.stringify(stats)}`,'color:green;')
+    setStats(stats);
+  });
 
   useEffect(() => {
-    dataView.subscribe({
+    dataSource.subscribe({
       columns: instrumentColumns},
-      ({filter}) => {
+      ({filter, stats}) => {
+        console.log(`stats from dataSource ${JSON.stringify(stats)}`)
         filter && setFilter(filter)
       }).then(() => {
-        console.log(`SampleApp, subscribed`)
-        dataView.getFilterData(nameColumn)
+        console.log(`SampleApp, subscribed, now get filterData`)
+        // dataSource.getFilterData(nameColumn)
       });
-  },[dataView])
+  },[dataSource])
+
+  const handleSearch = (searchText) => {
+    console.log(`searchText ${searchText}`)
+  }
 
   return (
-        <FilterPanel style={{width: 300, height: 350}} column={nameColumn}>
+        <FilterPanel
+          style={{width: 300, height: 350}}
+          column={nameColumn}
+          showZeroRows={true}
+          onHide={noop}
+          toggleZeroRows={noop}
+          onMouseDown={noop}
+          onSearch={handleSearch}>
+          
           <SetFilter
             className='test-filter'
             style={{flex:1}}
             column={nameColumn}
             filter={filter}
-            dataView={filterView}
+            dataView={filterSource}
+            stats={stats}
           />
         </FilterPanel>
     )

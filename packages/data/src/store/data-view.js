@@ -115,6 +115,7 @@ export default class DataView {
         if (dataType === DataTypes.ROW_DATA){
             return this.selectResponse(updates, dataType, rowset);
         } else {
+            console.log(`[dataView] select on filterSet (range ${JSON.stringify(rowset.range)})`)
             // we need to handle this case here, as the filter we construct depends on the selection details
             // TODO we shouldn't be using the sortSet here, need an API method
             const value = rowset.getSelectedValue(idx);
@@ -172,13 +173,14 @@ export default class DataView {
                 }
             }
 
-            if (updatesInViewport){
+            // always return, as the stats might be needed
+            // if (updatesInViewport){
                 return {
                     dataType,
                     updates,
                     stats: rowset.stats
                 }
-            }
+            // }
         }
     }
     
@@ -310,6 +312,7 @@ export default class DataView {
     }
 
     getFilterData(column, range) {
+        console.log(`dataView.getFilterData for column ${column.name} range ${JSON.stringify(range)}`)
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -324,7 +327,7 @@ export default class DataView {
             this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
 
         } else if (!filterRowSet || filterRowSet.columnName !== column.name) {
-
+            console.log(`create the filterRowset`)
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (filterRowSet && filterRowSet.columnName === column.name) {
@@ -345,6 +348,7 @@ export default class DataView {
         // be returned by the rowSet
 
         // TODO wrap this, we use it  alot
+        console.log(`[dataView] return filterSet range ${JSON.stringify(range)}`)
         return this.filterRowSet.setRange(range, false, WITH_STATS);
 
 

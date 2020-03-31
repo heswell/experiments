@@ -6,6 +6,7 @@
  * @typedef {import('./select-header').Stats} Stats 
  */
 import React, {memo, useEffect, useState} from 'react';
+import cx from 'classnames';
 
 import './select-header.css';
 
@@ -48,20 +49,21 @@ const SelectHeader = memo(({
     }
   }
 
-
   const [text, selected] = selectionState === 'init'
     ? ['', false]
     : selectionState === 'all-selected'
       ? ['EXCLUDE ALL', true]
       : ['INCLUDE ALL', false];
 
+  const className = cx('SelectHeader',{
+      checked: selectionState === 'all-selected',
+      indeterminate: selectionState === 'some-selected' 
+  });
+
   return(
-    <div className='SelectHeader' style={style}>
-        <div className="checkbox" onClick={onClick}>
-            <i className="material-icons">{selected ? 'check_box_outline' : 'check_box_outline_blank'}</i>
-        </div>
+    <div className={className} style={style}  onClick={onClick}>
         <span className='select-header-text'>{text}</span>
-      </div>
+    </div>
   )
 });
 

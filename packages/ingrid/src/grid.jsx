@@ -1,6 +1,10 @@
 // @ts-check
-// TODO calculate width, height if not specified
-/*global requestAnimationFrame cancelAnimationFrame */
+/**
+ * @typedef {import('./grid').default} Grid
+ * 
+ * TODO calculate width, height if not specified
+ * global requestAnimationFrame cancelAnimationFrame 
+ */
 import React, { useRef, useState, useReducer, useEffect, useCallback } from 'react';
 import cx from 'classnames';
 import { createLogger, logColor } from '@heswell/utils';
@@ -24,17 +28,13 @@ const scrollbarSize = getScrollbarSize();
 // 1) how do we assign extra horizontal space
 
 const defaultHeaders = {
-    columnHeader: true,
-    selectHeader: false,
-    inlineFilter: false
+    showColumnHeader: true,
+    showSelectHeader: false,
+    showInlineFilter: false
 } 
 
-/**
- * @typedef {Object} GridProps
- * @property {object} dataView 
- */
-
-export default function Grid({
+/** @type {Grid} */
+const Grid = ({
     dataView,
     columns=[],
     style,
@@ -47,27 +47,14 @@ export default function Grid({
     onSingleSelect,
     onSelectionChange,
     onDoubleClick,
-    //TODO be explicit, what can we have here - which of these make sense as grid props ?
     ...props
-    // width
-    // height
-    // rowHeight
-    // minColumnWidth
-    // groupColumnWidth
-    // sortBy
-    // groupBy
-    // range
-    // groupState
-    // filter
-    // collapsedColumns
-    // selectionModel
-}) {
+}) => {
 
     const {
-        columnHeader: showColumnHeader = false,
-        selectHeader: showSelectHeader = false,
-        inlineFilter: showInlineFilter = false,
-    } = showHeaders || {};
+        showColumnHeader = defaultHeaders.showColumnHeader,
+        showSelectHeader = defaultHeaders.showSelectHeader,
+        showInlineFilter = defaultHeaders.showInlineFilter
+    } = showHeaders;
 
     const header = useRef(null);
     const inlineFilter = useRef(null);
@@ -221,7 +208,7 @@ export default function Grid({
                 {showSelectHeader &&
                 <SelectHeader dataView={dataView} style={{top:headingHeight, height:selectHeaderHeight}}/>}
                 <Viewport
-                    dataView={dataView}
+                    dataSource={dataView}
                     model={model}
                     style={{top: totalHeaderHeight}}
                     height={height - totalHeaderHeight}
@@ -232,3 +219,5 @@ export default function Grid({
         </GridContext.Provider>
     );
 }
+
+export default Grid;

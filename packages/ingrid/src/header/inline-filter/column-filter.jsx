@@ -5,7 +5,7 @@ import {
     columnUtils,
     DataTypes,
     filter as filterUtils, 
-    FilterDataView 
+    FilterDataSource 
 } from '@heswell/data';
 
 import {
@@ -32,7 +32,7 @@ const ZeroRowFilter = {
 // TODO this can be pushed out to @heswell/data
 const dataViewFactory = (dataView, filterType, column, statsHandler) => {
     const filterView = filterType === FilterType.Set
-      ? new FilterDataView(dataView, column)
+      ? new FilterDataSource(dataView, column)
       : filterType === FilterType.Number
         ? new BinnedDataView(dataView, column)
         : null

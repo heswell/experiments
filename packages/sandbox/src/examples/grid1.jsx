@@ -1,6 +1,6 @@
 import React from 'react';
 import {Grid } from '@heswell/ingrid';
-import {LocalDataView as View} from '@heswell/data';
+import {LocalDataSource as View} from '@heswell/data';
 
 const tableName = 'Instruments'
 const dataConfig = {url: '/dataTables/instruments.js', tableName};

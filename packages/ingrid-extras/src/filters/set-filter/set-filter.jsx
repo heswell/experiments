@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import cx from 'classnames';
 import { filter as filterUtils } from '@heswell/data';
 import {FlexBox} from '@heswell/inlay';
-
 import CheckList from '../check-list.jsx';
 import {FilterCounts} from '../filter-counts.jsx';
+
 import './set-filter.css';
 
 const { 
@@ -36,7 +36,7 @@ export const SetFilter = ({
 
     return (
         <FlexBox className={cx('SetFilter', className)} style={{...style, flexDirection: 'column'}}>
-            <CheckList style={{ flex: 1, border: '1px solid lightgray' }}
+            <CheckList style={{ flex: 1}}
                 columns={filterColumns}
                 dataView={filterView} />
             <FilterCounts style={{ height: 50 }} column={column} stats={stats} />

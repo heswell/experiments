@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('grid1');
+render('set-filter');
 
 function onContextMenu(e){
   e.preventDefault();

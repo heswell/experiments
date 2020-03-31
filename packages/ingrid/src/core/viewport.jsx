@@ -49,7 +49,7 @@ function useThrottledScroll(callback) {
 
 /** @type {Viewport} */
 const Viewport = React.memo(({
-    dataView,
+    dataSource,
     height,
     model,
     onFilterChange,
@@ -81,7 +81,7 @@ const Viewport = React.memo(({
 
         // todo move into model
         const viewportSize = Math.ceil(height / model.rowHeight) + 1
-        dataView.subscribe({
+        dataSource.subscribe({
             columns: model.columns,
             range: { lo: 0, hi: viewportSize }
         },
@@ -112,9 +112,9 @@ const Viewport = React.memo(({
             }
         )
 
-        return () => dataView.unsubscribe();
+        return () => dataSource.unsubscribe();
 
-    }, [dataView]);
+    }, [dataSource]);
 
     useEffect(() => {
         const rowCount = Math.ceil(height / model.rowHeight) + 1;
@@ -160,7 +160,7 @@ const Viewport = React.memo(({
     const setRange = useCallback((lo, hi) => {
         //logger.log(`setRange ===>  ${lo} : ${hi}`)
         dispatchData({ type: 'range', range: { lo, hi } });
-        dataView.setRange(lo, hi);
+        dataSource.setRange(lo, hi);
     }, [])
 
     // all of these calculations belong in the modelReducer

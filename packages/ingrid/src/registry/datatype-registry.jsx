@@ -1,6 +1,3 @@
-import * as React from 'react';
-import Cell from '../cells/cell.jsx';
-import GroupCell from '../cells/group-cell.jsx';
 import CheckboxRenderer from '../cells/rendering/renderers/checkbox-cell.jsx';
 import BackgroundCellRenderer from '../cells/rendering/renderers/background-cell.jsx';
 import StringFormatter from '../cells/formatting/formatters/string-formatter';

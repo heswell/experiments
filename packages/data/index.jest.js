@@ -61,9 +61,9 @@ export const groupHelpers = {
 export * from './src/store/rowset';
 export {default as Table} from './src/store/table';
 export {default as DataView} from './src/store/data-view';
-export {default as LocalDataView} from './src/view/local-data-view';
-export {default as BinnedDataView} from './src/view/binned-data-view';
-export {default as FilterDataView} from './src/view/filter-data-view';
+export {default as LocalDataView} from './src/data-source/local-data-source';
+export {default as BinnedDataView} from './src/data-source/binned-data-view';
+export {default as FilterDataView} from './src/data-source/filter-data-source';
 
 export const sortUtils = {
   sortByToMap

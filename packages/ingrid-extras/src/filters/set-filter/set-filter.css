@@ -1,9 +1,13 @@
+.SetFilter .SelectHeader {
+    border-bottom: solid 1px #999;
+}
 
 .filter-count-section {
     display: flex;
     align-items: center;
     line-height: 16px;
     color: #666;
+    border-top: solid 1px #999;
 }
 
 .filter-count-section .filter-row-counts {

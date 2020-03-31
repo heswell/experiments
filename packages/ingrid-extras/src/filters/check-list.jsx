@@ -7,8 +7,8 @@ export default function CheckList({columns,dataView,style}) {
     return (
     <Grid className='checkbox-list'
         showHeaders={{
-            columnHeader: true,
-            selectHeader: true
+            showColumnHeader: false,
+            showSelectHeader: true
         }}
         rowHeight={22}
         minColumnWidth={80}

@@ -13,9 +13,9 @@ const buildDataView = async url => {
     .catch(err => console.log(`failed to load data at ${url} ${err}`))
 }
 
-const logger = createLogger('LocalDataView', logColor.blue);
+const logger = createLogger('LocalDataSource', logColor.blue);
 
-export default class LocalDataView {
+export default class LocalDataSource {
   constructor({
     url,
     tableName
@@ -54,20 +54,22 @@ export default class LocalDataView {
     this.columns = columns;
     this.meta = metaData(columns);
 
-    console.log(`subscribe, wait for data`)
+    logger.log(`subscribe, wait for data`)
     const { default: data } = await this.eventualView
     const table = new Table({ data, columns });
     this.dataView = new DataView(table, {columns}, this.updateQueue);
-    console.log(`got data, dataView is assigned`)
+    logger.log(`>>>>> got data, dataView is assigned`)
     this.clientCallback = callback;
 
     this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
 
     if (this.pendingFilterColumn){
-      console.log(`gor a pending filter requerst for ${this.pendingFilterColumn.name}`)
+      logger.log(`%cLocalDataSOurce subscribe <after data loaded> got a pending filter requerst for ${this.pendingFilterColumn.name}`,'color:red;font-weight: bold;')
       this.getFilterData(this.pendingFilterColumn, this.pendingFilterRange);
       this.pendingFilterColumn = null;
       this.pendingFilterRange = null;
+    } else {
+      console.log(` ... no pending filterData request`)
     }
 
     //TODO can we eliminate all the following ?
@@ -83,7 +85,7 @@ export default class LocalDataView {
   }
 
   subscribeToFilterData(column, range, callback) {
-    logger.log(`<subscribeToFilterData>`)
+    logger.log(`direct call to <subscribeToFilterData>`)
     this.clientFilterCallback = callback;
     this.getFilterData(column, range);
   }
@@ -151,7 +153,9 @@ export default class LocalDataView {
 
 
   getFilterData(column, range) {
+    logger.log(`getFilterData column=${column.name} range ${JSON.stringify(range)}`)
       if (this.dataView){
+        logger.log(`getFilterData, dataView exists`)
         const filterData =  this.dataView.getFilterData(column, range);
         this.clientFilterCallback(filterData);
       } else {

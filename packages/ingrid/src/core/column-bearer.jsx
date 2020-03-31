@@ -1,7 +1,7 @@
 import React from 'react';
-import HeaderCell from '../header/header-cell.jsx';
 import Cell from '../cells/cell.jsx';
 import GroupCell from '../cells/group-cell.jsx';
+import HeaderCell from '../header/header-cell.jsx';
 
 import './column-bearer.css';
 

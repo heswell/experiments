@@ -13,7 +13,7 @@ const Label = ({ column }) =>
         ? ''
         : column.label || '';
 
-export default ({
+const HeaderCell = ({
     className: propClassName,
     column,
     multiColumnSort,
@@ -160,3 +160,4 @@ export default ({
     );
 }
 
+export default HeaderCell;

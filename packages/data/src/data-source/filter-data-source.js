@@ -12,7 +12,7 @@ const logger = createLogger('FilterDataView', logColor.brown);
 
 // TODO shall we inherit from EventEmitter, so we can host multiple dataCount subscriptions ?
 // This needs to be a local-filter-data-view
-export default class FilterDataView extends EventEmitter {
+export default class FilterDataSource extends EventEmitter {
 
     constructor(dataView, column){
         super();
@@ -26,7 +26,7 @@ export default class FilterDataView extends EventEmitter {
 
     subscribe({columns, range}, callback){
 
-        console.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
+        logger.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
         this.columns = columns;
         this.meta = metaData(columns);
         //TODO make range s setter - DO WE EVEN NEED RANGE ?
