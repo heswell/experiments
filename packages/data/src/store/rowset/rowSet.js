@@ -422,7 +422,7 @@ export class RowSet extends BaseRowSet {
         }
 
         // recompute selected.rows from selectedRowIDX
-        if (this.selected.rows.length){
+        if (this.selectedRowsIDX.length){
             const {selectedRowsIDX, selected} = this;
             selected.rows.length = 0;
             for (let i=0;i<newFilterSet.length;i++){

@@ -1,3 +1,4 @@
+// @ts-check
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
 import { 
@@ -23,6 +24,7 @@ import './column-filter.css';
 
 const {includesColumn, NOT_IN, STARTS_WITH} = filterUtils;
 
+// this needs to be applied AFTER the filterSet is created on server
 const ZeroRowFilter = {
     colName: 'count',
     type: NOT_IN,
@@ -32,7 +34,7 @@ const ZeroRowFilter = {
 // TODO this can be pushed out to @heswell/data
 const dataViewFactory = (dataView, filterType, column, statsHandler) => {
     const filterView = filterType === FilterType.Set
-      ? new FilterDataSource(dataView, column)
+      ? new FilterDataSource(dataView, column, {filter: ZeroRowFilter})
       : filterType === FilterType.Number
         ? new BinnedDataView(dataView, column)
         : null
@@ -60,7 +62,6 @@ export const ColumnFilter =  ({
         console.log(`setStats`, stats)
         setStats(stats);
     }
-    const [showZeroRows, setZeroRows] = useState(true);
     const filterView = useRef(dataViewFactory(dataView, filterType, column, onDataCount));
     const rootEl = useRef(null);
     console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
@@ -111,7 +112,7 @@ export const ColumnFilter =  ({
                 PopupService.showPopup({ left: Math.round(left), top: top - 26, component });
             })
         }
-    },[showFilter, filter, showZeroRows, stats]);
+    },[showFilter, filter, stats]);
 
     const moveFilter = (e, deltaX, deltaY) => {
         console.log(`move Filter by ${deltaX} ${deltaY}`)
@@ -121,13 +122,6 @@ export const ColumnFilter =  ({
     const handleSearchText = value => {
         filterView.current.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
     }
-
-
-    const toggleZeroRows = useCallback(() => {
-        const showZero = !showZeroRows;
-        setZeroRows(showZero);
-        filterView.current.filter(showZero ? null : ZeroRowFilter);
-    },[showZeroRows])
 
     // on unmount only ...
     useEffect(() => closeFilter, []);
@@ -139,12 +133,9 @@ export const ColumnFilter =  ({
             <Draggable onDrag={moveFilter}>
                 <FilterPanel 
                     column={column}
-                    showZeroRows={showZeroRows}
                     style={{width: 300, height: 350}} 
                     onHide={closeFilter}
-                    onSearch={handleSearchText}
-                    showZeroRows={showZeroRows}
-                    toggleZeroRows={toggleZeroRows}>
+                    onSearch={handleSearchText}>
                     {childFilter}
                 </FilterPanel>
             </Draggable>

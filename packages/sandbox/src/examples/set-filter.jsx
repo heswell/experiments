@@ -1,6 +1,6 @@
 // @ts-check
 import React, {useEffect, useState} from 'react';
-import {LocalDataSource, FilterDataSource} from '@heswell/data';
+import {LocalDataSource, FilterDataSource, DataTypes, filter as filterUtils} from '@heswell/data';
 import {FilterPanel, SetFilter} from '@heswell/ingrid-extras';
 
 const tableName = 'Instruments'
@@ -57,9 +57,10 @@ export default () => {
       });
   },[dataSource])
 
-  const handleSearch = (searchText) => {
-    console.log(`searchText ${searchText}`)
-  }
+  const handleSearch = value => {
+    filterSource.filter({type: filterUtils.STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
+}
+
 
   return (
         <FilterPanel

@@ -9,12 +9,10 @@ export const FilterPanel = ({
   children,
   column,
   style,
-  showZeroRows,
   onHide,
   // onMouseDown is injected by Draggable, must be a better way to get this to FilterPanelGHeader - context ?
-  onMouseDown,
-  onSearch,
-  toggleZeroRows
+   onMouseDown = () => undefined,
+  onSearch
 }) => {
 
     return (
@@ -28,9 +26,6 @@ export const FilterPanel = ({
                 onHide={onHide} />
             {children}
             <div key='footer' className='footer' style={{ height: 26 }}>
-                <button
-                    className="toggle-zero-rows"
-                    onClick={toggleZeroRows}>{showZeroRows ? 'Hide zero rows' : 'Show zero rows'}</button>
                 <button className='filter-done-button' onClick={onHide}>Done</button>
             </div>
         </FlexBox>

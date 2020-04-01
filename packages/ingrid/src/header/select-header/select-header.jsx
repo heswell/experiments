@@ -17,10 +17,10 @@ const defaultStats = {
 };
 
 /** @type {SelectHeader} */
-const SelectHeader = memo(({
+const SelectHeader = memo(function SelectHeader({
   dataView,
   style
-}) => {
+}){
   
   const [stats, setStats] = useState(defaultStats);
 

@@ -14,14 +14,16 @@ const logger = createLogger('FilterDataView', logColor.brown);
 // This needs to be a local-filter-data-view
 export default class FilterDataSource extends EventEmitter {
 
-    constructor(dataView, column){
+    constructor(dataView, column, options={}){
         super();
         // can we listen for destroy event ?
-        this.dataView = dataView;
+        this.dataSource = dataView;
         this.column = column;
         // this.dataCounts = undefined;
         // why do we need to store the range ?
         this.range = null;
+        // TODO - works but ugly
+        this.options = options;
     }
 
     subscribe({columns, range}, callback){
@@ -45,40 +47,44 @@ export default class FilterDataSource extends EventEmitter {
             }
         }
 
-        this.dataView.subscribeToFilterData(this.column, range, cb);
+        this.dataSource.subscribeToFilterData(this.column, range, cb);
 
+        // This can't be called until subscribeToFilterData is called, as the filterSet will not have been created on dataView
+        if (this.options.filter){
+            this.filter(this.options.filter)
+        }
     }
 
     unsubscribe(){
-        this.dataView.unsubscribeFromFilterData();
+        this.dataSource.unsubscribeFromFilterData();
     }
 
     destroy(){
         logger.log(`<destroy>`)
-        this.dataView.unsubscribeFromFilterData(this.column);
+        this.dataSource.unsubscribeFromFilterData(this.column);
     }
 
     setRange(lo, hi){
         if (lo !== this.range.lo || hi !== this.range.hi){
             this.range = {lo, hi};
-            this.dataView.setRange(lo, hi, DataTypes.FILTER_DATA);
+            this.dataSource.setRange(lo, hi, DataTypes.FILTER_DATA);
         }
       }
   
     select(idx, rangeSelect, keepExistingSelection) {
-        this.dataView.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA);
+        this.dataSource.select(idx, rangeSelect, keepExistingSelection, DataTypes.FILTER_DATA);
       }
     
     selectAll(){
-        this.dataView.selectAll(DataTypes.FILTER_DATA);
+        this.dataSource.selectAll(DataTypes.FILTER_DATA);
     }
 
     selectNone(){
-        this.dataView.selectNone(DataTypes.FILTER_DATA);
+        this.dataSource.selectNone(DataTypes.FILTER_DATA);
     }
     
     filter(filter, dataType = DataTypes.FILTER_DATA, incremental=false){
-        this.dataView.filter(filter, dataType, incremental);
+        this.dataSource.filter(filter, dataType, incremental);
     }
   
 }
