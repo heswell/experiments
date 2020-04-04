@@ -29,7 +29,7 @@ const dataView = new View(dataConfig);
 export default () => 
     <Grid
       style={{height: 600, width: 1100}}
-      dataView={dataView}
+      dataSource={dataView}
       onSelectCell={(rowIdx, idx) => console.log(`sample-grid onSelectCell ${rowIdx}* ${idx}`)}
       columns={columns}/>;
   

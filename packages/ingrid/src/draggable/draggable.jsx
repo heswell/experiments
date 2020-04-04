@@ -1,15 +1,18 @@
+/** @typedef {import('./draggable').DraggableComponent} Draggable */
 import React, {useRef, useCallback} from 'react';
 
 const NOOP = () => {}
 
-export default allProps => {
+/** @type {Draggable} */
+const Draggable = (allProps) => {
     const {
-        component:Component,
         children: child,
+        onDrag,
+        onDragEnd=NOOP,
+        onDragStart=NOOP,
         ...props
     } = allProps;
 
-    const {onDrag, onDragStart=NOOP, onDragEnd=NOOP} = allProps;
     const position = useRef({x:0,y:0});
     const dragState = useRef(null);
 
@@ -64,7 +67,7 @@ export default allProps => {
 
     const onMouseUp = useCallback(e => {
         cleanUp();
-        onDragEnd(e, dragState.drag);
+        onDragEnd(e, dragState.current); // seems we pass back whatever was passed in drag start ???
         dragState.current = null;
     },[]);
 
@@ -73,11 +76,11 @@ export default allProps => {
         window.removeEventListener('mousemove', onMouseMove);
     }
 
-    if (child && !Array.isArray(child)){
+    if (child && React.isValidElement(child)){
         return React.cloneElement(child, {...props, onMouseDown: handleMouseDown});
-    } else if (Component){
-        return <Component onMouseDown={handleMouseDown} {...props}/>;
     } else {
         return <div onMouseDown={handleMouseDown} {...props}/>;
     }
 }
+
+export default Draggable;

@@ -4,7 +4,7 @@ import { LayoutRoot } from './layout-root';
 import LayoutItem from './layout-item';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
-import {DragContainer, Draggable} from '../drag-drop/draggable.js';
+import {DragContainer} from '../drag-drop/draggable.js';
 
 const PureLayout = React.memo(DynamicContainer);
 PureLayout.displayName = 'DynamicContainer';

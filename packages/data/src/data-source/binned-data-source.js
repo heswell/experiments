@@ -3,9 +3,9 @@
 import { createLogger, logColor, EventEmitter} from '@heswell/utils';
 import { DataTypes } from '../store/types';
 
-const logger = createLogger('BinnedDataView', logColor.brown);
+const logger = createLogger('BinnedDataSource', logColor.brown);
 
-export default class BinnedDataView extends EventEmitter {
+export default class BinnedDataSource extends EventEmitter {
 
   constructor(dataView, column) {
     super();

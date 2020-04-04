@@ -11,5 +11,6 @@ export interface ViewportProps {
   style: any;
 }
 
-declare const Viewport: React.ComponentType<ViewportProps>;
+export type ViewportComponent = React.ComponentType<ViewportProps>;
+declare const Viewport: ViewportComponent;
 export default Viewport;

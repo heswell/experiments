@@ -1,4 +1,3 @@
-// @ts-check
 import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
 import Row from './row.jsx';

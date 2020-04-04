@@ -23,7 +23,11 @@ export default class NumberFormatter {
         const number = typeof value === 'number' ? value :
                        typeof value === 'string' ? parseFloat(value) :
                        null;
-        return <div className='num'>{roundDecimal(number, align, numberOfDecimals, zeroPad, alignOnDecimals)}</div>;
+        return (
+            <div className='num'>
+                {roundDecimal(number, align, numberOfDecimals, zeroPad, alignOnDecimals)}
+            </div>
+        )
     }
 
 } 

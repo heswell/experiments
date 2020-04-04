@@ -2,12 +2,12 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
 import { 
-    BinnedDataView,
     columnUtils,
     DataTypes,
-    filter as filterUtils, 
-    FilterDataSource 
+    filter as filterUtils
 } from '@heswell/data';
+
+import dataSourceFactory from './data-source-factory';
 
 import {
     FilterType,
@@ -22,26 +22,8 @@ import { PopupService } from '@heswell/ui-controls';
 
 import './column-filter.css';
 
-const {includesColumn, NOT_IN, STARTS_WITH} = filterUtils;
+const {includesColumn, STARTS_WITH} = filterUtils;
 
-// this needs to be applied AFTER the filterSet is created on server
-const ZeroRowFilter = {
-    colName: 'count',
-    type: NOT_IN,
-    values: [0]
-}
-
-// TODO this can be pushed out to @heswell/data
-const dataViewFactory = (dataView, filterType, column, statsHandler) => {
-    const filterView = filterType === FilterType.Set
-      ? new FilterDataSource(dataView, column, {filter: ZeroRowFilter})
-      : filterType === FilterType.Number
-        ? new BinnedDataView(dataView, column)
-        : null
-
-    filterView.on('data-count', statsHandler);
-    return filterView;
-}
 
 const NO_COUNT = {}
 
@@ -62,13 +44,12 @@ export const ColumnFilter =  ({
         console.log(`setStats`, stats)
         setStats(stats);
     }
-    const filterView = useRef(dataViewFactory(dataView, filterType, column, onDataCount));
+    const filterView = useRef(dataSourceFactory(dataView, filterType, column, onDataCount));
     const rootEl = useRef(null);
     console.log(`ColumnFilter ${JSON.stringify(filter,null,2)}`)
     const toggleFilterDisplay = () => {
         onFilterOpen(column);
     }
-
 
     // close filter is a user action
     const closeFilter = () => {
@@ -161,7 +142,7 @@ export const ColumnFilter =  ({
                             style={{flex:1}}
                             column={column}
                             filter={filter}
-                            dataView={filterView.current}
+                            dataSource={filterView.current}
                             stats={stats} />
                     );
             }

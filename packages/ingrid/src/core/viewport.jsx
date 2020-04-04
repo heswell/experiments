@@ -1,7 +1,6 @@
-// @ts-check
 /**
  * 
- * @typedef {import('./viewport').default} Viewport
+ * @typedef {import('./viewport').ViewportComponent} Viewport
  * @typedef {import('./viewport').DataReducer} DataReducer
  */
 import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';

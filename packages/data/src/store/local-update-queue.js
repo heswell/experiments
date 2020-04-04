@@ -6,10 +6,21 @@ import {EventEmitter} from '@heswell/utils';
 import {DataTypes} from './types';
 
 export default class UpdateQueue extends EventEmitter {
-
+    
+    // just until we get typings sorted ...
+    constructor(){
+        super();
+        this._queue = null;
+        this.length = 0;
+    }
     // not the right name
     update(update, dataType = DataTypes.ROW_DATA) {
         this.emit(dataType, update);
+    }
+
+    // just until we get the typing sorted
+    getCurrentBatch(){
+
     }
 
     resize(size) {
@@ -26,5 +37,6 @@ export default class UpdateQueue extends EventEmitter {
 
     popAll() {
         console.log(`localUpdateQueue popAll`)
+        return undefined; // for typescript, until we sort types for UpdateQueue
     }
 }

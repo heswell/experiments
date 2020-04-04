@@ -5,8 +5,9 @@ export interface CellProps {
   column: Column;
   meta: any;
   row: any;
-  onClick: any;
+  onClick?: (columnIndex: number) => void;
 }
 
-declare const Cell: React.ComponentType<CellProps>;
+export type CellComponent = React.ComponentType<CellProps>;
+declare const Cell: CellComponent;
 export default Cell;

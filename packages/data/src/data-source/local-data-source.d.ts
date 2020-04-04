@@ -1,20 +1,8 @@
-import {DataType} from '../store/types';
-import {Column} from '@heswell/ingrid';
+import { sortColumn } from './data-source';
 
-type sortDirection = 'asc' | 'dsc';
-type sortColumn = [string, sortDirection];
+declare class LocalDataSource {
+  constructor(config: any);
 
-interface SubscriptionOptions {
-  columns: Column[];
-  range?: Range;
-}
-
-interface Range {
-  lo: number;
-  hi: number;
-}
-
-export interface DataSource {
   filter: (filter: any, dataType: string, incremental: boolean) => void;
   group: (groupBy: sortColumn[]) => void;
   setRange: (lo: number, hi: number, dataType?: DataType) => void;
@@ -25,3 +13,5 @@ export interface DataSource {
   sort: (sortBy: sortColumn[]) => void;
   unsubscribe: () => void;
 }
+
+export default LocalDataSource;

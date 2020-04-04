@@ -56,7 +56,7 @@ export const groupHelpers = {
 export {default as Table} from './src/store/table';
 export {default as DataView} from './src/store/data-view';
 export {default as LocalDataSource} from './src/data-source/local-data-source';
-export {default as BinnedDataView} from './src/data-source/binned-data-view';
+export {default as BinnedDataSource} from './src/data-source/binned-data-source';
 export {default as FilterDataSource} from './src/data-source/filter-data-source';
 
 export const sortUtils = {

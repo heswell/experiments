@@ -1,3 +1,5 @@
+// @ts-check
+
 import {createLogger, logColor} from '@heswell/utils'
 import DataView from '../store/data-view';
 import { metaData } from '../store/columnUtils';
@@ -164,3 +166,4 @@ export default class LocalDataSource {
       }
   }
 }
+

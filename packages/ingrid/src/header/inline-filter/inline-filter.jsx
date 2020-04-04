@@ -12,7 +12,7 @@ const { NOT_IN } = filterUtils;
 
 /** @type {InlineFilter} */
 const InlineFilter = forwardRef(({ 
-    dataView,
+    dataSource,
     height,
     model,
     filter: serverFilter,
@@ -40,7 +40,7 @@ const InlineFilter = forwardRef(({
     }
 
     const handleClearFilter = useCallback(column => {
-        dataView.filter({
+        dataSource.filter({
             type: NOT_IN,
             colName: column.name,
             values: []
@@ -50,7 +50,7 @@ const InlineFilter = forwardRef(({
     const colHeaderRenderer = ({ key, column }) =>
         <ColumnFilter key={key}
             column={column}
-            dataView={dataView}
+            dataView={dataSource}
             // TODO we use this to mark the column as filtered 
             filter={serverFilter}
             onClearFilter={handleClearFilter}

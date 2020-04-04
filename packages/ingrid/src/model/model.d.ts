@@ -1,25 +1,31 @@
-export interface Column {
 
-}
-
+type FlashStyle = 'arrow' | 'bg-only' | 'arrow-bg';
 export interface ColumnType {
   name: string;
+  renderer?: {
+    flashStyle?: FlashStyle;
+  };
 }
 
 export interface Column {
+  aggregate?: string;
+  className?: string;
+  // TODO need a more specialized type for GroupCell
+  collapsed?: boolean;
+  columns?: Column[];
+  hidden?: boolean;
+  isGroup?: boolean;
   key?: number;
   name: string;
-  width?: number;
+  resizeable?: boolean;
+  resizing?: boolean;
   type?: string | ColumnType;
-  aggregate?: string;
-  isGroup?: boolean;
-  hidden?: boolean;
-  // TODO need a more specialized type for GroupCell
-  columns?: Column[];
+  width?: number;
 }
 
 export interface ColumnGroup {
   columns: Column[];
+  headings?: string[];
   locked: boolean;
   renderLeft: number;
   renderWidth: number;

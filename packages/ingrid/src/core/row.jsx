@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * @typedef {import('./row').default} Row
+ * @typedef {import('./row').RowComponent} Row
  */
 import React, {useCallback, useContext} from 'react';
 import cx from 'classnames';

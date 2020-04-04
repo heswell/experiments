@@ -5,8 +5,9 @@ export interface GroupCellProps {
   column: Column;
   meta: any;
   row: any;
-  onClick: any;
+  onClick?: (columnIndex: number) => void;
 }
 
-declare const GroupCell: React.ComponentType<GroupCellProps>;
+export type GroupCellComponent = React.ComponentType<GroupCellProps>;;
+declare const GroupCell: GroupCellComponent;
 export default GroupCell;

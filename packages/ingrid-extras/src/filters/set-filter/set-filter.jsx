@@ -19,7 +19,7 @@ const SET_FILTER_DATA_COLUMNS_NO_COUNT = SET_FILTER_DATA_COLUMNS.filter(col => c
 export const SetFilter = ({
     className,
     column,
-    dataView: filterView,
+    dataSource: filterSource,
     filter,
     stats,
     style=NO_STYLE
@@ -38,7 +38,7 @@ export const SetFilter = ({
         <FlexBox className={cx('SetFilter', className)} style={{...style, flexDirection: 'column'}}>
             <CheckList style={{ flex: 1}}
                 columns={filterColumns}
-                dataView={filterView} />
+                dataSource={filterSource} />
             <FilterCounts style={{ height: 50 }} column={column} stats={stats} />
         </FlexBox>
     );

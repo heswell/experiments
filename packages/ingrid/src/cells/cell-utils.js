@@ -5,8 +5,8 @@ const columnType = column =>
     : typeof column.type === 'string' ? column.type
     : column.type.name;
 
-// we want to allow css class to be determined by value
-export function getGridCellClassName(column, value){
+// TODO we want to allow css class to be determined by value
+export function getGridCellClassName(column){
 
   return cx(
       'GridCell',

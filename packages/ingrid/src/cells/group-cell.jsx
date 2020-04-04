@@ -1,6 +1,5 @@
-// @ts-check
 /**
- * @typedef {import('./group-cell').default} GroupCell
+ * @typedef {import('./group-cell').GroupCellComponent} GroupCell
  */
 
 import React, {useCallback} from 'react';

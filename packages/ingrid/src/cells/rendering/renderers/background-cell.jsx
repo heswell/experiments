@@ -1,3 +1,6 @@
+/**
+ * @typedef {import('./background-cell').CellComponent} Cell
+ */
 import React, { useEffect,useRef } from 'react';
 import { renderCellContent } from '../../formatting/cellValueFormatter';
 import { getGridCellClassName } from '../../cell-utils'
@@ -22,7 +25,7 @@ const FlashStyle = {
 const INITIAL_VALUE = [null, null, null, null]
 
 function useDirection(key, value, column) {
-  const ref = useRef();
+  const ref = useRef(null);
   const [prevKey, prevValue, prevColumn, prevDirection] = ref.current || INITIAL_VALUE;
   const direction = key === prevKey &&  column === prevColumn && 
     Number.isFinite(prevValue) && Number.isFinite(value)
@@ -36,11 +39,23 @@ function useDirection(key, value, column) {
   return direction;
 }
 
-export default React.memo(function BackgroundCell(props){
-  //TODO what baout click handling
+const getFlashStyle = (colType) => {
+  if (typeof colType === 'string'){
+    return FlashStyle.BackgroundOnly;
+  } else {
+    const {renderer} = colType;
+    return (renderer && renderer.flashStyle) || FlashStyle.BackgroundOnly;
+  }
+}
+
+/** @type {Cell} */
+const BackgroundCell = React.memo(function BackgroundCell(props){
+  //TODO what about click handling
   const { column, row, meta}  = props;
-  const { key, width, type: { renderer: { flashStyle } } } = column;
+  const { key, width, type } = column;
   const value = row[key];
+
+  const flashStyle = getFlashStyle(type);
 
   const direction = useDirection(row[meta.KEY], value, column)
 
@@ -101,3 +116,4 @@ function getDirection(direction, prevValue, newValue, column) {
 }
 
 
+export default BackgroundCell;

@@ -7,7 +7,7 @@ const tableName = 'Instruments'
 const dataConfig = {url: '/dataTables/instruments.js', tableName};
 
 const initialStats = {
-  totalRowCount:0, filteredRowCount:0, filteredSelected :0
+  totalRowCount:0, filteredRowCount:0, filteredSelected : 0
 }
 
 const nameColumn = { name: 'Name', width: 200};
@@ -66,9 +66,7 @@ export default () => {
         <FilterPanel
           style={{width: 300, height: 350}}
           column={nameColumn}
-          showZeroRows={true}
           onHide={noop}
-          toggleZeroRows={noop}
           onMouseDown={noop}
           onSearch={handleSearch}>
           
@@ -77,7 +75,7 @@ export default () => {
             style={{flex:1}}
             column={nameColumn}
             filter={filter}
-            dataView={filterSource}
+            dataSource={filterSource}
             stats={stats}
           />
         </FilterPanel>

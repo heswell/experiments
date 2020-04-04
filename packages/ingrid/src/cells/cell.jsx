@@ -1,6 +1,5 @@
-// @ts-check
 /**
- * @typedef {import('./cell').default} Cell
+ * @typedef {import('./cell').CellComponent} Cell
  */
 import React, {useCallback} from 'react';
 import {renderCellContent} from './formatting/cellValueFormatter';
@@ -33,7 +32,7 @@ const Cell = React.memo(function Cell({
     }
 
     return (
-        <div className={getGridCellClassName(column, value)} 
+        <div className={getGridCellClassName(column)} 
             style={style}
             tabIndex={0}
             onClick={clickHandler}>

@@ -1,5 +1,4 @@
-// @ts-check
-/** @typedef {import('./header').default} Header */
+/** @typedef {import('./header').HeaderComponent} Header */
 
 import React, { memo, useRef, forwardRef, useContext, useImperativeHandle} from 'react';
 import cx from 'classnames';
@@ -10,7 +9,7 @@ import GridContext from '../grid-context';
 import './header.css';
 
 /** @type {Header} */
-export default memo(forwardRef(function Header({
+const Header = memo(forwardRef(function Header({
     className: propClassName,
     colGroupHeaderRenderer,
     colHeaderRenderer,
@@ -73,3 +72,5 @@ export default memo(forwardRef(function Header({
     );
 
 }))
+
+export default Header;

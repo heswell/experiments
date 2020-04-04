@@ -1,3 +1,4 @@
+/** @typedef {import('./column-group-header').ColumnGroupHeaderComponent} ColumnGroupHeader */
 import React, {useContext, useCallback, useRef, useImperativeHandle, forwardRef} from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell.jsx';
@@ -7,9 +8,8 @@ import GridContext from '../grid-context';
 
 import './column-group-header.css';
 
-export default forwardRef(ColumnGroupHeader);
-
-export function ColumnGroupHeader({
+/** @type {ColumnGroupHeader} */
+const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     columnGroup,
     colGroupHeaderRenderer,
     colHeaderRenderer,
@@ -50,8 +50,7 @@ export function ColumnGroupHeader({
     },[]);
 
     const handleHeaderCellClick = column => {
-        let result = true;
-        if (result !== false && column.sortable !== false) {
+        if (column.sortable !== false) {
             // this will transform the columns which will cause whole grid to re-render down to cell level. All
             // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
             dispatch({ type: Action.SORT, column });
@@ -156,4 +155,6 @@ export function ColumnGroupHeader({
             </div>
         </div>
     );
-}
+});
+
+export default ColumnGroupHeader;

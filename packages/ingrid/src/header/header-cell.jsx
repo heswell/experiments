@@ -1,4 +1,4 @@
-
+/** @typedef {import('./header-cell').HeaderCellComponent} HeaderCell */
 import React, { useRef, useCallback, useEffect} from 'react';
 import cx from 'classnames';
 import Draggable from '../draggable/draggable.jsx';
@@ -13,6 +13,7 @@ const Label = ({ column }) =>
         ? ''
         : column.label || '';
 
+/** @type {HeaderCell} */
 const HeaderCell = ({
     className: propClassName,
     column,

@@ -1,9 +1,10 @@
+// @ts-check
 import React from 'react';
 import {Grid, Selection} from '@heswell/ingrid';
 
 import './check-list.css';
 
-export default function CheckList({columns,dataView,style}) {
+export default function CheckList({columns,dataSource,style}) {
     return (
     <Grid className='checkbox-list'
         showHeaders={{
@@ -15,7 +16,7 @@ export default function CheckList({columns,dataView,style}) {
         columns={columns}
         selectionModel={Selection.Checkbox}
         style={style}
-        dataView={dataView} />
+        dataSource={dataSource} />
     );
 
 

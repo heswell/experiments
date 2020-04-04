@@ -11,5 +11,6 @@ export interface HeaderProps {
   style?: object;
 }
 
-declare const Header: React.ComponentType<HeaderProps & {ref?: any}>;
+export type HeaderComponent = React.ComponentType<HeaderProps & {ref?: any}>;
+declare const Header: HeaderComponent;
 export default Header; 

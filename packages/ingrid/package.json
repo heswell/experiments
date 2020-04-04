@@ -4,6 +4,7 @@
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "types": "index.d.ts",
   "publishConfig": {
     "access": "public"
   },

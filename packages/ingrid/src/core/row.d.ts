@@ -7,5 +7,6 @@ export interface RowProps {
   row: any;
 }
 
-declare const Row: React.ComponentType<RowProps>;
+export type RowComponent = React.ComponentType<RowProps>;
+declare const Row: RowComponent;
 export default Row;

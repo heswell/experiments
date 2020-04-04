@@ -1,9 +1,13 @@
-import * as React from 'react';
+/** 
+ * @typedef {import('./cellValueFormatter').CellValueFormatter} CellValueFormatter
+ */
+
 import {getFormatter} from '../../registry/datatype-registry.jsx';
 
 const DEFAULT_TYPE = {name:'string'};
 
-export function renderCellContent(props){
+ /** @type {CellValueFormatter} */
+ export function renderCellContent(props){
     const {column, row} = props;
     const {type=DEFAULT_TYPE} = column;
 

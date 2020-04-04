@@ -1,6 +1,5 @@
-// @ts-check
 /**
- * @typedef {import('./grid').default} Grid
+ * @typedef {import('./grid').GridComponent} Grid
  * 
  * TODO calculate width, height if not specified
  * global requestAnimationFrame cancelAnimationFrame 
@@ -35,7 +34,7 @@ const defaultHeaders = {
 
 /** @type {Grid} */
 const Grid = ({
-    dataView,
+    dataSource,
     columns=[],
     style,
     showHeaders = defaultHeaders,
@@ -86,7 +85,7 @@ const Grid = ({
     },[]);
 
     const handleSelectionChange = useCallback((idx, row, rangeSelect, keepExistingSelection) => {
-        dataView.select(idx, rangeSelect,keepExistingSelection);
+        dataSource.select(idx, rangeSelect,keepExistingSelection);
         if (onSelectionChange){
             const isSelected = row[model.meta.SELECTED] === 1;
             // TODO what about range selections
@@ -158,27 +157,27 @@ const Grid = ({
 
     useEffect(() => {
         if (sortBy !== undefined) {
-            dataView.sort(sortBy);
+            dataSource.sort(sortBy);
         }
-    }, [dataView, sortBy]);
+    }, [dataSource, sortBy]);
 
     useEffect(() => {
         if (groupBy !== undefined) {
-            dataView.group(groupBy);
+            dataSource.group(groupBy);
         }
-    }, [dataView, groupBy])
+    }, [dataSource, groupBy])
 
     useEffect(() => {
         if (groupState !== undefined) {
-            dataView.setGroupState(groupState);
+            dataSource.setGroupState(groupState);
         }
-    }, [dataView, groupState]);
+    }, [dataSource, groupState]);
 
     const filterHeight = showFilters ? 24 : 0;
     const selectHeaderHeight = showSelectHeader ? 24 : 0; 
     const headingHeight = showColumnHeader ? headerHeight * _headingDepth : 0;
     const totalHeaderHeight = headingHeight + filterHeight + selectHeaderHeight;
-    const isEmpty = dataView.size <= 0;
+    const isEmpty = dataSource.size <= 0;
     const emptyDisplay = (isEmpty && props.emptyDisplay) || null;
     const className = cx(
         'Grid',
@@ -200,15 +199,15 @@ const Grid = ({
 
                 {showFilters &&
                     <InlineFilter ref={inlineFilter}
-                        dataView={dataView}
+                        dataSource={dataSource}
                         model={model}
                         filter={filter}
                         height={filterHeight}
                         style={{ position: 'absolute', top: headingHeight, height: filterHeight, width }} />}
                 {showSelectHeader &&
-                <SelectHeader dataView={dataView} style={{top:headingHeight, height:selectHeaderHeight}}/>}
+                <SelectHeader dataView={dataSource} style={{top:headingHeight, height:selectHeaderHeight}}/>}
                 <Viewport
-                    dataSource={dataView}
+                    dataSource={dataSource}
                     model={model}
                     style={{top: totalHeaderHeight}}
                     height={height - totalHeaderHeight}

@@ -11,7 +11,7 @@ export interface GridProps {
   className?: string;
   colHeaderRenderer?: any;
   columns: Column[];
-  dataView: DataSource
+  dataSource: DataSource
   emptyDisplay?: any;
   headerHeight?: number;
   onDoubleClick?: Function;
@@ -25,5 +25,6 @@ export interface GridProps {
   style: any;
 }
 
-declare const Grid: React.ComponentType<GridProps>;
+export type GridComponent = React.FunctionComponent<GridProps>;
+declare const Grid: GridComponent;
 export default Grid;
