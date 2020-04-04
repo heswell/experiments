@@ -1,3 +1,4 @@
+import React from 'react';
 import {CellProps} from '../../cell';
 
 export type CheckboxCellComponent = React.ComponentType<CellProps>;

@@ -1,4 +1,4 @@
-// @ts-check
+/** @typedef {import('./column-filter').ColumnFilterComponent} ColumnFilter */
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
 import { 
@@ -28,7 +28,8 @@ const {includesColumn, STARTS_WITH} = filterUtils;
 const NO_COUNT = {}
 
 //TODO do we nedd to tear down the filterView ?
-export const ColumnFilter =  ({
+/** @type {ColumnFilter} */
+const ColumnFilter =  ({
     column,
     dataView,
     filter,
@@ -181,3 +182,5 @@ export const ColumnFilter =  ({
         </div>
     );
 }
+
+export default ColumnFilter;

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Column, ColumnGroup, GridModel } from "../model/model";
 import { Phase } from './header-cell';
 

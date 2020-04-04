@@ -1,3 +1,4 @@
+import React from 'react';
 import {Column, GridModel} from '../model/model';
 
 export interface RowProps {

@@ -70,7 +70,7 @@ const BackgroundCell = React.memo(function BackgroundCell(props){
 
   return (
     <div
-      className={`${getGridCellClassName(column, value)}${dirClass}${arrowClass}`}
+      className={`${getGridCellClassName(column)}${dirClass}${arrowClass}`}
       style={{ width }}>
       <div className='flasher'>{arrow}</div>
       {renderCellContent(props)}

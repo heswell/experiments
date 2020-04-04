@@ -83,7 +83,7 @@ export default ({
                             onClick={handleClick}
                             onRemoveColumn={onRemoveColumn}
                             onToggle={onToggleGroupState}
-                            className={columnClassName(columns, idx, column)}
+                            className={columnClassName(columns, idx)}
                         />)}
                 </div>
                 <Draggable className='resizeHandle' onDrag={handleResize} onDragStart={handleResizeStart} onDragEnd={handleResizeEnd} />
@@ -91,7 +91,7 @@ export default ({
         );
 }
 
-function columnClassName(columns, idx/*, column*/){
+function columnClassName(columns, idx){
 
     const classes = [];
 

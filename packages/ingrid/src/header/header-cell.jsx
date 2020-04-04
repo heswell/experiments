@@ -18,7 +18,7 @@ const HeaderCell = ({
     className: propClassName,
     column,
     multiColumnSort,
-    onClick=() => {},
+    onClick= _ => {},
     onResize,
     onMove,
     onContextMenu

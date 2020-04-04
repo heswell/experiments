@@ -1,4 +1,5 @@
 // lets define stats here for now
+import React from 'react';
 export interface Stats {
   filteredRowCount: number;
   filteredSelected: number;

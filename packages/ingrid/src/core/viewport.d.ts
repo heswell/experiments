@@ -1,3 +1,4 @@
+import React from 'react';
 import {DataSource} from '@heswell/data';
 import {GridModel} from '../model/model';
 //TODO define Actions

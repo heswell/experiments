@@ -17,7 +17,8 @@
     "test": "jest",
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
-    "build:dev": "rollup -c --environment BUILD:development"
+    "build:dev": "rollup -c --environment BUILD:development",
+    "typecheck": "tsc -p ."
   },
   "author": "heswell",
   "license": "MIT",
@@ -43,5 +44,8 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-terser": "^5.1.2"
+  },
+  "dependencies": {
+    "typescript": "3.8.3"
   }
 }

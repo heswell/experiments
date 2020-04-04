@@ -1,5 +1,5 @@
+/** @typedef {import('./grid-context-menu').GridContextMenuComponent} GridContextMenuComponent */
 import React from 'react';
-// import { ContextMenu, MenuItem, Separator } from '../services/popups/index';
 import { ContextMenu, MenuItem, Separator } from '@heswell/ui-controls';
 
 import * as Action from '../model/actions';
@@ -13,10 +13,11 @@ export const ContextMenuActions = {
     GroupByReplace : 'groupby-replace'
 };
 
-export default class GridContextMenu extends React.Component {
+/** @type {GridContextMenuComponent} */
+const GridContextMenu = function GridContextMenu(props) {
 
-    handleMenuAction(action, data){
-        const {dispatch, doAction} = this.props;
+    const handleMenuAction = (action, data) => {
+        const {dispatch, doAction} = props;
         switch(action){
             case ContextMenuActions.GroupBy:
                 dispatch({ type: Action.groupExtend, column: data.column });
@@ -25,40 +26,27 @@ export default class GridContextMenu extends React.Component {
                 dispatch({ type: Action.GROUP, column: data.column });
                 break;
             case ContextMenuActions.SortAscending: 
-                return this.sort(data.column, 'asc');
+                return sort(data.column, 'asc');
             case ContextMenuActions.SortDescending: 
-                return this.sort(data.column, 'dsc');
+                return sort(data.column, 'dsc');
             case ContextMenuActions.SortAddAscending:
-                return this.sort(data.column, 'asc', true);
+                return sort(data.column, 'asc', true);
             case ContextMenuActions.SortAddDescending:
-                return this.sort(data.column, 'dsc', true);
+                return sort(data.column, 'dsc', true);
     
             default:
                 doAction(action, data)
         }
     }
 
-    sort(column, direction = null, preserveExistingSort = false){
-        const {dispatch} = this.props;
+    const sort = (column, direction = null, preserveExistingSort = false) => {
+        const {dispatch} = props;
         // this will transform the columns which will cause whole grid to re-render down to cell level. All
         // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
         dispatch({ type: Action.SORT, column, direction, preserveExistingSort });
     }
 
-    render() {
-
-        const {location, options} = this.props;
-
-        return (
-            // TODO replace the inline function when we move to SFC
-            <ContextMenu doAction={(action, data) => this.handleMenuAction(action, data)}>
-                {this.menuItems(location, options)}
-            </ContextMenu>
-        );
-
-    }
-
-    menuItems(location, options) {
+    const menuItems = (location, options) => {
 
         const menuItems = [];
 
@@ -124,5 +112,15 @@ export default class GridContextMenu extends React.Component {
 
     }
 
+    const {location, options} = props;
+
+    return (
+        // TODO replace the inline function when we move to SFC
+        <ContextMenu doAction={(action, data) => handleMenuAction(action, data)}>
+            {menuItems(location, options)}
+        </ContextMenu>
+    );
+
 }
 
+export default GridContextMenu;

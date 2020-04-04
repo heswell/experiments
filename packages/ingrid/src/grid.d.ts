@@ -1,3 +1,4 @@
+import React from 'react';
 import {DataSource} from '@heswell/data';
 import {Column} from './model/model';
 

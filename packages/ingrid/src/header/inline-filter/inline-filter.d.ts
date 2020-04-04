@@ -1,5 +1,5 @@
 import React from 'react';
-import {GridModel} from '../model/model';
+import {GridModel} from '../../model/model';
 import {DataSource} from '@heswell/data';
 
 export interface InlineFilterProps {
