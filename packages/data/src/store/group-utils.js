@@ -1,16 +1,14 @@
-
 import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
 import { ASC } from './types';
 import { metaData } from './columnUtils';
 
-const LEAF_DEPTH = 0;
 const DEFAULT_OPTIONS = {
     startIdx: 0,
     rootIdx: null,
-    rootExpanded: true,
     baseGroupby: []
 };
 
+/** @type {import('./group-utils').lowestIdxPointerFunc} */
 export function lowestIdxPointer(groups, IDX, DEPTH, start, depth){
     let result = Number.MAX_SAFE_INTEGER;
     for (let i=start; i<groups.length; i++){
@@ -31,6 +29,7 @@ export function lowestIdxPointer(groups, IDX, DEPTH, start, depth){
 
 }
 
+/** @type {import('./group-utils').getCountFunc} */
 export function getCount(groupRow, PRIMARY_COUNT, FALLBACK_COUNT){
     return typeof groupRow[PRIMARY_COUNT] === 'number'
         ? groupRow[PRIMARY_COUNT]
@@ -158,6 +157,7 @@ export function fillNavSetsFromGroups(groups, sortSet, sortIdx=0, filterSet=null
 }
 
 // WHY is param order different from groupLeafRows
+/** @type {import('./group-utils').groupRowsFunc} */
 export function groupRows(rows, sortSet, columns, columnMap, groupby, options = DEFAULT_OPTIONS) {
     const { startIdx = 0, length=rows.length, rootIdx = null, baseGroupby = [], groups=[], rowParents=null,
         filterLength, filterSet, filterFn: filter } = options;
@@ -231,23 +231,27 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
 }
 
 // Checks very specifically for new cols added at end 
+/** @type {import('./group-utils').groupbyExtendsExistingGroupby} */
 export function groupbyExtendsExistingGroupby(groupBy, existingGroupBy) {
     return (groupBy.length > existingGroupBy.length &&
         existingGroupBy.every((g, i) => g[0] === groupBy[i][0]));
 }
 
 // doesn't care from which position col is removed, as long as it is not the first
+/** @type {import('./group-utils').groupbyReducesExistingGroupby} */
 export function groupbyReducesExistingGroupby(groupby, existingGroupby) {
     return (existingGroupby.length > groupby.length &&
         groupby[0][0] === existingGroupby[0][0] &&
         groupby.every(([key]) => existingGroupby.find(([key2]) => key2 === key)));
 }
 
+/** @type {import('./group-utils').groupbySortReversed} */
 export function groupbySortReversed(groupBy, existingGroupBy) {
     const [col] = findSortedCol(groupBy, existingGroupBy)
     return col !== null;
 }
 
+/** @type {import('./group-utils').findDoomedColumnDepths} */
 export function findDoomedColumnDepths(groupby, existingGroupby) {
     const count = existingGroupby.length;
     return existingGroupby.reduce(
@@ -259,6 +263,7 @@ export function findDoomedColumnDepths(groupby, existingGroupby) {
         }, []);
 }
 
+/** @type {import('./group-utils').groupbyExtendsExistingGroupby} */
 export function findSortedCol(groupby, existingGroupby) {
     let results = [null];
     let len1 = groupby && groupby.length;
@@ -282,6 +287,7 @@ function byKey([key1], [key2]) {
 }
 
 const EMPTY = {};
+/** @type {import('./group-utils').getGroupStateChanges} */
 export function getGroupStateChanges(groupState, existingGroupState = null, baseKey = '', groupIdx = 0) {
     const results = [];
     const entries = Object.entries(groupState);
@@ -321,6 +327,7 @@ export function getDirection(depth, groupby) {
 }
 
 // should be called toggleColumnInGroupBy
+/** @type {import('./group-utils').updateGroupBy} */
 export function updateGroupBy(existingGroupBy = null, column/*, replace = false*/) {
     console.log(``)
     if (existingGroupBy === null) {
@@ -334,6 +341,7 @@ export function updateGroupBy(existingGroupBy = null, column/*, replace = false*
     }
 }
 
+/** @type {import('./group-utils').expanded} */
 export function expanded(group, groupby, groupState) {
     const groupIdx = groupby.length - Math.abs(group[1]);
     let groupVal;
@@ -425,6 +433,7 @@ export function indexOfCol(key, cols = null) {
 //     return results;
 // }
 
+/** @type {import('./group-utils').allGroupsExpanded} */
 export function allGroupsExpanded(groups, group, {DEPTH, PARENT_IDX}){
 
     do {
@@ -438,6 +447,7 @@ export function allGroupsExpanded(groups, group, {DEPTH, PARENT_IDX}){
     return true;
 }
 
+/** @type {import('./group-utils').adjustGroupIndices} */
 export function adjustGroupIndices(groups, grpIdx, {IDX, DEPTH, IDX_POINTER, PARENT_IDX}, adjustment=1){
     for (let i=0;i<groups.length;i++){
         if (groups[i][IDX] >= grpIdx){
@@ -453,6 +463,7 @@ export function adjustGroupIndices(groups, grpIdx, {IDX, DEPTH, IDX_POINTER, PAR
     }
 }
 
+/** @type {import('./group-utils').adjustLeafIdxPointers} */
 export function adjustLeafIdxPointers(groups, insertionPoint, {DEPTH, IDX_POINTER}, adjustment=1){
     for (let i=0;i<groups.length;i++){
         if (Math.abs(groups[i][DEPTH]) === 1 && groups[i][IDX_POINTER] >= insertionPoint){
@@ -461,6 +472,7 @@ export function adjustLeafIdxPointers(groups, insertionPoint, {DEPTH, IDX_POINTE
     }
 }
 
+/** @type {import('./group-utils').findGroupPositions} */
 export function findGroupPositions(groups, groupby, row) {
 
     const positions = [];
@@ -494,6 +506,7 @@ export function findGroupPositions(groups, groupby, row) {
 
 }
 
+/** @type {import('./group-utils').expandRow} */
 export const expandRow = (groupCols, row, meta) => {
     const r = row.slice();
     r[meta.IDX] = 0;
@@ -583,6 +596,7 @@ export function groupLeafRows(sortSet, leafRows, groupby, startIdx=0, length=sor
     return groups;
 }
 
+/** @type {import('./group-utils').splitGroupsAroundDoomedGroup} */
 export function splitGroupsAroundDoomedGroup(groupby, doomed) {
     const lastGroupIsDoomed = doomed === 1;
     const doomedIdx = groupby.length - doomed;
@@ -600,10 +614,12 @@ export function splitGroupsAroundDoomedGroup(groupby, doomed) {
     return [lastGroupIsDoomed, preDoomedGroupby, postDoomedGroupby];
 }
 
+/** @type {import('./group-utils').decrementDepth} */
 export function decrementDepth(depth) {
     return (Math.abs(depth) - 1) * (depth < 0 ? -1 : 1);
 }
 
+/** @type {import('./group-utils').incrementDepth} */
 export function incrementDepth(depth) {
     return (Math.abs(depth) + 1) * (depth < 0 ? -1 : 1);
 }
@@ -644,6 +660,7 @@ export function indexGroupedRows(groupedRows) {
     return groupedIndex;
 }
 
+/** @type {import('./group-utils').findAggregatedColumns} */
 export function findAggregatedColumns(columns, columnMap, groupby) {
     return columns.reduce((aggregations, column) => {
         if (column.aggregate && indexOfCol(column.name, groupby) === -1) {
@@ -654,6 +671,7 @@ export function findAggregatedColumns(columns, columnMap, groupby) {
     }, []);
 }
 
+/** @type {import('./group-utils').aggregateGroup} */
 export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
 
     const {DEPTH, COUNT} = metaData(columns);

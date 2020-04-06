@@ -15,7 +15,7 @@ import {
     overrideColName
 } from '../filter';
 import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
-import { groupbyExtendsExistingGroupby } from '../groupUtils';
+import { groupbyExtendsExistingGroupby } from '../group-utils';
 import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
 import { DataTypes } from '../types';
 import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils';
@@ -36,16 +36,28 @@ export default class BaseRowSet {
         this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
+        this.sortSet = undefined;
         this.columnMap = table.columnMap;
         this.meta = metaData(columns);
         this.data = table.rows;
         this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
+        this.type = undefined;
+        this.index = undefined;
         /**
          * data IDX of selected rows 
          */
         this.selectedRowsIDX = [];
         this.selectionModel = this.createSelectionModel();
 
+    }
+
+    get size(){
+        console.error("size must be implemented by concrete Rowset")
+        return 0;
+    }
+
+    slice(lo, hi){
+        throw new Error("slice must be implemented by concrete Rowset")
     }
 
     createSelectionModel(){
@@ -96,11 +108,12 @@ export default class BaseRowSet {
         const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
         const resultset = this.slice(lo, hi);
         this.range = range;
+        const length = this.size;
         return {
             dataType: this.type,
             rows: resultset,
             range,
-            size: this.size,
+            size: length,
             offset: this.offset,
             stats: includeStats ? this.stats : undefined
         };
@@ -114,7 +127,8 @@ export default class BaseRowSet {
             rows: resultset,
             range: this.range,
             size: this.size,
-            offset: this.offset
+            offset: this.offset,
+            stats: undefined
         };
     }
 
@@ -296,7 +310,7 @@ export class RowSet extends BaseRowSet {
     //TODO consolidate API of rowSet, groupRowset
     constructor(table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
         super(table, columns, offset);
-        this.type = DataTypes.ROW_DATA;
+        this.type = "rowData";
         this.project = projectColumns(table.columnMap, columns, this.meta);
         this.sortCols = null;
         this.sortReverse = false;
@@ -372,6 +386,7 @@ export class RowSet extends BaseRowSet {
     }
 
     addRows(rows) {
+        // TODO where is this.index ever created ?
         addRowsToIndex(rows, this.index, this.meta.IDX);
         this.data = this.data.concat(rows);
     }
@@ -640,7 +655,7 @@ export class SetFilterRowSet extends RowSet {
         
         if (columnFilter){
 
-            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'), true);
+            const fn = filterPredicate(columnMap, overrideColName(columnFilter, 'name'));
             const selectedRows = [];
             const selectedRowsIDX = [];
 
@@ -692,12 +707,14 @@ export class BinFilterRowSet extends RowSet {
     // be used in the future
     // Note: currently no projection here, we don't currently need metadata
     setRange() {
+        const length = this.size;
         return {
-            type: this.type,
+            dataType: this.type,
             rows: this.data,
             range: null,
-            size: this.size,
-            offset: 0
+            size: length,
+            offset: 0,
+            stats: undefined
         };
     }
 

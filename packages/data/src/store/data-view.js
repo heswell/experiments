@@ -71,7 +71,7 @@ export default class DataView {
         }
         if (replace) {
             const { rows, size, offset } = rowSet.currentRange()
-            _update_queue.replace({rows, size, offset});
+            _update_queue.replace({rows, size, offset, filter: undefined, range:undefined});
         } else if (updates) {
             updates.forEach(update => {
                 _update_queue.update(update);
@@ -195,7 +195,7 @@ export default class DataView {
     // appropriate, to any active filterSet(s). However, if the filterset has been changed, e.g. selection
     // within a set, then filter applied here in consequence must not attempt to reset the same filterSet
     // that originates the change. 
-    filter(filter, dataType=DataTypes.ROW_DATA, incremental=false, ignoreFilterRowset=false) {
+    filter(filter, dataType="rowData", incremental=false, ignoreFilterRowset=false) {
         if (dataType === DataTypes.FILTER_DATA){
 
             return [undefined,this.filterFilterData(filter)];

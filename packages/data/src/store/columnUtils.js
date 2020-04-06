@@ -83,7 +83,7 @@ export function projectColumnsFilter(map, columns, meta, filter){
     const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
 
     // this is filterset specific where first col is always value
-    const fn = filter ? functor(map, overrideColName(filter, 'name'), true)  : () => true;
+    const fn = filter ? functor(map, overrideColName(filter, 'name'))  : () => true;
     return startIdx => (row,i) => {
         const out = [];
         for (let i=0;i<length;i++){

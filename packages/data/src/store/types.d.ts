@@ -10,3 +10,13 @@ export declare const DataTypes: {
   readonly FILTER_DATA: filterData;
   readonly FILTER_BINS: filterBins;
 }
+
+export declare const ASC: "asc";
+export declare const DSC: "dsc";
+
+export type RowValue = 'string' | 'number' | 'boolean' | 'undefined';
+export type Row = RowValue[];
+
+export type ColumnMeta = {
+  [key: string]: number
+} 

@@ -13,11 +13,11 @@ import {
     adjustGroupIndices,
     adjustLeafIdxPointers,
     allGroupsExpanded
-} from '../groupUtils';
+} from '../group-utils';
 import { sortBy, sortPosition } from '../sort';
 import { extendsFilter, functor as filterPredicate } from '../filter';
 import { mapSortCriteria } from '../columnUtils';
-import GroupIterator from '../groupIterator';
+import GroupIterator from '../group-iterator';
 import { ASC } from '../types'
 import { NULL_RANGE } from '../rangeUtils';
 
@@ -89,12 +89,14 @@ export class GroupRowSet extends BaseRowSet {
         const filterCount = this.filterSet && this.meta.FILTER_COUNT;
         const rows = rowsInRange.map((row,i) => this.cloneRow(row, idx+i, filterCount));
         this.range = range;
+        const length = this.length || 0;
         return {
+            dataType: this.type,
             rows,
             range,
-            size: this.length,
+            size: length,
             offset: this.offset,
-            selectedIndices: this.selectedIndices
+            stats: undefined
         };
     }
 

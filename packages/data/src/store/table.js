@@ -20,11 +20,13 @@ export default class Table extends EventEmitter {
         this.columns = columns;
         this.keys = {};
         this.index = {};
+        this.indices = [];
         this.rows = [];
         this.updateConfig = {
             ...defaultUpdateConfig,
             ...updates
         }
+        this.inputColumnMap = undefined;
         this.columnMap = buildColumnMap(columns);
         this.columnCount = 0;
         this.status = null;
@@ -207,13 +209,14 @@ export default class Table extends EventEmitter {
 
     createRow(idx){
         console.warn(`createRow ${idx} must be implemented as a plugin`);
-    }
-
-    updateRow(/*idx, row, columnMap*/){
         return null;
     }
 
-    async installDataGenerators(/*config*/){
+    updateRow(idx, row, columnMap){
+        return null;
+    }
+
+    async installDataGenerators(config){
         //console.warn(`installDataGenerators must be implemented by a more specific subclass`);
     }
 

@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "checkJs": true,
     "noEmit": true,
+    "jsx": "react",
     "target": "ES5"
   },
   "include": ["src/**/*"]

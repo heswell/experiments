@@ -1,5 +1,5 @@
 import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './rangeUtils';
-import {getCount} from './groupUtils';
+import {getCount} from './group-utils';
 
 
 const RANGE_POS_TUPLE_SIZE = 4;
@@ -7,6 +7,8 @@ const NO_RESULT = [null,null,null]
 
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
+
+/** @type {import('./group-iterator').GroupIterator} */
 export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, meta) {
     let _idx = 0;
     let _grpIdx = null;
@@ -19,7 +21,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
 
     return {
         get direction(){ return _direction },
-        get rangePositions(){ return _range_positions },
+        get rangePositions(){ return _range_positions }, // do we ever use these ?
         setRange,
         currentRange,
         getRangeIndexOfGroup,

@@ -61,7 +61,7 @@ const Row = React.memo(function Row({
 
     const cells = columns.filter(column => !column.hidden).map((column,idx) => 
         column.isGroup
-            ? <GroupCell key={idx} idx={idx} column={column} meta={meta} row={row} onClick={handleClickCell} />
+            ? <GroupCell key='group-cell' idx={idx} column={column} meta={meta} row={row} onClick={handleClickCell} />
             : <Cell key={column.key} idx={idx} column={column} meta={meta} row={row} onClick={handleClickCell} />
     );
 

@@ -38,7 +38,7 @@ import {
 import {
   updateGroupBy,
   indexOfCol,
-  groupbyExtendsExistingGroupby } from './src/store/groupUtils'
+  groupbyExtendsExistingGroupby } from './src/store/group-utils'
 
 import {
   isEmptyRow,

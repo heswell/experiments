@@ -5,6 +5,7 @@ export interface ColumnType {
   renderer?: {
     flashStyle?: FlashStyle;
   };
+
 }
 
 export interface Column {

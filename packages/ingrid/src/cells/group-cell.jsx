@@ -8,7 +8,7 @@ import {getGridCellClassName} from './cell-utils';
 import './group-cell.css';
 
 /** @type {GroupCell} */
-const GroupCell = React.memo(({idx, row, column, onClick, meta}) => {
+const GroupCell = React.memo(function GroupCell({idx, row, column, onClick, meta}){
 
     const clickHandler = useCallback(e => {
         e.preventDefault();

@@ -4,7 +4,8 @@
   "description": "Heswell data stores and views",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "src/**/*.d.ts"
   ],
   "typings": "index.d.ts",
   "publishConfig": {
@@ -14,12 +15,14 @@
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
     "build:dev": "rollup -c --environment BUILD:development",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc -p ."
   },
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "d3-array": "^2.2.0"
+    "d3-array": "^2.2.0",
+    "typescript": "^3.8.3"
   },
   "peerDependencies": {
     "@heswell/utils": "^1.0.9"
