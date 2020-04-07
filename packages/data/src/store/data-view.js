@@ -1,4 +1,4 @@
-import { resetRange, withinRange } from './rangeUtils';
+import { resetRange } from './range-utils';
 import { RowSet, GroupRowSet } from './rowset/index';
 import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
 import UpdateQueue from './update-queue';
@@ -287,15 +287,15 @@ export default class DataView {
                 rowSet.groupBy(groupby);
             }
         }
-        return this.rowSet.setRange(_range, false);
+
+        return this.rowSet.setRange(resetRange(_range), false);
     }
 
     setGroupState(groupState) {
         this._groupState = groupState;
         const { rowSet } = this;
         rowSet.setGroupState(groupState);
-        // TODO should we have setRange return the following directly, so IMV doesn't have to decide how to call setRange ?
-        // should we reset the range ?
+
         return rowSet.setRange(rowSet.range, false);
     }
 

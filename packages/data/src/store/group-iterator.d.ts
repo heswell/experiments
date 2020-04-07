@@ -1,10 +1,11 @@
 import {ColumnMeta, Row} from '../store/types'; 
+import {Range} from './range-utils';
 
 type GroupIteratorInstance = {
   direction: number; // how do we restrict to 0 or 1 without polluting the JS ?
   rangePositions: any;
-  setRange: Function;
-  currentRange: Function;
+  setRange: (range: Range, useDelta?: boolean) => [Row[], number];
+  currentRange: () => [Row[], number];
   getRangeIndexOfGroup: (grpIdx: number) => number;
   getRangeIndexOfRow: (rowIdx: number) => number;
   setNavSet: Function;

@@ -343,6 +343,25 @@ describe('groupBy', () => {
         ]);
     });
 
+    test('extends grouping across expanded leaf nodes, with scrolling (real-world bug)', () => {
+        const rowSet = new GroupRowSet(getInstrumentRowset(), instrumentColumns, [['Sector', 'asc']]);
+        let { rows: rows1 } = rowSet.setRange({ lo: 0, hi: 26 });
+        expect(rows1.length).toEqual(12)
+
+        rowSet.setGroupState({ 'Transportation': true})
+        let {rows: rows2} = rowSet.setRange(rowSet.range, false);
+        expect(rows2.length).toEqual(26)
+
+        let { rows: rows3 } = rowSet.setRange({ lo: 13, hi: 40 });
+        expect(rows3.length).toEqual(13)
+        
+        rowSet.groupBy([['Sector', 'asc'],['Industry', 'asc']]);
+        let {rows: rows4} = rowSet.setRange({ lo: 0, hi: 26 }, false);
+        expect(rows4.length).toEqual(17)
+
+    });
+
+
     test('adds additional column to multi-column groupby, multiple nodes expanded', () => {
         const rowSet = new GroupRowSet(getTestRowset(), rowset_columns, [GROUP_COL_1, GROUP_COL_2])
         rowSet.setGroupState({ 'G1': true, 'G2': true, 'G3': true });

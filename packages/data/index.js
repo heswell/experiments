@@ -33,7 +33,7 @@ import {
   import {
   getFullRange,
   resetRange,
-  NULL_RANGE as NULL } from './src/store/rangeUtils';
+  NULL_RANGE as NULL } from './src/store/range-utils';
 
 import {
   updateGroupBy,
@@ -100,7 +100,7 @@ export const filter = {
 
 export const rangeUtils = {
   getFullRange,
-  resetRange
+  resetRange // don't think this is used outside this package
 }
 
 export const arrayUtils = {

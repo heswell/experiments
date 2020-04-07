@@ -37,7 +37,7 @@ import {
   import {
   getFullRange,
   resetRange,
-  NULL_RANGE as NULL } from './src/store/rangeUtils';
+  NULL_RANGE as NULL } from './src/store/range-utils';
 
 import {
   updateGroupBy,

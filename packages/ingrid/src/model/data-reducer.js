@@ -18,6 +18,7 @@ export const initialData = {
 // we will need additional action types to update
 export default function (model) {
   return (state, action) => {
+    console.log(`[data-reducer] ${action.type}`)
     if (action.type === 'range'){
       return setRange(state, action, model.meta);
     } else if (action.type === 'data'){
@@ -89,9 +90,20 @@ function setData(state, action, meta){
   const range = action.range.reset || state.range === INITIAL_RANGE ?
     action.range
     : state.range;
-    
+
+    console.log(`setData <<<<<<<  incoming...`)
+    console.table(rows)
+
+
+
+    console.log(`setData <<<<<<<  existing...`)
+    console.table(state.rows)
+      
+
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
+  console.log(`setData >>>>>>  out...`)
+  console.table(mergedRows)
   return {
     rows: mergedRows,
     rowCount,

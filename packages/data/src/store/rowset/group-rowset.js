@@ -19,7 +19,7 @@ import { extendsFilter, functor as filterPredicate } from '../filter';
 import { mapSortCriteria } from '../columnUtils';
 import GroupIterator from '../group-iterator';
 import { ASC } from '../types'
-import { NULL_RANGE } from '../rangeUtils';
+import { NULL_RANGE } from '../range-utils';
 
 const EMPTY_ARRAY = [];
 
@@ -81,7 +81,17 @@ export class GroupRowSet extends BaseRowSet {
         return this.setRange(this.range, false);
     }
 
+    clearRange(){
+        this.iter.clear();
+        this.range = NULL_RANGE;
+    }
+
     setRange(range, useDelta=true){
+        // A common scenario, eg after groupBy or sort, reposition range at top of viewport
+        if (useDelta === false && range.lo === 0){
+            this.clearRange();
+        }
+
         const [rowsInRange, idx] = !useDelta && range.lo === this.range.lo && range.hi === this.range.hi
             ? this.iter.currentRange()
             : this.iter.setRange(range, useDelta);

@@ -18,7 +18,7 @@ import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
 import { groupbyExtendsExistingGroupby } from '../group-utils';
 import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
 import { DataTypes } from '../types';
-import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils';
+import { getDeltaRange, getFullRange, NULL_RANGE } from '../range-utils';
 
 const SINGLE_COLUMN = 1;
 

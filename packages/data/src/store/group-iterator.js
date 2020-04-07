@@ -1,4 +1,4 @@
-import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './rangeUtils';
+import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './range-utils';
 import {getCount} from './group-utils';
 
 
@@ -230,6 +230,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
             }
 
         } else {
+            // does startIdx remain as null ?
             // reduced range, adjust the current pos. DIrection can only be a guess, but if it's wrong
             // the appropriate adjustment will be made nest time range is set
             if (rangeDiff & RangeFlags.FWD){

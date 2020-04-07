@@ -11,8 +11,10 @@ export const NULL_RANGE = {lo: 0,hi: 0};
 //
 //  |------------------------------------| _range
 //  |----------------------------------|+  prevRange
-//TODO do we still need these calls to getFullRange ?
+
+/** @type {import('./range-utils').getDeltaRange} */
 export function getDeltaRange(oldRange, newRange){
+    //TODO do we still need these calls to getFullRange ?
     const {lo: oldLo, hi: oldHi} = oldRange /*getFullRange(oldRange)*/;
     const {lo: newLo, hi: newHi} = newRange /*getFullRange(newRange)*/;
 
@@ -32,6 +34,10 @@ export function getDeltaRange(oldRange, newRange){
     }
 }
 
+/**
+ * 
+ * @type {import('./range-utils').resetRange}
+ */
 export function resetRange({lo,hi,bufferSize=0}){
     return {
         lo: 0,
@@ -41,15 +47,15 @@ export function resetRange({lo,hi,bufferSize=0}){
     };
 }
 
+/**
+ * 
+ * @type {import('./range-utils').getFullRange}
+ */
 export function getFullRange({lo,hi,bufferSize=0}){
     return {
         lo: Math.max(0, lo - bufferSize),
         hi: hi + bufferSize
     };
-}
-
-export function withinRange(range, index, offset=0) {
-    return index-offset >= range.lo && index-offset < range.hi;
 }
 
 const SAME = 0;
@@ -74,6 +80,7 @@ export const RangeFlags = {
 
 RangeFlags.GAP = ~(CONTIGUOUS | OVERLAP | REDUCE)
 
+/** @type {import('./range-utils').compareRanges} */
 export function compareRanges(range1, range2){
     if (range2.lo === 0 && range2.hi === 0){
         return NULL;

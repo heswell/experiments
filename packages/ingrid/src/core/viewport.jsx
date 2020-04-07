@@ -47,14 +47,14 @@ function useThrottledScroll(callback) {
 }
 
 /** @type {Viewport} */
-const Viewport = React.memo(({
+const Viewport = React.memo(function Viewport({
     dataSource,
     height,
     model,
     onFilterChange,
     style
     // selectedRows
-}) => {
+}){
     const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
     const verticalScrollContainer = useRef(null);
