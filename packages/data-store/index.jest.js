@@ -1,6 +1,6 @@
 
-import { sortByToMap } from './src/store/sort'
 
+import { sortByToMap } from './src/store/sort'
 import {
   getFullRange,
   resetRange,
@@ -24,9 +24,10 @@ export const groupHelpers = {
   groupbyExtendsExistingGroupby
 }
 
-export {default as LocalDataSource} from './src/data-source/local-data-source';
-export {default as BinnedDataSource} from './src/data-source/binned-data-source';
-export {default as FilterDataSource} from './src/data-source/filter-data-source';
+// we only export these for jest testing
+export * from './src/store/rowset';
+export {default as Table} from './src/store/table';
+export {default as DataView} from './src/store/data-store';
 
 export const sortUtils = {
   sortByToMap
@@ -38,7 +39,7 @@ export const rowUtils = {
 
 export const rangeUtils = {
   getFullRange,
-  resetRange // don't think this is used outside this package
+  resetRange
 }
 
 export const arrayUtils = {

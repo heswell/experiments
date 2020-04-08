@@ -1,11 +1,10 @@
 // @ts-check
 
-import {createLogger, logColor} from '@heswell/utils'
-import DataView from '../store/data-view';
-import { metaData } from '../store/columnUtils';
+import {createLogger, logColor, metaData} from '@heswell/utils'
+import {DataStore as DataView} from '@heswell/data-store';
 import { DataTypes } from '../store/types';
 import Table from '../store/table';
-import LocalUpdateQueue from '../store/local-update-queue';
+import LocalUpdateQueue from './local-update-queue';
 
 const {ROW_DATA} = DataTypes;
 

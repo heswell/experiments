@@ -1,13 +1,12 @@
 import { resetRange } from './range-utils';
 import { RowSet, GroupRowSet } from './rowset/index';
-import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
+import { addFilter, buildColumnMap, toColumn, getFilterType, IN, NOT_IN } from '@heswell/utils';
 import UpdateQueue from './update-queue';
 import { DataTypes } from './types';
-import { addFilter, IN, NOT_IN } from './filter';
 
 const DEFAULT_INDEX_OFFSET = 100;
 const WITH_STATS = true;
-export default class DataView {
+export default class DataStore {
 
     constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
         this._table = table;

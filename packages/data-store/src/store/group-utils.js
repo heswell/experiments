@@ -1,6 +1,6 @@
-import { metaData } from '@heswell/utils';
 import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
 import { ASC } from './types';
+import { metaData } from '@heswell/utils';
 
 const DEFAULT_OPTIONS = {
     startIdx: 0,

@@ -1,5 +1,5 @@
-import {mapSortCriteria} from '@heswell/utils';
 import {ASC} from './types';
+import {mapSortCriteria} from '@heswell/utils';
 
 const EMPTY_MAP = {};
 

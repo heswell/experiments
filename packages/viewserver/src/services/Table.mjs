@@ -1,4 +1,4 @@
-import {Table as BaseTable} from '@heswell/data';
+import {Table as BaseTable} from '@heswell/data-store';
 
 export default class Table extends BaseTable {
 

@@ -3,13 +3,12 @@
 /** @typedef {import('./model').GridModelReducer} GridModelReducer  */
 /** @typedef {import('./model').ReducerTable} ReducerTable  */
 
-import {columnUtils, groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswell/data'
+import {buildColumnMap, metaData, toKeyedColumn} from '@heswell/utils'
+import {groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswell/data'
 import * as Action from './actions';
 import {Selection} from '../types';
 // will have to be mocked for testing
 import {getColumnWidth} from '../utils/domUtils';
-
-const {metaData} = columnUtils;
 
 /** @type {GridModelReducer} */
 export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
@@ -127,7 +126,7 @@ function initialize(state, action) {
         ? [CHECKBOX_COLUMN]
         :EMPTY_ARRAY;
 
-    const keyedColumns = columns.map(columnUtils.toKeyedColumn)
+    const keyedColumns = columns.map(toKeyedColumn)
     const _columns = preCols.concat(keyedColumns.map(addLabel));
 
     const {_groups, _headingDepth} = splitIntoGroups(_columns, sortBy, groupBy, collapsedColumns, minColumnWidth);
@@ -144,7 +143,7 @@ function initialize(state, action) {
     const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
 
     const map = columnMap === null || columns !== state.columns
-        ? columnUtils.buildColumnMap(columns)
+        ? buildColumnMap(columns)
         : columnMap;
 
     return {

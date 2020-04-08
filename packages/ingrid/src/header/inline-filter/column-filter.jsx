@@ -1,8 +1,8 @@
 /** @typedef {import('./column-filter').ColumnFilterComponent} ColumnFilter */
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
+import {getFilterType} from '@heswell/utils'
 import { 
-    columnUtils,
     DataTypes,
     filter as filterUtils
 } from '@heswell/data';
@@ -39,7 +39,7 @@ const ColumnFilter =  ({
     showFilter
 }) => {
 
-    const [filterType] = useState(columnUtils.getFilterType(column)); 
+    const [filterType] = useState(getFilterType(column)); 
     const [stats, setStats] = useState(NO_COUNT);
     const onDataCount = (_, stats) => {
         console.log(`setStats`, stats)

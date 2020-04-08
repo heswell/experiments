@@ -1,4 +1,6 @@
-import {DataView as View, columnUtils, DataTypes} from '@heswell/data';
+import {DataStore as View} from '@heswell/data-store';
+import {DataTypes} from '@heswell/data';
+import {metaData, setFilterColumnMeta} from '@heswell/utils';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
@@ -12,7 +14,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
     let view = new View(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
 
-    const tableMeta = columnUtils.metaData(columns);
+    const tableMeta = metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)} table.status ${table.status} view.status ${view.status}`)
 
@@ -94,7 +96,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                     data = view[method](...params);
                 }
                 const meta = type === DataTypes.FILTER_DATA
-                    ? columnUtils.setFilterColumnMeta
+                    ? setFilterColumnMeta
                     : tableMeta 
 
                 if (data){
@@ -112,7 +114,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                         viewport,
                         type: DataTypes.FILTER_DATA,
                         data
-                    }, columnUtils.setFilterColumnMeta);
+                    }, setFilterColumnMeta);
 
                 });
             }

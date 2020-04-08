@@ -5,20 +5,17 @@ import * as d3 from 'd3-array';
 import Table from '../table';
 import SelectionModel, {SelectionModelType} from '../selection-model';
 import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
-import { 
+import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
+import { groupbyExtendsExistingGroupby } from '../group-utils';
+import { projectColumns, mapSortCriteria, metaData,
     BIN_FILTER_DATA_COLUMNS,
     SET_FILTER_DATA_COLUMNS,
     extendsFilter,
     extractFilterForColumn,
     functor as filterPredicate,
-    mapSortCriteria,
-    metaData,
-    overrideColName,
-    projectColumns,
     splitFilterOnColumn,
+    overrideColName
 } from '@heswell/utils';
-import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
-import { groupbyExtendsExistingGroupby } from '../group-utils';
 import { DataTypes } from '../types';
 import { getDeltaRange, getFullRange, NULL_RANGE } from '../range-utils';
 

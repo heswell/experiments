@@ -1,4 +1,3 @@
-import * as d3 from 'd3-array';
 
 export const EQUALS = 'EQ';
 export const GREATER_THAN = 'GT';
@@ -477,17 +476,6 @@ function filterExtends(f1, f2) {
 //TODO roll this into next function
 export function projectFilterData(filterRows) {
     return filterRows.map((row, idx) => [idx, 0, 0, null, row.name, row.count]);
-}
-
-export function getBinnedValues(rows, key, numberOfBins = 20) {
-    const numbers = rows.map(row => row[key]);
-    // const start = performance.now();
-    const values = d3.histogram().thresholds(numberOfBins)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-    // const end = performance.now();
-    // onsole.log(`%ctook ${end - start} ms to build histogram`, 'font-weight:bold;color:red;');
-    // onsole.log(values);
-    return values;
-
 }
 
 // The folowing are array utilities but they are defined here as they are not suitable for large arrays, so we'll

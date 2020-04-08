@@ -1,4 +1,4 @@
-import { extendsFilter, functor as filterPredicate, mapSortCriteria } from '@heswell/utils';
+import { mapSortCriteria, extendsFilter, functor as filterPredicate } from '@heswell/utils';
 import BaseRowSet from './rowSet';
 import {
     groupRows,
