@@ -1,6 +1,6 @@
 import React from 'react';
 import { Column } from '../../model/model';
-import { DataSource } from '@heswell/data';
+import { DataSource } from '@heswell/data-source';
 
 interface ColumnFilterProps {
   column: Column;

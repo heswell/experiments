@@ -1,4 +1,4 @@
-import {rowUtils} from '@heswell/data';
+import {update as updateRows} from '@heswell/utils';
 import * as Action from './actions';
 
 const INITIAL_RANGE = {lo:0,hi:-1}
@@ -77,7 +77,7 @@ function setRange(state, {range}, meta){
 }
 
 function applyUpdates(state, action, meta){
-  const rows = rowUtils.update(state.rows, action.updates, meta);
+  const rows = updateRows(state.rows, action.updates, meta);
   return {
     ...state,
     rows

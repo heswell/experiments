@@ -6,7 +6,7 @@
 import { 
   BinnedDataSource,
   FilterDataSource
-} from '@heswell/data';
+} from '@heswell/data-source';
 
 import { NOT_IN } from '@heswell/utils';
 import { FilterType } from '@heswell/ingrid-extras';
