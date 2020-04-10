@@ -2,13 +2,12 @@
 /** @typedef {import('./inline-filter').default} InlineFilter */
 
 import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
-import { filter as filterUtils, DataTypes } from '@heswell/data'
+import { DataTypes } from '@heswell/data'
+import {NOT_IN} from '@heswell/utils';
 import Header from '../header.jsx';
 import ColumnFilter from './column-filter.jsx';
 
 import './inline-filter.css';
-
-const { NOT_IN } = filterUtils;
 
 /** @type {InlineFilter} */
 const InlineFilter = forwardRef(({ 

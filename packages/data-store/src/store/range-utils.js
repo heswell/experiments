@@ -47,17 +47,6 @@ export function resetRange({lo,hi,bufferSize=0}){
     };
 }
 
-/**
- * 
- * @type {import('./range-utils').getFullRange}
- */
-export function getFullRange({lo,hi,bufferSize=0}){
-    return {
-        lo: Math.max(0, lo - bufferSize),
-        hi: hi + bufferSize
-    };
-}
-
 const SAME = 0;
 const FWD = 2;
 const BWD = 4;

@@ -1,5 +1,4 @@
-import { DataTypes, columnUtils } from '@heswell/data';
-import {uuid, createLogger, logColor} from '@heswell/utils';
+import {createLogger, DataTypes, logColor, metaData, uuid} from '@heswell/utils';
 import {
   msgType as Msg,
   connectionId as _connectionId,
@@ -8,7 +7,6 @@ import {
 // TODO make this dynamic
 import ConnectionManager from './connection-manager';
 
-const { metaData } = columnUtils;
 const {ROW_DATA} = DataTypes;
 
 const logger = createLogger('RemoteDataView', logColor.blue);

@@ -1,7 +1,6 @@
 //TODO neither this file nor filter-data-view belong here - thye are not specific to remote views
 
-import { createLogger, logColor, EventEmitter} from '@heswell/utils';
-import { DataTypes } from '../store/types';
+import { createLogger, DataTypes, logColor, EventEmitter} from '@heswell/utils';
 
 const logger = createLogger('BinnedDataSource', logColor.brown);
 

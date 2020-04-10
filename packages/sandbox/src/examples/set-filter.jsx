@@ -1,6 +1,7 @@
 // @ts-check
 import React, {useEffect, useState} from 'react';
-import {LocalDataSource, FilterDataSource, DataTypes, filter as filterUtils} from '@heswell/data';
+import { DataTypes } from '@heswell/utils'
+import {LocalDataSource, FilterDataSource} from '@heswell/data-source';
 import {FilterPanel, SetFilter} from '@heswell/ingrid-extras';
 
 const tableName = 'Instruments'

@@ -1,4 +1,4 @@
-const {RowSet, filter: {IN, GREATER_THAN}} = require('../../dist/index.js');
+const {RowSet, IN, GREATER_THAN} = require('../../dist/index.js');
 
 const {
     getInstrumentRowset,

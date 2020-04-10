@@ -23,14 +23,13 @@
   "author": "heswell",
   "license": "MIT",
   "peerDependencies": {
-    "@heswell/data": "^1.0.0",
+    "@heswell/data-source": "^1.0.0",
     "@heswell/ingrid-extras": "^1.0.0",
     "@heswell/ui-controls": "^1.0.0",
     "@heswell/utils": "^1.0.0",
     "classnames": "^2.2.6",
     "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-motion": "0.5.2"
+    "react-dom": "^16.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -43,9 +42,7 @@
     "rollup-plugin-filesize": "^6.2.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^2.0.3",
-    "rollup-plugin-terser": "^5.1.2"
-  },
-  "dependencies": {
+    "rollup-plugin-terser": "^5.1.2",
     "typescript": "3.8.3"
   }
 }

@@ -10,14 +10,15 @@ import { groupbyExtendsExistingGroupby } from '../group-utils';
 import { projectColumns, mapSortCriteria, metaData,
     BIN_FILTER_DATA_COLUMNS,
     SET_FILTER_DATA_COLUMNS,
+    DataTypes,
     extendsFilter,
     extractFilterForColumn,
     functor as filterPredicate,
+    getFullRange,
     splitFilterOnColumn,
     overrideColName
 } from '@heswell/utils';
-import { DataTypes } from '../types';
-import { getDeltaRange, getFullRange, NULL_RANGE } from '../range-utils';
+import { getDeltaRange, NULL_RANGE } from '../range-utils';
 
 const SINGLE_COLUMN = 1;
 
@@ -402,7 +403,7 @@ export class RowSet extends BaseRowSet {
             this.sortReverse = !this.sortReverse;
         } else if (this.sortCols !== null && groupbyExtendsExistingGroupby(sortCols, this.sortCols)) {
             this.sortReverse = false;
-            sortExtend(sortSet, this.data, this.sortCols, sortCols, this.columnMap)
+            sortExtend(sortSet, this.data, sortCols, this.columnMap)
         } else {
             this.sortReverse = false;
             sort(sortSet, this.data, sortCols, this.columnMap)

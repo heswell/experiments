@@ -1,10 +1,9 @@
 /** @typedef {import('./column-filter').ColumnFilterComponent} ColumnFilter */
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
-import {getFilterType} from '@heswell/utils'
+import {getFilterType, includesColumn, STARTS_WITH} from '@heswell/utils'
 import { 
-    DataTypes,
-    filter as filterUtils
+    DataTypes
 } from '@heswell/data';
 
 import dataSourceFactory from './data-source-factory';
@@ -21,8 +20,6 @@ import Draggable from '../../draggable/draggable.jsx';
 import { PopupService } from '@heswell/ui-controls';
 
 import './column-filter.css';
-
-const {includesColumn, STARTS_WITH} = filterUtils;
 
 
 const NO_COUNT = {}

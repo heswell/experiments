@@ -1,16 +1,12 @@
 
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { filter as filterUtils } from '@heswell/data';
+import { SET_FILTER_DATA_COLUMNS } from '@heswell/utils';
 import {FlexBox} from '@heswell/inlay';
 import CheckList from '../check-list.jsx';
 import {FilterCounts} from '../filter-counts.jsx';
 
 import './set-filter.css';
-
-const { 
-    SET_FILTER_DATA_COLUMNS
-} = filterUtils;
 
 const NO_STYLE = {}
 

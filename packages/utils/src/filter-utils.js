@@ -1,15 +1,15 @@
 
+export const AND = 'AND';
 export const EQUALS = 'EQ';
 export const GREATER_THAN = 'GT';
 export const GREATER_EQ = 'GE';
-export const LESS_THAN = 'LT';
+export const IN = 'IN';
 export const LESS_EQ = 'LE';
-export const AND = 'AND';
+export const LESS_THAN = 'LT';
+export const NOT_IN = 'NOT_IN';
+export const NOT_STARTS_WITH = 'NOT_SW';
 export const OR = 'OR';
 export const STARTS_WITH = 'SW';
-export const NOT_STARTS_WITH = 'NOT_SW';
-export const IN = 'IN';
-export const NOT_IN = 'NOT_IN';
 
 export const SET_FILTER_DATA_COLUMNS = [
     {name: 'name', key:0}, 
@@ -27,6 +27,52 @@ export default function filterRows(rows, columnMap, filter) {
     return applyFilter(rows, functor(columnMap, filter));
 }
 
+export function addFilter(existingFilter, filter) {
+
+    if (includesNoValues(filter)){
+        const {colName} = filter;
+        existingFilter = removeFilterForColumn(existingFilter, {name:colName});
+    } else if (includesAllValues(filter)){
+        // A filter that returns all values is a way to remove filtering for this column 
+        return removeFilterForColumn(existingFilter, {name: filter.colName});
+    }
+
+    if (!existingFilter) {
+        return filter;
+    } else if (!filter) {
+        return existingFilter;
+    }
+   
+    if (existingFilter.type === AND && filter.type === AND) {
+        return { type: 'AND', filters: combine(existingFilter.filters, filter.filters) };
+    } else if (existingFilter.type === 'AND') {
+        const filters = replaceOrInsert(existingFilter.filters, filter);
+        return filters.length > 1
+            ? { type: 'AND', filters  }
+            : filters[0];
+    } else if (filter.type === 'AND') {
+        return { type: 'AND', filters: filter.filters.concat(existingFilter) };
+    } else if (filterEquals(existingFilter, filter, true)) {
+        return filter;
+    } else if (sameColumn(existingFilter, filter)){
+        return merge(existingFilter, filter);
+    } else {
+        return { type: 'AND', filters: [existingFilter, filter] };
+    }
+}
+
+export function includesNoValues(filter) {
+    // TODO make sure we catch all cases...
+    if (!filter){
+        return false;
+    } else if (filter.type === IN && filter.values.length === 0) {
+        return true;
+    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
+        return true;
+    } else {
+        return false;
+    }
+}
 
 export function getFilterColumn(column) {
     return column.isGroup ? column.columns[0] : column;
@@ -119,19 +165,6 @@ export function shouldShowFilter(filterColumnName, column) {
     }
 }
 
-export function includesNoValues(filter) {
-    // TODO make sure we catch all cases...
-    if (!filter){
-        return false;
-    } else if (filter.type === IN && filter.values.length === 0) {
-        return true;
-    } else if (filter.type === AND && filter.filters.some(f => includesNoValues(f))){
-        return true;
-    } else {
-        return false;
-    }
-}
-
 function includesAllValues(filter) {
     if (!filter){
         return false;
@@ -200,40 +233,6 @@ function extendsFilters(f1, f2) {
             const filter2 = f2.filters.find(f => f.colName === filter1.colName);
             return filterEquals(filter1, filter2, true); // could also allow f2 extends f1
         });
-    }
-}
-
-export function addFilter(existingFilter, filter) {
-
-    if (includesNoValues(filter)){
-        const {colName} = filter;
-        existingFilter = removeFilterForColumn(existingFilter, {name:colName});
-    } else if (includesAllValues(filter)){
-        // A filter that returns all values is a way to remove filtering for this column 
-        return removeFilterForColumn(existingFilter, {name: filter.colName});
-    }
-
-    if (!existingFilter) {
-        return filter;
-    } else if (!filter) {
-        return existingFilter;
-    }
-   
-    if (existingFilter.type === AND && filter.type === AND) {
-        return { type: 'AND', filters: combine(existingFilter.filters, filter.filters) };
-    } else if (existingFilter.type === 'AND') {
-        const filters = replaceOrInsert(existingFilter.filters, filter);
-        return filters.length > 1
-            ? { type: 'AND', filters  }
-            : filters[0];
-    } else if (filter.type === 'AND') {
-        return { type: 'AND', filters: filter.filters.concat(existingFilter) };
-    } else if (filterEquals(existingFilter, filter, true)) {
-        return filter;
-    } else if (sameColumn(existingFilter, filter)){
-        return merge(existingFilter, filter);
-    } else {
-        return { type: 'AND', filters: [existingFilter, filter] };
     }
 }
 

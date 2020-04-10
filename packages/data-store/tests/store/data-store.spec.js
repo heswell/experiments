@@ -1,6 +1,10 @@
 const {
-    DataView, DataTypes, 
-    filter: {IN, STARTS_WITH, NOT_STARTS_WITH}} = require('../dist/index.js');
+    DataView, 
+    DataTypes, 
+    IN,
+    STARTS_WITH, 
+    NOT_STARTS_WITH
+} = require('../dist/index.js');
 
 const {
     getInstrumentTable,
@@ -541,7 +545,7 @@ describe('combined features', () => {
         expect(size).toBe(633);
     });
 
-    test('expand top-level group, scroll away from top ansd remove lower-level group', () => {
+    test('expand top-level group, scroll away from top and remove lower-level group', () => {
         const view = new DataView(getInstrumentTable(), { columns });
         view.setRange({ lo: 0, hi: 17 });
         let { size, rows } = view.groupBy([['Sector', 'asc'], ['Industry', 'asc']]);
@@ -551,24 +555,25 @@ describe('combined features', () => {
 
         ({ size, rows } = view.groupBy([['Sector', 'asc']]));
         expect(size).toBe(179);
+        // change of groupingbresets scroll position to top
         expect(rows.map(row => row.slice(7, 12))).toEqual([
-            [117, 0, 0, 0, 'NXST'],
-            [118, 0, 0, 0, 'ROIA'],
-            [119, 0, 0, 0, 'SALM'],
-            [120, 0, 0, 0, 'SBGI'],
-            [121, 0, 0, 0, 'SBSA'],
-            [122, 0, 0, 0, 'AMZN'],
-            [123, 0, 0, 0, 'CDW'],
-            [124, 0, 0, 0, 'CNV'],
-            [125, 0, 0, 0, 'NSIT'],
-            [126, 0, 0, 0, 'OSTK'],
-            [127, 0, 0, 0, 'PCCC'],
-            [128, 0, 0, 0, 'ZU'],
-            [129, 0, 0, 0, 'PLCE'],
-            [130, 0, 0, 0, 'CTRN'],
-            [131, 0, 0, 0, 'FRAN'],
-            [132, 0, 0, 0, 'GMAN'],
-            [133, 0, 0, 0, 'PSUN']
+            [100, 0, -1, 27, 'Basic Industries'],
+            [101, 0, -1, 79, 'Capital Goods'],
+            [102, 0, -1, 35, 'Consumer Durables'],
+            [103, 0, -1, 40, 'Consumer Non-Durables'],
+            [104, 0, 1, 167, 'Consumer Services'],
+            [105, 0, 0, 0, 'ANGI'],
+            [106, 0, 0, 0, 'ISIG'],
+            [107, 0, 0, 0, 'NCMI'],
+            [108, 0, 0, 0, 'SALE'],
+            [109, 0, 0, 0, 'MNRO'],
+            [110, 0, 0, 0, 'HMHC'],
+            [111, 0, 0, 0, 'SCHL'],
+            [112, 0, 0, 0, 'BBGI'],
+            [113, 0, 0, 0, 'CETV'],
+            [114, 0, 0, 0, 'CTCM'],
+            [115, 0, 0, 0, 'CMLS'],
+            [116, 0, 0, 0, 'EMMS']
         ])
    });
 

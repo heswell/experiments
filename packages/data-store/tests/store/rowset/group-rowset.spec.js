@@ -1,7 +1,9 @@
 const {
   GroupRowSet, 
-  filter: {EQUALS, IN, NOT_IN}, 
-  columnUtils: {metaData}
+  EQUALS, 
+  IN, 
+  metaData,
+  NOT_IN, 
 } = require('../../dist/index.js');
 
 const {

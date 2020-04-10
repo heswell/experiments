@@ -1,5 +1,6 @@
 
-import { rangeUtils, DataTypes } from '@heswell/data';
+import { DataTypes } from '@heswell/data';
+import { getFullRange } from '@heswell/utils';
 
 const EMPTY_ARRAY = [];
 const ROWSET = 'rowset';
@@ -73,7 +74,7 @@ function mergeAndPurgeFilterData(queue, message, meta) {
     const {IDX} = meta;
     const { viewport, data: filterData } = message;
     const { range } = filterData;
-    const { lo, hi } = rangeUtils.getFullRange(range);
+    const { lo, hi } = getFullRange(range);
 
     for (var i = queue.length - 1; i >= 0; i--) {
 
@@ -81,7 +82,7 @@ function mergeAndPurgeFilterData(queue, message, meta) {
 
         if (vp === viewport && type === FILTER_DATA) {
 
-            var { lo: lo1, hi: hi1 } = rangeUtils.getFullRange(queue[i].data.range);
+            var { lo: lo1, hi: hi1 } = getFullRange(queue[i].data.range);
 
             /*if ((lo1 === 0 && hi1 === 0 && lo === 0) ||
                 (lo1 >= hi || hi1 < lo)) {
@@ -115,7 +116,7 @@ function mergeAndPurgeFilterData(queue, message, meta) {
 // we need to know the current range in order to be able to merge rowsets which are still valid
 function mergeAndPurgeRowset(queue, message, meta) {
     const { viewport, data: { rows, size, range, offset=0 } } = message;
-    const { lo, hi } = rangeUtils.getFullRange(range);
+    const { lo, hi } = getFullRange(range);
     const low = lo + offset;
     const high = hi + offset;
 

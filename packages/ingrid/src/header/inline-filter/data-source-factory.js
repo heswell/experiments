@@ -5,15 +5,15 @@
  */
 import { 
   BinnedDataSource,
-  FilterDataSource,
-  filter as filterUtils
+  FilterDataSource
 } from '@heswell/data';
 
+import { NOT_IN } from '@heswell/utils';
 import { FilterType } from '@heswell/ingrid-extras';
 
 const ZeroRowFilter = {
   colName: 'count',
-  type: filterUtils.NOT_IN,
+  type: NOT_IN,
   values: [0]
 }
 

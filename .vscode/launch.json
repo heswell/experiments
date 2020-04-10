@@ -23,11 +23,11 @@
       "request": "launch",
       "name": "Jest Tests",
       "args":[ 
-        "${workspaceRoot}/packages/data/node_modules/.bin/jest",
+        "${workspaceRoot}/packages/data-store/node_modules/.bin/jest",
         "--",
-        "./group-rowset"
+        "./data-store.spec"
       ],
-      "cwd": "${workspaceRoot}/packages/data"
+      "cwd": "${workspaceRoot}/packages/data-store"
   },
   ]
 }

@@ -1,4 +1,5 @@
-import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './range-utils';
+import { getFullRange } from '@heswell/utils';
+import { NULL_RANGE, compareRanges, RangeFlags, getDeltaRange } from './range-utils';
 import {getCount} from './group-utils';
 
 const RANGE_POS_TUPLE_SIZE = 4;

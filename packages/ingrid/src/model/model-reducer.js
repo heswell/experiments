@@ -3,8 +3,8 @@
 /** @typedef {import('./model').GridModelReducer} GridModelReducer  */
 /** @typedef {import('./model').ReducerTable} ReducerTable  */
 
-import {buildColumnMap, metaData, toKeyedColumn} from '@heswell/utils'
-import {groupHelpers, ASC, DSC, sortUtils, arrayUtils} from '@heswell/data'
+import {buildColumnMap, indexOfCol, metaData, partition as partitionArray, toKeyedColumn, sortByToMap, updateGroupBy} from '@heswell/utils'
+import { ASC, DSC} from '@heswell/data'
 import * as Action from './actions';
 import {Selection} from '../types';
 // will have to be mocked for testing
@@ -207,7 +207,7 @@ function sort(state, {column, direction, preserveExistingSort=false}) {
 function sortGroup(state, {column}) {
     const {groupBy: existingGroupBy} = state;
     if (existingGroupBy) {
-        const groupIdx = groupHelpers.indexOfCol(column.name, existingGroupBy);
+        const groupIdx = indexOfCol(column.name, existingGroupBy);
         if (groupIdx !== -1){
             const [colName, sortDirection] = existingGroupBy[groupIdx];
             const sortCol = sortDirection === ASC
@@ -226,7 +226,7 @@ function sortGroup(state, {column}) {
 
 /** @type {GridModelReducer} */
 function extendGroup(state, {column, rowCount=state.rowCount}) {
-    const groupBy = groupHelpers.updateGroupBy(state.groupBy, column);
+    const groupBy = updateGroupBy(state.groupBy, column);
     return initialize(state, {gridState: {groupBy, rowCount}});
 }
 
@@ -791,7 +791,7 @@ function endsWith(string, subString){
 }
 
 function splitIntoGroups(columns, sortBy=null, groupBy=EMPTY_ARRAY, collapsedColumns=null, minColumnWidth) {
-    const sortMap = sortUtils.sortByToMap(sortBy);
+    const sortMap = sortByToMap(sortBy);
     const groups = [];
     const maxHeadingDepth = columns.length === 0
         ? 0
@@ -836,9 +836,9 @@ function splitIntoGroups(columns, sortBy=null, groupBy=EMPTY_ARRAY, collapsedCol
 
 function extractGroupColumn(columns, groupBy, minColumnWidth){
     if (groupBy && groupBy.length > 0){
-        const isGroup = ({name}) => groupHelpers.indexOfCol(name, groupBy) !== -1
+        const isGroup = ({name}) => indexOfCol(name, groupBy) !== -1
         // Note: groupedColumns will be in column order, not groupBy order
-        const [groupedColumns, rest] = arrayUtils.partition(columns, isGroup);
+        const [groupedColumns, rest] = partitionArray(columns, isGroup);
         if (groupedColumns.length !== groupBy.length){
             throw Error(`extractGroupColumn: no column definition found for all groupBy cols ${JSON.stringify(groupBy)} `);
         }

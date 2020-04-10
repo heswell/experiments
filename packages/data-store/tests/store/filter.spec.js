@@ -1,19 +1,17 @@
 const {
-  filter: {
-    AND,
-    OR,
-    GREATER_EQ,
-    LESS_EQ,
-    IN,
-    NOT_IN,
-    EQUALS,
-    STARTS_WITH,
-    NOT_STARTS_WITH,
-    addFilter,
-    extendsFilter,
-    extractFilterForColumn,
-    includesNoValues
-  }
+  addFilter,
+  AND,
+  OR,
+  GREATER_EQ,
+  LESS_EQ,
+  IN,
+  NOT_IN,
+  EQUALS,
+  STARTS_WITH,
+  NOT_STARTS_WITH,
+  extendsFilter,
+  extractFilterForColumn,
+  includesNoValues
 } = require('../dist/index.js');
 
 describe('filter', () => {

@@ -1,7 +1,7 @@
 {
-  "name": "@heswell/data",
-  "version": "1.1.2",
-  "description": "Heswell data stores and views",
+  "name": "@heswell/data-source",
+  "version": "1.0.0",
+  "description": "Heswell data sources",
   "main": "dist/index.js",
   "files": [
     "dist",
@@ -15,7 +15,6 @@
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production",
     "build:dev": "rollup -c --environment BUILD:development",
-    "test": "jest",
     "typecheck": "tsc -p ."
   },
   "author": "heswell",

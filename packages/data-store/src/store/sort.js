@@ -1,7 +1,4 @@
-import {ASC} from './types';
-import {mapSortCriteria} from '@heswell/utils';
-
-const EMPTY_MAP = {};
+import {ASC, DSC, mapSortCriteria} from '@heswell/utils';
 
 export function sortableFilterSet(filterSet){
     if (filterSet.length === 0){
@@ -13,7 +10,7 @@ export function sortableFilterSet(filterSet){
     }
 }
 
-export function sortExtend(sortSet, rows, sortCols, newSortCols, columnMap){
+export function sortExtend(sortSet, rows, newSortCols, columnMap){
     sort2ColsAdd1(sortSet, rows, newSortCols, columnMap)
 }
 
@@ -162,21 +159,6 @@ export function sortedLowestAndHighest(rows, sortCriteria, offset, n=1000){
     return [head, tail];
 }
 
-export function sortByToMap(sortCriteria=null){
-    return sortCriteria === null
-        ? EMPTY_MAP
-        : sortCriteria.reduce((map, col, i) => {
-            if (typeof col === 'string') {
-                map[col] = i + 1;
-            } else {
-                const [colName, sortDir] = col;
-                map[colName] = sortDir === ASC ? (i + 1) : -1 * (i + 1);
-            }
-            return map;
-        }, {});
-
-}
-
 export function sortReversed(cols1, cols2, colCount=cols1.length){
     if (cols1 && cols2 && cols1.length > 0 && cols2.length === colCount){
         for (let i=0;i<cols1.length; i++){
@@ -197,8 +179,8 @@ export function GROUP_ROW_TEST(group, row, [colIdx, direction]) {
     if (group === row) {
         return 0;
     } else {
-        let a1 = direction === 'dsc' ? row[colIdx] : group[colIdx];
-        let b1 = direction === 'dsc' ? group[colIdx] : row[colIdx];
+        let a1 = direction === DSC ? row[colIdx] : group[colIdx];
+        let b1 = direction === DSC ? group[colIdx] : row[colIdx];
         if (b1 === null || a1 > b1) {
             return 1;
         } else if (a1 == null || a1 < b1) {
@@ -211,8 +193,8 @@ function ROW_SORT_TEST(a, b, [colIdx, direction]) {
     if (a === b) {
         return 0;
     } else {
-        let a1 = direction === 'dsc' ? b[colIdx] : a[colIdx];
-        let b1 = direction === 'dsc' ? a[colIdx] : b[colIdx];
+        let a1 = direction === DSC ? b[colIdx] : a[colIdx];
+        let b1 = direction === DSC ? a[colIdx] : b[colIdx];
         if (b1 === null || a1 > b1) {
             return 1;
         } else if (a1 == null || a1 < b1) {

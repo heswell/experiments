@@ -1,5 +1,4 @@
-import { createLogger, logColor, EventEmitter, metaData } from '@heswell/utils';
-import { DataTypes } from '../store/types';
+import { createLogger, DataTypes, logColor, EventEmitter, metaData } from '@heswell/utils';
 
 const logger = createLogger('FilterDataView', logColor.brown);
 

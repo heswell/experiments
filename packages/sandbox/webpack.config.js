@@ -7,7 +7,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const localPackages = [
-  'data',
+  'data-source',
+  'data-store',
   'data-remote',
   'ingrid',
   'ingrid-extras',

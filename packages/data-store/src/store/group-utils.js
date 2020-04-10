@@ -1,6 +1,5 @@
 import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
-import { ASC } from './types';
-import { metaData } from '@heswell/utils';
+import { indexOfCol, metaData } from '@heswell/utils';
 
 const DEFAULT_OPTIONS = {
     startIdx: 0,
@@ -326,21 +325,6 @@ export function getDirection(depth, groupby) {
     return direction;
 }
 
-// should be called toggleColumnInGroupBy
-/** @type {import('./group-utils').updateGroupBy} */
-export function updateGroupBy(existingGroupBy = null, column/*, replace = false*/) {
-    console.log(``)
-    if (existingGroupBy === null) {
-        return [[column.name, ASC]];
-    } else {
-        return indexOfCol(column.name, existingGroupBy) === -1
-            ? existingGroupBy.concat([[column.name, ASC]])
-            : existingGroupBy.length === 1
-                ? null
-                : existingGroupBy.filter(([colName]) => colName !== column.name);
-    }
-}
-
 /** @type {import('./group-utils').expanded} */
 export function expanded(group, groupby, groupState) {
     const groupIdx = groupby.length - Math.abs(group[1]);
@@ -360,78 +344,6 @@ export function expanded(group, groupby, groupState) {
     }
     return false;
 }
-
-export function indexOfCol(key, cols = null) {
-    if (cols !== null) {
-        for (let i = 0; i < cols.length; i++) {
-            // check both while we transition from groupBy to extendedGroupby
-            // groupBy = [colName, dir] extendedGroupby = [colIdx, dir,colName]
-            const [col1, , col2] = cols[i];
-            if (col1 === key || col2 === key) {
-                return i;
-            }
-        }
-    }
-    return -1;
-}
-
-// export function countNestedRows(rows, idx, depth) {
-//     const DEPTH = Data.DEPTH_FIELD;
-//     let count = 0;
-//     for (let i = idx, len = rows.length;
-//         i < len && Math.abs(rows[i][DEPTH]) < depth;
-//         i++) {
-//         count += 1;
-//     }
-//     return count;
-// }
-
-// TBC
-// export function countGroupMembers(groupedRows) {
-//     const results = [];
-//     const groups = [];
-//     let currentGroup = null;
-
-//     for (let i = 0; i < groupedRows.length; i++) {
-//         let [, depth] = groupedRows[i];
-//         if (depth === LEAF_DEPTH) {
-//             currentGroup.count += 1;
-//         } else {
-//             depth = Math.abs(depth);
-//             while (currentGroup && depth >= currentGroup.depth) {
-//                 const completedGroup = groups.shift();
-//                 const group = results[completedGroup.i];
-//                 if (group[Data.COUNT_FIELD] !== completedGroup.count) {
-//                     const newGroup = group.slice();
-//                     newGroup[Data.COUNT_FIELD] = completedGroup.count;
-//                     results[completedGroup.i] = newGroup;
-//                 }
-//                 groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
-//                 ([currentGroup] = groups);
-//             }
-
-//             currentGroup = { i, depth, count: 0 };
-//             groups.unshift(currentGroup);
-//         }
-
-//         results[i] = groupedRows[i];
-
-//     }
-
-//     while (currentGroup) {
-//         const completedGroup = groups.shift();
-//         const group = results[completedGroup.i];
-//         if (group[Data.COUNT_FIELD] !== completedGroup.count) {
-//             const newGroup = group.slice();
-//             newGroup[Data.COUNT_FIELD] = completedGroup.count;
-//             results[completedGroup.i] = newGroup;
-//         }
-//         groups.forEach(higherLevelGroup => higherLevelGroup.count += completedGroup.count);
-//         ([currentGroup] = groups);
-//     }
-
-//     return results;
-// }
 
 /** @type {import('./group-utils').allGroupsExpanded} */
 export function allGroupsExpanded(groups, group, {DEPTH, PARENT_IDX}){

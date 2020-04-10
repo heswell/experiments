@@ -1,8 +1,7 @@
 import { resetRange } from './range-utils';
 import { RowSet, GroupRowSet } from './rowset/index';
-import { addFilter, IN, NOT_IN, buildColumnMap, toColumn, getFilterType } from '@heswell/utils';
+import { addFilter, DataTypes, IN, NOT_IN, buildColumnMap, toColumn, getFilterType } from '@heswell/utils';
 import UpdateQueue from './update-queue';
-import { DataTypes } from './types';
 
 const DEFAULT_INDEX_OFFSET = 100;
 const WITH_STATS = true;
@@ -311,7 +310,6 @@ export default class DataStore {
     }
 
     getFilterData(column, range) {
-        console.log(`dataView.getFilterData for column ${column.name} range ${JSON.stringify(range)}`)
         const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
@@ -326,7 +324,6 @@ export default class DataStore {
             this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
 
         } else if (!filterRowSet || filterRowSet.columnName !== column.name) {
-            console.log(`create the filterRowset`)
             this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
 
         } else if (filterRowSet && filterRowSet.columnName === column.name) {
@@ -347,7 +344,6 @@ export default class DataStore {
         // be returned by the rowSet
 
         // TODO wrap this, we use it  alot
-        console.log(`[dataView] return filterSet range ${JSON.stringify(range)}`)
         return this.filterRowSet.setRange(range, false, WITH_STATS);
 
 

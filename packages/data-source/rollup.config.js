@@ -26,14 +26,4 @@ export default [{
         "@heswell/utils"
     ]
 
-}, /* Just for Jest */{
-    input: 'index.jest.js',
-    output: {
-        file: 'tests/dist/index.js',
-        format: 'cjs'
-    },
-    plugins: [
-        resolve(),
-        commonjs()
-    ]
 }];

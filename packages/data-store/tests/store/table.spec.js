@@ -1,4 +1,3 @@
-const {Table} = require('../dist/index');
 const {
     getTestTable,
 } = require('../test-data.js');

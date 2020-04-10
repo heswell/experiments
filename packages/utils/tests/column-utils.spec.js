@@ -1,13 +1,11 @@
 const {
-  columnUtils: {
     mapSortCriteria,
     buildColumnMap,
     projectColumns,
     toColumn,
     getFilterType,
     metaData
-  }
-} = require('../dist/index.js');
+} = require('./dist/index.js');
 
 describe('columnUtils', () => {
 

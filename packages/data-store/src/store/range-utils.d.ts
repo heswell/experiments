@@ -19,9 +19,6 @@ export declare const getDeltaRange: getDeltaRange;
 export type resetRange = (range: Range) => Range;
 export declare const resetRange: resetRange;
 
-export type getFullRange = (range: Range) => Range;
-export declare const getFullRange: getFullRange;
-
 /**
  * Return a bitwise flag that describes the relationship 
  * between 2 ranges. A range can be expanding or reducing, 

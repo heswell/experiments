@@ -1,4 +1,4 @@
-import { mapSortCriteria, extendsFilter, functor as filterPredicate } from '@heswell/utils';
+import { ASC, mapSortCriteria, extendsFilter, functor as filterPredicate } from '@heswell/utils';
 import BaseRowSet from './rowSet';
 import {
     groupRows,
@@ -17,7 +17,6 @@ import {
 } from '../group-utils';
 import { sortBy, sortPosition } from '../sort';
 import GroupIterator from '../group-iterator';
-import { ASC } from '../types'
 import { NULL_RANGE } from '../range-utils';
 
 const EMPTY_ARRAY = [];
