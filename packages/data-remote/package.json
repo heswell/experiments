@@ -1,6 +1,6 @@
 {
   "name": "@heswell/data-remote",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Heswell remote data",
   "main": "index.js",
   "publishConfig": {
@@ -18,7 +18,7 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
-    "@heswell/utils": "^1.1.1"
+    "@heswell/utils": "^1.2.0"
   },
   "peerDependencies": {
     "@heswell/data": "^1.0.0"
