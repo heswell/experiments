@@ -1,6 +1,5 @@
 
-import { DataTypes } from '@heswell/data';
-import { getFullRange } from '@heswell/utils';
+import { DataTypes, getFullRange } from '@heswell/utils';
 
 const EMPTY_ARRAY = [];
 const ROWSET = 'rowset';

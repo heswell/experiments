@@ -4,7 +4,7 @@ import {createGraph} from './number-filter-chart';
 import {extractStateFromFilter, buildFilter} from './number-filter-helpers.js';
 
 import {FlexBox} from '@heswell/inlay';
-import {filter as filterUtils} from '@heswell/data';
+import { extractFilterForColumn} from '@heswell/utils';
 
 import './number-filter.css';
 
@@ -21,7 +21,7 @@ export const NumberFilter = ({
 
     const graph = useRef(null);
     const chartEl = useRef(null);
-    const columnFilter = useRef(filterUtils.extractFilterForColumn(filter, column.name));
+    const columnFilter = useRef(extractFilterForColumn(filter, column.name));
     const [binnedValues, setBinnedValues] = useState([]);
     const [state, setState] = useState(extractStateFromFilter(columnFilter))
 

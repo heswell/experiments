@@ -1,6 +1,5 @@
 import {DataStore as View} from '@heswell/data-store';
-import {DataTypes} from '@heswell/data';
-import {metaData, setFilterColumnMeta} from '@heswell/utils';
+import {DataTypes, metaData, setFilterColumnMeta} from '@heswell/utils';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
