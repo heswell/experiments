@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ingrid",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
