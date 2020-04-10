@@ -3,8 +3,7 @@
 /** @typedef {import('./model').GridModelReducer} GridModelReducer  */
 /** @typedef {import('./model').ReducerTable} ReducerTable  */
 
-import {buildColumnMap, indexOfCol, metaData, partition as partitionArray, toKeyedColumn, sortByToMap, updateGroupBy} from '@heswell/utils'
-import { ASC, DSC} from '@heswell/data'
+import {ASC, buildColumnMap, DSC, indexOfCol, metaData, partition as partitionArray, toKeyedColumn, sortByToMap, updateGroupBy} from '@heswell/utils'
 import * as Action from './actions';
 import {Selection} from '../types';
 // will have to be mocked for testing

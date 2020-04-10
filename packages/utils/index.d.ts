@@ -7,6 +7,7 @@ export declare const createLogger: any;
 export declare const logColor: any;
 
 // array
+export declare const arrayOfIndices: any;
 export declare const partition: any;
 
 // we need column definition
@@ -45,6 +46,12 @@ export declare const STARTS_WITH: 'SW';
 
 // range
 export declare const getFullRange: any;
+
+// rows
+export declare const addRowsToIndex: any;
+export declare const indexRows: any;
+export declare const isEmptyRow: any;
+export declare const update: any;
 
 // sort
 export declare const sortByToMap: any;

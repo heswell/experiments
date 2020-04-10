@@ -53,3 +53,10 @@ export {
   indexOfCol,
   updateGroupBy
 } from './src/group-utils'
+
+export {
+  addRowsToIndex,
+  indexRows,
+  isEmptyRow,
+  update
+} from './src/row-utils';

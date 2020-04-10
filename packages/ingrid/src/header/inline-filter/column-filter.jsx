@@ -1,10 +1,7 @@
 /** @typedef {import('./column-filter').ColumnFilterComponent} ColumnFilter */
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
-import {getFilterType, includesColumn, STARTS_WITH} from '@heswell/utils'
-import { 
-    DataTypes
-} from '@heswell/data';
+import {DataTypes, getFilterType, includesColumn, STARTS_WITH} from '@heswell/utils'
 
 import dataSourceFactory from './data-source-factory';
 

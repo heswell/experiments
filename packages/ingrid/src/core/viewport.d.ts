@@ -1,5 +1,5 @@
 import React from 'react';
-import {DataSource} from '@heswell/data';
+import {DataSource} from '@heswell/data-source';
 import {GridModel} from '../model/model';
 //TODO define Actions
 export type DataReducer =[any, (any) => void];

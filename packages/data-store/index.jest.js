@@ -6,16 +6,18 @@ export {
   extendsFilter,
   extractFilterForColumn,
   getFullRange, 
+  GREATER_EQ, 
+  GREATER_THAN,
   IN,
   includesNoValues,
   indexOfCol,
-  GREATER_EQ, 
-  GREATER_THAN,
+  isEmptyRow,
   metaData,
   NOT_IN,
   NOT_STARTS_WITH,
   OR,
   STARTS_WITH,
+  update,
   updateGroupBy
 } from '@heswell/utils';
 
@@ -25,11 +27,6 @@ import {
 
 import {groupbyExtendsExistingGroupby } from './src/store/group-utils'
 
-import {
-  isEmptyRow,
-  update
-} from './src/store/rowUtils'
-
 export const groupHelpers = {
   groupbyExtendsExistingGroupby
 }
@@ -38,10 +35,6 @@ export const groupHelpers = {
 export * from './src/store/rowset';
 export {default as Table} from './src/store/table';
 export {default as DataView} from './src/store/data-store';
-
-export const rowUtils = {
-  isEmptyRow, update
-}
 
 export const rangeUtils = {
   resetRange

@@ -91,19 +91,17 @@ function setData(state, action, meta){
     action.range
     : state.range;
 
-    console.log(`setData <<<<<<<  incoming...`)
-    console.table(rows)
+    // console.log(`setData <<<<<<<  incoming...`)
+    // console.table(rows)
 
-
-
-    console.log(`setData <<<<<<<  existing...`)
-    console.table(state.rows)
+    // console.log(`setData <<<<<<<  existing...`)
+    // console.table(state.rows)
       
 
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
-  console.log(`setData >>>>>>  out...`)
-  console.table(mergedRows)
+  // console.log(`setData >>>>>>  out...`)
+  // console.table(mergedRows)
   return {
     rows: mergedRows,
     rowCount,

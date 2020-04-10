@@ -2,8 +2,7 @@
 /** @typedef {import('./inline-filter').default} InlineFilter */
 
 import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
-import { DataTypes } from '@heswell/data'
-import {NOT_IN} from '@heswell/utils';
+import {DataTypes, NOT_IN} from '@heswell/utils';
 import Header from '../header.jsx';
 import ColumnFilter from './column-filter.jsx';
 
