@@ -1,5 +1,5 @@
 import React from 'react';
-import { Application, FlexBox, Component } from '@heswell/inlay';
+import { Application, FlexBox, Component } from '@heswell/layout';
 
 export default (width = 500, height = 400) =>
 <Application width={600} height={300}>

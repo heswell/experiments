@@ -3,7 +3,7 @@ import cx from 'classnames';
 import {createGraph} from './number-filter-chart';
 import {extractStateFromFilter, buildFilter} from './number-filter-helpers.js';
 
-import {FlexBox} from '@heswell/inlay';
+import {FlexBox} from '@heswell/layout';
 import { extractFilterForColumn} from '@heswell/utils';
 
 import './number-filter.css';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutItem, Component } from '@heswell/inlay';
+import { LayoutItem, Component } from '@heswell/layout';
 
 export default ({width = 500, height = 400}) =>
   <LayoutItem

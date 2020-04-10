@@ -29,7 +29,7 @@ const sampleContextMenu =
     <MenuItem action='inlay16' label='Nested FlexBox' />
     <MenuItem action='inlay-builder' label='Layout Builder' />
     <MenuItem action='inlay18' label='Deeper nessting of FlexBoxes' />
-    <MenuItem action='inlay19' label='TabbedContainer' />
+    <MenuItem action='inlay-tabs-01' label='TabbedContainer' />
     <Separator />
     <MenuItem action='grid1' label='Grid, local Instruments' />
     <MenuItem action='grid-viewserver' label='Grid, remote Instruments (node.js ViewServer)' />
@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('grid1');
+render('inlay-tabs-01');
 
 function onContextMenu(e){
   e.preventDefault();

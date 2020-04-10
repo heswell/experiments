@@ -1,6 +1,6 @@
 import React from 'react';
 import {FilterPanelHeader} from '../filter-panel-header.jsx';
-import {FlexBox} from '@heswell/inlay';
+import {FlexBox} from '@heswell/layout';
 import {SearchBar} from '../filter-toolbar/filter-toolbar.jsx';
 
 import './filter-panel.css';

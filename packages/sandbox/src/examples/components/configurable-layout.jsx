@@ -2,8 +2,8 @@ import React, { useRef, useState, useCallback } from 'react';
 import {
     DynamicContainer, Surface, Action, adjustHeaderPosition,
     isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle, followPath
-} from '@heswell/inlay';
-import { LayoutConfigurator, LayoutTreeViewer } from '@heswell/inlay-extras'
+} from '@heswell/layout';
+import { LayoutConfigurator, LayoutTreeViewer } from '@heswell/layout-extras'
 
 
 const NO_STYLES = {};

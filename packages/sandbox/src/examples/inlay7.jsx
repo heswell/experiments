@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlexBox, Component, DynamicContainer, TabbedContainer } from '@heswell/inlay';
+import { FlexBox, Component, DynamicContainer, TabbedContainer } from '@heswell/layout';
 
 export default ({width = 500, height = 400}) =>
   <FlexBox style={{width:600,height:300,flexDirection: 'row', backgroundColor: '#666'}}>

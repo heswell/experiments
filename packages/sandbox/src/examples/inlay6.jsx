@@ -1,5 +1,5 @@
 import React from 'react';
-import { Application, FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/inlay';
+import { Application, FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/layout';
 
 export default (width = 900, height = 800) =>
     <FlexBox id="app-tower" className="SampleApp1" style={{ flexDirection: "column", width: 1200, height: 1000 }}>

@@ -788,14 +788,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@heswell/data@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@heswell/data/-/data-1.1.2.tgz#c460c68a481cafef155b5ddf9210fdeebbe1038c"
-  integrity sha512-UVVfQ2NFh1XCkTE2oBLAetxmtiZePwjLAnzV0w1mR2DDUIA2li9p2wjtOK6E7QLpTdMwWsiq6w2tmA6wvTaLcg==
-  dependencies:
-    d3-array "^2.2.0"
-    typescript "^3.8.3"
-
 "@heswell/stretch@^0.3.2":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@heswell/stretch/-/stretch-0.3.3.tgz#80d77f6f3edece81c3a34a1c564c13c571bbacd9"

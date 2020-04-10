@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import cx from 'classnames';
-import {FlexBox} from '@heswell/inlay';
+import {FlexBox} from '@heswell/layout';
 import { uuid } from '@heswell/utils';
 import AvailableList from './available-list.jsx'; 
 import List from './list/list.jsx'; 

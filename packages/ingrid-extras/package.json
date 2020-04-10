@@ -18,7 +18,7 @@
   "license": "MIT",
   "peerDependencies": {
     "@heswell/ingrid": "^1.0.0",
-    "@heswell/inlay": "^1.0.0",
+    "@heswell/layout": "^1.0.0",
     "@heswell/ui-controls": "^1.0.0",
     "@heswell/utils": "^1.0.0",
     "dygraphs": "^2.1.0",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlexBox, Component, DynamicContainer, TabbedContainer } from '@heswell/inlay';
+import { Component, TabbedContainer } from '@heswell/layout';
 
 export default (width = 500, height = 400) =>
     <TabbedContainer style={{width: 800, height: 500}} active={0} resizeable>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Surface, Component } from '@heswell/inlay';
+import { Surface, Component } from '@heswell/layout';
 
 export default () =>
   <Surface style={{width:800,height:300,backgroundColor: 'brown'}}>

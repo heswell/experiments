@@ -1,7 +1,7 @@
 import React, { Component, useState } from 'react'
 import './componentPalette.css';
 import { uuid } from '@heswell/utils';
-import { Action, getLayoutModel, extendLayoutModel, stretchLayout } from '@heswell/inlay';
+import { Action, getLayoutModel, extendLayoutModel, stretchLayout } from '@heswell/layout';
 
 const header = true;
 const resizeable = true;

@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import Tabs from './staticTabs.jsx';
-import {breadcrumb} from '@heswell/inlay'
+import {breadcrumb} from '@heswell/layout'
 
 import './layoutTreeViewer.css';
 

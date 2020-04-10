@@ -31,7 +31,7 @@ export default {
     ],
     "external": [
         "@heswell/data",
-        "@heswell/inlay",
+        "@heswell/layout",
         "@heswell/ingrid",
         "@heswell/ui-controls",
         "@heswell/utils",

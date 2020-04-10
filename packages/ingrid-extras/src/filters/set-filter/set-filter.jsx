@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
 import { SET_FILTER_DATA_COLUMNS } from '@heswell/utils';
-import {FlexBox} from '@heswell/inlay';
+import {FlexBox} from '@heswell/layout';
 import CheckList from '../check-list.jsx';
 import {FilterCounts} from '../filter-counts.jsx';
 

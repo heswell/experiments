@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { registerClass } from '@heswell/inlay';
+import { registerClass } from '@heswell/layout';
 
 export class AppHeader extends React.Component {
 

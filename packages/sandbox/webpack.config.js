@@ -12,8 +12,8 @@ const localPackages = [
   'data-remote',
   'ingrid',
   'ingrid-extras',
-  'inlay',
-  'inlay-extras',
+  'layout',
+  'layout-extras',
   'ui-controls',
   'utils'
 ]

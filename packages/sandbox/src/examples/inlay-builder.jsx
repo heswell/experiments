@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FlexBox,  PlaceHolder, DynamicContainer } from '@heswell/inlay';
+import { FlexBox,  PlaceHolder, DynamicContainer } from '@heswell/layout';
 import { Control, Select } from '@heswell/ui-controls';
-import {LayoutConfigurator,LayoutTreeViewer, ComponentPalette} from '@heswell/inlay-extras'
+import {LayoutConfigurator,LayoutTreeViewer, ComponentPalette} from '@heswell/layout-extras'
 
 import './inlay-builder.css';
 
