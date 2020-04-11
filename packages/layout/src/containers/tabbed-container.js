@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import cx from 'classnames';
-import Tabstrip, {Tab} from '../components/tabstrip';
+import { useComponentRegistry } from '../registry/component-registry';
 import LayoutItem from './layout-item';
 import {registerClass, typeOf, isLayout} from '../component-registry';
 import { LayoutRoot } from './layout-root';
@@ -19,13 +19,16 @@ export default function TabbedContainer(props){
 
     const el = useRef(null);
 
+    const Tabstrip = useComponentRegistry('Tabstrip');
+    const Tab = useComponentRegistry('Tab');
+
     const onMouseDown = (evt, model=layoutModel) => {
         evt.stopPropagation();
         const dragRect = el.current.getBoundingClientRect();
         dispatch({type: Action.DRAG_START, evt, layoutModel: model, dragRect });
     }
 
-    const handleTabSelection = (nextIdx) => {
+    const handleTabSelection = (e, nextIdx) => {
         console.log(`handleTabSelection newSelectedIdx=${nextIdx}`);
         dispatch({type: Action.SWITCH_TAB, path: layoutModel.$path, nextIdx });
 
@@ -39,7 +42,7 @@ export default function TabbedContainer(props){
     }
 
     const tabs = () => layoutModel.children.map((child,idx) =>
-        <Tab key={idx} text={titleFor(child)} onMouseDown={e => onMouseDown(e,child)} onClose={closeTab}/>
+        <Tab key={idx} label={titleFor(child)} onMouseDown={e => onMouseDown(e,child)} onClose={closeTab}/>
     );
 
     const {$id, computedStyle, active} = layoutModel;
@@ -51,10 +54,10 @@ export default function TabbedContainer(props){
                 // TODO use layoutModel.header
                 style={{position: 'absolute',top: 0,left: 0, width: computedStyle.width, height: 26}}
                 draggable={true} // To be investigated
-                selected={active}
+                value={active}
                 dragging={false} // To be investigated
                 onMouseDown={onMouseDown}
-                onSelectionChange={handleTabSelection}>{tabs()}</Tabstrip>
+                onChange={handleTabSelection}>{tabs()}</Tabstrip>
             {renderChildren()}
         </div>
     );

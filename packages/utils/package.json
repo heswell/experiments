@@ -31,5 +31,9 @@
   "dependencies": {
     "pure-uuid": "^1.5.7"
   },
+  "peerDepencencies": {
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  },
   "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }

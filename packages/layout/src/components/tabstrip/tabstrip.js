@@ -6,12 +6,12 @@ import './tabstrip.css';
 const OVERFLOW_WIDTH = 24;
 const noop = () => {}
 
-export const Tab = ({allowClose=true, idx, text, isSelected, onClick, onClose, onMouseDown}) => {
+export const Tab = ({allowClose=true, idx, label, isSelected, onClick, onClose, onMouseDown}) => {
 
     // don't use useCallback
     const handleClick = e => {
         e.preventDefault();
-        onClick(idx);
+        onClick(e, idx);
     };
     
     const handleClose = e => {
@@ -23,7 +23,7 @@ export const Tab = ({allowClose=true, idx, text, isSelected, onClick, onClose, o
         <li className={cx('Tab', {'active': isSelected})}
             onClick={handleClick}
             onMouseDown={onMouseDown}>
-            <a href="#" className="tab-caption" data-idx={idx}>{text}</a>
+            <a href="#" className="tab-caption" data-idx={idx}>{label}</a>
             {allowClose &&
                 <i className='material-icons close' onClick={handleClose}>close</i>}
         </li>
@@ -38,9 +38,9 @@ export default function Tabstrip({
     children,
     className,
     onMouseDown,
-    onSelectionChange,
+    onChange,
     style,
-    selected=0
+    value=0
 }){
 
     const el = useRef(null);
@@ -51,11 +51,11 @@ export default function Tabstrip({
     }
 
     const tabs = children.map((child, idx) => {
-        const isSelected = selected === idx;
+        const isSelected = value === idx;
         return React.cloneElement(child, {
                 idx,
                 isSelected,
-                onClick: isSelected ? noop : onSelectionChange
+                onClick: isSelected ? noop : onChange
         });
     });
 

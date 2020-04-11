@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ComponentRegistryProvider } from '../registry/component-registry';
+import defaultComponents from './default-components';
+// import defaultComponents from './mui-components';
 import { Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
@@ -102,7 +105,12 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) =>
     const layoutRoot = typeOf(child) === layoutModel.type
         ? child
         : componentFromLayout(layoutModel);
-    const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
+
+    const layoutRootComponent = (
+        <ComponentRegistryProvider components={defaultComponents}>
+            {React.cloneElement(layoutRoot, rootProps)}
+        </ComponentRegistryProvider>
+    );
 
     if (dragOperation.current) {
         // better to leave style as-is and apply a scale transform.
