@@ -10,6 +10,7 @@ const Display = {
     None: 1
 }
 
+/** @type {LayoutActions}  */
 export const Action = {
     DRAG_START: 'drag-start',
     DRAG_DROP: 'drag-drop',

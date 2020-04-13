@@ -7,6 +7,7 @@ import { LayoutRoot } from './layout-root';
 import { Action } from '../model/layout-reducer';
 import { componentFromLayout } from '../util/component-from-layout-json';
 
+/** @type {TabbedContainerComponent} */
 export default function TabbedContainer(props){
 
     const {layoutModel, dispatch, onTabSelectionChanged} = props;
@@ -33,7 +34,7 @@ export default function TabbedContainer(props){
         dispatch({type: Action.SWITCH_TAB, path: layoutModel.$path, nextIdx });
 
         if (onTabSelectionChanged){
-            onTabSelectionChanged(newSelectedIdx);
+            onTabSelectionChanged(nextIdx);
         }
     }
 

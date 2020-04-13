@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ComponentRegistryProvider } from '../registry/component-registry';
-import defaultComponents from './default-components';
-// import defaultComponents from './mui-components';
+// import defaultComponents from './default-components';
+import defaultComponents from './mui-components';
 import { Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
@@ -11,7 +11,8 @@ import useLayout from './layout-hook';
 
 const EMPTY_OBJECT = {};
 
-export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) => {
+/** @type {LayoutRootComponent} */
+export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) => {
     const {props: {onLayoutModel, ...props}} = child;
     const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(child), props }, inheritedLayout);
     const [_, setDrag] = useState(-1.0);
@@ -44,7 +45,7 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) =>
         dispatchLayoutAction({ type: Action.DRAG_START, layoutModel, dragRect, dragPos, instructions});
     }
 
-    function dragStart(dragRect, dragPos, draggedLayoutModel) {
+    function dragStart(dragRect, dragPos, draggedLayoutModel, instructions) { // TODO are we using instructions ?
         var { top, left } = dragRect;
         // note: by passing null as dragContainer path, we are relying on registered DragContainer. How do we allow an 
         // override for this ?
@@ -106,11 +107,9 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) =>
         ? child
         : componentFromLayout(layoutModel);
 
-    const layoutRootComponent = (
-        <ComponentRegistryProvider components={defaultComponents}>
-            {React.cloneElement(layoutRoot, rootProps)}
-        </ComponentRegistryProvider>
-    );
+    const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
+
+    let dragComponent = undefined;
 
     if (dragOperation.current) {
         // better to leave style as-is and apply a scale transform.
@@ -125,18 +124,21 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout }) =>
         };
         // pass dispatch via context
         const layoutItemProps = {
-            key: dragLayoutModel.$id,
             title: dragLayoutModel.props.title,
             layoutModel: dragLayoutModel,
             dispatch: dispatchLayoutAction
         };
 
-        const dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(dragLayoutModel)}</LayoutItem>;
-        return [layoutRootComponent, dragComponent];
+        dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(dragLayoutModel)}</LayoutItem>;
 
-    } else {
-        return layoutRootComponent;
     }
+
+    return (
+        <ComponentRegistryProvider components={defaultComponents}>
+            {layoutRootComponent}
+            {dragComponent}
+        </ComponentRegistryProvider>
+    )
 
 }
 

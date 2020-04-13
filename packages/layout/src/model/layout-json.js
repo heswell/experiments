@@ -23,27 +23,32 @@ const defaultHeaderSpec = () => ({
 export const getManagedDimension = style => style.flexDirection === 'column' ? ['height', 'width'] : ['width', 'height'];
 
 //TODO components should be able to register props here
+
 const LayoutProps = {
-    resizeable: true,
-    header: defaultHeaderSpec,
-    active: true,
-    dragStyle: true // still used ? flexbox-shuffle ?
+  active: true,
+  dragStyle: true, // still used ? flexbox-shuffle ?
+  header: defaultHeaderSpec,
+  resizeable: true,
 }
 
-export const getLayoutModel = (type, {children, contentModel, style, ...props}) => {
+  /** @type {getLayoutModel} */
+  export const getLayoutModel = (type, {children, contentModel, style, ...props}) => {
     const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined);
     
     const $id = props.id || uuid();
-    // console.log(`[model] getLayoutModel > ${$id.slice(24)} ${type}`)
+    const {active, dragStyle, header, resizeable} = getLayoutProps(type, props)
 
     return {
-        type,
-        $id,
-        ...layoutProps(type, props),
-        style,
-        props: ownProps.length === 0 ? undefined : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
-        children: isContainer(type) ? getLayoutModelChildren(children, contentModel) : []
-    }
+      $id,
+      active,
+      dragStyle,
+      header,
+      resizeable,
+      type,
+      style,
+      props: ownProps.length === 0 ? {title: type} : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
+      children: isContainer(type) ? getLayoutModelChildren(children, contentModel) : []
+    };
   }
   
 export function resetPath(layoutModel, path){
@@ -86,7 +91,9 @@ function addDefaultProperties (model){
   return model;
 }
 
-function layoutProps(type, props){
+/** @type {getLayoutProps} */
+function getLayoutProps(type, props){
+    /** @type {LayoutProps}  */
     const results = {};
     let layoutProp;
     Object.entries(props).forEach(([key, value]) => {

@@ -12,6 +12,7 @@ import { getManagedDimension } from '../model/layout-json';
 const PureFlexBox = React.memo(FlexBox);
 PureFlexBox.displayName = 'FlexBox';
 
+/** @type {FlexboxComponent} */
 export default function FlexBox(props){
 
     const {layoutModel, dispatch} = props;
@@ -121,9 +122,6 @@ export default function FlexBox(props){
         return results;
     }
 }
-
-// FlexBox.displayName = 'FlexBox';
-// export default FlexBox;
 
 // needs to be registerComponent
 registerClass('FlexBox', FlexBox, true);

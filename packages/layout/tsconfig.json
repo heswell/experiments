@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "jsx": "react",
+  },
+  "include": ["types.d.ts", "src/**/*"]
+}

@@ -8,7 +8,6 @@ export {default as Component} from './src/component/component';
 export {default as PlaceHolder} from './src/components/place-holder/place-holder.jsx';
 export {adjustHeaderPosition,getLayoutModel, extendLayoutModel} from './src/model/layout-json';
 export * from './src/model/path-utils';
-export * from './src/model/layoutModel'; // deprecated
 export * from './src/model/layout-utils';
 export {Action} from './src/model/layout-reducer.js';
 export {registerClass} from './src/component-registry';

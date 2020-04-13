@@ -3,6 +3,7 @@ export declare class EventEmitter<Events> {
   emit: <E extends keyof Events>(event: E, arg?: Events[E], ...args: any[]) => void;
 }
 
+export declare const uuid: () => string;
 export declare const createLogger: any;
 export declare const logColor: any;
 

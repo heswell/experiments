@@ -16,7 +16,7 @@ const sampleContextMenu =
     <MenuItem action='inlay3' label='Surface, single child' />
     <MenuItem action='inlay4' label='Application, single child' />
     <MenuItem action='inlay5' label='Tower > Terrace, margins and borders' />
-    <MenuItem action='inlay6' label='Complex nested layout' />
+    <MenuItem action='layout-complex-nested' label='Complex nested layout' />
     <MenuItem action='inlay7' label='Dynamic container (JSON content), within Flexbox' />
     <MenuItem action='inlay8' label='Singleton FlexBox > Component, DynamicContainer > TabbedContainer' />
     <MenuItem action='inlay9' label='FlexBox, single child' />
@@ -29,7 +29,7 @@ const sampleContextMenu =
     <MenuItem action='inlay16' label='Nested FlexBox' />
     <MenuItem action='inlay-builder' label='Layout Builder' />
     <MenuItem action='inlay18' label='Deeper nessting of FlexBoxes' />
-    <MenuItem action='inlay-tabs-01' label='TabbedContainer' />
+    <MenuItem action='layout-tabs-01' label='TabbedContainer' />
     <Separator />
     <MenuItem action='grid1' label='Grid, local Instruments' />
     <MenuItem action='grid-viewserver' label='Grid, remote Instruments (node.js ViewServer)' />
@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('inlay-tabs-01');
+render('layout-complex-nested');
 
 function onContextMenu(e){
   e.preventDefault();

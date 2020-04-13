@@ -25,13 +25,13 @@ const Registry = {
   }
 }
 
-const ComponentRegistryContext = React.createContext();
+const ComponentRegistryContext = React.createContext(null);
 
+/** @type {ComponentRegistryProvider} */
 export const ComponentRegistryProvider = ({components=[], children}) => {
   Registry.registerAll(components);
   return React.createElement(ComponentRegistryContext.Provider,{ value: Registry }, children);
 }
-
 
 export const useComponentRegistry = (componentId, component) => {
   const context = React.useContext(ComponentRegistryContext);

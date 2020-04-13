@@ -3,9 +3,19 @@ import layoutReducer, { initModel, Action } from '../model/layout-reducer';
 
 import {useReducer} from 'react';
 
-const EMPTY_OBJECT = {};
+const NULL_LAYOUT = {
+  $id: undefined,
+  children: undefined,
+  computedStyle: undefined,
+  layoutModel: undefined,
+  props: undefined,
+  style: undefined,
+  type: undefined
+}
 
-export default function useLayout(initialData, inheritedLayout=EMPTY_OBJECT){
+
+/** @type {LayoutHook} */
+const useLayout = (initialData, inheritedLayout=NULL_LAYOUT) => {
   const [layoutModel, dispatchLayoutAction] = useReducer(layoutReducer, {...initialData, layout: inheritedLayout.computedStyle}, initModel);
 
   if (layoutModel === null){
@@ -17,3 +27,5 @@ export default function useLayout(initialData, inheritedLayout=EMPTY_OBJECT){
   return [layoutModel, dispatchLayoutAction];
 
 }
+
+export default useLayout;

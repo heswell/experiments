@@ -8,6 +8,5 @@ export {default as LayoutItem} from './src/containers/layout-item';
 export {default as Component} from './src/component/component';
 export {default as PlaceHolder} from './src/components/place-holder/place-holder.jsx';
 export * from './src/model/path-utils';
-export * from './src/model/layoutModel';
 export * from './src/model/layout-utils';
 export {registerClass} from './src/component-registry';
