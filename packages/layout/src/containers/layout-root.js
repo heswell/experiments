@@ -112,24 +112,33 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
     let dragComponent = undefined;
 
     if (dragOperation.current) {
-        // better to leave style as-is and apply a scale transform.
-        // this doesn't change the nested children computed style
-        const { component: { computedStyle, ...rest }, position } = dragOperation.current;
-        const dragLayoutModel = {
+        const { component: { computedStyle: {transform, transformOrigin, ...computedRest}, ...rest }, position } = dragOperation.current;
+        const dragContainerLayoutModel = {
             ...rest,
             computedStyle: {
-                ...computedStyle,
+                ...computedRest,
+                transform,
+                transformOrigin,
                 ...position
             }
         };
+
+        const draggedItemLayoutModel = {
+            ...rest,
+            computedStyle: {
+                ...computedRest,
+                left: 0,
+                top: 0,
+            }
+        }
         // pass dispatch via context
         const layoutItemProps = {
-            title: dragLayoutModel.props.title,
-            layoutModel: dragLayoutModel,
+            title: dragContainerLayoutModel.props.title,
+            layoutModel: dragContainerLayoutModel,
             dispatch: dispatchLayoutAction
         };
 
-        dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(dragLayoutModel)}</LayoutItem>;
+        dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(draggedItemLayoutModel)}</LayoutItem>;
 
     }
 

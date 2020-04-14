@@ -56,7 +56,6 @@ export default function TabbedContainer(props){
                 style={{position: 'absolute',top: 0,left: 0, width: computedStyle.width, height: 26}}
                 draggable={true} // To be investigated
                 value={active}
-                dragging={false} // To be investigated
                 onMouseDown={onMouseDown}
                 onChange={handleTabSelection}>{tabs()}</Tabstrip>
             {renderChildren()}

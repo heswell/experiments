@@ -16,7 +16,6 @@ PureFlexBox.displayName = 'FlexBox';
 export default function FlexBox(props){
 
     const {layoutModel, dispatch} = props;
-
     if (layoutModel === undefined){
         return (
             <LayoutRoot><PureFlexBox {...props} /></LayoutRoot>
