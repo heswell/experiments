@@ -1,7 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ComponentRegistryProvider } from '../registry/component-registry';
-// import defaultComponents from './default-components';
-import defaultComponents from './mui-components';
 import { Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
 import { Draggable } from '../drag-drop/draggable';
@@ -17,7 +14,6 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
     const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(child), props }, inheritedLayout);
     const [_, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
-
     useEffect(() => {
         if (layoutModel !== null){
             if (layoutModel.drag) {
@@ -56,7 +52,6 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
 
         // the dragTransform should happen here
 
-        console.log(`%cdragTransform ${JSON.stringify(dragTransform)}`,'color:blue;font-weight:bold;')
         // see surface for draggedIcon
         var { $path, computedStyle, ...rest } = draggedLayoutModel;
 
@@ -143,10 +138,10 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
     }
 
     return (
-        <ComponentRegistryProvider components={defaultComponents}>
+        <>
             {layoutRootComponent}
             {dragComponent}
-        </ComponentRegistryProvider>
+        </>
     )
 
 }

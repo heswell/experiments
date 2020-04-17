@@ -1,25 +1,20 @@
 import React, { useRef } from 'react';
 import cx from 'classnames';
+import rootWrapper from './layout-root-wrapper';
 import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
-import { LayoutRoot } from './layout-root';
 import { Action } from '../model/layout-reducer';
 import { getManagedDimension } from '../model/layout-json'; 
 
-const PureFlexBox = React.memo(FlexBox);
-PureFlexBox.displayName = 'FlexBox';
 
 /** @type {FlexboxComponent} */
-export default function FlexBox(props){
-
+const FlexBox = function FlexBox(props){
     const {layoutModel, dispatch} = props;
     if (layoutModel === undefined){
-        return (
-            <LayoutRoot><PureFlexBox {...props} /></LayoutRoot>
-        )
+        return rootWrapper(FlexBox, props);
     }
     // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
 
@@ -109,6 +104,8 @@ export default function FlexBox(props){
                     dispatch
                 };
 
+                console.log(`flexbox child`, layoutProps)
+
                 if (isLayout(child)) {
                     results.push(React.cloneElement(child, { ...layoutProps }));
                 } else {
@@ -121,6 +118,7 @@ export default function FlexBox(props){
         return results;
     }
 }
+export default FlexBox;
 
 // needs to be registerComponent
 registerClass('FlexBox', FlexBox, true);

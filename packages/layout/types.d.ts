@@ -3,7 +3,7 @@ type ComponentRegistryList = ComponentRegistryEntry[];
 
 type ComponentRegistryProvider = React.FC<{components?: ComponentRegistryList;}>;
 
-type useComponentRegistry = (componentId: string, component?: React.FC) => React.RC | undefined;
+type useComponentRegistry = (componentId: string, component?: React.FC) => React.FC | undefined;
 
 interface LayoutProps {
   active?: number;

@@ -299,7 +299,7 @@ function containsPoint(rect, x, y) {
 
 function measureTabs(id) {
     // Note the :scope selector is not supported on IE
-    return Array.from(document.getElementById(id).querySelectorAll(`:scope > .Tabstrip > .tabstrip-inner-sleeve > .tabstrip-inner > .Tab`))
+    return Array.from(document.getElementById(id).querySelectorAll(`:scope > .Tabstrip .Tab`))
         .map(tab => tab.getBoundingClientRect())
-        .map(({ left, right }) => ({ left, right }))
+        .map(({ left, right }) => ({ left, right }));
 }

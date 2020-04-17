@@ -12,7 +12,7 @@ const useTabsStyles = makeStyles({
 const Tabstrip = (props) => {
   const classes = useTabsStyles();
   return (
-    <MUITabs {...props} classes={classes}/>
+    <MUITabs {...props} className="Tabstrip" classes={classes}/>
   )
 }
 
@@ -28,10 +28,11 @@ const useTabStyles = makeStyles(theme => ({
 
 const Tab = props => {
   const classes = useTabStyles();
-  return <MUITab {...props} classes={classes}/>
+  return <MUITab {...props} className="Tab" classes={classes}/>
 }
 
 
+/** @type {ComponentRegistryList} */
 const components = [
   ['Tabstrip',  Tabstrip],
   ['Tab', Tab]

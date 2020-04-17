@@ -1,3 +1,5 @@
+import React from 'react';
+
 const _containers = {};
 
 export const ComponentRegistry = {};
@@ -18,9 +20,10 @@ export function typeOf(element){
 
 	let type;
 	
+
 	if (element){
 		if (typeof element.type === 'function' || typeof element.type === 'object'){
-			type = element.type.displayName || element.type.name; 
+			type = element.type.displayName || element.type.name || (element.type.type && element.type.type.name); 
 		} else if (typeof element.type === 'string'){
 			type = element.type;
 		}else if (element.constructor){
