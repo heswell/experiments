@@ -11,6 +11,7 @@ export default forwardRef(Canvas)
 
 export function Canvas ({
   columnGroup,
+  contentHeight,
   firstVisibleRow,
   gridModel,
   height,
@@ -22,8 +23,17 @@ export function Canvas ({
   useImperativeHandle(ref, () => ({
     scrollLeft: scrollLeft => {
       contentEl.current.style.left = `-${scrollLeft}px`;
+    },
+    scrollTop: scrollTop => {
+      console.log(`scrolling Canvas set top to -${scrollTop}`)
+      contentEl.current.style.transform = `translate3d(0px, -${scrollTop}px, 0px)`;
     }
-  }))
+  }));
+
+  const handleScroll = e => {
+    // scroll must no bubble, or Viewport scroll handler will be triggered.
+    e.stopPropagation();
+  }
 
   const handleContextMenuFromCanvas = (e) => {
     showContextMenu(e, 'canvas')
@@ -50,14 +60,16 @@ export function Canvas ({
     });
 
   const className = cx('Canvas', {
-    fixed: columnGroup.locked
+    fixed: columnGroup.locked,
+    scrolling: !columnGroup.locked
   });
 
   return (
     <div style={{ left, width, height }} className={className}
-      onContextMenu={handleContextMenuFromCanvas} >
+      onContextMenu={handleContextMenuFromCanvas}
+      onScroll={handleScroll}>
       <div ref={contentEl} className="canvas-content"
-        style={{ width: Math.max(columnGroup.width, width), height }}>
+        style={{ width: Math.max(columnGroup.width, width), height: contentHeight }}>
         {gridRows}
       </div>
     </div>

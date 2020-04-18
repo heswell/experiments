@@ -53,7 +53,6 @@ const Viewport = React.memo(function Viewport({
     model,
     onFilterChange,
     style
-    // selectedRows
 }){
     const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
@@ -125,11 +124,13 @@ const Viewport = React.memo(function Viewport({
             setRange(firstRow, firstRow + rowCount);
         // }
 
-    }, [height])
+    }, [height]);
 
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
+        console.log(`handleVerticalScroll (useThrottledScroll) scrollTop ${scrollTop.current} => ${value}`)
         scrollTop.current = value;
-        const firstRow = Math.floor(value / model.rowHeight)
+        const firstRow = Math.floor(value / model.rowHeight);
+        scrollingCanvas.current.scrollTop(value);
         if (firstRow !== firstVisibleRow.current) {
             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
             firstVisibleRow.current = firstRow;
@@ -149,6 +150,7 @@ const Viewport = React.memo(function Viewport({
     }, [])
 
     const setSrollTop = useCallback((value) => {
+        console.log(`setScrollTop ${value}`)
         verticalScrollContainer.current.scrollTop = scrollTop.current = value;
     }, [])
 
@@ -187,21 +189,8 @@ const Viewport = React.memo(function Viewport({
         <>
             <div className={className} style={style}>
 
-                {horizontalScrollingRequired &&
-                    model._groups.filter(colGroup => !colGroup.locked).map((colGroup, idx) =>
-                        <div className='CanvasScroller horizontal scrollable-content'
-                            ref={scrollableContainerEl}
-                            key={idx} style={{ left: colGroup.renderLeft, width: colGroup.renderWidth }}
-                            onScroll={handleHorizontalScroll}>
-
-                            <div className='CanvasScroller-content' style={{ width: colGroup.width, height: 15 }} />
-                        </div>
-                    )
-                }
-
                 <div className='ViewportContent scrollable-content'
                     ref={verticalScrollContainer}
-                    style={{ bottom: horizontalScrollingRequired ? 15 : 0, overflow }}
                     onScroll={handleVerticalScroll} >
 
                     <div className='scrolling-canvas-container'
@@ -209,11 +198,12 @@ const Viewport = React.memo(function Viewport({
                         {
                             model._groups.map((columnGroup, idx) =>
                                 <Canvas
+                                    contentHeight={contentHeight}
                                     key={idx}
                                     gridModel={model}
                                     rows={emptyRows || data.rows}
                                     firstVisibleRow={firstVisibleRow.current}
-                                    height={contentHeight}
+                                    height={columnGroup.locked ? contentHeight: height}
                                     ref={columnGroup.locked ? null : scrollingCanvas}
                                     columnGroup={columnGroup}
                                 />

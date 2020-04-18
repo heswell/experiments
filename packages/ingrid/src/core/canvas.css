@@ -4,6 +4,12 @@
   top: 0;
 }
 
+.Canvas.scrolling {
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: sticky;
+}
+
 .Canvas .canvas-content {
   overflow: hidden;
   position: absolute;

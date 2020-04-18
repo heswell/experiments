@@ -1006,6 +1006,7 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth, scrollL
 
 
     if (displayWidth / totalColumnWidth < .66){
+        return [totalColumnWidth, undefined];
         console.log(`displayWidth is ${((displayWidth / totalColumnWidth) * 100).toFixed(2)}% of display width, we need to virtualize horizontally`)
         const [firstColumnIdx, lastColumnIdx, offset] = measureVirtualColumns(visibleColumns, displayWidth, scrollLeft, defaultWidth);
         console.log(`number of columns to render = ${lastColumnIdx + 1}`)
