@@ -12,15 +12,22 @@ const buildDataView = async url => {
     .catch(err => console.log(`failed to load data at ${url} ${err}`))
 }
 
+const loadData = data => Promise.resolve({default: data});
+
 const logger = createLogger('LocalDataSource', logColor.blue);
 
 export default class LocalDataSource {
   constructor({
+    data,
     url,
     tableName
   }) {
 
-    this.eventualView = buildDataView(url);
+    this.eventualView = 
+      url ? buildDataView(url) :
+      data ? loadData(data) :
+      Promise.reject('bad params');
+
     this.columns = null;
     this.meta = null;
 

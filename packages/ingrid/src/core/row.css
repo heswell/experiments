@@ -16,6 +16,11 @@
 	background-color: #fdfdfd;
 }
 
+.GridRow .virtual-padding {
+	display: inline-block;
+	height: 100%;
+}
+
 /*.GridRow:not(.selected):hover {
 	background-color: rgb(120, 120, 120);
 	border-top-left-radius: 5px;

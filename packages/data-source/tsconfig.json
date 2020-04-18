@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
+    "esModuleInterop": true,
     "noEmit": true,
     "jsx": "react",
     "target": "ES5"

@@ -62,8 +62,7 @@ module.exports = (_, { mode = 'development' }) => {
         },
         {
           test: /\.css$/,
-          // use: production ? [MiniCssExtractPlugin.loader, "css-loader"] : ["css-loader"]
-          use: [MiniCssExtractPlugin.loader, "css-loader"]
+          use: production ? [MiniCssExtractPlugin.loader, "css-loader"] : ["style-loader", "css-loader"]
         }
       ],
     },
@@ -71,8 +70,7 @@ module.exports = (_, { mode = 'development' }) => {
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'public/index.html')
       }),
-      new MiniCssExtractPlugin(),
-      // ...(production ? [new MiniCssExtractPlugin()]: [])
+      ...(production ? [new MiniCssExtractPlugin()]: []),
       new CopyPlugin([
         { from: './public/assets/fonts/MaterialIcons-Regular.woff2', to: 'assets/fonts' },
         // {from : '../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2', to: 'assets/fonts'},

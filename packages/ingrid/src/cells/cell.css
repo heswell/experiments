@@ -3,7 +3,8 @@
 	--border-color-selected: rgb(46, 100, 139);
 
 	position: relative;
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
 	vertical-align: top;
 	overflow:hidden;
 	white-space: nowrap;
@@ -14,7 +15,6 @@
 	border-color: var(--border-color);
 	font-weight: normal;
 	height: 100%;
-	line-height: 24px;
 	cursor: default;
     z-index:0;
 }

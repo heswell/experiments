@@ -73,6 +73,7 @@ const Viewport = React.memo(function Viewport({
 
     useEffect(() => {
         console.log(`%c[viewport] scrollLeft => ${model.scrollLeft}`,'color:green;font-weight:bold;')
+        // required only when column is dragged outside viewport, causing programatic scroll ?
         setSrollLeft(model.scrollLeft);
     },[model.scrollLeft])
 
@@ -93,7 +94,6 @@ const Viewport = React.memo(function Viewport({
 
                 if (msg.filter !== undefined){
                     console.log(`we have a new filter ${JSON.stringify(msg.filter,null,2)}`)
-                    //dispatch({type: Action.filter, filter})
                     onFilterChange(msg.filter);
                 }
 
@@ -142,6 +142,8 @@ const Viewport = React.memo(function Viewport({
         if (e.target === e.currentTarget) {
             const scrollLeft = e.target.scrollLeft;
             scrollingCanvas.current.scrollLeft(scrollLeft);
+            dispatch({ type: Action.SCROLLLEFT, scrollLeft})
+            // we won't need this now that we are moving scrollLeft handling into grid model
             callbackPropsDispatch({ type: 'scroll', scrollLeft })
         }
     }, [])

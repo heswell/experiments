@@ -65,7 +65,7 @@ async function render(id){
 
 }
 
-render('layout-complex-nested');
+render('grid-1000x1000');
 
 function onContextMenu(e){
   e.preventDefault();

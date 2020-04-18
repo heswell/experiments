@@ -33,6 +33,10 @@ export interface ColumnGroup {
   width: number;
 }
 
+export type ColumnMeta = {
+  [key: string]: number;
+}
+
 export interface GridModel {
   availableColumns: Column[];
   collapsedColumns: any;
@@ -44,7 +48,7 @@ export interface GridModel {
   groupState: any;
   headerHeight: number;
   height: number;
-  meta: any;
+  meta: ColumnMeta;
   minColumnWidth: number;
   rowCount: number;
   rowHeight: number;
@@ -54,6 +58,7 @@ export interface GridModel {
   scrollLeft: number;
   sortBy: any;
   totalColumnWidth: number;
+  virtualCanvas?: {firstColumnIdx: number; lastColumnIdx: number; offset: number;}
   width: number;
   _columnDragPlaceholder: any;
   _groups: ColumnGroup[];
