@@ -10,12 +10,9 @@ import * as Action from '../model/actions';
 import Canvas from './canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
 import dataReducer, { initialData } from '../model/data-reducer';
-import { getScrollbarSize } from '../utils/domUtils';
 import GridContext from '../grid-context';
 
 import './viewport.css';
-
-const scrollbarSize = getScrollbarSize();
 
 function useThrottledScroll(callback) {
 
@@ -127,7 +124,6 @@ const Viewport = React.memo(function Viewport({
     }, [height]);
 
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
-        console.log(`handleVerticalScroll (useThrottledScroll) scrollTop ${scrollTop.current} => ${value}`)
         scrollTop.current = value;
         const firstRow = Math.floor(value / model.rowHeight);
         scrollingCanvas.current.scrollTop(value);
@@ -139,18 +135,7 @@ const Viewport = React.memo(function Viewport({
 
     }, [height]));
 
-    const handleHorizontalScroll = useCallback(e => {
-        if (e.target === e.currentTarget) {
-            const scrollLeft = e.target.scrollLeft;
-            scrollingCanvas.current.scrollLeft(scrollLeft);
-            dispatch({ type: Action.SCROLLLEFT, scrollLeft})
-            // we won't need this now that we are moving scrollLeft handling into grid model
-            callbackPropsDispatch({ type: 'scroll', scrollLeft })
-        }
-    }, [])
-
     const setSrollTop = useCallback((value) => {
-        console.log(`setScrollTop ${value}`)
         verticalScrollContainer.current.scrollTop = scrollTop.current = value;
     }, [])
 
@@ -172,10 +157,6 @@ const Viewport = React.memo(function Viewport({
     // displayed even when not needed, when grid is stretched.
     const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
     const contentHeight = Math.max(model.rowHeight * data.rowCount, maxContentHeight);
-    const displayWidth = contentHeight > height
-        ? model.width - scrollbarSize
-        : model.width;
-    const overflow = displayWidth === model.width ? 'hidden' : 'auto';
 
     let emptyRows = groupBy.current === model.groupBy
         ? null
@@ -188,11 +169,9 @@ const Viewport = React.memo(function Viewport({
     return (
         <>
             <div className={className} style={style}>
-
                 <div className='ViewportContent scrollable-content'
                     ref={verticalScrollContainer}
                     onScroll={handleVerticalScroll} >
-
                     <div className='scrolling-canvas-container'
                         style={{ width: model.displayWidth, height: contentHeight }}>
                         {
@@ -213,7 +192,6 @@ const Viewport = React.memo(function Viewport({
             </div>
             {model._movingColumn &&
                 <ColumnBearer gridModel={model} rows={data.rows} />}
-
         </>
     );
 

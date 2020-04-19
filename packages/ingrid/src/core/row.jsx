@@ -55,8 +55,6 @@ const Row = React.memo(function Row({
         ? [{name: PADDING_CELL, width: virtualCanvas.offset}, ...columns.slice(virtualCanvas.firstColumnIdx, virtualCanvas.lastColumnIdx + 1)] 
         : columns;
 
-    console.log(`render row virtual canvas = ${JSON.stringify(virtualCanvas)} ${columnsToRender.length} columns to render, of total ${columns.length} columns`);
-
     const className = cx(
         'GridRow', striping, {
             selected: isSelected,

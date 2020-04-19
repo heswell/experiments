@@ -68,6 +68,8 @@ const Grid = ({
     // TODO why don't we store this in the model ?
     const [filter, setFilter] = useState(null);
 
+    // Used to sync headers with horizontal scrolling canvas. Implemented via 
+    // direct callback for speed - model.scrollLeft is too slow
     const handleScroll = useCallback(params => {
         const { scrollLeft: pos = -1 } = params;
         if (pos !== -1) {

@@ -18,7 +18,6 @@ export const initialData = {
 // we will need additional action types to update
 export default function (model) {
   return (state, action) => {
-    console.log(`[data-reducer] ${action.type}`)
     if (action.type === 'range'){
       return setRange(state, action, model.meta);
     } else if (action.type === 'data'){

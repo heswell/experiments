@@ -4,16 +4,16 @@ import {LocalDataSource as View} from '@heswell/data-source';
 
  
 const data = [];
-const columns = [{name: 'id', width: 200, locked: true}, {name:'ccy', width: 200, locked: true}];
+const columns = [{name: 'id', width: 200}, {name:'ccy', width: 200}];
 
 const start = performance.now();
-for (let i = 2 ; i < 10; i++){
+for (let i = 2 ; i < 100; i++){
   columns.push({name: `${i-1}M`, width: 200});
 }
 
 for (let i=0;i<1000;i++){
   const row = {id: i, ccy: 'USDGBP'};
-  for (let j=2;j<10;j++){
+  for (let j=2;j<100;j++){
     row[`${j-1}M`] = `${i},${j-1}`;
   }
   data.push(row);

@@ -2,6 +2,7 @@ import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'reac
 import cx from 'classnames';
 import Row from './row.jsx';
 import GridContext from '../grid-context';
+import * as Action from '../model/actions';
 
 import './canvas.css';
 
@@ -18,21 +19,23 @@ export function Canvas ({
   rows
 }, ref) {
   const contentEl = useRef(null);
-  const {showContextMenu} = useContext(GridContext);
+  const {callbackPropsDispatch, dispatch, showContextMenu} = useContext(GridContext);
 
   useImperativeHandle(ref, () => ({
     scrollLeft: scrollLeft => {
       contentEl.current.style.left = `-${scrollLeft}px`;
     },
     scrollTop: scrollTop => {
-      console.log(`scrolling Canvas set top to -${scrollTop}`)
       contentEl.current.style.transform = `translate3d(0px, -${scrollTop}px, 0px)`;
     }
   }));
 
+  // Horizontal scrolling
   const handleScroll = e => {
     // scroll must no bubble, or Viewport scroll handler will be triggered.
     e.stopPropagation();
+    dispatch({ type: Action.SCROLLLEFT, scrollLeft: e.target.scrollLeft});
+    callbackPropsDispatch({ type: 'scroll', scrollLeft: e.target.scrollLeft })
   }
 
   const handleContextMenuFromCanvas = (e) => {
