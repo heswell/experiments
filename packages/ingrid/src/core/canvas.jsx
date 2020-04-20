@@ -8,6 +8,7 @@ import './canvas.css';
 
 const byKey = ([key1], [key2]) => key1 - key2;
 
+//TODO move to model
 function useKeys(columns){
   const map = useRef(new Map(columns.map((column,idx) => [column.key, idx])));
   const maxKey = useRef(map.current.size);
@@ -48,6 +49,7 @@ function useKeys(columns){
 
 export default forwardRef(Canvas)
 
+/** @type {CanvasComponent} */
 export function Canvas ({
   columnGroup,
   contentHeight,
@@ -55,7 +57,7 @@ export function Canvas ({
   gridModel,
   height,
   rows
-}, ref) {
+}, ref) {// we're not actually assigning ref
   const contentEl = useRef(null);
   const {callbackPropsDispatch, dispatch, showContextMenu} = useContext(GridContext);
 

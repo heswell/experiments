@@ -73,7 +73,7 @@ interface LayoutModel extends LayoutProps {
   style: React.CSSProperties;
   title?: string;
   type: string;
-};
+}
 
 type layoutDispatcher = (action: LayoutAction) => void;
 type LayoutHook = (initialData: object, inheritedLayout?: LayoutModel) => [LayoutModel, layoutDispatcher]

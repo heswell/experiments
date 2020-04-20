@@ -51,7 +51,8 @@ const Viewport = React.memo(function Viewport({
     onFilterChange,
     style
 }){
-    const scrollingCanvas = useRef(null);
+    const canvasRefs = useRef([]);
+    // const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
     const verticalScrollContainer = useRef(null);
     const scrollTop = useRef(0);
@@ -127,7 +128,8 @@ const Viewport = React.memo(function Viewport({
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
         scrollTop.current = value;
         const firstRow = Math.floor(value / model.rowHeight);
-        scrollingCanvas.current.scrollTop(value);
+        canvasRefs.current.forEach(canvas => canvas.scrollTop(value))
+        // scrollingCanvas.current.scrollTop(value);
         if (firstRow !== firstVisibleRow.current) {
             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
             firstVisibleRow.current = firstRow;
@@ -183,8 +185,10 @@ const Viewport = React.memo(function Viewport({
                                     gridModel={model}
                                     rows={emptyRows || data.rows}
                                     firstVisibleRow={firstVisibleRow.current}
-                                    height={columnGroup.locked ? contentHeight: height}
-                                    ref={columnGroup.locked ? null : scrollingCanvas}
+                                    height={height}
+                                    // height={columnGroup.locked ? contentHeight: height}
+                                    // ref={columnGroup.locked ? null : scrollingCanvas}
+                                    ref={canvas => canvasRefs.current[idx] = canvas}
                                     columnGroup={columnGroup}
                                 />
                             )}

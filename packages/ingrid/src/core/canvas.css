@@ -2,12 +2,13 @@
   overflow: hidden;
   position: absolute;
   top: 0;
+  position: sticky;
+  display: inline-block;
 }
 
 .Canvas.scrolling {
   overflow-x: auto;
   overflow-y: hidden;
-  position: sticky;
 }
 
 .Canvas .canvas-content {

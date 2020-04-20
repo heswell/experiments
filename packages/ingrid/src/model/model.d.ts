@@ -1,3 +1,4 @@
+import ColumnBearer from "../core/column-bearer";
 
 type FlashStyle = 'arrow' | 'bg-only' | 'arrow-bg';
 export interface ColumnType {

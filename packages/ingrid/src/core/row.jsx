@@ -63,7 +63,7 @@ const Row = React.memo(function Row({
     );
 
     
-    // filtering should already be done in model
+    //TODO move to model filtering should already be done in model
     const cells = columns.filter(column => !column.hidden).map((column, idx) => 
         column.name === PADDING_CELL
             ? <div key="virtual-padding" className='virtual-padding' style={{width: virtualCanvas.offset}}/>
