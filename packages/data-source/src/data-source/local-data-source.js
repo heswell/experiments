@@ -12,7 +12,9 @@ const buildDataView = async url => {
     .catch(err => console.log(`failed to load data at ${url} ${err}`))
 }
 
-const loadData = data => Promise.resolve({default: data});
+const loadData = data => {
+  return Promise.resolve({default: data});
+}
 
 const logger = createLogger('LocalDataSource', logColor.blue);
 

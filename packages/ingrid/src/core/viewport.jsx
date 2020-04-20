@@ -68,11 +68,11 @@ const Viewport = React.memo(function Viewport({
     },[model.rowCount])
 
     useEffect(() => {
-        console.log(`%c[viewport] scrollLeft => ${model.scrollLeft}`,'color:green;font-weight:bold;')
         // required only when column is dragged outside viewport, causing programatic scroll ?
         setSrollLeft(model.scrollLeft);
     },[model.scrollLeft])
 
+    // TOFO useDataSource(dataSource, columns, rangs)
     useEffect(() => {
 
         // todo move into model
@@ -85,6 +85,7 @@ const Viewport = React.memo(function Viewport({
             msg => {
 
                 if (msg.range && msg.range.reset) {
+                    // wait - this will no reset model
                     setSrollTop(0);
                 }
 

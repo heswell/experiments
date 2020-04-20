@@ -8,13 +8,13 @@ import {getGridCellClassName} from './cell-utils';
 import './group-cell.css';
 
 /** @type {GroupCell} */
-const GroupCell = React.memo(function GroupCell({idx, row, column, onClick, meta}){
+const GroupCell = React.memo(function GroupCell({row, column, onClick, meta}){
 
     const clickHandler = useCallback(e => {
         e.preventDefault();
         e.stopPropagation();
-        onClick(idx);
-    },[idx, onClick])
+        onClick(column.key);
+    },[column.key, onClick])
 
     const isExpanded = row[meta.DEPTH] > 0;
 

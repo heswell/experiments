@@ -2,7 +2,6 @@ import React from 'react';
 import {Column} from '../model/model';
 
 export interface CellProps {
-  idx: number;
   column: Column;
   meta: any;
   row: any;

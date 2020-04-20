@@ -6,7 +6,10 @@ export interface RowProps {
   columns: Column[];
   gridModel: GridModel;
   row: any;
+  keys: Map<number,number>;
 }
+
+export declare const PADDING_CELL: 'padding-cell';
 
 export type RowComponent = React.ComponentType<RowProps>;
 declare const Row: RowComponent;

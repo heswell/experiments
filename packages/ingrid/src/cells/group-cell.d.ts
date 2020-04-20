@@ -2,7 +2,6 @@ import React from 'react';
 import {Column} from '../model/model';
 
 export interface GroupCellProps {
-  idx: number;
   column: Column;
   meta: any;
   row: any;

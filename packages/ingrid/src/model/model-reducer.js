@@ -400,7 +400,6 @@ function columnResizeEnd(state, {column}) {
 
 // do we need to separate viewport actions from general grid actions ?
 function setScrollLeft(state, {scrollLeft}) {
-    console.log(`scrollLeft ${scrollLeft} virtualCanvas: ${JSON.stringify(state.virtualCanvas)}`)
     if (state.virtualCanvas){
         const [firstColumnIdx, lastColumnIdx, offset] = measureVirtualColumns(state.columns, state.displayWidth, scrollLeft,state.defaultWidth);
         return {...state,scrollLeft, virtualCanvas: {firstColumnIdx, lastColumnIdx, offset}};
@@ -1006,9 +1005,9 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth, scrollL
 
 
     if (displayWidth / totalColumnWidth < .66){
-        console.log(`displayWidth is ${((displayWidth / totalColumnWidth) * 100).toFixed(2)}% of display width, we need to virtualize horizontally`)
+        //onsole.log(`displayWidth is ${((displayWidth / totalColumnWidth) * 100).toFixed(2)}% of display width, we need to virtualize horizontally`)
         const [firstColumnIdx, lastColumnIdx, offset] = measureVirtualColumns(visibleColumns, displayWidth, scrollLeft, defaultWidth);
-        console.log(`number of columns to render = ${lastColumnIdx + 1}`)
+        //onsole.log(`number of columns to render = ${lastColumnIdx + 1}`)
         return [totalColumnWidth, {firstColumnIdx, lastColumnIdx, offset}];
     } else {
         return [totalColumnWidth, undefined];

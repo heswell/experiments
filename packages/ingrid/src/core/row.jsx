@@ -13,14 +13,15 @@ import GroupCell from '../cells/group-cell.jsx';
 
 import './row.css';
 
-const PADDING_CELL = 'virtual-padding';
+export const PADDING_CELL = 'virtual-padding';
 
 /** @type {Row}  */
 const Row = React.memo(function Row({
-    row,
-    idx,
     columns,
-    gridModel
+    gridModel,
+    idx,
+    keys,
+    row,
 }){
 
     const {meta, rowHeight, virtualCanvas} = gridModel;
@@ -36,11 +37,11 @@ const Row = React.memo(function Row({
 
     const handleDoubleClick = useCallback(() => callbackPropsDispatch({type: 'double-click', idx, row}),[idx, row]);
 
-    const handleClickCell = useCallback(cellIdx => {
+    const handleClickCell = useCallback(columnKey => {
         if (isGroup){
             dispatch({ type: Action.TOGGLE, groupRow: row });
         }
-        callbackPropsDispatch({type: 'select-cell', idx, cellIdx})
+        callbackPropsDispatch({type: 'select-cell', idx, columnKey})
     },[idx, row])
 
     const isEmptyRow = row[0] === undefined;
@@ -50,10 +51,6 @@ const Row = React.memo(function Row({
     const isSelected = row[meta.SELECTED] === 1;
     // TODO should be driven by config
     const striping = idx % 2 === 0 ? 'even' : 'odd';
-
-    const columnsToRender = virtualCanvas
-        ? [{name: PADDING_CELL, width: virtualCanvas.offset}, ...columns.slice(virtualCanvas.firstColumnIdx, virtualCanvas.lastColumnIdx + 1)] 
-        : columns;
 
     const className = cx(
         'GridRow', striping, {
@@ -65,14 +62,22 @@ const Row = React.memo(function Row({
         }
     );
 
+    
     // filtering should already be done in model
-    const cells = columnsToRender.filter(column => !column.hidden).map((column,idx) => 
+    const cells = columns.filter(column => !column.hidden).map((column, idx) => 
         column.name === PADDING_CELL
             ? <div key="virtual-padding" className='virtual-padding' style={{width: virtualCanvas.offset}}/>
             : column.isGroup
-                ? <GroupCell key='group-cell' idx={idx} column={column} meta={meta} row={row} onClick={handleClickCell} />
-                : <Cell key={column.key} idx={idx} column={column} meta={meta} row={row} onClick={handleClickCell} />
+                ? <GroupCell key={keys.get(column.key)} column={column} meta={meta} row={row} onClick={handleClickCell} />
+                : <Cell key={keys.get(column.key)} _key={keys.get(column.key)} column={column} meta={meta} row={row} onClick={handleClickCell} />
     );
+
+    if (keys.size > columns.length){
+        const spareKeys = Array.from(keys.entries())
+            .filter(([key, _]) => columns.findIndex(col => col.key === key) === -1)
+            .map(([_, value]) => value);
+        cells.push(...spareKeys.map(key =>  <Cell key={key} column={{key: 0, name: 'empty', width: 200}} meta={null} row={['']}/>));  
+    }
 
     return (
         <div className={className}
