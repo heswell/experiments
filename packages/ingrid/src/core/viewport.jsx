@@ -171,28 +171,27 @@ const Viewport = React.memo(function Viewport({
 
     return (
         <>
-            <div className={className} style={style}>
-                <div className='ViewportContent scrollable-content'
-                    ref={verticalScrollContainer}
-                    onScroll={handleVerticalScroll} >
-                    <div className='scrolling-canvas-container'
-                        style={{ width: model.displayWidth, height: contentHeight }}>
-                        {
-                            model._groups.map((columnGroup, idx) =>
-                                <Canvas
-                                    contentHeight={contentHeight}
-                                    key={idx}
-                                    gridModel={model}
-                                    rows={emptyRows || data.rows}
-                                    firstVisibleRow={firstVisibleRow.current}
-                                    height={height}
-                                    // height={columnGroup.locked ? contentHeight: height}
-                                    // ref={columnGroup.locked ? null : scrollingCanvas}
-                                    ref={canvas => canvasRefs.current[idx] = canvas}
-                                    columnGroup={columnGroup}
-                                />
-                            )}
-                    </div>
+            <div className={className} style={style}
+                ref={verticalScrollContainer}
+                onScroll={handleVerticalScroll}>
+                
+                <div className='scrolling-canvas-container'
+                    style={{ width: model.displayWidth, height: contentHeight }}>
+                    {
+                        model._groups.map((columnGroup, idx) =>
+                            <Canvas
+                                contentHeight={contentHeight}
+                                key={idx}
+                                gridModel={model}
+                                rows={emptyRows || data.rows}
+                                firstVisibleRow={firstVisibleRow.current}
+                                height={height}
+                                // height={columnGroup.locked ? contentHeight: height}
+                                // ref={columnGroup.locked ? null : scrollingCanvas}
+                                ref={canvas => canvasRefs.current[idx] = canvas}
+                                columnGroup={columnGroup}
+                            />
+                        )}
                 </div>
             </div>
             {model._movingColumn &&
