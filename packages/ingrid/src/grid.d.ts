@@ -15,9 +15,9 @@ export interface GridProps {
   dataSource: DataSource
   emptyDisplay?: any;
   headerHeight?: number;
-  onDoubleClick?: Function;
+  onDoubleClick?: GridActionHandler<'double-click'>;
   onScroll?: Function;
-  onSelectCell?: Function;
+  onSelectCell?: GridActionHandler<'select-cell'>;
   onSelectionChange?: Function;
   onSingleSelect?: Function;
   rowStripes?: boolean;

@@ -47,6 +47,17 @@
 	color: white;
 }
 
+.Grid .Header {
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	cursor: default;
+}
+
+.Grid .header-cells {
+	height: 100%;
+}
 
 .Grid.empty .Viewport {
 	display: none;

@@ -7,7 +7,7 @@ import React, { /*useState, */useCallback, useContext, useRef, useEffect, useRed
 import cx from 'classnames';
 
 import * as Action from '../model/actions';
-import Canvas from './canvas.jsx';
+import Canvas from './canvas/canvas.jsx';
 import ColumnBearer from './column-bearer.jsx';
 import dataReducer, { initialData } from '../model/data-reducer';
 import GridContext from '../grid-context';
@@ -15,11 +15,11 @@ import GridContext from '../grid-context';
 import './viewport.css';
 
 function useThrottledScroll(callback) {
-
     const timeoutHandler = useRef(null);
     const prevValue = useRef(null);
     const value = useRef(null);
 
+    // this is constantly recreated during scroll
     const raf = () => {
         if (value.current !== prevValue.current){
             callback(value.current);
@@ -49,8 +49,10 @@ const Viewport = React.memo(function Viewport({
     height,
     model,
     onFilterChange,
+    columnHeaders=[],
     style
 }){
+    console.log(`[Viewport] render`);
     const canvasRefs = useRef([]);
     // const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
@@ -125,10 +127,26 @@ const Viewport = React.memo(function Viewport({
 
     }, [height]);
 
+    const scrollTimer = useRef(null);
+
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
+        function onScrollEnd(){
+            scrollTimer.current = null;
+            console.log(`VERTICAL SCROLLING HAS STOPPED`)
+            verticalScrollContainer.current.classList.remove('scrolling');
+            // we only need to do this for scrolling Canvas
+            canvasRefs.current.forEach(canvas => canvas.scrollTop(value));
+        }
+        if (scrollTimer.current){
+            clearTimeout(scrollTimer.current);
+        } else {
+            verticalScrollContainer.current.classList.add('scrolling');
+            console.log(`VERTICAL SCROLLING HAS STARTED`)
+        }
+        scrollTimer.current = setTimeout(onScrollEnd,200);
+
         scrollTop.current = value;
         const firstRow = Math.floor(value / model.rowHeight);
-        canvasRefs.current.forEach(canvas => canvas.scrollTop(value))
         // scrollingCanvas.current.scrollTop(value);
         if (firstRow !== firstVisibleRow.current) {
             const numberOfRowsInViewport = Math.ceil(height / model.rowHeight) + 1;
@@ -154,13 +172,6 @@ const Viewport = React.memo(function Viewport({
         dataSource.setRange(lo, hi);
     }, [])
 
-    // all of these calculations belong in the modelReducer
-    const horizontalScrollingRequired = model.totalColumnWidth > model.displayWidth;
-    // we shouldn't need to change this but chrome does not handle this correctly - vertical scrollbar is still
-    // displayed even when not needed, when grid is stretched.
-    const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
-    const contentHeight = Math.max(model.rowHeight * data.rowCount, maxContentHeight);
-
     let emptyRows = groupBy.current === model.groupBy
         ? null
         : ((groupBy.current = model.groupBy), []);
@@ -176,20 +187,18 @@ const Viewport = React.memo(function Viewport({
                 onScroll={handleVerticalScroll}>
                 
                 <div className='scrolling-canvas-container'
-                    style={{ width: model.displayWidth, height: contentHeight }}>
+                    style={{ width: model.displayWidth, height: model.contentHeight }}>
                     {
                         model._groups.map((columnGroup, idx) =>
                             <Canvas
-                                contentHeight={contentHeight}
-                                key={idx}
-                                gridModel={model}
-                                rows={emptyRows || data.rows}
-                                firstVisibleRow={firstVisibleRow.current}
-                                height={height}
-                                // height={columnGroup.locked ? contentHeight: height}
-                                // ref={columnGroup.locked ? null : scrollingCanvas}
-                                ref={canvas => canvasRefs.current[idx] = canvas}
                                 columnGroup={columnGroup}
+                                columnHeader={columnHeaders[idx]}
+                                firstVisibleRow={firstVisibleRow.current}
+                                gridModel={model}
+                                height={height}
+                                key={idx}
+                                ref={canvas => canvasRefs.current[idx] = canvas}
+                                rows={emptyRows || data.rows}
                             />
                         )}
                 </div>

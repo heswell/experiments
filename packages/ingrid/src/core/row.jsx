@@ -24,7 +24,7 @@ const Row = React.memo(function Row({
     row,
 }){
 
-    const {meta, rowHeight, virtualCanvas} = gridModel;
+    const {meta, rowHeight} = gridModel;
     const handleContextMenu = useCallback(e => showContextMenu(e, 'row', {idx, row}),[idx, row]);
     const {dispatch, callbackPropsDispatch, showContextMenu} = useContext(GridContext);
 
@@ -66,10 +66,10 @@ const Row = React.memo(function Row({
     //TODO move to model filtering should already be done in model
     const cells = columns.filter(column => !column.hidden).map((column, idx) => 
         column.name === PADDING_CELL
-            ? <div key="virtual-padding" className='virtual-padding' style={{width: virtualCanvas.offset}}/>
+            ? <div key="virtual-padding" className='virtual-padding' style={{width: column.width}}/>
             : column.isGroup
                 ? <GroupCell key={keys.get(column.key)} column={column} meta={meta} row={row} onClick={handleClickCell} />
-                : <Cell key={keys.get(column.key)} _key={keys.get(column.key)} column={column} meta={meta} row={row} onClick={handleClickCell} />
+                : <Cell key={keys.get(column.key)} column={column} meta={meta} row={row} onClick={handleClickCell} />
     );
 
     if (keys.size > columns.length){

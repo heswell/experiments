@@ -1,5 +1,4 @@
 // @ts-check
-/** @typedef {import('./model').GridModel} GridModel  */
 /** @typedef {import('./model').GridModelReducer} GridModelReducer  */
 /** @typedef {import('./model').ReducerTable} ReducerTable  */
 
@@ -16,9 +15,13 @@ export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(sta
 /** @type  {GridModel} */
 export const DEFAULT_MODEL_STATE = {
     availableColumns: [],
+    collapsedColumns: null,
     columnMap: undefined,
     columns: [],
-    width: 400,
+    contentHeight: 0,
+    displayWidth: 400,
+    groupBy: undefined,
+    groupState: undefined,
     height: 300,
     headerHeight: 25,
     rowHeight: 23,
@@ -26,17 +29,14 @@ export const DEFAULT_MODEL_STATE = {
     groupColumnWidth: 'auto',
     // Note: values which have never been set are undefined, once set, they are unset to null
     sortBy: undefined,
-    groupBy: undefined,
-    groupState: undefined,
     rowCount: 0,
     rowStripes: false,
     scrollbarSize: 15,
     scrollLeft: 0,
-    collapsedColumns: null,
 
-    displayWidth: 400,
     totalColumnWidth: 0,
     selectionModel: Selection.MultipleRow,
+    width: 400,
 
     meta: null,
 
@@ -45,8 +45,7 @@ export const DEFAULT_MODEL_STATE = {
     _overTheLine: 0,
     _columnDragPlaceholder: null,
     _headingDepth: 1,
-    _headingResize: undefined,
-    virtualCanvas: undefined
+    _headingResize: undefined
 };
 
 const RESIZING = {resizing: true};
@@ -86,7 +85,6 @@ const handlers = {
     [Action.MOVE]: move,
     [Action.MOVE_END]: moveEnd,
     [Action.TOGGLE]: toggle,
-    [Action.SCROLLLEFT]: setScrollLeft,
     [Action.SCROLL_LEFT]: autoScrollLeft,
     [Action.SCROLL_RIGHT]: autoScrollRight,
     [Action.COLUMN_COLLAPSE]: collapseColumn,
@@ -141,7 +139,10 @@ function initialize(state, action) {
         ? getDisplayWidth(height-headerHeight, rowHeight*rowCount, width, _totalColumnWidth, scrollbarSize)
         : state.displayWidth;
 
-    const [totalColumnWidth, virtualCanvas] = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth, scrollLeft);
+    const totalColumnWidth = measure(_groups, displayWidth, minColumnWidth, groupColumnWidth);
+    const horizontalScrollingRequired = totalColumnWidth > displayWidth;
+    const maxContentHeight = horizontalScrollingRequired ? height - 15 : height; // we should know the scrollbarHeight
+    const contentHeight = Math.max(rowHeight * rowCount, maxContentHeight);
 
     const map = columnMap === null || columns !== state.columns
         ? buildColumnMap(columns)
@@ -149,25 +150,25 @@ function initialize(state, action) {
 
     return {
         ...state,
-        width,
+        collapsedColumns,
+        columns: keyedColumns,
+        columnMap: map,
+        contentHeight,
+        displayWidth,
+        groupBy,
+        groupState,
         height,
         headerHeight,
         rowHeight,
         rowStripes,
         minColumnWidth,
         meta: metaData(columns),
-        columns: keyedColumns,
-        columnMap: map,
         sortBy,
-        groupBy,
-        groupState,
-        collapsedColumns,
         selectionModel,
         _headingDepth,
         _groups,
         totalColumnWidth,
-        displayWidth,
-        virtualCanvas
+        width,
     };
 }
 
@@ -396,17 +397,6 @@ function columnResizeEnd(state, {column}) {
         : updateGroupColumn(state._groups, column, NOT_RESIZING);
     const groupColumnWidth = column.isGroup ? column.width : state.groupColumnWidth;
     return {...state, columns, _groups, groupColumnWidth, _headingResize: undefined};
-}
-
-// do we need to separate viewport actions from general grid actions ?
-function setScrollLeft(state, {scrollLeft}) {
-    if (state.virtualCanvas){
-        const [firstColumnIdx, lastColumnIdx, offset] = measureVirtualColumns(state.columns, state.displayWidth, scrollLeft,state.defaultWidth);
-        return {...state,scrollLeft, virtualCanvas: {firstColumnIdx, lastColumnIdx, offset}};
-    } else {
-        return {...state,scrollLeft};
-    }
-
 }
 
 /** @type {GridModelReducer} */
@@ -942,9 +932,9 @@ function addColumnToHeadings(maxHeadingDepth, column, headings, collapsedColumns
 
 }
 
-function measure(groups, displayWidth, minColumnWidth, groupColumnWidth, scrollLeft) {
+function measure(groups, displayWidth, minColumnWidth, groupColumnWidth) {
     if (groups.length === 0){
-        return [0];
+        return 0;
     }
     const columns = flatMap(groups);
     const [firstColumn] = columns;
@@ -1004,37 +994,11 @@ function measure(groups, displayWidth, minColumnWidth, groupColumnWidth, scrollL
     }
 
 
-    if (displayWidth / totalColumnWidth < .66){
-        //onsole.log(`displayWidth is ${((displayWidth / totalColumnWidth) * 100).toFixed(2)}% of display width, we need to virtualize horizontally`)
-        const [firstColumnIdx, lastColumnIdx, offset] = measureVirtualColumns(visibleColumns, displayWidth, scrollLeft, defaultWidth);
-        //onsole.log(`number of columns to render = ${lastColumnIdx + 1}`)
-        return [totalColumnWidth, {firstColumnIdx, lastColumnIdx, offset}];
-    } else {
-        return [totalColumnWidth, undefined];
-    }
+    return totalColumnWidth;
 
 
 }
 
-// we shouldn't need default width, all columns should be augmented with width
-function measureVirtualColumns(columns, displayWidth, scrollLeft, defaultWidth){
-    let firstColIdx = -1;
-    let lastColIdx = columns.length - 1;
-    let canvasOffset = 0;
-
-    for (let i=0, currentPosition=0;i<columns.length;i++){
-        currentPosition += (columns[i].width || defaultWidth);
-        if (currentPosition <= scrollLeft){
-            canvasOffset += columns[i].width;
-        } else if (currentPosition > scrollLeft + displayWidth){
-            lastColIdx = i;
-            break;
-        } else if (firstColIdx === -1 && currentPosition > scrollLeft){
-            firstColIdx = i;
-        }
-    }
-    return [firstColIdx, lastColIdx, canvasOffset];
-}
 
 function flatMap(groups) {
     let columns = [];

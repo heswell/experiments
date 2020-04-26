@@ -1,23 +1,33 @@
+/** @type {GridReducerFactory}} */
+export default handlerMap => (state, action) => {
+  
+  if (handlerMap[action.type]){
+    switch (action.type){
 
-export default (
-  onScroll,
-  onSelectionChange,
-  onSelectCell,
-  onDoubleClick
+      case 'scroll-start-horizontal':
+        console.log('dfjkdjfdkjfkdfjkfjdfj')
+        handlerMap[action.type]();
+        break;
 
-) => (state, action) => {
-  const { type, ...props } = action;
-  if (type === 'scroll') {
-      onScroll && onScroll(props);
-  } else if (type === 'selection') {
-      const {idx, row, rangeSelect, keepExistingSelection} = action;
-      onSelectionChange(idx, row, rangeSelect, keepExistingSelection);
-  } else if (type === 'select-cell') {
-      const { idx: rowIdx, columnKey } = action;
-      onSelectCell && onSelectCell(rowIdx, columnKey);
-  } else if (type === 'double-click') {
-    const { idx, row } = action;
-    onDoubleClick && onDoubleClick(idx, row);
+      case 'scroll-end-horizontal':
+        handlerMap[action.type](action.scrollLeft);
+        break;
+
+      case 'double-click':
+        handlerMap[action.type](action.idx, action.row);
+        break;
+
+      case 'selection': {
+          const {idx, row, rangeSelect, keepExistingSelection} = action;
+          handlerMap[action.type](idx, row, rangeSelect, keepExistingSelection);
+        }
+        break;
+
+      case 'select-cell':
+        handlerMap[action.type](action.idx, action.columnKey);
+        break;
+
+    }
   }
   return state;
 }

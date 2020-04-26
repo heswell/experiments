@@ -3,7 +3,6 @@
 
 import React, { forwardRef, useRef, useCallback, useImperativeHandle, useState } from 'react';
 import {DataTypes, NOT_IN} from '@heswell/utils';
-import Header from '../header.jsx';
 import ColumnFilter from './column-filter.jsx';
 
 import './inline-filter.css';
@@ -58,6 +57,15 @@ const InlineFilter = forwardRef(({
         />;
 
     return (
+        <div className="Header InlineFilter" style={{height}}>
+        </div>   
+    );
+
+})
+
+export default InlineFilter;
+
+/*
         <Header className='InlineFilter'
             ref={header}
             model={model}
@@ -67,8 +75,4 @@ const InlineFilter = forwardRef(({
             colGroupHeaderRenderer={colHeaderRenderer}
             colHeaderRenderer={colHeaderRenderer}
         />
-    );
-
-})
-
-export default InlineFilter;
+*/

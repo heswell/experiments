@@ -11,11 +11,10 @@ import './column-group-header.css';
 /** @type {ColumnGroupHeader} */
 const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     columnGroup,
-    colGroupHeaderRenderer,
     colHeaderRenderer,
-    ignoreHeadings,
     model,
-    onColumnMove
+    onColumnMove,
+    style
 
 },ref) {
 
@@ -114,11 +113,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
 
     const renderGroupHeader = (props) => {
 
-        const renderer = colGroupHeaderRenderer;
-
-        return React.isValidElement(renderer)
-            ? React.cloneElement(renderer, props)
-            : ((renderer && renderer(props)) || <GroupbyHeaderCell {...props} />);
+        return <GroupbyHeaderCell {...props} />;
 
     }
 
@@ -139,12 +134,12 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
         }
     },[])
 
-    const { width, renderWidth, renderLeft, headings = [] } = columnGroup;
+    const { width, headings = [] } = columnGroup;
 
     return (
-        <div ref={containerEl} className='ColumnGroupHeader' style={{ width: renderWidth, left: renderLeft }}>
+        <div ref={containerEl} className='ColumnGroupHeader' style={style}>
 
-            {!ignoreHeadings && headings.map((heading, idx) =>
+            {headings.map((heading, idx) =>
                 <div className='group-heading' key={idx} style={{ width }}>
                     {renderColHeadings(heading)}
                 </div>

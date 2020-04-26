@@ -1,0 +1,34 @@
+.Canvas {
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  /* only the scrolling canvas needs the sticky treatment */
+  position: sticky;
+  display: inline-block;
+}
+
+.scrolling.Viewport .Canvas {
+  position: static;
+}
+
+.Canvas.scrollable {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* .Grid.scrolling-x .Canvas.scrollable {
+} */
+
+.Canvas .canvas-content {
+  overflow: hidden;
+  position: absolute;
+}
+
+.scrolling.Viewport .canvas-content {
+  transform: none !important;
+}
+
+.canvas-content-wrapper .ColumnGroupHeader {
+  position: relative;
+  height: 32px;
+}

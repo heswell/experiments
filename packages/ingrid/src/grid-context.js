@@ -1,3 +1,5 @@
 import React from 'react';
 
-export default React.createContext(null);
+/** @type {GridContext} */
+const gridContext = React.createContext(null);
+export default gridContext;

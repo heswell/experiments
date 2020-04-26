@@ -1,7 +1,6 @@
 .ColumnGroupHeader {
-  position: absolute;
-	top: 0;
-	bottom:0;
+	background: #eaeaea;
+	display: inline-block;
 	overflow: hidden;
 }
 
