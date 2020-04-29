@@ -1,4 +1,4 @@
-import {PADDING_CELL} from '../row';
+import {PADDING_CELL} from '../row.jsx';
 
 const VIRTUALIZATION_THRESHOLD = .66;
 

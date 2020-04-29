@@ -1,7 +1,4 @@
 import React from 'react';
-import { Column } from "../model/model";
-
-export type Phase = 'begin' | 'resize' | 'move' | 'end';
 
 interface HeaderCellProps {
   className?: string;

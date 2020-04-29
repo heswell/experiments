@@ -62,22 +62,17 @@ export default class LocalDataSource {
     this.columns = columns;
     this.meta = metaData(columns);
 
-    logger.log(`subscribe, wait for data`)
     const { default: data } = await this.eventualView
     const table = new Table({ data, columns });
     this.dataView = new DataView(table, {columns}, this.updateQueue);
-    logger.log(`>>>>> got data, dataView is assigned`)
     this.clientCallback = callback;
 
     this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
 
     if (this.pendingFilterColumn){
-      logger.log(`%cLocalDataSOurce subscribe <after data loaded> got a pending filter requerst for ${this.pendingFilterColumn.name}`,'color:red;font-weight: bold;')
       this.getFilterData(this.pendingFilterColumn, this.pendingFilterRange);
       this.pendingFilterColumn = null;
       this.pendingFilterRange = null;
-    } else {
-      console.log(` ... no pending filterData request`)
     }
 
     //TODO can we eliminate all the following ?

@@ -5,7 +5,6 @@ export default handlerMap => (state, action) => {
     switch (action.type){
 
       case 'scroll-start-horizontal':
-        console.log('dfjkdjfdkjfkdfjkfjdfj')
         handlerMap[action.type]();
         break;
 

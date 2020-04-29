@@ -77,6 +77,20 @@ interface GridModel {
   _overTheLine: number;
 }
 
+type Phase = 'begin' | 'resize' | 'move' | 'end';
+
+interface ColumnGroupHeaderProps {
+  colHeaderRenderer?: any; // do we use it ?
+  columnGroup: ColumnGroup;
+  height: number;
+  ignoreHeadings?: boolean;
+  model: GridModel;
+  onColumnMove: (phase: Phase, column: Column, distance?: number) => void;
+  width: number;
+}
+
+type ColumnGroupHeaderComponent = React.ComponentType<ColumnGroupHeaderProps  & {ref?: any}>;
+
 interface CanvasProps {
   columnGroup: ColumnGroup;
   columnHeader?: React.ReactElement;
@@ -104,7 +118,6 @@ type CanvasComponent = (props: CanvasProps, ref: React.RefObject<any>) => JSX.El
   T extends 'select-cell' ? (idx: number, columnKey: number) => void :
   never;
 
-
 type GridActionHandlerMap = {[key in GridAction['type']]?: GridActionHandler<key>};  
 type GridReducerFactory = (handlerMap: GridActionHandlerMap) => (state: {}, action: GridAction) => {};
 
@@ -116,8 +129,8 @@ type ScrollingCanvasHook = (
   ) => (e: React.UIEvent<HTMLDivElement>) => void;
 
 type GridContext = React.Context<{
-    dispatch: any;
-    callbackPropsDispatch: any;
+    dispatch: Function;
+    callbackPropsDispatch: (action: GridAction) => void;
     showContextMenu: any;
   }>;
 

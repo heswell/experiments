@@ -1,15 +1,15 @@
 import React, {ReactElement} from 'react';
 import {DataSource} from '@heswell/data-source';
-import {GridModel} from '../model/model';
 //TODO define Actions
 export type DataReducer =[any, (any) => void];
 
 export interface ViewportProps {
-  dataSource: DataSource;
   columnHeaders?: ReactElement[];
+  dataSource: DataSource;
   height: number;
   model: GridModel;
   onFilterChange: any;
+  scrolling: boolean;
   style: any;
 }
 
