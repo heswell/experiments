@@ -50,14 +50,18 @@ interface GridModel {
   availableColumns: Column[];
   collapsedColumns: any;
   columnMap: any;
+  columnGroups: ColumnGroup[];
   columns: Column[];
   contentHeight: number;
+  dimensions: {
+    width: number;
+    height: number;
+  };
   displayWidth: number;
   groupBy: any;
   groupColumnWidth: number | 'auto';
   groupState: any;
   headerHeight: number;
-  height: number;
   meta: ColumnMeta;
   minColumnWidth: number;
   rowCount: number;
@@ -68,14 +72,14 @@ interface GridModel {
   scrollLeft: number;
   sortBy: any;
   totalColumnWidth: number;
-  width: number;
   _columnDragPlaceholder: any;
-  _groups: ColumnGroup[];
   _headingDepth: number;
   _headingResize: any;
   _movingColumn: any;
   _overTheLine: number;
 }
+
+type GridModelReducer = (state: GridModel, action: any) => GridModel;
 
 type Phase = 'begin' | 'resize' | 'move' | 'end';
 
