@@ -53,6 +53,12 @@
 	left:0;
 	right:0;
 	cursor: default;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.Grid.scrolling-x .Header {
+	display: none;
 }
 
 .Grid .header-cells {

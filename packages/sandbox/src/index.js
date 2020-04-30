@@ -54,7 +54,6 @@ async function load(id){
 async function render(id){
 
   const SampleLayout = await load(id);
-  console.log(`reactDOM render`)
   ReactDOM.render(
     <>
       <div style={{position: 'absolute', right: 0, top: 0, bottom: 0, width: 32, backgroundColor: 'green'}} onContextMenu={onContextMenu}/>

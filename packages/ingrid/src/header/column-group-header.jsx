@@ -1,4 +1,3 @@
-/** @typedef {import('./column-group-header').ColumnGroupHeaderComponent} ColumnGroupHeader */
 import React, {useContext, useCallback, useRef, useImperativeHandle, forwardRef} from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell.jsx';
@@ -8,14 +7,14 @@ import GridContext from '../grid-context';
 
 import './column-group-header.css';
 
-/** @type {ColumnGroupHeader} */
+/** @type {ColumnGroupHeaderComponent} */
 const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     columnGroup,
     colHeaderRenderer,
+    height: displayHeight,
     model,
     onColumnMove,
-    style
-
+    width: displayWidth
 },ref) {
 
     const {dispatch, showContextMenu} = useContext(GridContext);
@@ -137,7 +136,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     const { width, headings = [] } = columnGroup;
 
     return (
-        <div ref={containerEl} className='ColumnGroupHeader' style={style}>
+        <div ref={containerEl} className='ColumnGroupHeader' style={{width: displayWidth, height: displayHeight}}>
 
             {headings.map((heading, idx) =>
                 <div className='group-heading' key={idx} style={{ width }}>

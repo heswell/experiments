@@ -28,7 +28,12 @@
   transform: none !important;
 }
 
-.canvas-content-wrapper .ColumnGroupHeader {
+.Canvas .ColumnGroupHeader {
   position: relative;
   height: 32px;
+  display: none;
+}
+
+.Grid.scrolling-x .Canvas .ColumnGroupHeader {
+  display: block;
 }
