@@ -1,6 +1,31 @@
 
 type FlashStyle = 'arrow' | 'bg-only' | 'arrow-bg';
 
+type sortDirection = 'asc' | 'dsc';
+type sortColumn = [string, sortDirection];
+
+interface DataRange {
+  lo: number;
+  hi: number;
+}
+
+interface SubscriptionOptions {
+  columns: Column[];
+  range?: DataRange;
+}
+
+interface DataSource {
+  filter: (filter: any, dataType?: string, incremental?: boolean) => void;
+  group: (groupBy: sortColumn[]) => void;
+  setRange: (lo: number, hi: number, dataType?: string) => void;
+  subscribe: (options: SubscriptionOptions, callback:() => void) => Promise<void>;
+  select: (idx: number, rangeSelect: boolean, keepExistingSelection: boolean) => void;
+  setGroupState: (groupState: any) => void;
+  size: number;
+  sort: (sortBy: sortColumn[]) => void;
+  unsubscribe: () => void;
+}
+
 interface ColumnType {
   name: string;
   renderer?: {
@@ -31,7 +56,6 @@ interface ColumnGroup {
    * A locked column group does not scroll horizontally.
    */
   locked: boolean;
-  renderLeft: number;
   /**
    * The width available on screen for the column group;
    */
@@ -52,8 +76,8 @@ interface GridModel {
   columnMap: any;
   columnGroups: ColumnGroup[];
   columns: Column[];
-  contentHeight: number;
   dimensions: {
+    contentHeight: number;
     width: number;
     height: number;
   };
@@ -81,19 +105,20 @@ interface GridModel {
 
 type GridModelReducer = (state: GridModel, action: any) => GridModel;
 
-type Phase = 'begin' | 'resize' | 'move' | 'end';
-
-interface ColumnGroupHeaderProps {
-  colHeaderRenderer?: any; // do we use it ?
-  columnGroup: ColumnGroup;
+interface ViewportProps {
+  columnHeaders?: React.ReactElement[];
+  dataSource: DataSource;
   height: number;
-  ignoreHeadings?: boolean;
   model: GridModel;
-  onColumnMove: (phase: Phase, column: Column, distance?: number) => void;
-  width: number;
+  onFilterChange: any;
+  scrollState: {
+    scrolling: boolean,
+    scrollLeft: number;
+  };
+  top: number;
 }
 
-type ColumnGroupHeaderComponent = React.ComponentType<ColumnGroupHeaderProps  & {ref?: any}>;
+type ViewportComponent = React.ComponentType<ViewportProps>;
 
 interface CanvasProps {
   columnGroup: ColumnGroup;
@@ -102,21 +127,35 @@ interface CanvasProps {
   gridModel: GridModel;
   height: number;
   rows: any[];
-  showHeaders?: boolean;
 }
 
 type CanvasComponent = (props: CanvasProps, ref: React.RefObject<any>) => JSX.Element;
 
+type Phase = 'begin' | 'resize' | 'move' | 'end';
+
+interface ColumnGroupHeaderProps {
+  colHeaderRenderer?: any; // do we use it ?
+  columnGroup: ColumnGroup;
+  groupState: GridModel["groupState"];
+  height: number;
+  ignoreHeadings?: boolean;
+  onColumnMove: (phase: Phase, column: Column, distance?: number) => void;
+  sortBy: GridModel["sortBy"];
+  width: number;
+}
+
+type ColumnGroupHeaderComponent = React.ComponentType<ColumnGroupHeaderProps  & {ref?: any}>;
+
  type GridAction = 
   | {type: 'double-click', idx: number, row: any }
-  | {type: 'scroll-start-horizontal'}
+  | {type: 'scroll-start-horizontal', scrollLeft: number}
   | {type: 'scroll-end-horizontal', scrollLeft: number}
   | {type: 'selection', idx: number, row: any, rangeSelect: boolean, keepExistingSelection: boolean }
   | {type: 'select-cell', idx: number, columnKey: number}
 
   type GridActionHandler<T extends GridAction['type']> = 
   T extends 'double-click' ? (idx: number, row: any) => void :
-  T extends 'scroll-start-horizontal' ? () => void :
+  T extends 'scroll-start-horizontal' ? (scrollLeft: number) => void :
   T extends 'scroll-end-horizontal' ? (scrollLeft: number) => void :
   T extends 'selection' ? (idx: number, row: any, rangeSelect: boolean, keepExistingSelection: boolean) => void :
   T extends 'select-cell' ? (idx: number, columnKey: number) => void :

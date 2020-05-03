@@ -5,7 +5,7 @@ export default handlerMap => (state, action) => {
     switch (action.type){
 
       case 'scroll-start-horizontal':
-        handlerMap[action.type]();
+        handlerMap[action.type](action.scrollLeft);
         break;
 
       case 'scroll-end-horizontal':

@@ -1,9 +1,8 @@
-import React, { useContext, useReducer, useRef, useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useContext, useReducer, useRef, useLayoutEffect, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
-import Row from '../row';
+import Row from '../row.jsx';
 import GridContext from '../../grid-context';
 import canvasReducer, {init as initCanvasReducer} from './canvas-reducer';
-// import * as Action from '../model/actions';
 import useScroll from './use-scroll';
 
 import './canvas.css';
@@ -21,9 +20,9 @@ export function Canvas ({
   height,
   rows,
 }, ref) {// we're not actually assigning ref
-  console.log(`[Canvas] render`);
 
   const contentEl = useRef(null);
+  const scrollPos = useRef(0);
   const scrollContainer = useRef(null);
   const {callbackPropsDispatch, showContextMenu} = useContext(GridContext);
 
@@ -33,20 +32,23 @@ export function Canvas ({
 
   const handleHorizontalScroll = useScroll(scrollContainer, 200, (type, scrollLeft) => {
     if (type === 'scroll-start-horizontal'){
-      callbackPropsDispatch({type});
+      callbackPropsDispatch({type, scrollLeft});
     } else if (type === 'scroll-end-horizontal'){
       callbackPropsDispatch({type, scrollLeft});
     } else {
-      dispatchCanvasAction({type, gridModel, columnGroup, scrollLeft})
+      dispatchCanvasAction({type, gridModel, columnGroup, scrollLeft});
+      scrollPos.current = scrollLeft;
     }
   });
 
   useImperativeHandle(ref, () => ({
     // Do we still need this ?
     scrollLeft: scrollLeft => {
+      alert('boom X')
       contentEl.current.style.left = `-${scrollLeft}px`;
     },
     scrollTop: scrollTop => {
+      console.log(`BOOM Y`)
       contentEl.current.style.transform = `translate3d(0px, -${scrollTop}px, 0px)`;
     }
   }));
@@ -55,8 +57,8 @@ export function Canvas ({
     showContextMenu(e, 'canvas')
   }
 
-  const { renderLeft: left, renderWidth: width } = columnGroup;
-  const { contentHeight, meta: {RENDER_IDX}} = gridModel;
+  const { renderWidth: width } = columnGroup;
+  const { dimensions: {contentHeight}, meta: {RENDER_IDX}} = gridModel;
   const rowPositions = rows.map((row, idx) => {
     const absIdx = firstVisibleRow + idx
     return [row[RENDER_IDX], absIdx, row]
@@ -81,17 +83,17 @@ export function Canvas ({
     scrollable: !columnGroup.locked
   });
 
-  const top = columnHeader ? gridModel.headerHeight : 0;
+  // const top = showHeaders ? gridModel.headerHeight : 0;
 
   return (
-    <div className={className} style={{ left, width, height }} 
+    <div className={className} style={{ width, height }} 
       onContextMenu={handleContextMenuFromCanvas}
-      onScroll={handleHorizontalScroll} 
+      onScroll={handleHorizontalScroll}
       ref={columnGroup.locked ? null : scrollContainer}>
-          <div className="canvas-content-wrapper">
           {columnHeader}
+          <div className="canvas-content-wrapper">
           <div ref={contentEl} className="canvas-content"
-            style={{ width: Math.max(columnGroup.width, width), height: contentHeight, top }}>
+            style={{ width: Math.max(columnGroup.width, width), height: contentHeight }}>
             {gridRows}
           </div>
           </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import {DataSource} from '@heswell/data-source';
-import {Column} from './model/model';
 
 export interface ShowHeaders {
   showColumnHeader?: boolean;

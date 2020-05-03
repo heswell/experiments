@@ -48,23 +48,24 @@ const Grid = ({
     onDoubleClick,
     ...props
 }) => {
-
     const {
         showColumnHeader = defaultHeaders.showColumnHeader,
         showSelectHeader = defaultHeaders.showSelectHeader,
         showInlineFilter = defaultHeaders.showInlineFilter
     } = showHeaders;
 
+    const rootEl = useRef(null);
     const inlineFilter = useRef(null);
     const scrollingHeader = useRef(null);
-    const scrollLeft = useRef(0);
     const overTheLine = useRef(0);
     const prevColumns = useRef(null);
     const inputWidth = style.width; 
     const inputHeight = style.height; 
 
     const [showFilters, setShowFilters] = useState(showInlineFilter);
-    const [scrolling, setScrolling] = useState(false);
+
+    const scrollLeft = useRef(0);
+    const [scrollState, setScrollState] = useState({scrolling: false, scrollLeft:0});
 
     // TODO why don't we store this in the model ?
     const [filter, setFilter] = useState(null);
@@ -82,17 +83,23 @@ const Grid = ({
 
     },[]);
 
-    const handleScrollStart = () => setScrolling(true);
-
-    const handleScrollEnd = (isScrolling, scrollLeft) => {
-        setScrolling(false);
-        scrollingHeader.current.scrollLeft(scrollLeft);
-        console.log(`%cstopped scrolling at ${scrollLeft}`,'color:brown;font-weight:bold;')
-
+    const handleScrollStart = scrollLeft => {
+        if (scrollLeft === 0){
+            console.warn(`dksdksjdksjdksjdksjksjks`)
+        }
+        console.log(`[Grid] handleScrollStart (callbackPropsHandler) setState scrolling: true ${scrollLeft}`)
+        setScrollState({scrolling: true, scrollLeft});
+        // rootEl.current.classList.add('scrolling-x');
     }
 
-    // this reducer is a no=op - always returns same state
-    // TODO why not use existing reducer ?
+    const handleScrollEnd = (scrollLeft) => {
+        setScrollState({scrolling: false, scrollLeft});
+        // rootEl.current.classList.remove('scrolling-x');
+        console.log(`handleScrollEnd: >>>>>>> set scrollingHeader ScrollLeft to ${scrollLeft}`)
+        scrollingHeader.current.scrollLeft(scrollLeft);
+    }
+
+    // this reducer is a no-op - always returns same state
     const [, callbackPropsDispatch] = useReducer(useCallback(gridReducer({
         'double-click': onDoubleClick,
         'selection': handleSelectionChange,
@@ -122,8 +129,7 @@ const Grid = ({
     const showContextMenu = useContextMenu(model, showFilters, setShowFilters, dispatch);
 
     const {
-        height,
-        width,
+        dimensions: {height, width},
         _headingDepth,
         groupBy,
         groupState,
@@ -132,7 +138,6 @@ const Grid = ({
 
     useEffect(() => {
         overTheLine.current = _overTheLine;
-        logger.log(`<useEffect _overTheLine>`);
         // we want to keep dispatching scroll as long as the column is over the line
         const scroll = () => {
             if (overTheLine.current !== 0) {
@@ -147,7 +152,10 @@ const Grid = ({
     }, [_overTheLine])
 
     useEffect(() => {
-        dispatch({type: Action.GRID_RESIZE, width: inputWidth, height: inputHeight})
+        //TODO model might be stale
+        if (inputHeight !== model.dimensions.height || inputWidth !== model.displayWidth){
+            dispatch({type: Action.GRID_RESIZE, width: inputWidth, height: inputHeight})
+        }
     },[inputWidth, inputHeight])
 
     useEffect(() => {
@@ -168,6 +176,7 @@ const Grid = ({
         }
     }, [dataSource, groupState]);
 
+    const {scrolling} = scrollState;
     const headerVisible = showColumnHeader && !scrolling;
     const filterVisible = showFilters && !scrolling;
 
@@ -185,9 +194,8 @@ const Grid = ({
             'scrolling-x': scrolling
         }
     );
-    console.log(`grid className ${className}`)    
 
-    const handleColumnMove = (phase, column, distance) => {
+    const handleColumnMove = useCallback((phase, column, distance) => {
         if (!column.isHeading) {
             const pos = scrollLeft.current;
             if (phase === 'move' && distance !== 0) {
@@ -198,20 +206,22 @@ const Grid = ({
                 dispatch({ type: Action.MOVE_END, column });
             }
         }
-    }
+    },[]);
 
     // TODO we don't want to build these every time
-    function getColumnHeaders(){
-        return model._groups.map((group, idx) => {
+    function getColumnHeaders(withRef){
+        return model.columnGroups.map((group, idx) => {
             return (
                 <ColumnGroupHeader
                     key={idx}
                     columnGroup={group}
-                    model={model}
+                    groupState={model.groupState}
+                    height={headerHeight}
                     onColumnMove={handleColumnMove}
                     colHeaderRenderer={props.colHeaderRenderer}
-                    ref={group.locked ? null : scrollingHeader}
-                    style={{height: headerHeight, width: scrolling ? group.width : group.renderWidth}}
+                    ref={!withRef || group.locked ? null : scrollingHeader}
+                    sortBy={model.sortBy}
+                    width={!withRef && !group.locked ? group.width : group.renderWidth}
                 />
             );
         })
@@ -220,10 +230,10 @@ const Grid = ({
     return (
         // we can roll context menu into the context once more of the child components are functions
         <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
-            <div style={{ position: 'relative', ...style }} className={className}>
-                {headerVisible && headerHeight !== 0 &&
+            <div style={{ position: 'relative', ...style }} className={className} ref={rootEl}>
+                {showColumnHeader && headerHeight !== 0 &&
                     <div className="Header" style={{height: headingHeight}}>
-                        {getColumnHeaders()}
+                        {getColumnHeaders(true)}
                     </div>
                 }
 
@@ -237,13 +247,14 @@ const Grid = ({
                 {showSelectHeader &&
                 <SelectHeader dataView={dataSource} style={{top:headingHeight, height:selectHeaderHeight}}/>}
                 <Viewport
+                    columnHeaders={getColumnHeaders(false)}
                     dataSource={dataSource}
                     height={height - totalHeaderHeight}
                     model={model}
                     onFilterChange={setFilter}
                     // maybe we should call this optimiseLayout, layoutHint ?
-                    columnHeaders={scrolling ? getColumnHeaders() : undefined}
-                    style={{top: totalHeaderHeight}}
+                    scrollState={scrollState}
+                    top={totalHeaderHeight}
                 />
                 {emptyDisplay}
             </div>

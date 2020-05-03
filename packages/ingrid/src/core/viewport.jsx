@@ -1,9 +1,8 @@
 /**
  * 
- * @typedef {import('./viewport').ViewportComponent} Viewport
  * @typedef {import('./viewport').DataReducer} DataReducer
  */
-import React, { /*useState, */useCallback, useContext, useRef, useEffect, useReducer } from 'react';
+import React, { /*useState, */useCallback, useContext, useLayoutEffect, useRef, useEffect, useReducer } from 'react';
 import cx from 'classnames';
 
 import * as Action from '../model/actions';
@@ -43,16 +42,17 @@ function useThrottledScroll(callback) {
     return throttledCallback;
 }
 
-/** @type {Viewport} */
+/** @type {ViewportComponent} */
 const Viewport = React.memo(function Viewport({
+    columnHeaders=[],
     dataSource,
     height,
     model,
     onFilterChange,
-    columnHeaders=[],
-    style
+    scrollState,
+    top
 }){
-    console.log(`[Viewport] render`);
+
     const canvasRefs = useRef([]);
     // const scrollingCanvas = useRef(null);
     const scrollableContainerEl = useRef(null);
@@ -66,14 +66,26 @@ const Viewport = React.memo(function Viewport({
     /** @type {DataReducer} */
     const [data, dispatchData] = useReducer(dataReducer(model), initialData);
 
+    useLayoutEffect(() => {
+        console.log(`[Viewport] useLayoutEffect, scrolling has changed, scrolling ${scrollState.scrolling} `)
+    },[scrollState.scrolling]);
+
     useEffect(() => {
         rowCount.current = model.rowCount
     },[model.rowCount])
 
     useEffect(() => {
         // required only when column is dragged outside viewport, causing programatic scroll ?
+        console.log(`setScrollLeft ${model.scrollLeft}`)
         setSrollLeft(model.scrollLeft);
     },[model.scrollLeft])
+
+    useLayoutEffect(() => {
+        if (!scrollState.scrolling){
+            console.log(`>>>>>>> we're not scrolling, scrollLeft = ${scrollState.scrollLeft} >>>>>>>>`)
+        }
+    },[scrollState.scrolling])
+
 
     // TOFO useDataSource(dataSource, columns, rangs)
     useEffect(() => {
@@ -98,8 +110,10 @@ const Viewport = React.memo(function Viewport({
                 }
 
                 if (typeof msg.size === 'number' && msg.size !== rowCount.current) {
-                    dispatch({ type: Action.ROWCOUNT, rowCount: msg.size })
-                    dispatchData({ type: Action.ROWCOUNT, rowCount: msg.size })
+                    console.log(`rowCount.current = ${rowCount.current} model says ${model.rowCount} new value ${msg.size}`)
+                    rowCount.current = msg.size;
+                    dispatch({ type: Action.ROWCOUNT, rowCount: msg.size });
+                    dispatchData({ type: Action.ROWCOUNT, rowCount: msg.size });
                 }
                 if (msg.rows) {
                     dispatchData({ type: 'data', rows: msg.rows, rowCount: msg.size, offset: msg.offset, range: msg.range });
@@ -130,6 +144,9 @@ const Viewport = React.memo(function Viewport({
     const scrollTimer = useRef(null);
 
     const handleVerticalScroll = useThrottledScroll(useCallback(value => {
+        if (scrollTop.current === value){
+            return;
+        }
         function onScrollEnd(){
             scrollTimer.current = null;
             console.log(`VERTICAL SCROLLING HAS STOPPED`)
@@ -137,11 +154,12 @@ const Viewport = React.memo(function Viewport({
             // we only need to do this for scrolling Canvas
             canvasRefs.current.forEach(canvas => canvas.scrollTop(value));
         }
+
         if (scrollTimer.current){
             clearTimeout(scrollTimer.current);
         } else {
+            console.log(`add the scrolling class to viewport`);
             verticalScrollContainer.current.classList.add('scrolling');
-            console.log(`VERTICAL SCROLLING HAS STARTED`)
         }
         scrollTimer.current = setTimeout(onScrollEnd,200);
 
@@ -182,14 +200,14 @@ const Viewport = React.memo(function Viewport({
 
     return (
         <>
-            <div className={className} style={style}
+            <div className={className} style={{top}}
                 ref={verticalScrollContainer}
                 onScroll={handleVerticalScroll}>
                 
                 <div className='scrolling-canvas-container'
-                    style={{ width: model.displayWidth, height: model.contentHeight }}>
+                    style={{ width: model.displayWidth, height: model.dimensions.contentHeight }}>
                     {
-                        model._groups.map((columnGroup, idx) =>
+                        model.columnGroups.map((columnGroup, idx) =>
                             <Canvas
                                 columnGroup={columnGroup}
                                 columnHeader={columnHeaders[idx]}

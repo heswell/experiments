@@ -1,4 +1,4 @@
-import React, {useContext, useCallback, useRef, useImperativeHandle, forwardRef} from 'react';
+import React, {useContext, useCallback, useRef, useImperativeHandle, useMemo, forwardRef} from 'react';
 import cx from 'classnames';
 import HeaderCell from './header-cell.jsx';
 import GroupbyHeaderCell from './group-header-cell.jsx';
@@ -11,9 +11,10 @@ import './column-group-header.css';
 const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     columnGroup,
     colHeaderRenderer,
+    groupState,
     height: displayHeight,
-    model,
     onColumnMove,
+    sortBy,
     width: displayWidth
 },ref) {
 
@@ -47,13 +48,13 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
         dispatch({ type: Action.groupExtend, column });
     },[]);
 
-    const handleHeaderCellClick = column => {
+    const handleHeaderCellClick = useCallback(column => {
         if (column.sortable !== false) {
             // this will transform the columns which will cause whole grid to re-render down to cell level. All
             // we really need if for headers to rerender. SHould we store sort criteria outside of columns ?
             dispatch({ type: Action.SORT, column });
         }
-    }
+    },[]);
 
     const handleToggleGroupState = useCallback((column, expanded) => {
         const groupState = expanded === 1
@@ -74,9 +75,9 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
             />
         )
 
-    const renderHeaderCells = () => {
-
-        return columnGroup.columns.filter(column => !column.hidden).map(column => {
+    const renderHeaderCells = (columns, sortBy, groupState) => {
+        // this will benefit us when we stop regenerating columnGroup columns on every initialize
+        return useMemo(() => columns.filter(column => !column.hidden).map(column => {
 
             const props = {
                 key: column.key,
@@ -86,13 +87,13 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
                 onContextMenu: showContextMenu
             };
 
-            const multiColumnSort = model.sortBy && model.sortBy.length > 1;
+            const multiColumnSort = sortBy && sortBy.length > 1;
 
             if (column.isGroup) {
 
                 return renderGroupHeader({
                     ...props,
-                    groupState: model.groupState,
+                    groupState,
                     onClick: handleGroupHeaderCellClick,
                     onToggleGroupState: handleToggleGroupState,
                     onRemoveColumn: handleRemoveGroupBy
@@ -107,8 +108,8 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
                     onClick: handleHeaderCellClick
                 });
             }
-        });
-    }
+        }),[columns, sortBy, groupState]);
+    };
 
     const renderGroupHeader = (props) => {
 
@@ -133,7 +134,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
         }
     },[])
 
-    const { width, headings = [] } = columnGroup;
+    const { columns, width, headings = [] } = columnGroup;
 
     return (
         <div ref={containerEl} className='ColumnGroupHeader' style={{width: displayWidth, height: displayHeight}}>
@@ -145,7 +146,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
             ).reverse()}
 
             <div className="header-cells" style={{ whiteSpace: 'nowrap', width, position: 'relative' }}>
-                {renderHeaderCells()}
+                {renderHeaderCells(columns, sortBy, groupState)}
             </div>
         </div>
     );

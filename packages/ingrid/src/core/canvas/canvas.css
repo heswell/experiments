@@ -11,6 +11,10 @@
   position: static;
 }
 
+.Grid.scrolling-x .scrolling.Viewport .Canvas {
+  position: sticky;
+}
+
 .Canvas.scrollable {
   overflow-x: auto;
   overflow-y: hidden;
@@ -21,11 +25,12 @@
 
 .Canvas .canvas-content {
   overflow: hidden;
-  position: absolute;
+  position: relative;
 }
 
 .scrolling.Viewport .canvas-content {
   transform: none !important;
+  position: absolute;
 }
 
 .Canvas .ColumnGroupHeader {
@@ -33,6 +38,10 @@
   height: 32px;
   display: none;
 }
+
+/* .Grid.scrolling-x .Canvas {
+  height: 100% !important;
+} */
 
 .Grid.scrolling-x .Canvas .ColumnGroupHeader {
   display: block;

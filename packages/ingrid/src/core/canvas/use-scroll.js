@@ -17,15 +17,25 @@ export default function useScroll(scrollContainer, scrollThreshold, callback){
       }
       //TODO need to throttle function
       handler.current = () => {
-        scrollPos.current = el.scrollLeft;
-        if (Math.abs(scrollPos.current - checkpoint.current) > scrollThreshold){
-          checkpoint.current = scrollPos.current;
-          callback('scroll-threshold', scrollPos.current);
+        const {scrollLeft} = el; 
+        if (scrollLeft === scrollPos.current){
+          return;
         }
+
+        scrollPos.current = scrollLeft;
         if (scrollTimer.current){
           clearTimeout(scrollTimer.current);
-        } else {
+          if (Math.abs(scrollPos.current - checkpoint.current) > scrollThreshold){
+            checkpoint.current = scrollPos.current;
+            callback('scroll-threshold', scrollPos.current);
+          }
+         } else {
           callback('scroll-start-horizontal', scrollPos.current);
+
+          if (Math.abs(scrollPos.current - checkpoint.current) > scrollThreshold){
+            checkpoint.current = scrollPos.current;
+            callback('scroll-threshold', scrollPos.current);
+          }
         }
         scrollTimer.current = setTimeout(onScrollEnd,200);
       };
