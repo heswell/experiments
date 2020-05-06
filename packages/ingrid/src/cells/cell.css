@@ -85,6 +85,12 @@
 	vertical-align: middle;
 }
 
+.GridCell .flasher { text-align:left; }
+.GridCell  .flasher + .num { padding-left: 8px; }
+
+.GridCell.right .flasher { text-align: right;}
+.GridCell.right .flasher + .num { padding-right: 8px; }
+
 .GridCell .num {
 	display: inline-block;
 }

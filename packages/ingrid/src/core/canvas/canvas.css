@@ -1,18 +1,26 @@
 .Canvas {
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  /* only the scrolling canvas needs the sticky treatment */
-  position: sticky;
   display: inline-block;
+  position: sticky;
+  top: 0;
+  vertical-align: top;
+}
+
+.Canvas .ColumnGroupHeader {
+  display: none;
+  position: absolute;
+  top:0;
+}
+
+.Grid.scrolling-x .Canvas .ColumnGroupHeader {
+  display: block;
 }
 
 .scrolling.Viewport .Canvas {
   position: static;
 }
 
-.Grid.scrolling-x .scrolling.Viewport .Canvas {
-  position: sticky;
+.scrolling.Viewport .Canvas {
+  position: static;
 }
 
 .Canvas.scrollable {
@@ -20,11 +28,15 @@
   overflow-y: hidden;
 }
 
-/* .Grid.scrolling-x .Canvas.scrollable {
-} */
-
-.Canvas .canvas-content {
+.fixed .canvas-content-wrapper {
   overflow: hidden;
+}
+
+.scrolling.Viewport .fixed.Canvas .canvas-content {
+  transform: none !important;
+}
+
+.scrollable .canvas-content {
   position: relative;
 }
 
@@ -33,16 +45,4 @@
   position: absolute;
 }
 
-.Canvas .ColumnGroupHeader {
-  position: relative;
-  height: 32px;
-  display: none;
-}
 
-/* .Grid.scrolling-x .Canvas {
-  height: 100% !important;
-} */
-
-.Grid.scrolling-x .Canvas .ColumnGroupHeader {
-  display: block;
-}

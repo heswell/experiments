@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useRef, useLayoutEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useContext, useReducer, useRef, useImperativeHandle, forwardRef } from 'react';
 import cx from 'classnames';
 import Row from '../row.jsx';
 import GridContext from '../../grid-context';
@@ -48,8 +48,8 @@ export function Canvas ({
       contentEl.current.style.left = `-${scrollLeft}px`;
     },
     scrollTop: scrollTop => {
-      console.log(`BOOM Y`)
-      contentEl.current.style.transform = `translate3d(0px, -${scrollTop}px, 0px)`;
+      console.log(`apply translate3d to .canvas-content`)
+      contentEl.current.style.transform = `translate3d(0px, ${scrollTop}px, 0px)`;
     }
   }));
 
@@ -90,13 +90,13 @@ export function Canvas ({
       onContextMenu={handleContextMenuFromCanvas}
       onScroll={handleHorizontalScroll}
       ref={columnGroup.locked ? null : scrollContainer}>
-          {columnHeader}
           <div className="canvas-content-wrapper">
           <div ref={contentEl} className="canvas-content"
             style={{ width: Math.max(columnGroup.width, width), height: contentHeight }}>
             {gridRows}
           </div>
           </div>
+          {columnHeader}
     </div>
   );
 }

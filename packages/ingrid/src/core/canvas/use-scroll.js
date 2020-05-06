@@ -17,6 +17,7 @@ export default function useScroll(scrollContainer, scrollThreshold, callback){
       }
       //TODO need to throttle function
       handler.current = () => {
+        console.log(`use H scroll`)
         const {scrollLeft} = el; 
         if (scrollLeft === scrollPos.current){
           return;

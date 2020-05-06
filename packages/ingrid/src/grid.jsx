@@ -55,6 +55,7 @@ const Grid = ({
     } = showHeaders;
 
     const rootEl = useRef(null);
+    const viewport = useRef(null);
     const inlineFilter = useRef(null);
     const scrollingHeader = useRef(null);
     const overTheLine = useRef(0);
@@ -84,18 +85,17 @@ const Grid = ({
     },[]);
 
     const handleScrollStart = scrollLeft => {
-        if (scrollLeft === 0){
-            console.warn(`dksdksjdksjdksjdksjksjks`)
-        }
         console.log(`[Grid] handleScrollStart (callbackPropsHandler) setState scrolling: true ${scrollLeft}`)
-        setScrollState({scrolling: true, scrollLeft});
-        // rootEl.current.classList.add('scrolling-x');
+        // setScrollState({scrolling: true, scrollLeft});
+        viewport.current.beginHorizontalScroll();
+        rootEl.current.classList.add('scrolling-x');
     }
 
     const handleScrollEnd = (scrollLeft) => {
-        setScrollState({scrolling: false, scrollLeft});
-        // rootEl.current.classList.remove('scrolling-x');
+        // setScrollState({scrolling: false, scrollLeft});
+        rootEl.current.classList.remove('scrolling-x');
         console.log(`handleScrollEnd: >>>>>>> set scrollingHeader ScrollLeft to ${scrollLeft}`)
+        viewport.current.endHorizontalScroll();
         scrollingHeader.current.scrollLeft(scrollLeft);
     }
 
@@ -191,7 +191,7 @@ const Grid = ({
         props.className, {
             'empty': emptyDisplay,
             'no-header' : isEmpty && props.showHeaderWhenEmpty === false,
-            'scrolling-x': scrolling
+            // 'scrolling-x': scrolling
         }
     );
 
@@ -232,7 +232,7 @@ const Grid = ({
         <GridContext.Provider value={{dispatch, callbackPropsDispatch, showContextMenu}}>
             <div style={{ position: 'relative', ...style }} className={className} ref={rootEl}>
                 {showColumnHeader && headerHeight !== 0 &&
-                    <div className="Header" style={{height: headingHeight}}>
+                    <div className="header-container" style={{height: headingHeight}}>
                         {getColumnHeaders(true)}
                     </div>
                 }
@@ -253,6 +253,7 @@ const Grid = ({
                     model={model}
                     onFilterChange={setFilter}
                     // maybe we should call this optimiseLayout, layoutHint ?
+                    ref={viewport}
                     scrollState={scrollState}
                     top={totalHeaderHeight}
                 />

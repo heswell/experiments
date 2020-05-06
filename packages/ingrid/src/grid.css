@@ -14,6 +14,22 @@
 	user-select: none;	
 }
 
+.Grid .header-container {
+	white-space: nowrap;
+}
+
+.Grid .header-container .ColumnGroupHeader {
+	display: inline-block;
+}
+
+.Grid.scrolling-x .header-container {
+	display: none;
+}
+
+.Grid .header-cells {
+	height: 100%;
+}
+
 .Grid .material-icons {
 	font-size: 18px;	
 	vertical-align: top;
@@ -23,12 +39,6 @@
 .Grid .num {
 	font-family:arial;
 }
-
-.GridCell .flasher { text-align:left; }
-.GridCell  .flasher + .num { padding-left: 8px; }
-
-.GridCell.right .flasher { text-align: right;}
-.GridCell.right .flasher + .num { padding-right: 8px; }
 
 .Grid .loading-data-message {
 	height: 100%;
@@ -47,29 +57,11 @@
 	color: white;
 }
 
-.Grid .Header {
-	position: absolute;
-	top:0;
-	left:0;
-	right:0;
-	cursor: default;
-	white-space: nowrap;
-	overflow: hidden;
-}
-
-.Grid.scrolling-x .Header {
-	display: none;
-}
-
-.Grid .header-cells {
-	height: 100%;
-}
-
 .Grid.empty .Viewport {
 	display: none;
 }
 
-.Grid.empty.no-header .Header {
+.Grid.empty.no-header .header-container {
 	display: none;
 }
 

@@ -1,8 +1,11 @@
-/**
- * 
- * @typedef {import('./viewport').DataReducer} DataReducer
- */
-import React, { /*useState, */useCallback, useContext, useLayoutEffect, useRef, useEffect, useReducer } from 'react';
+import React, { forwardRef, /*useState, */useCallback,
+    useContext,
+    useImperativeHandle,
+    useLayoutEffect,
+    useRef,
+    useEffect,
+    useReducer 
+} from 'react';
 import cx from 'classnames';
 
 import * as Action from '../model/actions';
@@ -32,6 +35,7 @@ function useThrottledScroll(callback) {
     const throttledCallback = useCallback(
         e => {
             value.current = e.target.scrollTop;
+            console.log(`V scroll event`)
             if (timeoutHandler.current === null){
                 timeoutHandler.current = requestAnimationFrame(raf);
             }
@@ -43,7 +47,9 @@ function useThrottledScroll(callback) {
 }
 
 /** @type {ViewportComponent} */
-const Viewport = React.memo(function Viewport({
+export default forwardRef(Viewport)
+
+export function Viewport({
     columnHeaders=[],
     dataSource,
     height,
@@ -51,10 +57,11 @@ const Viewport = React.memo(function Viewport({
     onFilterChange,
     scrollState,
     top
-}){
+}, ref){
 
     const canvasRefs = useRef([]);
     // const scrollingCanvas = useRef(null);
+    const scrollingCanvasContainer = useRef(null);
     const scrollableContainerEl = useRef(null);
     const verticalScrollContainer = useRef(null);
     const scrollTop = useRef(0);
@@ -87,6 +94,20 @@ const Viewport = React.memo(function Viewport({
     },[scrollState.scrolling])
 
 
+    useImperativeHandle(ref, () => ({
+        beginHorizontalScroll: () => {
+            console.log(`[Viewport] beginHorizontalScroll`)
+            canvasRefs.current.forEach(canvas => canvas.scrollTop(-(scrollTop.current - 32)));
+            scrollingCanvasContainer.current.style.height = (model.dimensions.contentHeight+32) + 'px';
+
+        },
+        endHorizontalScroll: ( )=> {
+            console.log(`[Viewport] endHorizontalScroll`)
+            canvasRefs.current.forEach(canvas => canvas.scrollTop(-scrollTop.current));
+            scrollingCanvasContainer.current.style.height = model.dimensions.contentHeight + 'px';
+        },
+      }));
+    
     // TOFO useDataSource(dataSource, columns, rangs)
     useEffect(() => {
 
@@ -149,16 +170,16 @@ const Viewport = React.memo(function Viewport({
         }
         function onScrollEnd(){
             scrollTimer.current = null;
-            console.log(`VERTICAL SCROLLING HAS STOPPED`)
+            console.log(`[Viewport] (vertical) onScrollEnd`)
+            canvasRefs.current.forEach(canvas => canvas.scrollTop(-value));
             verticalScrollContainer.current.classList.remove('scrolling');
-            // we only need to do this for scrolling Canvas
-            canvasRefs.current.forEach(canvas => canvas.scrollTop(value));
         }
 
         if (scrollTimer.current){
             clearTimeout(scrollTimer.current);
         } else {
-            console.log(`add the scrolling class to viewport`);
+            console.log(`[Viewport] (vertical) onScrollStart`)
+            canvasRefs.current.forEach(canvas => canvas.scrollTop(0));
             verticalScrollContainer.current.classList.add('scrolling');
         }
         scrollTimer.current = setTimeout(onScrollEnd,200);
@@ -204,7 +225,7 @@ const Viewport = React.memo(function Viewport({
                 ref={verticalScrollContainer}
                 onScroll={handleVerticalScroll}>
                 
-                <div className='scrolling-canvas-container'
+                <div className='scrolling-canvas-container' ref={scrollingCanvasContainer}
                     style={{ width: model.displayWidth, height: model.dimensions.contentHeight }}>
                     {
                         model.columnGroups.map((columnGroup, idx) =>
@@ -226,7 +247,4 @@ const Viewport = React.memo(function Viewport({
         </>
     );
 
-})
-
-
-export default Viewport;
+}

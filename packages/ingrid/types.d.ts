@@ -105,12 +105,37 @@ interface GridModel {
 
 type GridModelReducer = (state: GridModel, action: any) => GridModel;
 
+interface ShowHeaders {
+  showColumnHeader?: boolean;
+  showSelectHeader?: boolean;
+  showInlineFilter?: boolean;
+}
+
+interface GridProps {
+  className?: string;
+  colHeaderRenderer?: any;
+  columns: Column[];
+  dataSource: DataSource
+  emptyDisplay?: any;
+  headerHeight?: number;
+  onDoubleClick?: GridActionHandler<'double-click'>;
+  onScroll?: Function;
+  onSelectCell?: GridActionHandler<'select-cell'>;
+  onSelectionChange?: Function;
+  onSingleSelect?: Function;
+  rowStripes?: boolean;
+  showHeaders?: ShowHeaders;
+  showHeaderWhenEmpty?: boolean;
+  style: any;
+}
+
 interface ViewportProps {
   columnHeaders?: React.ReactElement[];
   dataSource: DataSource;
   height: number;
   model: GridModel;
   onFilterChange: any;
+  ref?: React.MutableRefObject<any>;
   scrollState: {
     scrolling: boolean,
     scrollLeft: number;
@@ -118,7 +143,7 @@ interface ViewportProps {
   top: number;
 }
 
-type ViewportComponent = React.ComponentType<ViewportProps>;
+type ViewportComponent = (props: ViewportProps, ref: React.MutableRefObject<any>) => JSX.Element;
 
 interface CanvasProps {
   columnGroup: ColumnGroup;
@@ -176,6 +201,9 @@ type GridContext = React.Context<{
     callbackPropsDispatch: (action: GridAction) => void;
     showContextMenu: any;
   }>;
+
+//TODO define Actions
+type DataReducer =[any, (any) => void];
 
 type CanvasReducerState = [Column[], Map<number,number>];
 type CanvasReducer = (state: [any, any], action: any) => CanvasReducerState;

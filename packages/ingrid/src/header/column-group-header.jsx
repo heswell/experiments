@@ -19,11 +19,11 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
 },ref) {
 
     const {dispatch, showContextMenu} = useContext(GridContext);
-    const containerEl = useRef(null);
+    const scrollableHeaderCells = useRef(null);
 
     useImperativeHandle(ref, () => ({
         scrollLeft: scrollLeft => {
-                containerEl.current.scrollLeft = scrollLeft;
+            scrollableHeaderCells.current.style.transform = `translate3d(-${scrollLeft}px, 0px, 0px)`;
         }
       }))
 
@@ -137,7 +137,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
     const { columns, width, headings = [] } = columnGroup;
 
     return (
-        <div ref={containerEl} className='ColumnGroupHeader' style={{width: displayWidth, height: displayHeight}}>
+        <div className='ColumnGroupHeader' style={{width: displayWidth, height: displayHeight}}>
 
             {headings.map((heading, idx) =>
                 <div className='group-heading' key={idx} style={{ width }}>
@@ -145,7 +145,7 @@ const ColumnGroupHeader = forwardRef(function ColumnGroupHeader({
                 </div>
             ).reverse()}
 
-            <div className="header-cells" style={{ whiteSpace: 'nowrap', width, position: 'relative' }}>
+            <div className="header-cells" ref={scrollableHeaderCells} style={{ whiteSpace: 'nowrap', width, position: 'relative' }}>
                 {renderHeaderCells(columns, sortBy, groupState)}
             </div>
         </div>
