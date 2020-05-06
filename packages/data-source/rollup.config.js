@@ -15,11 +15,11 @@ export default [{
     plugins: [
         resolve(),
         commonjs(),
-        ...(isProd ? [terser({
-            output: {
-                comments: /webpackIgnore/
-            }
-        })] : []),
+        // ...(isProd ? [terser({
+        //     output: {
+        //         comments: /webpackIgnore/
+        //     }
+        // })] : []),
         filesize()
     ],
     external: [
