@@ -9,17 +9,18 @@ export default [{
     input: 'index.js',
     output: {
         file: 'dist/index.js',
-        format: 'es',
+        // format: 'es',
+        format: 'cjs',
         sourcemap: true
     },
     plugins: [
         resolve(),
         commonjs(),
-        // ...(isProd ? [terser({
-        //     output: {
-        //         comments: /webpackIgnore/
-        //     }
-        // })] : []),
+        ...(isProd ? [terser({
+            output: {
+                comments: /webpackIgnore/
+            }
+        })] : []),
         filesize()
     ],
     external: [
