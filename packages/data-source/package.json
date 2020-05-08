@@ -24,6 +24,7 @@
     "d3-array": "^2.2.0"
   },
   "peerDependencies": {
+    "@heswell/data-store": "^1.2.0",
     "@heswell/utils": "^1.0.9"
   },
   "devDependencies": {

@@ -9,7 +9,7 @@ import React, { forwardRef, /*useState, */useCallback,
 import cx from 'classnames';
 
 import * as Action from '../model/actions';
-import Canvas from './canvas/canvas.jsx';
+import Canvas from './canvas/canvas';
 import ColumnBearer from './column-bearer.jsx';
 import dataReducer, { initialData } from '../model/data-reducer';
 import GridContext from '../grid-context';

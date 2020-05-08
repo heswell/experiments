@@ -84,7 +84,11 @@ export default class LocalDataSource {
   }
 
   unsubscribe() {
-
+    console.log('LocalDataSource unsubscribe');
+    this.clientCallback = null;
+    this.dataView.destroy();
+    this.updateQueue.removeAllListeners(DataTypes.ROW_DATA);
+    this.dataView = null;
   }
 
   subscribeToFilterData(column, range, callback) {

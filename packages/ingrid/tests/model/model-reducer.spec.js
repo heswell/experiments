@@ -34,7 +34,11 @@ describe('model-reducer', () => {
       expect(state).toEqual({
         ...DEFAULT_MODEL_STATE,
 
-        _groups: [],
+        columnGroups: [],
+        dimensions: {
+          ...DEFAULT_MODEL_STATE.dimensions,
+          contentHeight: 275
+        },
         _headingDepth: 0,
 
         columnMap: {},
@@ -66,11 +70,13 @@ describe('model-reducer', () => {
 
       expect(state).toEqual({
         ...DEFAULT_MODEL_STATE,
-
+        dimensions: {
+            contentHeight: 576,
+            height: 600,
+            width: 1100
+        },
         displayWidth: 1100,
         headerHeight: 24,
-        height: 600,
-        width: 1100,
         totalColumnWidth: 1100,
 
         columns: [
@@ -83,7 +89,7 @@ describe('model-reducer', () => {
           {name: "Industry", key: 6 }
         ],
 
-        _groups: [{
+        columnGroups: [{
           columns: [
             {name: "Symbol", key: 0, label: "Symbol", width: 120, hidden, sorted},
             {name: "Name", key: 1, label: "Name", width: 200, hidden, sorted},
@@ -95,7 +101,6 @@ describe('model-reducer', () => {
           ],
           headings: undefined,
           locked: false,
-          renderLeft: 0,
           renderWidth: 1100,
           width: 1100
         }],
@@ -139,21 +144,21 @@ describe('model-reducer', () => {
 
       expect(state.totalColumnWidth).toEqual(1100);
 
-      let [, column] = state._groups[0].columns;
+      let [, column] = state.columnGroups[0].columns;
 
       state = ModelReducer(state, {type: Action.COLUMN_RESIZE_BEGIN, column});
-      ([, column] = state._groups[0].columns);
+      ([, column] = state.columnGroups[0].columns);
 
       expect(column.resizing).toBe(true);
 
       state = ModelReducer(state, {type: Action.COLUMN_RESIZE, column, width: 201});
-      ([, column] = state._groups[0].columns);
+      ([, column] = state.columnGroups[0].columns);
 
       expect(state.totalColumnWidth).toEqual(1101);
       expect(column.width).toEqual(201);
 
       state = ModelReducer(state, {type: Action.COLUMN_RESIZE, column, width: 205});
-      ([, column] = state._groups[0].columns);
+      ([, column] = state.columnGroups[0].columns);
 
       expect(state.totalColumnWidth).toEqual(1105);
       expect(column.width).toEqual(205);
