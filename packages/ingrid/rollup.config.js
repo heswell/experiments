@@ -17,7 +17,9 @@ export default [{
     perf: false,
     preserveSymlinks: true,
     plugins: [
-        resolve(),
+        resolve({
+            extensions: ['.js', '.jsx']
+        }),
         commonjs(),
         babel({
             babelrc: false,
