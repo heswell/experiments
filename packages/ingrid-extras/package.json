@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ingrid-extras",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Components for Heswell Grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
