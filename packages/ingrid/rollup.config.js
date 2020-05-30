@@ -36,7 +36,7 @@ export default [{
           filesize()
     ],
     "external": [
-        "@heswell/data",
+        "@heswell/data-source",
         "@heswell/ingrid-extras",
         "@heswell/ui-controls",
         "@heswell/utils",

@@ -30,7 +30,6 @@ export default {
           filesize()
     ],
     "external": [
-        "@heswell/data",
         "@heswell/layout",
         "@heswell/ingrid",
         "@heswell/ui-controls",
