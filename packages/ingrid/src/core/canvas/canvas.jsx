@@ -44,11 +44,10 @@ export function Canvas ({
   useImperativeHandle(ref, () => ({
     // Do we still need this ?
     scrollLeft: scrollLeft => {
-      alert('boom X')
       contentEl.current.style.left = `-${scrollLeft}px`;
     },
     scrollTop: scrollTop => {
-      console.log(`apply translate3d to .canvas-content`)
+      console.log(`apply translate3d to .canvas-content ${scrollTop}`)
       contentEl.current.style.transform = `translate3d(0px, ${scrollTop}px, 0px)`;
     }
   }));

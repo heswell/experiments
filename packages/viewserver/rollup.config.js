@@ -1,4 +1,5 @@
-import nodeResolve from 'rollup-plugin-node-resolve'
+import nodeResolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy'
 
 export default [{
@@ -12,6 +13,7 @@ export default [{
         nodeResolve({
             preferBuiltins: true
         }),
+        commonjs(),
         copy({
             targets: [
                 {src: 'dataTables', dest: 'dist'}

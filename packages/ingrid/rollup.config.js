@@ -11,7 +11,7 @@ export default [{
     input: 'index.js',
     output: {
         file: 'dist/index.js',
-        format: 'es',
+        format: 'cjs',
         sourcemap: true
     },
     perf: false,

@@ -2,7 +2,7 @@
   "name": "@heswell/data-remote",
   "version": "1.3.2",
   "description": "Heswell remote data",
-  "main": "index.js",
+  "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
   },
@@ -17,11 +17,9 @@
     "rollup": "1.29.0",
     "rollup-plugin-node-resolve": "^5.2.0"
   },
-  "dependencies": {
-    "@heswell/utils": "^1.3.2"
-  },
   "peerDependencies": {
-    "@heswell/data": "^1.0.0"
+    "@heswell/data": "^1.0.0",
+    "@heswell/utils": "^1.0.9"
   },
   "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }

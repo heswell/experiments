@@ -8,7 +8,6 @@ import React, { useRef, useState, useReducer, useEffect, useCallback } from 'rea
 import cx from 'classnames';
 import { createLogger, logColor } from '@heswell/utils';
 import * as Action from './model/actions';
-import modelReducer, { initModel } from './model/model-reducer';
 import InlineFilter from './header/inline-filter/inline-filter.jsx';
 import SelectHeader from './header/select-header/select-header.jsx';
 import ColumnGroupHeader from './header/column-group-header.jsx';
@@ -16,6 +15,7 @@ import Viewport from './core/viewport.jsx';
 import { getScrollbarSize } from './utils/domUtils';
 import GridContext from './grid-context';
 import gridReducer from './grid-reducer';
+import modelReducer, { initModel } from './model/model-reducer';
 import {useContextMenu} from './context-menu/use-context-menu.jsx';
 
 import './grid.css';

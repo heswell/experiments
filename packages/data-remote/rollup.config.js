@@ -1,11 +1,12 @@
 import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 
 export default [
     {
         input: 'index.js',
         output: {
             file: 'dist/index.js',
-            format: 'es',
+            format: 'cjs',
             sourcemap: true
         }
     },
@@ -13,13 +14,14 @@ export default [
         input: './src/servers/viewserver/server-proxy.js',
         output: {
             file: 'dist/server-proxy/viewserver.js',
-            format: 'es',
+            format: 'cjs',
             sourcemap: true
         },
         plugins: [
             resolve({
                 preferBuiltins: false
-            })
+            }),
+            commonjs()
         ]
     },
     {
@@ -32,7 +34,8 @@ export default [
         plugins: [
             resolve({
                 preferBuiltins: false
-            })
+            }),
+            commonjs()
         ]
     },
 ];
