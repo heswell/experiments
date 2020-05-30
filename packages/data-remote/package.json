@@ -1,6 +1,6 @@
 {
   "name": "@heswell/data-remote",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Heswell remote data",
   "main": "dist/index.js",
   "publishConfig": {
