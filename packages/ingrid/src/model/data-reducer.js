@@ -95,7 +95,9 @@ function setData(state, action, meta){
 
     // console.log(`setData <<<<<<<  existing...`)
     // console.table(state.rows)
-      
+  if (range.lo > action.range.lo){
+    debugger;
+  }      
 
   const [mergedRows, _keys] = mergeAndPurge(range, state.rows, offset, rows, rowCount, meta, state._keys)
   
@@ -151,6 +153,7 @@ function mergeAndPurge({ lo, hi }, rows, offset = 0, incomingRows, size, meta, k
       pos = rowIdx - low;
 
       if (usedKeys[rowKey] === 1 && rowIdx >= low && rowIdx < high) {
+        // Data row still in range
         results[pos] = rows[i];
         used[rowKey] = 1;
       } else if (usedKeys[rowKey] === 1 && rowKey < rowCount){

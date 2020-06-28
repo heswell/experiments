@@ -64,7 +64,7 @@ async function render(id){
 
 }
 
-render('grid-1000x1000');
+render('grid-viewserver');
 
 function onContextMenu(e){
   e.preventDefault();

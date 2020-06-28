@@ -22,10 +22,10 @@ const config = {
         {name: 'Industry'}
     ],
     updates: {
-        interval: 1000,
+        interval: 40,
         fields: ['Price'],
         applyInserts: false,
-        applyUpdates: false
+        applyUpdates: true
     }
 };
 

@@ -19,6 +19,8 @@ export function configure(config){
 
 }
 
+// The service is a module and the type is a named function exported  
+// TODO just pass a message
 export function findHandler(type){
     const serviceName = serviceAPI[type];
     if (serviceName){

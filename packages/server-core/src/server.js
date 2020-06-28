@@ -47,18 +47,6 @@ export default function start(config){
         
         if (request.url === '/xhr'){
             handleXhrRequest(request, response);
-        } else if (request.url.match(/\/ws\/stomp\/info/)) {
-            // doesn't belng here
-            const HTTP_HEADERS = {
-                'Access-Control-Allow-Credentials': true,
-                'Access-Control-Allow-Origin': request.headers['origin'],
-                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                // 'Content-Length':77,
-                'Content-type': 'application/json;charset=UTF-8'
-            };
-            response.writeHead(200, HTTP_HEADERS);
-            response.end(JSON.stringify({entropy: 9006110,origins: ['*:*'],'cookie_needed': true,websocket: true}));
-
         } else {
             console.log((new Date()) + ' received request for ' + request.url);
             request.addListener('end', function () {
@@ -69,11 +57,6 @@ export default function start(config){
 
     const wss = new WebSocket.Server({server: httpServer});
 
-    // const requestHandler = argv.stomp   
-    //     ? stompRequestHandler
-    //     : argv.sockjs
-    //         ? sockjsRequestHandler
-    //         : viewserverRequestHandler;
     const requestHandler = viewserverRequestHandler;
 
     wss.on('connection', requestHandler(msgConfig, logger));

@@ -25,7 +25,7 @@ const defaultRange = { lo: 0, hi: 0 };
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataView  {
+export default class RemoteDataSource  {
 
   constructor({tableName, serverName = AvailableProxies.Viewserver, url}) {
 
@@ -56,14 +56,14 @@ export default class RemoteDataView  {
     this.tableName = tableName;
     this.columns = columns;
     this.meta = metaData(columns);
-    logger.log(`range = ${JSON.stringify(range)}`)
+    logger.log(`subscribe to ${tableName} range = ${JSON.stringify(range)}`)
 
     this.server = await ConnectionManager.connect(this.url, this.serverName);
 
     this.server.subscribe({
         viewport,
         tablename: tableName,
-        columns,
+        columns: columns.map(column => column.name),
         range
       }, message => {
           if (message.dataType === DataTypes.FILTER_DATA) {

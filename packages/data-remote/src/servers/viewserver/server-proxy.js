@@ -4,6 +4,7 @@ import { createLogger, logColor, partition } from '@heswell/utils';
 
 const logger = createLogger('ViewServerProxy', logColor.blue);
 
+const NOT_DATA = {};
 /*
     query: (type, params = null) => new Promise((resolve, reject) => {
       const requestId = uuid.v1();
@@ -24,18 +25,9 @@ export class ServerProxy {
         this.viewportStatus = {};
     }
 
-
-
-
-
-
-
-
-
-
-
     handleMessageFromClient(message) {
         const viewport = this.viewportStatus[message.viewport];
+        viewport.range = message.range;
         this.sendIfReady(message, viewport.status === 'subscribed');
     }
 
@@ -74,11 +66,13 @@ export class ServerProxy {
 
     subscribe(message, callback) {
         // Q is this ever null, shouldn't we query the connection.status ?
+        logger.log(`subscribed with range ${JSON.stringify(message.range)}`)
         const isReady = this.connection !== null;
         const { viewport } = message;
         this.viewportStatus[viewport] = {
             status: 'subscribing',
             request: message,
+            range: message.range,
             postMessageToClient: callback
         }
         this.sendIfReady( {
@@ -123,10 +117,23 @@ export class ServerProxy {
     }
 
     handleMessageFromServer(message) {
-        const { type, viewport } = message;
-
+        const { data:{range}=NOT_DATA, type, viewport: viewportId } = message;
+        const viewport = this.viewportStatus[viewportId];
         if (viewport){
-            const {postMessageToClient} = this.viewportStatus[viewport];
+            const {postMessageToClient, range: {lo, hi}} = viewport;
+            console.log(message)
+            if (range){
+                logger.log(`message from server ${type} for range [${range.lo},${range.hi}] (current range [${lo},${hi}])`)
+                if (range.hi < lo || range.lo >= hi){
+                    logger.log(`>>>>>>>>>>>>>   discard entire message`)
+                    return;
+                } else if (
+                    (range.lo < lo && range.hi >= lo && range.hi < hi) ||
+                    (range.lo >= lo && range.lo < hi && range.hi > hi)){
+                        logger.log(`!!!!!!!!!!!   partially irrelevant message`)
+
+                }
+            }
 
             switch (type) {
     
