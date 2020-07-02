@@ -9,8 +9,8 @@ export default [{
     input: 'index.js',
     output: {
         file: 'dist/index.js',
-        format: 'cjs',
-        // format: 'es',
+        // format: 'cjs',
+        format: 'es',
         sourcemap: true
     },
     plugins: [

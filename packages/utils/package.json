@@ -9,7 +9,8 @@
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "types": "index.d.ts",
   "publishConfig": {
