@@ -28,11 +28,9 @@ const defaultRange = { lo: 0, hi: 0 };
 export default class RemoteDataSource  {
 
   constructor({tableName, serverName = AvailableProxies.Viewserver, url}) {
-
     this.url = url;
     this.serverName = serverName;
     this.tableName = tableName;
-
     this.server = NullServer;  
     this.columns = null;
     this.meta = null;
@@ -75,7 +73,8 @@ export default class RemoteDataSource  {
   }
 
   unsubscribe() {
-
+    logger.log(`unsubscribe from ${this.tableName} (viewport ${this.viewport})`);
+    this.server.unsubscribe(this.viewport);
   }
 
   setRange(lo, hi, dataType=ROW_DATA) {

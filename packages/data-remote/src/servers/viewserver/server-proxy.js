@@ -111,6 +111,12 @@ export class ServerProxy {
         }
     }
 
+    unsubscribe(viewport){
+        const viewportStatus = this.viewportStatus[viewport];
+        this.sendMessageToServer({viewport, type: API.unsubscribe});
+        this.viewportStatus[viewport].status = 'unsubscribed';
+    }
+
     sendMessageToServer(message) {
         const { clientId } = this.connection;
         this.connection.send({ clientId, message });

@@ -1,7 +1,8 @@
 export const ServerApiMessageTypes = {
   addSubscription: 'AddSubscription',
   setColumns: 'setColumns',
-  subscribed: 'subscribed'
+  subscribed: 'subscribed',
+  unsubscribe: 'TerminateSubscription'
 }
 
 export const CONNECT = 'connect';
