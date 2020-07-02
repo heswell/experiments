@@ -1,6 +1,6 @@
 {
   "name": "@heswell/sandbox",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "private": true,
   "description": "Heswell Sandbox",
   "main": "index.js",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@heswell/data-remote": "^1.4.2",
-    "@heswell/data-source": "^1.2.7",
+    "@heswell/data-source": "^1.2.8",
     "@heswell/data-store": "^1.2.1",
     "@heswell/ingrid": "^1.5.0",
     "@heswell/ingrid-extras": "^1.4.2",
