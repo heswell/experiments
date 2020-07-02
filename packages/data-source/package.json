@@ -6,7 +6,8 @@
   "module": "index.js",
   "files": [
     "dist",
-    "src"
+    "src",
+    "index.js"
   ],
   "typings": "index.d.ts",
   "publishConfig": {
