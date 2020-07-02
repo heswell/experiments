@@ -6,7 +6,7 @@ export default [
         input: 'index.js',
         output: {
             file: 'dist/index.js',
-            format: 'cjs',
+            format: 'es',
             sourcemap: true
         }
     },
@@ -14,7 +14,7 @@ export default [
         input: './src/servers/viewserver/server-proxy.js',
         output: {
             file: 'dist/server-proxy/viewserver.js',
-            format: 'cjs',
+            format: 'es',
             sourcemap: true
         },
         plugins: [
