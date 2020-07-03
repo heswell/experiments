@@ -43,7 +43,7 @@ export default class RemoteDataSource  {
   async subscribe({
     viewport = uuid(),
     tableName = this.tableName,
-    columns,
+    columns=this.columns,
     range = defaultRange
   }, callback) {
 
@@ -75,6 +75,11 @@ export default class RemoteDataSource  {
   unsubscribe() {
     logger.log(`unsubscribe from ${this.tableName} (viewport ${this.viewport})`);
     this.server.unsubscribe(this.viewport);
+  }
+
+  setColumns(columns){
+    this.columns = columns;
+    return this;
   }
 
   setRange(lo, hi, dataType=ROW_DATA) {

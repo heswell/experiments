@@ -9,10 +9,15 @@ const logger = createLogger('ConnectionManager', logColor.green);
 
 const getServerProxy = async serverName => {
   console.log(`request for proxy class for ${serverName}`,serverProxies[serverName])
-
   return serverProxies[serverName] || (serverProxies[serverName] =
-    import(/* webpackIgnore: true */`./server-proxy/${serverName}.js`));
+    // import(/* webpackIgnore: true */`/server-proxy/viewserver.js`));
+    import(/* webpackChunkName: "viewserver" */`./servers/viewserver/server-proxy.js`));
 }
+// const getServerProxy = async serverName => {
+//   console.log(`request for proxy class for ${serverName}`,serverProxies[serverName])
+//   return serverProxies[serverName] || (serverProxies[serverName] =
+//     import(/* webpackIgnore: true */`/server-proxy/${serverName}.js`));
+// }
 const connectServer = async (serverName, url, onConnectionStatusMessage) => {
   
   return servers[url] || (servers[url] = new Promise(async (resolve, reject) => {

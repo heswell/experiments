@@ -3,6 +3,7 @@
   "version": "1.4.2",
   "description": "Heswell remote data",
   "main": "dist/index.js",
+  "module": "index.js",
   "publishConfig": {
     "access": "public"
   },

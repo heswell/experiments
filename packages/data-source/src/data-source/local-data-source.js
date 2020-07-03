@@ -50,7 +50,7 @@ export default class LocalDataSource {
 
   async subscribe({
     tableName = this.tableName,
-    columns
+    columns = this.columns
     // TODO support groupBy, sort etc
   }, callback) {
 
@@ -100,6 +100,11 @@ export default class LocalDataSource {
   unsubscribeFromFilterData() {
     logger.log(`<unsubscribeFromFilterData>`)
     this.clientFilterCallback = null;
+  }
+
+  setColumns(columns){
+    this.columns = columns;
+    return this;
   }
 
   setRange(lo, hi, dataType=ROW_DATA) {

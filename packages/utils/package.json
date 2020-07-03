@@ -8,6 +8,7 @@
   "keywords": [],
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "index.js",
   "files": [
     "dist",
     "src"
