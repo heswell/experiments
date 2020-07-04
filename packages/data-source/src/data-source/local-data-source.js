@@ -1,6 +1,6 @@
 // @ts-check
 
-import {createLogger, DataTypes, logColor, metaData} from '@heswell/utils'
+import {createLogger, DataTypes, logColor} from '@heswell/utils'
 import {DataStore as DataView, Table} from '@heswell/data-store';
 import LocalUpdateQueue from './local-update-queue';
 
@@ -31,7 +31,6 @@ export default class LocalDataSource {
       Promise.reject('bad params');
 
     this.columns = null;
-    this.meta = null;
 
     this.tableName = tableName;
     this.subscription = null;
@@ -60,7 +59,6 @@ export default class LocalDataSource {
     
     this.tableName = tableName;
     this.columns = columns;
-    this.meta = metaData(columns);
 
     const { default: data } = await this.eventualView
     const table = new Table({ data, columns });

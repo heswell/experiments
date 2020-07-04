@@ -1,5 +1,5 @@
 /*global fetch */
-import {buildColumnMap, EventEmitter} from '@heswell/utils';
+import { EventEmitter } from '@heswell/utils';
 
 const defaultUpdateConfig = {
     applyUpdates: false,
@@ -7,6 +7,18 @@ const defaultUpdateConfig = {
     interval: 500
 }
 
+function buildColumnMap(columns){
+    if (columns){
+        const map = {IDX: 0, KEY: 1};
+        for (let i=0;i<columns.length;i++){
+            map[columns[i].name] = i+2;
+        }
+        return map;
+    } else {
+        return null;
+    }
+  }
+  
 export default class Table extends EventEmitter {
 
     constructor(config){
@@ -34,7 +46,6 @@ export default class Table extends EventEmitter {
         //     columns = ${JSON.stringify(columns,null,2)}
         //     columnMap = ${JSON.stringify(this.columnMap,null,2)}    
         //     `)
-
 
         if (data){
             this.parseData(data);
@@ -136,6 +147,7 @@ export default class Table extends EventEmitter {
         }
     }
 
+    // Build a row [idx, primaryKey, ...data values]
     rowFromData(idx, data, columnnameList){
         // 2 metadata items for each row, the idx and unique key
         const {index, primaryKey=null, columnMap: map} = this;
@@ -147,7 +159,7 @@ export default class Table extends EventEmitter {
         } else {
             // This allows us to load data from objects as rows, without predefined columns, where
             // not every row may have every column. How would we handle primary key ?
-            const columnMap = map || (this.columnMap = {});
+            const columnMap = map || (this.columnMap = {IDX:0, KEY:1});
             const colnames = columnnameList || Object.getOwnPropertyNames(data);
             // why start with idx in 0 ?
             const row = [idx];
@@ -158,18 +170,16 @@ export default class Table extends EventEmitter {
                 const name = colnames[i];
                 const value = data[name];
                 if ((colIdx = columnMap[name]) === undefined){
-                    colIdx = columnMap[name] = this.columnCount++;
+                    colIdx = columnMap[name] = 2 + this.columnCount++;
                 }
                 row[colIdx] = value;
                 // If we don't know the primary key, assume it is the first column for now
                 if ((name === primaryKey) || (primaryKey === null && i === 0)){
                     key = value;
                     index[value] = idx;
+                    row[map.KEY] = value;
                 }
             }
-            // doesn't this risk pushing the metadata into the wrong slots if not every row has every 
-            // field// TODO why do we need metadata fields in table itself ?
-            row.push(idx, key)
             return row;
         }
     }

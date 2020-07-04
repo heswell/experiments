@@ -12,7 +12,7 @@ export {
   includesNoValues,
   indexOfCol,
   isEmptyRow,
-  metaData,
+  metadataKeys,
   NOT_IN,
   NOT_STARTS_WITH,
   OR,

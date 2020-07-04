@@ -17,7 +17,7 @@ import {
     getFullRange,
     projectColumns,
     mapSortCriteria,
-    metaData,
+    metadataKeys,
     overrideColName,
     SET_FILTER_DATA_COLUMNS,
     splitFilterOnColumn,
@@ -41,8 +41,6 @@ export default class BaseRowSet {
         this.currentFilter = null;
         this.filterSet = null;
         this.sortSet = undefined;
-        this.columnMap = table.columnMap;
-        this.meta = metaData(columns);
         this.data = table.rows;
         this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
         this.type = undefined;
@@ -73,7 +71,7 @@ export default class BaseRowSet {
         if (this.filterSet) {
             return this.filterSet;
         } else {
-            const { IDX } = this.meta;
+            const { IDX } = metadataKeys;
             return this.data.map(row => row[IDX])
         }
     }
@@ -138,8 +136,8 @@ export default class BaseRowSet {
 
     select(idx, rangeSelect, keepExistingSelection){
 
-        const {meta: {SELECTED}, selectionModel, range: {lo, hi}, filterSet, sortSet, offset} = this;
-
+        const { selectionModel, range: {lo, hi}, filterSet, sortSet, offset} = this;
+        const { SELECTED } = metadataKeys
         const {selected, deselected, ...selectionState} = selectionModel.select(
             this.selected,
             idx,
@@ -180,7 +178,8 @@ export default class BaseRowSet {
     }
 
     selectAll(){
-        const {data, selected, selectedRowsIDX, meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
+        const {data, selected, selectedRowsIDX, range: {lo, hi}, filterSet, offset} = this;
+        const { SELECTED } = metadataKeys;
         const previouslySelectedRows = [...this.selected.rows];
         if (filterSet){
             // selection of a filtered subset is added to existing selection 
@@ -213,7 +212,8 @@ export default class BaseRowSet {
 
     selectNone(){
 
-        const {meta: {SELECTED}, range: {lo, hi}, filterSet, offset} = this;
+        const {range: {lo, hi}, filterSet, offset} = this;
+        const {SELECTED} = metadataKeys;
         const previouslySelectedRows = this.selectedRowsIDX;
         if (filterSet){
             this.selected = {rows: [], focusedIdx: -1, lastTouchIdx: -1};
@@ -233,7 +233,7 @@ export default class BaseRowSet {
     }
 
     selectNavigationSet(useFilter) {
-        const { COUNT, IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = this.meta;
+        const { COUNT, IDX_POINTER, FILTER_COUNT, NEXT_FILTER_IDX } = metadataKeys;
         return useFilter
             ? [this.filterSet, NEXT_FILTER_IDX, FILTER_COUNT]
             : [this.sortSet, IDX_POINTER, COUNT];
@@ -241,7 +241,7 @@ export default class BaseRowSet {
 
     //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
     getBinnedValuesForColumn(column) {
-        const key = this.columnMap[column.name];
+        const key = this.table.columnMap[column.name];
         const { data: rows, filteredData } = this;
         const numbers = filteredData.map(rowIdx => rows[rowIdx][key]);
         const data = d3.histogram().thresholds(20)(numbers).map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
@@ -252,8 +252,8 @@ export default class BaseRowSet {
     }
 
     getDistinctValuesForColumn(column) {
-        const { data: rows, columnMap, currentFilter } = this;
-        const colIdx = columnMap[column.name]
+        const { data: rows, currentFilter } = this;
+        const colIdx = this.table.columnMap[column.name]
         const resultMap = {};
         const data = [];
         const dataRowCount = rows.length;
@@ -276,7 +276,7 @@ export default class BaseRowSet {
             dataRowAllFilters = dataRowCount;
         } else {
 
-            const fn = filterPredicate(columnMap, otherFilters);
+            const fn = filterPredicate(this.table.columnMap, otherFilters);
             let result;
 
             for (let i = 0; i < dataRowCount; i++) {
@@ -315,7 +315,7 @@ export class RowSet extends BaseRowSet {
     constructor(table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
         super(table, columns, offset);
         this.type = "rowData";
-        this.project = projectColumns(table.columnMap, columns, this.meta);
+        this.project = projectColumns(table.columnMap, columns);
         this.sortCols = null;
         this.sortReverse = false;
         this.sortSet = this.buildSortSet();
@@ -391,7 +391,7 @@ export class RowSet extends BaseRowSet {
 
     addRows(rows) {
         // TODO where is this.index ever created ?
-        addRowsToIndex(rows, this.index, this.meta.IDX);
+        addRowsToIndex(rows, this.index, metadataKeys.IDX);
         this.data = this.data.concat(rows);
     }
 
@@ -407,10 +407,10 @@ export class RowSet extends BaseRowSet {
             this.sortReverse = !this.sortReverse;
         } else if (this.sortCols !== null && groupbyExtendsExistingGroupby(sortCols, this.sortCols)) {
             this.sortReverse = false;
-            sortExtend(sortSet, this.data, sortCols, this.columnMap)
+            sortExtend(sortSet, this.data, sortCols, this.table.columnMap)
         } else {
             this.sortReverse = false;
-            sort(sortSet, this.data, sortCols, this.columnMap)
+            sort(sortSet, this.data, sortCols, this.table.columnMap)
         }
 
         this.sortCols = sortCols;
@@ -427,7 +427,7 @@ export class RowSet extends BaseRowSet {
 
     filter(filter) {
         const extendsCurrentFilter = extendsFilter(this.currentFilter, filter);
-        const fn = filter && filterPredicate(this.columnMap, filter);
+        const fn = filter && filterPredicate(this.table.columnMap, filter);
         const { data: rows } = this;
         let [navSet] = this.selectNavigationSet(extendsCurrentFilter && this.filterSet)
         const newFilterSet = [];
@@ -507,7 +507,7 @@ export class RowSet extends BaseRowSet {
             }
         } else if (this.currentFilter === null) {
             // sort only - currently only support single column sorting
-            const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
+            const sortCols = mapSortCriteria(this.sortCols, this.table.columnMap);
             const [[colIdx]] = sortCols;
             const sortRow = [idx, row[colIdx]];
             const sorter = sortBy([[1, 'asc']]); // the sortSet is always ascending
@@ -537,7 +537,7 @@ export class RowSet extends BaseRowSet {
 
         } else if (this.sortCols === null) {
             // filter only
-            const fn = filterPredicate(this.columnMap, this.currentFilter);
+            const fn = filterPredicate(this.table.columnMap, this.currentFilter);
             if (fn(row)) {
                 const navIdx = this.filterSet.length;
                 this.filterSet.push(idx);
@@ -564,11 +564,11 @@ export class RowSet extends BaseRowSet {
             }
         } else {
             // sort AND filter
-            const fn = filterPredicate(this.columnMap, this.currentFilter);
+            const fn = filterPredicate(this.table.columnMap, this.currentFilter);
             if (fn(row)) {
                 // TODO what about totalCOunt
 
-                const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
+                const sortCols = mapSortCriteria(this.sortCols, this.table.columnMap);
                 const [[colIdx, direction]] = sortCols; // TODO multi-colun sort
                 const sortRow = [idx, row[colIdx]];
                 const sorter = sortBy([[1, direction]]); // TODO DSC
@@ -630,7 +630,7 @@ export class SetFilterRowSet extends RowSet {
     }
     
     get values() {
-        const key = this.columnMap['name'];
+        const key = this.table.columnMap['name'];
         return this.filterSet.map(idx => this.data[idx][key])
     }
 

@@ -1,4 +1,4 @@
-import {createLogger, DataTypes, logColor, metaData, uuid} from '@heswell/utils';
+import {createLogger, DataTypes, logColor, uuid} from '@heswell/utils';
 import {
   msgType as Msg,
   connectionId as _connectionId,
@@ -33,7 +33,6 @@ export default class RemoteDataSource  {
     this.tableName = tableName;
     this.server = NullServer;  
     this.columns = null;
-    this.meta = null;
     this.subscription = null;
     this.viewport = null;
     this.filterDataCallback = null;
@@ -53,7 +52,6 @@ export default class RemoteDataSource  {
     this.viewport = viewport;
     this.tableName = tableName;
     this.columns = columns;
-    this.meta = metaData(columns);
     logger.log(`subscribe to ${tableName} range = ${JSON.stringify(range)}`)
 
     this.server = await ConnectionManager.connect(this.url, this.serverName);

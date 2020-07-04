@@ -1,13 +1,9 @@
 import {
   functor, 
-  overrideColName, 
-  SET_FILTER_DATA_COLUMNS, 
-  BIN_FILTER_DATA_COLUMNS} from './filter-utils';
+  overrideColName
+} from './filter-utils';
 
 const SORT_ASC = 'asc';
-
-export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS)
-export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS)
 
 export function mapSortCriteria(sortCriteria, columnMap) {
   return sortCriteria.map(s => {
@@ -36,14 +32,15 @@ export const toColumn = column =>
       : column;
 
 export function buildColumnMap(columns){
+  const start = metadataKeys.count;  
   if (columns){
       return columns.reduce((map, column, i) => {
           if (typeof column === 'string'){
-              map[column] = i;
+              map[column] = start + i;
           } else if (typeof column.key === 'number') {
               map[column.name] = column.key;
           } else {
-              map[column.name] = i;
+              map[column.name] = start + i;
           }
           return map;
       },{})
@@ -52,19 +49,18 @@ export function buildColumnMap(columns){
   }
 }
 
-export function projectColumns(map, columns, meta){
+export function projectColumns(map, columns){
   const length = columns.length;
-  const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED} = meta;
+  const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count} = metadataKeys;
   return (startIdx, offset, selectedRows=[]) => (row,i) => {
       // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
       // row is the original row from this set, with original index in IDX pos, which might
       // be overwritten with a different value below if rows are sorted/filtered 
       const baseRowIdx = row[IDX];
-
       const out = [];
-      for (let i=0;i<length;i++){
+      for (let i=0; i < length;i++){
           const colIdx = map[columns[i].name];
-          out[i] = row[colIdx];
+          out[count+i] = row[colIdx];
       }
 
       out[IDX] = startIdx + i + offset;
@@ -72,7 +68,7 @@ export function projectColumns(map, columns, meta){
       out[DEPTH] = 0;
       out[COUNT] = 0;
       // assume row[0] is key for now
-      out[KEY] = row[0];
+      out[KEY] = row[map.KEY]; /// How do we identify, can it be done in table ?
       out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
       return out;
   }
@@ -96,7 +92,7 @@ export function projectColumnsFilter(map, columns, meta, filter){
       out[RENDER_IDX] = 0;
       out[DEPTH] = 0;
       out[COUNT] = 0;
-      out[KEY] = row[0];
+      out[KEY] = row[map.KEY];
       out[SELECTED] = fn(row) ? 1 : 0;
 
       return out;
@@ -126,22 +122,16 @@ export function getDataType({type=null}){
 
 }
 
-//TODO cache result by length
-export function metaData(columns){
-  const start = columns.length === 0
-      ? -1
-      : Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
-  return {
-      IDX: start + 1,
-      RENDER_IDX: start + 2,
-      DEPTH: start + 3,
-      COUNT: start + 4,
-      KEY: start + 5,
-      SELECTED: start + 6,
-      PARENT_IDX: start + 7,
-      IDX_POINTER: start + 8,
-      FILTER_COUNT: start + 9,
-      NEXT_FILTER_IDX: start + 10,
-      count: start + 11
-  }
+export const metadataKeys = {
+    IDX: 0,
+    RENDER_IDX: 1,
+    DEPTH: 2,
+    COUNT: 3,
+    KEY: 4,
+    SELECTED: 5,
+    PARENT_IDX: 6,
+    IDX_POINTER: 7,
+    FILTER_COUNT: 8,
+    NEXT_FILTER_IDX: 9,
+    count: 10
 }

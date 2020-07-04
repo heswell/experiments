@@ -1,5 +1,5 @@
 import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
-import { indexOfCol, metaData } from '@heswell/utils';
+import { indexOfCol, metadataKeys } from '@heswell/utils';
 
 const DEFAULT_OPTIONS = {
     startIdx: 0,
@@ -168,7 +168,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
 
     const levels = groupby.length;
     const currentGroups = Array(levels).fill(null);
-    const { IDX, DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metaData(columns);
+    const { IDX, DEPTH, FILTER_COUNT, NEXT_FILTER_IDX } = metadataKeys;
 
     let parentIdx = rootIdx;
     let leafCount = 0;
@@ -437,7 +437,7 @@ function buildGroupKey(groupby, row){
 // Do we have to take columnMap out again ?
 export function GroupRow(row, depth, idx, childIdx, parentIdx, groupby, columns, columnMap, baseGroupby = []) {
 
-    const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metaData(columns);
+    const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, PARENT_IDX, IDX_POINTER, count } = metadataKeys;
     const group = Array(count);
     const groupIdx = groupby.length - depth;
     let colIdx;
@@ -586,7 +586,7 @@ export function findAggregatedColumns(columns, columnMap, groupby) {
 /** @type {import('./group-utils').aggregateGroup} */
 export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregations) {
 
-    const {DEPTH, COUNT} = metaData(columns);
+    const {DEPTH, COUNT} = metadataKeys;
     const groupRow = groups[grpIdx];
     let depth = groupRow[DEPTH];
     let absDepth = Math.abs(depth);
@@ -612,8 +612,7 @@ export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregati
 
 function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, leafCount, filter=null) {
 
-    const {DEPTH, COUNT, FILTER_COUNT} = metaData(columns);
-    const { IDX_POINTER } = metaData(columns);
+    const {DEPTH, COUNT, FILTER_COUNT, IDX_POINTER} = metadataKeys;
     let absDepth = Math.abs(groupRow[DEPTH]);
     let count = 0;
     let filteredCount = filter === null ? undefined : 0;

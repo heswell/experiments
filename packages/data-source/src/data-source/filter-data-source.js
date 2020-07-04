@@ -1,4 +1,4 @@
-import { createLogger, DataTypes, logColor, EventEmitter, metaData } from '@heswell/utils';
+import { createLogger, DataTypes, logColor, EventEmitter } from '@heswell/utils';
 
 const logger = createLogger('FilterDataView', logColor.brown);
 
@@ -28,7 +28,6 @@ export default class FilterDataSource extends EventEmitter {
 
         logger.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
         this.columns = columns;
-        this.meta = metaData(columns);
         //TODO make range s setter - DO WE EVEN NEED RANGE ?
         this.range = range;
         this.keyCount = range.hi - range.lo;

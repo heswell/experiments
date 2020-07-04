@@ -1,5 +1,5 @@
 import {DataStore as View} from '@heswell/data-store';
-import {DataTypes, metaData, setFilterColumnMeta} from '@heswell/utils';
+import {DataTypes, metadataKeys} from '@heswell/utils';
 
 //TODO implement as class
 export default function Subscription (table, {viewport, requestId, ...options}, queue){
@@ -12,8 +12,6 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
     let view = new View(table, {columns, sortCriteria, groupBy});
     let timeoutHandle;
-
-    const tableMeta = metaData(columns);
 
     console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)} table.status ${table.status} view.status ${view.status}`)
 
@@ -60,7 +58,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                         offset,
                         range
                     }
-                }, tableMeta);
+                }, metadataKeys);
     
             } else {
                 queue.push({
@@ -73,7 +71,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                     size,
                     offset,
                     range
-                }, tableMeta);
+                }, metadataKeys);
             }
         });
 
@@ -94,9 +92,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                 } else {
                     data = view[method](...params);
                 }
-                const meta = type === DataTypes.FILTER_DATA
-                    ? setFilterColumnMeta
-                    : tableMeta 
+                const meta = metadataKeys 
 
                 if (data){
                     queue.push({
@@ -113,7 +109,7 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
                         viewport,
                         type: DataTypes.FILTER_DATA,
                         data
-                    }, setFilterColumnMeta);
+                    }, metadataKeys);
 
                 });
             }

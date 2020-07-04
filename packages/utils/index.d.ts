@@ -12,7 +12,7 @@ export declare const arrayOfIndices: any;
 export declare const partition: any;
 
 // we need column definition
-export declare const metaData: (columns: any) => {[key: string] : number}
+export declare const metadataKeys: {[key: string] : number}
 export declare const buildColumnMap: any;
 export declare const toColumn: any;
 export declare const getFilterType: any;
