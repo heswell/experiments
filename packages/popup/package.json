@@ -1,6 +1,6 @@
 {
   "name": "@heswell/popup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Popup",
   "main": "dist/index.js",
   "module": "index.js",
@@ -32,7 +32,6 @@
     "jss-plugin-camel-case": "^10.1.1",
     "jss-plugin-default-unit": "^10.1.1",
     "jss-plugin-nested": "^10.1.1"
-
   },
   "peerDependencies": {
     "classnames": "^2.2.6",
