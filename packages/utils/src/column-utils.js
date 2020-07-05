@@ -135,3 +135,23 @@ export const metadataKeys = {
     NEXT_FILTER_IDX: 9,
     count: 10
 }
+
+// Deprecated
+export function metaData(columns){
+    const start = columns.length === 0
+        ? -1
+        : Math.max(...columns.map((column, idx) => typeof column.key === 'number' ? column.key : idx));
+    return {
+        IDX: start + 1,
+        RENDER_IDX: start + 2,
+        DEPTH: start + 3,
+        COUNT: start + 4,
+        KEY: start + 5,
+        SELECTED: start + 6,
+        PARENT_IDX: start + 7,
+        IDX_POINTER: start + 8,
+        FILTER_COUNT: start + 9,
+        NEXT_FILTER_IDX: start + 10,
+        count: start + 11
+    }
+  }

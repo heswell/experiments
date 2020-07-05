@@ -1,11 +1,12 @@
 {
-  "name": "@heswell/ui-controls",
-  "version": "1.1.0",
-  "description": "UI Controls",
+  "name": "@heswell/popup",
+  "version": "1.0.0",
+  "description": "Popup",
   "main": "dist/index.js",
   "module": "index.js",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "publishConfig": {
     "access": "public"
@@ -27,8 +28,6 @@
     "rollup-plugin-terser": "^5.1.2"
   },
   "dependencies": {
-    "date-fns": "^2.9.0",
-    "xstate": "^4.2.2",
     "jss-plugin-cache": "^10.1.1",
     "jss-plugin-camel-case": "^10.1.1",
     "jss-plugin-default-unit": "^10.1.1",
@@ -39,6 +38,5 @@
     "classnames": "^2.2.6",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
-  },
-  "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
+  }
 }

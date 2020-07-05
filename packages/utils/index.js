@@ -6,7 +6,8 @@ export * from './src/array-utils.js';
 export * from './src/constants';
 
 export {
-  getFilterType, 
+  getFilterType,
+  metaData, 
   metadataKeys,
   buildColumnMap, 
   mapSortCriteria,

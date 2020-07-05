@@ -33,7 +33,7 @@ export class MenuItem extends React.Component {
                 <button tabIndex={-1} onClick={e => this.handleClick(e)}
                     onMouseOver={() => this.handleMouseOver()}>
                     <span className="menu-label">{this.props.label}</span>
-                    <i className='material-icons'>{this.state.hasChildMenuItems ? 'arrow_right' : ''}</i>
+                    <span className='material-icons'>{this.state.hasChildMenuItems ? 'arrow_right' : ''}</span>
                 </button>
                 {nestedMenu}
             </li>
