@@ -34,5 +34,5 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0"
   },
-  "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
+  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
 }

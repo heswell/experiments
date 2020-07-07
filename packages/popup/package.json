@@ -37,5 +37,6 @@
     "classnames": "^2.2.6",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
-  }
+  },
+  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
 }

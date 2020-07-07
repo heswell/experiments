@@ -54,7 +54,8 @@ export default createUseStyles(theme => ({
 
   MenuLabel: {
     flex: '1 1 auto',
-    lineHeight: '18px'
+    lineHeight: '18px',
+    paddingRight: 5
   },
 
   disabled : {

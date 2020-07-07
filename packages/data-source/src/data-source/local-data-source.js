@@ -158,7 +158,11 @@ export default class LocalDataSource {
   }
 
   sort(columns) {
-    this.clientCallback(this.dataView.sort(columns));
+    if (this.clientCallback){
+      this.clientCallback(this.dataView.sort(columns));
+    } else if (this.dataView){
+      this.dataView.sort(columns);
+    }
   }
 
 
