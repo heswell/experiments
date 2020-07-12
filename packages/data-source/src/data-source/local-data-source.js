@@ -150,14 +150,23 @@ export default class LocalDataSource {
   }
 
   group(columns) {
-    this.clientCallback(this.dataView.groupBy(columns))
+    if (this.clientCallback){
+      this.clientCallback(this.dataView.groupBy(columns))
+    } else if (this.dataView){
+      this.dataView.groupBy(columns);
+    }
   }
 
   setGroupState(groupState) {
-    this.clientCallback(this.dataView.setGroupState(groupState))
+    if (this.clientCallback){
+      this.clientCallback(this.dataView.setGroupState(groupState))
+    } else if (this.dataView){
+      this.dataView.setGroupState(groupState);
+    }
   }
 
   sort(columns) {
+    console.log(columns)
     if (this.clientCallback){
       this.clientCallback(this.dataView.sort(columns));
     } else if (this.dataView){

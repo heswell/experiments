@@ -46,6 +46,9 @@ export {
 } from './src/range-utils';
 
 export {
+  addSortColumn,
+  removeSortColumn,
+  setSortColumn,
   sortByToMap
 } from './src/sort-utils';
 

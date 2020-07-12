@@ -5,13 +5,13 @@ import {
 
 const SORT_ASC = 'asc';
 
-export function mapSortCriteria(sortCriteria, columnMap) {
+export function mapSortCriteria(sortCriteria, columnMap, metadataOffset=0) {
   return sortCriteria.map(s => {
       if (typeof s === 'string') {
-          return [columnMap[s], 'asc'];
+          return [columnMap[s] + metadataOffset, 'asc'];
       } else if (Array.isArray(s)) {
           const [columnName, sortDir] = s;
-          return [columnMap[columnName], sortDir || SORT_ASC];
+          return [columnMap[columnName] + metadataOffset, sortDir || SORT_ASC];
       } else {
           throw Error('columnUtils.mapSortCriteria invalid input');
       }

@@ -28,6 +28,7 @@ function sort2ColsAdd1(sortSet, rows, sortCols, columnMap){
     for (let i=0;i<len;i++){
         sortSet[i][2] = rows[sortSet[i][0]][colIdx2];
     }
+    // This does not take direction into account
     sortSet.sort((a,b) => {
         return a[1] > b[1] ? 1 : b[1] > a[1] ? -1
             : a[2] > b[2] ? 1 : b[2] > a[2] ? -1 : 0;

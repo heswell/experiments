@@ -25,7 +25,7 @@
       "args":[ 
         "${workspaceRoot}/packages/data-store/node_modules/.bin/jest",
         "--",
-        "./data-store.spec"
+        "./group-rowset.spec"
       ],
       "cwd": "${workspaceRoot}/packages/data-store"
   },

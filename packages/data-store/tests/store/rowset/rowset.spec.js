@@ -1,4 +1,4 @@
-const {RowSet, IN, GREATER_THAN} = require('../../dist/index.js');
+const {RowSet, IN, GREATER_THAN, metadataKeys} = require('../../dist/index.js');
 
 const {
     getInstrumentRowset,
@@ -8,6 +8,7 @@ const {
 } = require('../../test-data.js');
 
 const DEFAULT_OFFSET =100;
+const u = undefined;
 
 describe('construction', () => {
     test('Rowset creation', () => {
@@ -24,16 +25,16 @@ describe('setRange', () => {
         let {rows, size} = rowSet.setRange({lo: 0, hi: 10});
 
         expect(rows).toEqual([
-            ['key01', 'G1', 'U2', 'T3', 5, 101, 100, 0, 0, 0, 'key01', 0],
-            ['key02', 'G1', 'U2', 'T3', 5, 102, 101, 0, 0, 0, 'key02', 0],
-            ['key03', 'G1', 'U2', 'T4', 4, 100, 102, 0, 0, 0, 'key03', 0],
-            ['key04', 'G1', 'U2', 'T4', 5, 99,  103, 0, 0, 0, 'key04', 0],
-            ['key05', 'G1', 'I2', 'T3', 9, 100, 104, 0, 0, 0, 'key05', 0],
-            ['key06', 'G1', 'I2', 'T3', 5, 45,  105, 0, 0, 0, 'key06', 0],
-            ['key07', 'G1', 'I2', 'T4', 1, 100, 106, 0, 0, 0, 'key07', 0],
-            ['key08', 'G1', 'I2', 'T5', 5, 102, 107, 0, 0, 0, 'key08', 0],
-            ['key09', 'G2', 'U2', 'T3', 5, 100, 108, 0, 0, 0, 'key09', 0],
-            ['key10', 'G2', 'U2', 'T3', 5, 100, 109, 0, 0, 0, 'key10', 0]
+            [100, 0, 0, 0, 'key01', 0, u,u,u,u,'key01', 'G1', 'U2', 'T3', 5, 101 ],
+            [101, 0, 0, 0, 'key02', 0, u,u,u,u,'key02', 'G1', 'U2', 'T3', 5, 102 ],
+            [102, 0, 0, 0, 'key03', 0, u,u,u,u,'key03', 'G1', 'U2', 'T4', 4, 100 ],
+            [103, 0, 0, 0, 'key04', 0, u,u,u,u,'key04', 'G1', 'U2', 'T4', 5, 99 ],
+            [104, 0, 0, 0, 'key05', 0, u,u,u,u,'key05', 'G1', 'I2', 'T3', 9, 100 ],
+            [105, 0, 0, 0, 'key06', 0, u,u,u,u,'key06', 'G1', 'I2', 'T3', 5, 45 ],
+            [106, 0, 0, 0, 'key07', 0, u,u,u,u,'key07', 'G1', 'I2', 'T4', 1, 100 ],
+            [107, 0, 0, 0, 'key08', 0, u,u,u,u,'key08', 'G1', 'I2', 'T5', 5, 102 ],
+            [108, 0, 0, 0, 'key09', 0, u,u,u,u,'key09', 'G2', 'U2', 'T3', 5, 100 ],
+            [109, 0, 0, 0, 'key10', 0, u,u,u,u,'key10', 'G2', 'U2', 'T3', 5, 100 ]
         ]);
         expect(size).toBe(24);
     })
@@ -44,11 +45,11 @@ describe('setRange', () => {
         ({rows, size} = rowSet.setRange({lo: 5, hi: 15}));
 
         expect(rows).toEqual([
-            ['key11', 'G2', 'I2', 'T3', 5, 100, 110, 0, 0, 0, 'key11', 0],
-            ['key12', 'G2', 'I2', 'T3', 5, 100, 111, 0, 0, 0, 'key12', 0],
-            ['key13', 'G2', 'O2', 'T3', 5, 100, 112, 0, 0, 0, 'key13', 0],
-            ['key14', 'G2', 'O2', 'T3', 5, 100, 113, 0, 0, 0, 'key14', 0],
-            ['key15', 'G2', 'O2', 'T3', 5, 100, 114, 0, 0, 0, 'key15', 0]
+            [110, 0, 0, 0, 'key11', 0, u, u, u, u, 'key11', 'G2', 'I2', 'T3', 5, 100],
+            [111, 0, 0, 0, 'key12', 0, u, u, u, u, 'key12', 'G2', 'I2', 'T3', 5, 100],
+            [112, 0, 0, 0, 'key13', 0, u, u, u, u, 'key13', 'G2', 'O2', 'T3', 5, 100],
+            [113, 0, 0, 0, 'key14', 0, u, u, u, u, 'key14', 'G2', 'O2', 'T3', 5, 100],
+            [114, 0, 0, 0, 'key15', 0, u, u, u, u, 'key15', 'G2', 'O2', 'T3', 5, 100]
         ]);
         expect(size).toBe(24);
     })
@@ -64,16 +65,16 @@ describe('setRange', () => {
         let {rows, size} = rowSet.setRange({lo: 0, hi: 10});
 
         expect(rows).toEqual([
-            ['key01', 101, 5, 100, 0, 0, 0, 'key01', 0],
-            ['key02', 102, 5, 101, 0, 0, 0, 'key02', 0],
-            ['key03', 100, 4, 102, 0, 0, 0, 'key03', 0],
-            ['key04', 99,  5, 103, 0, 0, 0, 'key04', 0],
-            ['key05', 100, 9, 104, 0, 0, 0, 'key05', 0],
-            ['key06', 45,  5, 105, 0, 0, 0, 'key06', 0],
-            ['key07', 100, 1, 106, 0, 0, 0, 'key07', 0],
-            ['key08', 102, 5, 107, 0, 0, 0, 'key08', 0],
-            ['key09', 100, 5, 108, 0, 0, 0, 'key09', 0],
-            ['key10', 100, 5, 109, 0, 0, 0, 'key10', 0],
+            [100, 0, 0, 0, 'key01', 0, u,u,u,u,'key01', 101, 5],
+            [101, 0, 0, 0, 'key02', 0, u,u,u,u,'key02', 102, 5],
+            [102, 0, 0, 0, 'key03', 0, u,u,u,u,'key03', 100, 4],
+            [103, 0, 0, 0, 'key04', 0, u,u,u,u,'key04', 99,  5],
+            [104, 0, 0, 0, 'key05', 0, u,u,u,u,'key05', 100, 9],
+            [105, 0, 0, 0, 'key06', 0, u,u,u,u,'key06', 45,  5],
+            [106, 0, 0, 0, 'key07', 0, u,u,u,u,'key07', 100, 1],
+            [107, 0, 0, 0, 'key08', 0, u,u,u,u,'key08', 102, 5],
+            [108, 0, 0, 0, 'key09', 0, u,u,u,u,'key09', 100, 5],
+            [109, 0, 0, 0, 'key10', 0, u,u,u,u,'key10', 100, 5],
         ]);
 
         expect(size).toBe(24);
@@ -88,30 +89,30 @@ describe('sort', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 25})
 
         expect(rows).toEqual([
-            ['key06','G1','I2','T3',5,45, 100, 0, 0, 0, 'key06', 0],
-            ['key23','G3','I2','T3',5,94, 101, 0, 0, 0, 'key23', 0],
-            ['key22','G3','A2','T3',5,95, 102, 0, 0, 0, 'key22', 0],
-            ['key04','G1','U2','T4',5,99, 103, 0, 0, 0, 'key04', 0],
-            ['key03','G1','U2','T4',4,100,104, 0, 0, 0, 'key03', 0],
-            ['key05','G1','I2','T3',9,100,105, 0, 0, 0, 'key05', 0],
-            ['key07','G1','I2','T4',1,100,106, 0, 0, 0, 'key07', 0],
-            ['key09','G2','U2','T3',5,100,107, 0, 0, 0, 'key09', 0],
-            ['key10','G2','U2','T3',5,100,108, 0, 0, 0, 'key10', 0],
-            ['key11','G2','I2','T3',5,100,109, 0, 0, 0, 'key11', 0],
-            ['key12','G2','I2','T3',5,100,110, 0, 0, 0, 'key12', 0],
-            ['key13','G2','O2','T3',5,100,111, 0, 0, 0, 'key13', 0],
-            ['key14','G2','O2','T3',5,100,112, 0, 0, 0, 'key14', 0],
-            ['key15','G2','O2','T3',5,100,113, 0, 0, 0, 'key15', 0],
-            ['key16','G2','O2','T3',5,100,114, 0, 0, 0, 'key16', 0],
-            ['key19','G3','E2','T3',5,100,115, 0, 0, 0, 'key19', 0],
-            ['key21','G3','A2','T3',5,100,116, 0, 0, 0, 'key21', 0],
-            ['key24','G3','O2','T3',5,100,117, 0, 0, 0, 'key24', 0],
-            ['key01','G1','U2','T3',5,101,118, 0, 0, 0, 'key01', 0],
-            ['key18','G3','E2','T3',5,101,119, 0, 0, 0, 'key18', 0],
-            ['key02','G1','U2','T3',5,102,120, 0, 0, 0, 'key02', 0],
-            ['key08','G1','I2','T5',5,102,121, 0, 0, 0, 'key08', 0],
-            ['key20','G3','E2','T3',5,104,122, 0, 0, 0, 'key20', 0],
-            ['key17','G3','E2','T3',5,110,123, 0, 0, 0, 'key17', 0]
+            [100, 0, 0, 0, 'key06', 0,u,u,u,u,'key06','G1','I2','T3',5,45],
+            [101, 0, 0, 0, 'key23', 0,u,u,u,u,'key23','G3','I2','T3',5,94],
+            [102, 0, 0, 0, 'key22', 0,u,u,u,u,'key22','G3','A2','T3',5,95],
+            [103, 0, 0, 0, 'key04', 0,u,u,u,u,'key04','G1','U2','T4',5,99],
+            [104, 0, 0, 0, 'key03', 0,u,u,u,u,'key03','G1','U2','T4',4,100],
+            [105, 0, 0, 0, 'key05', 0,u,u,u,u,'key05','G1','I2','T3',9,100],
+            [106, 0, 0, 0, 'key07', 0,u,u,u,u,'key07','G1','I2','T4',1,100],
+            [107, 0, 0, 0, 'key09', 0,u,u,u,u,'key09','G2','U2','T3',5,100],
+            [108, 0, 0, 0, 'key10', 0,u,u,u,u,'key10','G2','U2','T3',5,100],
+            [109, 0, 0, 0, 'key11', 0,u,u,u,u,'key11','G2','I2','T3',5,100],
+            [110, 0, 0, 0, 'key12', 0,u,u,u,u,'key12','G2','I2','T3',5,100],
+            [111, 0, 0, 0, 'key13', 0,u,u,u,u,'key13','G2','O2','T3',5,100],
+            [112, 0, 0, 0, 'key14', 0,u,u,u,u,'key14','G2','O2','T3',5,100],
+            [113, 0, 0, 0, 'key15', 0,u,u,u,u,'key15','G2','O2','T3',5,100],
+            [114, 0, 0, 0, 'key16', 0,u,u,u,u,'key16','G2','O2','T3',5,100],
+            [115, 0, 0, 0, 'key19', 0,u,u,u,u,'key19','G3','E2','T3',5,100],
+            [116, 0, 0, 0, 'key21', 0,u,u,u,u,'key21','G3','A2','T3',5,100],
+            [117, 0, 0, 0, 'key24', 0,u,u,u,u,'key24','G3','O2','T3',5,100],
+            [118, 0, 0, 0, 'key01', 0,u,u,u,u,'key01','G1','U2','T3',5,101],
+            [119, 0, 0, 0, 'key18', 0,u,u,u,u,'key18','G3','E2','T3',5,101],
+            [120, 0, 0, 0, 'key02', 0,u,u,u,u,'key02','G1','U2','T3',5,102],
+            [121, 0, 0, 0, 'key08', 0,u,u,u,u,'key08','G1','I2','T5',5,102],
+            [122, 0, 0, 0, 'key20', 0,u,u,u,u,'key20','G3','E2','T3',5,104],
+            [123, 0, 0, 0, 'key17', 0,u,u,u,u,'key17','G3','E2','T3',5,110]
         ])
     })
 
@@ -121,30 +122,30 @@ describe('sort', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 25})
 
         expect(rows).toEqual([
-            ['key06','G1','I2','T3',5,45,  100, 0, 0, 0, 'key06', 0],
-            ['key23','G3','I2','T3',5,94,  101, 0, 0, 0, 'key23', 0],
-            ['key22','G3','A2','T3',5,95,  102, 0, 0, 0, 'key22', 0],
-            ['key04','G1','U2','T4',5,99,  103, 0, 0, 0, 'key04', 0],
-            ['key07','G1','I2','T4',1,100, 104, 0, 0, 0, 'key07', 0],
-            ['key03','G1','U2','T4',4,100, 105, 0, 0, 0, 'key03', 0],
-            ['key09','G2','U2','T3',5,100, 106, 0, 0, 0, 'key09', 0],
-            ['key10','G2','U2','T3',5,100, 107, 0, 0, 0, 'key10', 0],
-            ['key11','G2','I2','T3',5,100, 108, 0, 0, 0, 'key11', 0],
-            ['key12','G2','I2','T3',5,100, 109, 0, 0, 0, 'key12', 0],
-            ['key13','G2','O2','T3',5,100, 110, 0, 0, 0, 'key13', 0],
-            ['key14','G2','O2','T3',5,100, 111, 0, 0, 0, 'key14', 0],
-            ['key15','G2','O2','T3',5,100, 112, 0, 0, 0, 'key15', 0],
-            ['key16','G2','O2','T3',5,100, 113, 0, 0, 0, 'key16', 0],
-            ['key19','G3','E2','T3',5,100, 114, 0, 0, 0, 'key19', 0],
-            ['key21','G3','A2','T3',5,100, 115, 0, 0, 0, 'key21', 0],
-            ['key24','G3','O2','T3',5,100, 116, 0, 0, 0, 'key24', 0],
-            ['key05','G1','I2','T3',9,100, 117, 0, 0, 0, 'key05', 0],
-            ['key01','G1','U2','T3',5,101, 118, 0, 0, 0, 'key01', 0],
-            ['key18','G3','E2','T3',5,101, 119, 0, 0, 0, 'key18', 0],
-            ['key02','G1','U2','T3',5,102, 120, 0, 0, 0, 'key02', 0],
-            ['key08','G1','I2','T5',5,102, 121, 0, 0, 0, 'key08', 0],
-            ['key20','G3','E2','T3',5,104, 122, 0, 0, 0, 'key20', 0],
-            ['key17','G3','E2','T3',5,110, 123, 0, 0, 0, 'key17', 0]
+            [100, 0, 0, 0, 'key06', 0,u,u,u,u,'key06','G1','I2','T3',5,45],
+            [101, 0, 0, 0, 'key23', 0,u,u,u,u,'key23','G3','I2','T3',5,94],
+            [102, 0, 0, 0, 'key22', 0,u,u,u,u,'key22','G3','A2','T3',5,95],
+            [103, 0, 0, 0, 'key04', 0,u,u,u,u,'key04','G1','U2','T4',5,99],
+            [104, 0, 0, 0, 'key07', 0,u,u,u,u,'key07','G1','I2','T4',1,100],
+            [105, 0, 0, 0, 'key03', 0,u,u,u,u,'key03','G1','U2','T4',4,100],
+            [106, 0, 0, 0, 'key09', 0,u,u,u,u,'key09','G2','U2','T3',5,100],
+            [107, 0, 0, 0, 'key10', 0,u,u,u,u,'key10','G2','U2','T3',5,100],
+            [108, 0, 0, 0, 'key11', 0,u,u,u,u,'key11','G2','I2','T3',5,100],
+            [109, 0, 0, 0, 'key12', 0,u,u,u,u,'key12','G2','I2','T3',5,100],
+            [110, 0, 0, 0, 'key13', 0,u,u,u,u,'key13','G2','O2','T3',5,100],
+            [111, 0, 0, 0, 'key14', 0,u,u,u,u,'key14','G2','O2','T3',5,100],
+            [112, 0, 0, 0, 'key15', 0,u,u,u,u,'key15','G2','O2','T3',5,100],
+            [113, 0, 0, 0, 'key16', 0,u,u,u,u,'key16','G2','O2','T3',5,100],
+            [114, 0, 0, 0, 'key19', 0,u,u,u,u,'key19','G3','E2','T3',5,100],
+            [115, 0, 0, 0, 'key21', 0,u,u,u,u,'key21','G3','A2','T3',5,100],
+            [116, 0, 0, 0, 'key24', 0,u,u,u,u,'key24','G3','O2','T3',5,100],
+            [117, 0, 0, 0, 'key05', 0,u,u,u,u,'key05','G1','I2','T3',9,100],
+            [118, 0, 0, 0, 'key01', 0,u,u,u,u,'key01','G1','U2','T3',5,101],
+            [119, 0, 0, 0, 'key18', 0,u,u,u,u,'key18','G3','E2','T3',5,101],
+            [120, 0, 0, 0, 'key02', 0,u,u,u,u,'key02','G1','U2','T3',5,102],
+            [121, 0, 0, 0, 'key08', 0,u,u,u,u,'key08','G1','I2','T5',5,102],
+            [122, 0, 0, 0, 'key20', 0,u,u,u,u,'key20','G3','E2','T3',5,104],
+            [123, 0, 0, 0, 'key17', 0,u,u,u,u,'key17','G3','E2','T3',5,110]
         ]);
     });
 
@@ -153,7 +154,7 @@ describe('sort', () => {
         rowSet.sort([['Qty', 'asc']])
         rowSet.sort([['Qty', 'asc'],['Price', 'asc']])
         const {rows} = rowSet.setRange({lo: 0, hi: 25})
-        expect(rows.map(row => row.slice(4,6))).toEqual([
+        expect(rows.map(row => row.slice(14,16))).toEqual([
             [5,45],
             [5,94],
             [5,95],
@@ -188,7 +189,7 @@ describe('sort', () => {
         rowSet.sort([['Price', 'asc']])
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(14);
-        expect(rows.map(row => row.slice(4,6))).toEqual([
+        expect(rows.map(row => row.slice(14,16))).toEqual([
             [1,100],
             [4,100],
             [5,100],
@@ -213,7 +214,7 @@ describe('sort', () => {
         rowSet.sort([['Price', 'dsc']])
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(14);
-        expect(rows.map(row => row.slice(4,6))).toEqual([
+        expect(rows.map(row => row.slice(14,16))).toEqual([
             [9,100],
             [5,100],
             [5,100],
@@ -239,7 +240,7 @@ describe('sort', () => {
         rowSet.sort([['Price', 'dsc']])
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(14);
-        expect(rows.map(row => row.slice(4,6))).toEqual([
+        expect(rows.map(row => row.slice(14,16))).toEqual([
             [9,100],
             [5,100],
             [5,100],
@@ -275,7 +276,7 @@ describe('filter', () => {
         rowSet.filter({type: 'EQ',colName: 'Qty',value: 100});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(14);
-        expect(rows.map(row => row[4])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,9]);
+        expect(rows.map(row => row[14])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,9]);
 
     });
 
@@ -330,7 +331,7 @@ describe('clearFilter', () => {
         rowSet.clearFilter()
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(24);
-        expect(rows.map(row => row[4])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,9]);
+        expect(rows.map(row => row[14])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,9]);
     })
 
     test('sort applied after filter is preserved when filter is removed', () => {
@@ -340,7 +341,7 @@ describe('clearFilter', () => {
         rowSet.clearFilter()
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25})
         expect(size).toBe(24);
-        expect(rows.map(row => row[4])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,9]);
+        expect(rows.map(row => row[14])).toEqual([1,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,9]);
     })
 
     test('sort applied after filter is preserved when new filter is applied', () => {
@@ -350,7 +351,7 @@ describe('clearFilter', () => {
         rowSet.filter({type: 'EQ',colName: 'Price',value: 5});
         const {rows, size} = rowSet.setRange({lo: 0, hi: 25});
         expect(size).toBe(21);
-        expect(rows.map(row => row[2])).toEqual([
+        expect(rows.map(row => row[12])).toEqual([
             'A2','A2','E2','E2','E2','E2',
             'I2','I2','I2','I2','I2',
             'O2','O2','O2','O2','O2',
@@ -394,7 +395,7 @@ describe('insert', () => {
 
         const {rows,size} = rowSet.setRange({lo: 0, hi: 30},false);
         expect(size).toBe(25);
-        expect(rows[24]).toEqual(['key25','G1','I2','T5',6,112,124,0,0,0,'key25', 0]);
+        expect(rows[24]).toEqual([124,0,0,0,'key25', 0,u,u,u,u,'key25','G1','I2','T5',6,112]);
 
     });
 
@@ -453,7 +454,7 @@ describe('insert', () => {
         const {rows} = rowSet.setRange({lo: 0, hi: 10},false);
 
         expect(rows[8]).toEqual(
-            ['key25','G1','I2','T5',6,112, 108,0,0,0,'key25', 0]);
+            [108,0,0,0,'key25', 0,u,u,u,u,'key25','G1','I2','T5',6,112]);
 
     });
 
@@ -489,7 +490,7 @@ describe('insert', () => {
             replace: true
         });
         ({rows} = rowSet.setRange({lo: 0, hi: 10},false));
-        expect(rows[4]).toEqual(['key25', 'G1','I2','T5',6, 88, 104,0,0,0,'key25', 0])
+        expect(rows[4]).toEqual([104,0,0,0,'key25', 0,u,u,u,u,'key25', 'G1','I2','T5',6, 88])
 
     });
 
@@ -575,9 +576,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20, 0, 0, 0, 0, 'T3', 0],
-            ['T4', 3,  3,  1, 0, 0, 0, 'T4', 0],
-            ['T5', 1,  1,  2, 0, 0, 0, 'T5', 0]
+            [0, 0, 0, 0, 'T3', 0,u,u,u,u,    'T3', 20, 20],
+            [1, 0, 0, 0, 'T4', 0,u,u,u,u,    'T4', 3,  3],
+            [2, 0, 0, 0, 'T5', 0,u,u,u,u,    'T5', 1,  1]
         ])
     });
 
@@ -587,9 +588,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 3'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['T3', 20, 20,  0, 0, 0, 0, 'T3', 0],
-            ['T4', 0,  3,   1, 0, 0, 0, 'T4', 0],
-            ['T5', 0,  1,   2, 0, 0, 0, 'T5', 0]
+            [0, 0, 0, 0, 'T3', 0,u,u,u,u,   'T3', 20, 20],
+            [1, 0, 0, 0, 'T4', 0,u,u,u,u,   'T4', 0,  3],
+            [2, 0, 0, 0, 'T5', 0,u,u,u,u,   'T5', 0,  1]
         ])
     });
 
@@ -600,9 +601,9 @@ describe('getDistinctValuesForColumn', () => {
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
 
         expect(rows).toEqual([
-            ['T3', 15, 20, 0, 0, 0, 0, 'T3', 0],
-            ['T4', 2,  3,  1, 0, 0, 0, 'T4', 0],
-            ['T5', 0,  1,  2, 0, 0, 0, 'T5', 0]
+            [0, 0, 0, 0, 'T3', 0,u,u,u,u, 'T3', 15, 20 ],
+            [1, 0, 0, 0, 'T4', 0,u,u,u,u, 'T4', 2,  3  ],
+            [2, 0, 0, 0, 'T5', 0,u,u,u,u, 'T5', 0,  1  ]
         ])
     });
 
@@ -619,9 +620,9 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Group 1'});
         const {rows} = filterRowset.setRange({lo: 0,hi: 25});
         expect(rows).toEqual([
-            ['G1', 4, 8,   0, 0, 0, 0, 'G1', 0],
-            ['G2', 0, 8,   1, 0, 0, 0, 'G2', 0],
-            ['G3', 0, 8,   2, 0, 0, 0, 'G3', 0]
+            [0, 0, 0, 0, 'G1', 0, u,u,u,u, 'G1', 4, 8 ],
+            [1, 0, 0, 0, 'G2', 0, u,u,u,u, 'G2', 0, 8 ],
+            [2, 0, 0, 0, 'G3', 0, u,u,u,u, 'G3', 0, 8 ]
         ])
     });
 
@@ -632,7 +633,7 @@ describe('getDistinctValuesForColumn', () => {
         const filterRowset = rowSet.getDistinctValuesForColumn({name: 'Industry'});
         ({rows} = filterRowset.setRange({lo: 0,hi: 25}));
 
-        expect(rows[0]).toEqual(['Advertising',10, 10, 0,0,0,0,'Advertising', 0])
+        expect(rows[0]).toEqual([0,0,0,0,'Advertising', 0,u,u,u,u,'Advertising',10, 10])
 
         rowSet.filter({type: IN, colName: 'Industry', values: []});
         ({rows} = rowSet.setRange({lo: 0,hi: 17}, false));
@@ -641,16 +642,16 @@ describe('getDistinctValuesForColumn', () => {
         ({rows} = rowSet.setRange({lo: 0,hi: 17},false));
 
         expect(rows).toEqual([
-            ['AMCN','AirMedia Group Inc',2.28,135810000,'2007','Technology','Advertising',100,0,0,0,'AMCN',0],
-            ['ANGI','Angie&#39;s List, Inc.',5.02,293750000,'2011','Consumer Services','Advertising',101,0,0,0,'ANGI',0],
-            ['CTCT','Constant Contact, Inc.',42.48,1350000000,'2007','Technology','Advertising',102,0,0,0,'CTCT',0],
-            ['CRTO','Criteo S.A.',40.7,2410000000,'2013','Technology','Advertising',103,0,0,0,'CRTO',0],
-            ['GRPN','Groupon, Inc.',7.97,5350000000,'2011','Technology','Advertising',104,0,0,0,'GRPN',0],
-            ['ISIG','Insignia Systems, Inc.',3.19,39220000,'1991','Consumer Services','Advertising',105,0,0,0,'ISIG',0],
-            ['NCMI','National CineMedia, Inc.',14.92,908190000,'2007','Consumer Services','Advertising',106,0,0,0,'NCMI',0],
-            ['RLOC','ReachLocal, Inc.',3.58,104410000,'2010','Technology','Advertising',107,0,0,0,'RLOC',0],
-            ['SALE','RetailMeNot, Inc.',16.41,887230000,'2013','Consumer Services','Advertising',108,0,0,0,'SALE',0],
-            ['VISN','VisionChina Media, Inc.',12.9,65510000,'2007','Technology','Advertising',109,0,0,0,'VISN',0]
+            [100,0,0,0,'AMCN',0,u,u,u,u,'AMCN','AirMedia Group Inc',2.28,135810000,'2007','Technology','Advertising'              ],
+            [101,0,0,0,'ANGI',0,u,u,u,u,'ANGI','Angie&#39;s List, Inc.',5.02,293750000,'2011','Consumer Services','Advertising'   ],
+            [102,0,0,0,'CTCT',0,u,u,u,u,'CTCT','Constant Contact, Inc.',42.48,1350000000,'2007','Technology','Advertising'        ],
+            [103,0,0,0,'CRTO',0,u,u,u,u,'CRTO','Criteo S.A.',40.7,2410000000,'2013','Technology','Advertising'                    ],
+            [104,0,0,0,'GRPN',0,u,u,u,u,'GRPN','Groupon, Inc.',7.97,5350000000,'2011','Technology','Advertising'                  ],
+            [105,0,0,0,'ISIG',0,u,u,u,u,'ISIG','Insignia Systems, Inc.',3.19,39220000,'1991','Consumer Services','Advertising'    ],
+            [106,0,0,0,'NCMI',0,u,u,u,u,'NCMI','National CineMedia, Inc.',14.92,908190000,'2007','Consumer Services','Advertising'],
+            [107,0,0,0,'RLOC',0,u,u,u,u,'RLOC','ReachLocal, Inc.',3.58,104410000,'2010','Technology','Advertising'                ],
+            [108,0,0,0,'SALE',0,u,u,u,u,'SALE','RetailMeNot, Inc.',16.41,887230000,'2013','Consumer Services','Advertising'       ],
+            [109,0,0,0,'VISN',0,u,u,u,u,'VISN','VisionChina Media, Inc.',12.9,65510000,'2007','Technology','Advertising'          ]
         ])
 
     });
@@ -659,12 +660,13 @@ describe('getDistinctValuesForColumn', () => {
 
 describe('select', () => {
     test('select single row, from no selection', () => {
+        const {SELECTED} = metadataKeys;
         const rowSet = getTestRowset();
         rowSet.setRange({lo: 0, hi: 10});
         let result = rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
-        expect(result).toEqual([[100,11,1]])
+        debugger;
+        expect(result).toEqual([[100,SELECTED,1]])
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
-        const {SELECTED} = rowSet.meta;
         expect(rows.map(row => row[SELECTED])).toEqual([1,0,0,0,0,0,0,0,0,0])
     })
 
@@ -673,18 +675,18 @@ describe('select', () => {
         rowSet.setRange({lo: 0, hi: 10});
         rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
         let result = rowSet.select(15, /* rangeSelect */ true, /*keepExistingSelection */ true);
+        const {SELECTED} = metadataKeys;
         expect(result).toEqual([
-            [101,11,1],
-            [102,11,1],
-            [103,11,1],
-            [104,11,1],
-            [105,11,1],
-            [106,11,1],
-            [107,11,1],
-            [108,11,1],
-            [109,11,1],
+            [101,SELECTED,1],
+            [102,SELECTED,1],
+            [103,SELECTED,1],
+            [104,SELECTED,1],
+            [105,SELECTED,1],
+            [106,SELECTED,1],
+            [107,SELECTED,1],
+            [108,SELECTED,1],
+            [109,SELECTED,1],
         ])
-        const {SELECTED} = rowSet.meta;
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
         expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,1,1,1,1]);
 
@@ -698,12 +700,12 @@ describe('select', () => {
         rowSet.setRange({lo: 0, hi: 10});
         rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
         let result = rowSet.select(2, /* rangeSelect */ false, /*keepExistingSelection */ false);
+        const {SELECTED} = metadataKeys;
 
         expect(result).toEqual([
-            [102,11,1],
-            [100,11,0],
+            [102,SELECTED,1],
+            [100,SELECTED,0],
         ])
-        const {SELECTED} = rowSet.meta;
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
         expect(rows.map(row => row[SELECTED])).toEqual([0,0,1,0,0,0,0,0,0,0]);
 
@@ -716,20 +718,20 @@ describe('selectAll', () => {
         const rowSet = getTestRowset();
         rowSet.setRange({lo: 0, hi: 10});
         let result = rowSet.selectAll();
+        const {SELECTED} = metadataKeys;
 
         expect(result).toEqual([
-            [100,11,1],
-            [101,11,1],
-            [102,11,1],
-            [103,11,1],
-            [104,11,1],
-            [105,11,1],
-            [106,11,1],
-            [107,11,1],
-            [108,11,1],
-            [109,11,1],
+            [100,SELECTED,1],
+            [101,SELECTED,1],
+            [102,SELECTED,1],
+            [103,SELECTED,1],
+            [104,SELECTED,1],
+            [105,SELECTED,1],
+            [106,SELECTED,1],
+            [107,SELECTED,1],
+            [108,SELECTED,1],
+            [109,SELECTED,1],
         ])
-        const {SELECTED} = rowSet.meta;
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
         expect(rows.map(row => row[SELECTED])).toEqual([1,1,1,1,1,1,1,1,1,1]);
 
@@ -749,20 +751,20 @@ describe('selectNone', () => {
 
         rowSet.selectAll();
         let result = rowSet.selectNone();
+        const {SELECTED} = metadataKeys;
 
         expect(result).toEqual([
-            [100,11,0],
-            [101,11,0],
-            [102,11,0],
-            [103,11,0],
-            [104,11,0],
-            [105,11,0],
-            [106,11,0],
-            [107,11,0],
-            [108,11,0],
-            [109,11,0],
+            [100,SELECTED,0],
+            [101,SELECTED,0],
+            [102,SELECTED,0],
+            [103,SELECTED,0],
+            [104,SELECTED,0],
+            [105,SELECTED,0],
+            [106,SELECTED,0],
+            [107,SELECTED,0],
+            [108,SELECTED,0],
+            [109,SELECTED,0],
         ])
-        const {SELECTED} = rowSet.meta;
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
         expect(rows.map(row => row[SELECTED])).toEqual([0,0,0,0,0,0,0,0,0,0]);
 

@@ -1,6 +1,6 @@
-import { getFullRange } from '@heswell/utils';
+import { getFullRange, metadataKeys } from '@heswell/utils';
 import { NULL_RANGE, compareRanges, RangeFlags, getDeltaRange } from './range-utils';
-import {getCount} from './group-utils';
+import {getCount, leafRow} from './group-utils';
 
 const RANGE_POS_TUPLE_SIZE = 4;
 const NO_RESULT = [null,null,null]
@@ -8,8 +8,7 @@ const NO_RESULT = [null,null,null]
 export const FORWARDS = 0;
 export const BACKWARDS = 1;
 
-/** @type {import('./group-iterator').GroupIterator} */
-export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, meta) {
+export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT) {
     let _idx = 0;
     let _grpIdx = null;
     let _rowIdx = null;
@@ -79,7 +78,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         const result = [[], null];
         const [rows] = result;
 
-        const {IDX} = meta;
+        const {IDX} = metadataKeys;
         ([_idx, _grpIdx, _rowIdx] = _range_position_lo);
         if (_idx === 0 && _grpIdx === null && _rowIdx === null){
             _idx = -1;
@@ -91,7 +90,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         let i = _range.lo;
         do {
             _direction = FORWARDS;
-            ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
+            ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT));
             if (row){
                 rows.push(row);
                 _idx += 1;
@@ -103,7 +102,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         if (row){
             _direction = FORWARDS;
             const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
-            [row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
+            [row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT);
             _idx += 1;
             _range_position_hi = [row ? _idx : null, _grpIdx, _rowIdx];
             ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
@@ -119,7 +118,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
     function setRange(range, useDelta=true){
         const rangeDiff = compareRanges(_range, range);
         const { lo: resultLo, hi: resultHi } = useDelta ? getDeltaRange(_range, range) : getFullRange(range);
-        const {IDX} = meta;
+        const {IDX} = metadataKeys;
 
         /** @type {import('./group-iterator').RowsIndexTuple} */
         const result = [[], null];
@@ -191,7 +190,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
                 startIdx = _idx;
                 do {
                     _direction = FORWARDS;
-                    ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
+                    ([row, _grpIdx, _rowIdx] = next(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT));
                     if (row){
                         rows.push(row);
                         const absRowIdx = _rowIdx === null ? null : row[IDX];
@@ -203,7 +202,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
                 if (row){
                     _direction = FORWARDS;
                     const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
-                    ([row, _grpIdx, _rowIdx] = next(groups, data ,_grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
+                    ([row, _grpIdx, _rowIdx] = next(groups, data ,_grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT));
                     _range_position_hi = [row ? _idx : null, _grpIdx, _rowIdx];
                     ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
                 } else {
@@ -214,7 +213,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
                 let i = resultHi - 1;
                 do {
                     _direction = BACKWARDS;
-                    ([row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta));
+                    ([row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT));
                     if (row){
                         _idx -= 1;
                         rows.unshift(row);
@@ -227,7 +226,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
                 if (row){
                     const [grpIdx, rowIdx] = [_grpIdx, _rowIdx];
                     _direction = BACKWARDS;
-                    [row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
+                    [row, _grpIdx, _rowIdx] = previous(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT);
                     _range_position_lo = [row ? _idx-1 : 0, _grpIdx, _rowIdx];
                     ([_grpIdx, _rowIdx] = [grpIdx, rowIdx]);
                 } else {
@@ -261,7 +260,7 @@ export default function GroupIterator(groups, navSet, data, NAV_IDX, NAV_COUNT, 
         let row;
 
         do {
-            [row, _grpIdx, _rowIdx] = fn(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT, meta);
+            [row, _grpIdx, _rowIdx] = fn(groups, data, _grpIdx, _rowIdx, navSet, NAV_IDX, NAV_COUNT);
             if (fn === next){
                 _idx += 1;
             } else {
@@ -283,7 +282,7 @@ function getAbsRowIdx(group, relRowIdx, navSet, NAV_IDX){
     return navSet[group[NAV_IDX] + relRowIdx];
 }
 
-function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
+function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT){
     if (grpIdx === null){
         grpIdx = -1;
         do {
@@ -301,19 +300,13 @@ function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
         return NO_RESULT;
     } else {
         let groupRow = groups[grpIdx];
-        const depth = groupRow[meta.DEPTH];
+        const depth = groupRow[metadataKeys.DEPTH];
         const count = getCount(groupRow,NAV_COUNT);
         // Note: we're unlikely to be passed the row if row count is zero
         if (depth === 1 && count !== 0 && (rowIdx === null || rowIdx < count - 1)){
             rowIdx = rowIdx === null ? 0 : rowIdx + 1;
             const absRowIdx = getAbsRowIdx(groupRow, rowIdx, navSet, NAV_IDX)
-            // the equivalent of project row
-            const row = rows[absRowIdx].slice()
-            row[meta.IDX] = absRowIdx;
-            row[meta.RENDER_IDX] = 0;;
-            row[meta.DEPTH] = 0;
-            row[meta.COUNT] = 0;
-            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
+            const row = leafRow(rows[absRowIdx])
             return [row, grpIdx, rowIdx === null ? 0 : rowIdx];
         } else if (depth > 0){
 
@@ -332,7 +325,7 @@ function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
             do {
                 grpIdx += 1;
             } while (grpIdx < groups.length && (
-                (Math.abs(groups[grpIdx][meta.DEPTH]) < absDepth) ||
+                (Math.abs(groups[grpIdx][metadataKeys.DEPTH]) < absDepth) ||
                 (getCount(groups[grpIdx],NAV_COUNT) === 0)
             ));
             if (grpIdx >= groups.length){
@@ -344,21 +337,15 @@ function next(groups, rows, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
     }
 }
 
-function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta){
-    if (grpIdx !== null && groups[grpIdx][meta.DEPTH] === 1 && typeof rowIdx === 'number'){
+function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT){
+    if (grpIdx !== null && groups[grpIdx][metadataKeys.DEPTH] === 1 && typeof rowIdx === 'number'){
         let lastGroup = groups[grpIdx];
         if (rowIdx === 0){
             return [lastGroup, grpIdx, null];
         } else {
             rowIdx -= 1;
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
-            const row = data[absRowIdx].slice()
-            // row[meta.IDX] = idx;
-            row[meta.RENDER_IDX] = 0; // is this right ?
-            row[meta.DEPTH] = 0;
-            row[meta.COUNT] = 0;
-            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
-
+            const row = leafRow(data[absRowIdx])
             return [row, grpIdx, rowIdx];
         }
     } else {
@@ -370,19 +357,14 @@ function previous(groups, data, grpIdx, rowIdx, navSet, NAV_IDX, NAV_COUNT, meta
             grpIdx -= 1;
         }
         let lastGroup = groups[grpIdx];
-        if (lastGroup[meta.DEPTH] === 1){
+        if (lastGroup[metadataKeys.DEPTH] === 1){
             rowIdx = getCount(lastGroup, NAV_COUNT) - 1;
             const absRowIdx = getAbsRowIdx(lastGroup, rowIdx, navSet, NAV_IDX)
-            const row = data[absRowIdx].slice()
-            row[meta.RENDER_IDX] = 0; // is tis right ?
-            row[meta.DEPTH] = 0;
-            row[meta.COUNT] = 0;
-            row[meta.KEY] = row[0]; // assume keyfieldis 0 for now
-
+            const row = leafRow(data[absRowIdx])
             return [row, grpIdx, rowIdx];
         }
-        while (lastGroup[meta.PARENT_IDX] !== null && groups[lastGroup[meta.PARENT_IDX]][meta.DEPTH] < 0){
-            grpIdx = lastGroup[meta.PARENT_IDX];
+        while (lastGroup[metadataKeys.PARENT_IDX] !== null && groups[lastGroup[metadataKeys.PARENT_IDX]][metadataKeys.DEPTH] < 0){
+            grpIdx = lastGroup[metadataKeys.PARENT_IDX];
             lastGroup = groups[grpIdx];
         }
         return [lastGroup, grpIdx, null];

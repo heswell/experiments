@@ -12,6 +12,7 @@ export declare const arrayOfIndices: any;
 export declare const partition: any;
 
 // we need column definition
+export declare const metaData: any;
 export declare const metadataKeys: {[key: string] : number}
 export declare const buildColumnMap: any;
 export declare const toColumn: any;
@@ -19,7 +20,6 @@ export declare const getFilterType: any;
 export declare const mapSortCriteria: any;
 export declare const projectColumns: any;
 export declare const projectColumnsFilter: any;
-export declare const setFilterColumnMeta: any;
 export declare const toKeyedColumn: any;
 
 // filter
@@ -56,6 +56,9 @@ export declare const update: any;
 
 // sort
 export declare const sortByToMap: any;
+export declare const addSortColumn: any;
+export declare const removeSortColumn: any;
+export declare const setSortColumn: any;
 
 // group
 export declare const indexOfCol: any;

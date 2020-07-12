@@ -50,6 +50,7 @@ export declare const findGroupPositions: findGroupPositions;
 export type groupbySortReversed = (groupBy: any, existingGroupBy: any) => boolean;
 export declare const groupbySortReversed: groupbySortReversed;
 
+export declare const leafRow: any;
 export declare class GroupIdxTracker {
   constructor(levels: number);
   hasPrevious(level: number): boolean;
@@ -80,12 +81,6 @@ export declare const aggregateGroup: aggregateGroup;
 export type adjustGroupIndices = (
   groups: any,
   grpIdx: number,
-  meta: {
-    IDX: number,
-    DEPTH: number,
-    IDX_POINTER: number,
-    PARENT_IDX: number
-  },
   adjustment?: number
   ) => void;
 export declare const adjustGroupIndices: adjustGroupIndices;
@@ -93,10 +88,6 @@ export declare const adjustGroupIndices: adjustGroupIndices;
 export type adjustLeafIdxPointers = (
   groups: any,
   insertionPoint: number,
-  meta: {
-    DEPTH: number,
-    IDX_POINTER: number,
-  },
   adjustment?: number
   ) => void;
 export declare const adjustLeafIdxPointers: adjustLeafIdxPointers;
@@ -104,8 +95,5 @@ export declare const adjustLeafIdxPointers: adjustLeafIdxPointers;
 export type allGroupsExpanded = (
   groups: any,
   group: any,
-  meta: {
-    DEPTH: number,
-    PARENT_IDX: number,
-  }) => boolean;
+) => boolean;
 export declare const allGroupsExpanded: allGroupsExpanded;

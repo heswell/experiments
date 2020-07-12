@@ -23,9 +23,7 @@ export default class Table extends EventEmitter {
 
     constructor(config){
         super();
-
         const {name, columns=null, primaryKey, dataPath, data, updates = {}} = config;
-
         this.name = name;
         this.primaryKey = primaryKey;
         this.columns = columns;
@@ -153,9 +151,9 @@ export default class Table extends EventEmitter {
         const {index, primaryKey=null, columnMap: map} = this;
 
         if (Array.isArray(data)){
-            const key = data[map[this.primaryKey]];
+            const key = data[map[this.primaryKey] - 2];
             index[key] = idx;
-            return [...data, idx, key];
+            return [idx, key, ...data];
         } else {
             // This allows us to load data from objects as rows, without predefined columns, where
             // not every row may have every column. How would we handle primary key ?

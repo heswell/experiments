@@ -26,8 +26,7 @@ export type GroupIterator = (
   navSet: number[],
   data: Row[],
   NAV_IDX: number,
-  NAV_COUNT: number,
-  meta: ColumnMeta
+  NAV_COUNT: number
 ) => GroupIteratorInstance;
 
 declare const GroupIterator: GroupIterator;
