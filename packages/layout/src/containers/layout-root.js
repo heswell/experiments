@@ -14,6 +14,7 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
     const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(child), props }, inheritedLayout);
     const [_, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
+    
     useEffect(() => {
         if (layoutModel !== null){
             if (layoutModel.drag) {

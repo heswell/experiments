@@ -1,5 +1,5 @@
 const {
-    DataView, 
+    DataStore : DataView, 
     DataTypes, 
     metadataKeys,
     IN,
@@ -58,19 +58,35 @@ describe('setGroupState', () => {
     
     test('single col groupby, expandAll', () => {
         const view = new DataView(getInstrumentTable(), { columns });
-
         view.groupBy([['Sector', 'asc']]);
         let {size} = view.setRange({ lo: 0, hi: 25 });
         expect(size).toEqual(12);
-
         ({size} = view.setGroupState({'*': true}));
         expect(size).toEqual(1259);
-
         ({size} = view.setGroupState({}));
         expect(size).toEqual(12);
-        
     })
 
+    test('single col groupby, expand single group, collapse group', () => {
+        const view = new DataView(getInstrumentTable(), { columns });
+        view.groupBy([['Sector', 'asc']]);
+        let {size} = view.setRange({ lo: 0, hi: 25 });
+        ({size, rows} = view.setGroupState({'Basic Industries': true}));
+        expect(size).toEqual(39);
+        ({size} = view.setGroupState({}));
+        expect(size).toEqual(12);
+    })
+
+    test('two col groupby, expand first level group item, then second level item', () => {
+        const view = new DataView(getInstrumentTable(), { columns });
+        view.groupBy([['Sector', 'asc'], ['Industry', 'asc']]);
+        let {size, rows} = view.setRange({ lo: 0, hi: 100 });
+        ({size, rows} = view.setGroupState({'Basic Industries': true}));
+         expect(size).toEqual(23);
+        ({size, rows} = view.setGroupState({'Basic Industries': {'Agricultural Chemicals': true}}));
+        expect(size).toEqual(25);
+
+    })
 })
 
 describe('updateRow', () => {
@@ -83,7 +99,7 @@ describe('updateRow', () => {
         const { updates } = view.updates;
 
         expect(updates.length).toBe(1);
-        expect(updates[0]).toEqual({ type: 'update', updates: [[104, 6, 9, 9.5, 7, 100, 50]] })
+        expect(updates[0]).toEqual({ type: 'update', updates: [[104, 14, 9, 9.5, 15, 100, 50]] })
 
     });
 });

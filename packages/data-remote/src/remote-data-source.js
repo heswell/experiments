@@ -42,12 +42,12 @@ export default class RemoteDataSource  {
   async subscribe({
     viewport = uuid(),
     tableName = this.tableName,
-    columns=this.columns,
+    columns=this.columns || [],
     range = defaultRange
   }, callback) {
 
-    if (!tableName) throw Error("RemoteDataView subscribe called without table name");
-    if (!columns) throw Error("RemoteDataView subscribe called without columns");
+    if (!tableName) throw Error("RemoteDataSource subscribe called without table name");
+    // if (!columns) throw Error("RemoteDataSource subscribe called without columns");
 
     this.viewport = viewport;
     this.tableName = tableName;

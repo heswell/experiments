@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 import rootWrapper from './layout-root-wrapper';
 import Splitter from '../components/splitter';
@@ -14,6 +14,7 @@ import { getManagedDimension } from '../model/layout-json';
 const FlexBox = function FlexBox(props){
     const {layoutModel, dispatch} = props;
     if (layoutModel === undefined){
+        // this causes problems DO NOT USE 
         return rootWrapper(FlexBox, props);
     }
     // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
@@ -103,8 +104,6 @@ const FlexBox = function FlexBox(props){
                     layoutModel: childLayoutModel,
                     dispatch
                 };
-
-                console.log(`flexbox child`, layoutProps)
 
                 if (isLayout(child)) {
                     results.push(React.cloneElement(child, { ...layoutProps }));

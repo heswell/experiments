@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './layoutConfigurator.css'
+import { useEffect } from 'react'
 
 const DIMENSIONS = {
     margin: {
@@ -75,72 +76,68 @@ const CSS_REX = new RegExp(CSS_MEASURE)
 const BORDER_REX = /^(?:(\d+)(?:px)\ssolid\s([a-zA-Z,0-9().]+))$/;
 const BORDER_LIST = Object.keys(BORDER_STYLES);
 
-export default class LayoutConfigurator extends React.Component {
-    constructor(props){
-        super(props);
+const LayoutConfigurator = props => {
 
-        const [layoutStyle, visualStyle] = normalizeBorderStyle(props.layoutStyle, props.visualStyle);
-        this.state = {
-            layoutStyle,
-            visualStyle
-        };
+    const [[layoutStyle, visualStyle], setState] = useState(normalizeBorderStyle(props.layoutStyle, props.visualStyle));
 
-        console.log(`LayoutConfigurator
-            ${JSON.stringify(this.state.layoutStyle)}
-            ${JSON.stringify(this.state.visualStyle)}
-        `)
+        // console.log(`LayoutConfigurator
+        //     ${JSON.stringify(this.state.layoutStyle)}
+        //     ${JSON.stringify(this.state.visualStyle)}
+        // `)
 
-        this.handleChange = this.handleChange.bind(this);
-    }
+    useEffect(() => {
+        console.log(`layout Style has changed`)
+    }, [props.layoutStyle])    
 
-    componentWillReceiveProps(nextProps){
-        const {layoutStyle, visualStyle} = nextProps;
+    // componentWillReceiveProps(nextProps){
+    //     const {layoutStyle, visualStyle} = nextProps;
 
-        if (layoutStyle !== this.props.layoutStyle || visualStyle !== this.props.visualStyle){
+    //     if (layoutStyle !== this.props.layoutStyle || visualStyle !== this.props.visualStyle){
         
-            console.log(`LayoutConfigurator
-            ${JSON.stringify(layoutStyle)}
-            ${JSON.stringify(visualStyle)}
-            `)
+    //         console.log(`LayoutConfigurator
+    //         ${JSON.stringify(layoutStyle)}
+    //         ${JSON.stringify(visualStyle)}
+    //         `)
 
-            const [nextLayoutStyle, nextVisualStyle] = normalizeBorderStyle(layoutStyle, visualStyle);
+    //         const [nextLayoutStyle, nextVisualStyle] = normalizeBorderStyle(layoutStyle, visualStyle);
 
-            this.setState({
-                layoutStyle: nextLayoutStyle,
-                visualStyle: nextVisualStyle
-            });
+    //         this.setState({
+    //             layoutStyle: nextLayoutStyle,
+    //             visualStyle: nextVisualStyle
+    //         });
 
-            console.log(`LayoutConfigurator
-            ${JSON.stringify(nextLayoutStyle)}
-            ${JSON.stringify(nextVisualStyle)}
-            `)
-        }
-    }
+    //         console.log(`LayoutConfigurator
+    //         ${JSON.stringify(nextLayoutStyle)}
+    //         ${JSON.stringify(nextVisualStyle)}
+    //         `)
+    //     }
+    // }
 
-    handleChange(feature, dimension, strValue){
+    const handleChange = (feature, dimension, strValue) => {
         const value = parseInt(strValue || '0', 10);
         const property = DIMENSIONS[feature][dimension];
-        this.props.onChange(property, value);
+        console.log(`onChange ${property} => ${value}`)
+        props.onChange(property, value);
     }
 
-    render(){
-        const {width, height, style} = this.props
-        const {marginTop: mt=0, marginRight: mr=0, marginBottom: mb=0, marginLeft: ml=0} = this.state.layoutStyle;
-        const {borderTop: bt=0, borderRight: br=0, borderBottom: bb=0, borderLeft: bl=0} = this.state.layoutStyle;
-        const {paddingTop: pt=0, paddingRight: pr=0, paddingBottom: pb=0, paddingLeft: pl=0} = this.state.layoutStyle;
-        return (
-            <div className='LayoutConfigurator' style={{width, height, ...style}}>
-                <LayoutBox feature='margin' style={{top: mt, right: mr, bottom: mb, left: ml}} onChange={this.handleChange}>
-                    <LayoutBox feature='border' style={{top: bt, right: br, bottom: bb, left: bl}} onChange={this.handleChange}>
-                        <LayoutBox feature='padding' style={{top: pt, right: pr, bottom: pb, left: pl}} onChange={this.handleChange}>
-                            <div className='layout-content' />
-                        </LayoutBox>
+    const {width, height, style} = props
+    const {marginTop: mt=0, marginRight: mr=0, marginBottom: mb=0, marginLeft: ml=0} = layoutStyle;
+    const {borderTop: bt=0, borderRight: br=0, borderBottom: bb=0, borderLeft: bl=0} = layoutStyle;
+    const {paddingTop: pt=0, paddingRight: pr=0, paddingBottom: pb=0, paddingLeft: pl=0} = layoutStyle;
+    return (
+        <div className='LayoutConfigurator' style={{width, height, ...style}}>
+            <LayoutBox feature='margin' style={{top: mt, right: mr, bottom: mb, left: ml}} onChange={handleChange}>
+                <LayoutBox feature='border' style={{top: bt, right: br, bottom: bb, left: bl}} onChange={handleChange}>
+                    <LayoutBox feature='padding' style={{top: pt, right: pr, bottom: pb, left: pl}} onChange={handleChange}>
+                        <div className='layout-content' />
                     </LayoutBox>
                 </LayoutBox>
-            </div>
-        )
-    }
+            </LayoutBox>
+        </div>
+    )
 }
+
+export default LayoutConfigurator;
 
 // TODO merge the following two functions
 export function normalizeStyles(layoutStyle=NO_STYLE, visualStyle=NO_STYLE){

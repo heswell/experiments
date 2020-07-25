@@ -34,7 +34,7 @@ export const groupHelpers = {
 // we only export these for jest testing
 export * from './src/store/rowset';
 export {default as Table} from './src/store/table';
-export {default as DataView} from './src/store/data-store';
+export {default as DataStore} from './src/store/data-store';
 
 export const rangeUtils = {
   resetRange

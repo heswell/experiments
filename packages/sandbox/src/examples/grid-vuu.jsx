@@ -1,6 +1,6 @@
 import React from 'react';
 import {Grid } from '@heswell/ingrid';
-import {RemoteDataView as View, Servers} from '@heswell/data-remote';
+import {RemoteDataSource as View, Servers} from '@heswell/data-remote';
 
 const dataConfig = {
   serverName: Servers.Vuu,

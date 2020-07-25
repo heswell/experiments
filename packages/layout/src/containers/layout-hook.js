@@ -19,7 +19,9 @@ const useLayout = (initialData, inheritedLayout=NULL_LAYOUT) => {
   const [layoutModel, dispatchLayoutAction] = useReducer(layoutReducer, {...initialData, layout: inheritedLayout.computedStyle}, initModel);
 
   if (layoutModel === null){
+      console.log(`[layout-hook] layoutModel is null so dispatch initialize, soon as stretch i dloaded`)
       stretchLoading.then(() => {
+        console.log(`[layout-hook] stretch-loaded initialize model`)
           dispatchLayoutAction({type: Action.INITIALIZE, ...initialData});
       });
   }

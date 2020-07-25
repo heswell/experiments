@@ -43,7 +43,6 @@ export default forwardRef(function Selector({
     if (inputEl.current){
       const {top, left, width, height} = inputEl.current.getBoundingClientRect();
       setState({...state, position: {top,left,width,height}});
-      console.log(`input width ${width}`)
     }
   },[]);
 

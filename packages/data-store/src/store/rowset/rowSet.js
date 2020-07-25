@@ -16,6 +16,7 @@ import {
     functor as filterPredicate,
     getFullRange,
     projectColumns,
+    projectUpdates,
     mapSortCriteria,
     metadataKeys,
     overrideColName,
@@ -466,14 +467,14 @@ export class RowSet extends BaseRowSet {
     update(idx, updates) {
         if (this.currentFilter === null && this.sortCols === null) {
             if (idx >= this.range.lo && idx < this.range.hi) {
-                return [idx + this.offset, ...updates];
+                return [idx + this.offset, ...projectUpdates(updates)];
             }
         } else if (this.currentFilter === null) {
             const { sortSet } = this;
             for (let i = this.range.lo; i < this.range.hi; i++) {
                 const [rowIdx] = sortSet[i];
                 if (rowIdx === idx) {
-                    return [i + this.offset, ...updates];
+                    return [i + this.offset, ...projectUpdates(updates)];
                 }
             }
         } else {
@@ -482,7 +483,7 @@ export class RowSet extends BaseRowSet {
             for (let i = this.range.lo; i < this.range.hi; i++) {
                 const rowIdx = Array.isArray(filterSet[i]) ? filterSet[i][0] : filterSet[i];
                 if (rowIdx === idx) {
-                    return [i + this.offset, ...updates];
+                    return [i + this.offset, ...projectUpdates(updates)];
                 }
             }
         }

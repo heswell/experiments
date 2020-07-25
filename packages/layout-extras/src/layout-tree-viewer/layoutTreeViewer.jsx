@@ -115,7 +115,6 @@ export default class LayoutTreeViewer extends React.Component {
     constructor(props){
         super(props);
         this.slideContainer = null;
-        console.log(`LayoutTreeViewer constructor`)
         const {tree} = props;
         this.state = {
             rootNode: tree,

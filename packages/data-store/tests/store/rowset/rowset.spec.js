@@ -505,8 +505,11 @@ describe('update', () => {
         rowSet.setRange({lo: 0, hi: 10});
 
         table.update(0,6,10,7,120);
-        const result = rowSet.update(0, [6,10,7,120]);
-        expect(result).toEqual([100,6,10,7,120])
+        const result = rowSet.update(0, [
+            6, 5, 10,
+            7, 101, 120
+        ]);
+        expect(result).toEqual([100, 14, 5, 10, 15,101, 120])
     })
 
     test('no sort, no filter, viewport at head, update outside viewport', () => {
@@ -515,7 +518,7 @@ describe('update', () => {
         rowSet.setRange({lo: 0, hi: 10});
 
         table.update(15,6,10,7,120);
-        const result = rowSet.update(15, [6,10,7,120]);
+        const result = rowSet.update(15, [6,5, 10,7,100, 120]);
         expect(result).toBeUndefined();
     })
 
@@ -528,9 +531,9 @@ describe('update', () => {
         let result = rowSet.update(0, [6,10,7,120]);
         expect(result).toBeUndefined();
         table.update(16,6,10,7,120);
-        result = rowSet.update(16, [6,10,7,120]);
+        result = rowSet.update(16, [6,5, 10, 7, 110, 120]);
         // this might be inpredictable, sort is unstable
-        expect(result).toEqual([100,6,10,7,120]);
+        expect(result).toEqual([100,14,5, 10,15,110,120]);
     })
 
     test('filter applied, no sort, viewport at head, update to rows inside and outside filter', () => {
@@ -540,12 +543,12 @@ describe('update', () => {
         rowSet.setRange({lo: 0, hi: 10});
 
         table.update(5,6,10,7,120);
-        let result = rowSet.update(5, [6,10,7,120]);
+        let result = rowSet.update(5, [6, 5, 10, 7, 45, 120]);
         expect(result).toBeUndefined();
 
         table.update(1,6,10,7,120);
-        result = rowSet.update(1, [6,10,7,120]);
-        expect(result).toEqual([101,6,10,7,120]);
+        result = rowSet.update(1, [6, 5, 10, 7, 102, 120]);
+        expect(result).toEqual([101, 14, 5, 10, 15, 102, 120]);
     })
 
     test('filter and sort applied, no sort, viewport at head, update to rows inside and outside filter', () => {
@@ -556,16 +559,16 @@ describe('update', () => {
         rowSet.setRange({lo: 0, hi: 10});
 
         table.update(5,6,10,7,120);
-        let result = rowSet.update(5, [6,10,7,120]);
+        let result = rowSet.update(5, [6, 5, 10, 7, 45, 120]);
         expect(result).toBeUndefined();
 
         table.update(1,6,10,7,120);
-        result = rowSet.update(1, [6,10,7,120]);
+        result = rowSet.update(1, [6, 5, 10, 7, 102, 120]);
         expect(result).toBeUndefined();
 
         table.update(18,6,10,7,120);
-        result = rowSet.update(18, [6,10,7,120]);
-        expect(result).toEqual([102,6,10,7,120]);
+        result = rowSet.update(18, [6,5,10,7,100,120]);
+        expect(result).toEqual([102,14,5,10,15,100,120]);
     })
 
 });

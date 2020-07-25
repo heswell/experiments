@@ -8,7 +8,10 @@ import {Selection} from '../types';
 import {getColumnWidth} from '../utils/domUtils';
 
 /** @type {GridModelReducer} */
-export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
+export default (state, action) => {
+    console.log(`[model-reducer] action ${action.type}`)
+    return (handlers[action.type] || MISSING_HANDLER)(state, action);
+}
 
 
 /** @type  {GridModel} */
@@ -88,6 +91,7 @@ const handlers = {
 };
 
 export const initModel = model => {
+    console.log(`[model-reducer] initModel`)
     return initialize(DEFAULT_MODEL_STATE, {type: Action.INITIALIZE, gridState: model})
 }
 

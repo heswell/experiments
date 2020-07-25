@@ -64,7 +64,7 @@ async function render(id){
 
 }
 
-render('grid-viewserver');
+render('inlay-builder');
 
 function onContextMenu(e){
   e.preventDefault();

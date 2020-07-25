@@ -49,6 +49,17 @@ export function buildColumnMap(columns){
   }
 }
 
+export function projectUpdates(updates){
+    const results = [];
+    const metadataOffset = metadataKeys.count - 2;
+    for (let i=0;i<updates.length; i+=3){
+        results[i] = updates[i] + metadataOffset;
+        results[i+1] = updates[i+1];
+        results[i + 2] = updates[i+2];
+    }
+    return results;
+}
+
 export function projectColumns(map, columns){
   const length = columns.length;
   const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count} = metadataKeys;

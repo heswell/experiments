@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import cx from 'classnames';
 import { LayoutRoot } from './layout-root';
 import LayoutItem from './layout-item';
+import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import {DragContainer} from '../drag-drop/draggable.js';

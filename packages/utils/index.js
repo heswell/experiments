@@ -13,6 +13,7 @@ export {
   mapSortCriteria,
   projectColumns,
   projectColumnsFilter,
+  projectUpdates,
   toColumn,
   toKeyedColumn
 } from './src/column-utils';
