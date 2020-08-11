@@ -1,4 +1,4 @@
-import {createLogger, DataTypes, logColor, uuid} from '@heswell/utils';
+import {createLogger, DataTypes, EventEmitter, logColor, uuid} from '@heswell/utils';
 import {
   msgType as Msg,
   connectionId as _connectionId,
@@ -25,9 +25,10 @@ const defaultRange = { lo: 0, hi: 0 };
 /*-----------------------------------------------------------------
  A RemoteDataView manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export default class RemoteDataSource  {
+export default class RemoteDataSource  extends EventEmitter {
 
   constructor({tableName, serverName = AvailableProxies.Viewserver, url}) {
+    super();
     this.url = url;
     this.serverName = serverName;
     this.tableName = tableName;
@@ -73,6 +74,7 @@ export default class RemoteDataSource  {
   unsubscribe() {
     logger.log(`unsubscribe from ${this.tableName} (viewport ${this.viewport})`);
     this.server.unsubscribe(this.viewport);
+    this.server.destroy();
   }
 
   setColumns(columns){

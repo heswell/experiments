@@ -13,8 +13,8 @@ export default class UpdateQueue extends EventEmitter {
         this.length = 0;
     }
     // not the right name
-    update(update, dataType = DataTypes.ROW_DATA) {
-        this.emit(dataType, update);
+    update(updates, dataType = DataTypes.ROW_DATA) {
+        this.emit(dataType, {updates});
     }
 
     // just until we get the typing sorted

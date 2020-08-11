@@ -16,23 +16,19 @@ export function isEmptyRow(row){
 // TODO rename
 export function update(rows, updates, {IDX}) {
   const results = rows.slice();
-
+  const [[offsetIdx]] = rows;
   for (let i = 0; i < updates.length; i++) {
-      const [idx, ...fieldUpdates] = updates[i];
+      const idx = updates[i][0] - offsetIdx;
       // slow, refactor for performance
+      if (rows[idx]){
+        const row = rows[idx].slice();
+        for (let j = 1; j < updates[i].length; j += 3) {
+            row[updates[i][j]] = updates[i][j+2];
+        }
+        results[idx] = row;
 
-      let row;
-      for (let ii = 0; ii < rows.length; ii++) {
-          if (rows[ii][IDX] === idx) {
-              row = rows[ii].slice();
-              for (let j = 0; j < fieldUpdates.length; j += 2) {
-                  row[fieldUpdates[j]] = fieldUpdates[j + 1];
-              }
-              results[ii] = row;
-
-              break;
-
-          }
+      } else {
+        console.log(`row not found in rows`)
       }
   }
 

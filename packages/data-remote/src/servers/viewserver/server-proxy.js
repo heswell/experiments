@@ -25,6 +25,22 @@ export class ServerProxy {
         this.viewportStatus = {};
     }
 
+    destroy(){
+        for (let {postMessageToClient} of Object.values(this.viewportStatus)){
+            postMessageToClient({
+                rows: [],
+                size: 0,
+                range: {lo:0, hi:0}
+            });
+        }
+        this.connection.close();
+        this.viewportStatus = {};
+    }
+
+    reconnect(){
+        this.connection.reconnect();
+    }
+
     handleMessageFromClient(message) {
         const viewport = this.viewportStatus[message.viewport];
         viewport.range = message.range;
@@ -46,11 +62,13 @@ export class ServerProxy {
     disconnected(){
         logger.log(`disconnected`);
         for (let [viewport, {postMessageToClient}] of Object.entries(this.viewportStatus)) {
-            postMessageToClient({
-                rows: [],
-                size: 0,
-                range: {lo:0, hi:0}
-            })
+            if (this.connection.status !== 'closed'){
+                postMessageToClient({
+                    rows: [],
+                    size: 0,
+                    range: {lo:0, hi:0}
+                });
+            }
         }
     }
 
@@ -127,7 +145,6 @@ export class ServerProxy {
         const viewport = this.viewportStatus[viewportId];
         if (viewport){
             const {postMessageToClient, range: {lo, hi}} = viewport;
-            console.log(message)
             if (range){
                 logger.log(`message from server ${type} for range [${range.lo},${range.hi}] (current range [${lo},${hi}])`)
                 if (range.hi < lo || range.lo >= hi){

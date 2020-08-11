@@ -74,7 +74,6 @@ describe('Table', () => {
                 expect(updates).toEqual([6,9,9.5,7,100,50])
                 done()
             });
-            debugger;
             table.update(4, 6, 9.5, 7, 50);
         })
     });

@@ -51,13 +51,7 @@ function setSize(state, {rowCount}){
 
 //TODO we HAVE to remove out=of-range rows and add empty placeholders
 function setRange(state, {range}, meta){
-  // return {
-  //   ...state,
-  //   range,
-  //   _keys: setKeys(state._keys, range)
-  // }
 
-  // const { IDX, SELECTED } = meta;
   const {rows, rowCount, offset} = state;
   const keys = setKeys(state._keys, range);
 

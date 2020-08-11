@@ -1,8 +1,8 @@
 {
-  "name": "@heswell/data-source",
-  "version": "1.2.9",
+  "name": "@heswell/worker",
+  "version": "1.0.0",
   "description": "Heswell data sources",
-  "main": "dist/index.js",
+  "main": "index.js",
   "module": "index.js",
   "files": [
     "dist",
@@ -21,13 +21,9 @@
   },
   "author": "heswell",
   "license": "MIT",
-  "dependencies": {
-    "d3-array": "^2.2.0"
-  },
   "peerDependencies": {
     "@heswell/data-store": "^1.2.0",
-    "@heswell/utils": "^1.0.9",
-    "@heswell/worker": "^1.0.0"
+    "@heswell/utils": "^1.0.9"
   },
   "devDependencies": {
     "jest": "^24.9.0",
@@ -35,6 +31,5 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "typescript": "^3.8.3"
-  },
-  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
+  }
 }

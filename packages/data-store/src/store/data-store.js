@@ -21,23 +21,17 @@ export default class DataStore {
 
         this._groupby = groupBy;
         this._update_queue = updateQueue;
-        // TODO we should pass columns into the rowset as it will be needed for computed columns
-        this.rowSet = new RowSet(table, this._columns, this._index_offset);
-        // Is one filterRowset enough, or should we manage one for each column ?
-        this.filterRowSet = null;
 
-        // What if data is BOTH grouped and sorted ...
-        if (groupBy !== null) {
-            // more efficient to compute this directly from the table projection
-            this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupby, this._groupState);
-        } else if (this._sortCriteria !== null) {
-            this.rowSet.sort(this._sortCriteria);
-        }
-
+        this.reset = this.reset.bind(this);
         this.rowUpdated = this.rowUpdated.bind(this);
+        this.rowsUpdated = this.rowsUpdated.bind(this);
         this.rowInserted = this.rowInserted.bind(this);
 
+        this.reset();
+
+        table.on('ready', this.reset);
         table.on('rowUpdated', this.rowUpdated);
+        table.on('rowsUpdated', this.rowsUpdated);
         table.on('rowInserted', this.rowInserted);
 
     }
@@ -59,6 +53,33 @@ export default class DataStore {
 
     get status() {
         return this._table.status;
+    }
+
+    reset(){
+        const {_table: table, _groupby: groupBy, rowSet} = this;
+
+        let range = rowSet ? rowSet.range : null;
+
+        // TODO we should pass columns into the rowset as it will be needed for computed columns
+        this.rowSet = new RowSet(table, this._columns, this._index_offset);
+        // Is one filterRowset enough, or should we manage one for each column ?
+        this.filterRowSet = null;
+
+        // What if data is BOTH grouped and sorted ...
+        if (groupBy !== null) {
+            // more efficient to compute this directly from the table projection
+            this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupby, this._groupState);
+        } else if (this._sortCriteria !== null) {
+            this.rowSet.sort(this._sortCriteria);
+        }
+
+        if (range){
+            const result = this.setRange(range, false);
+            console.log(result)
+            this._update_queue.replace(result);
+
+        }
+
     }
 
     rowInserted(event, idx, row) {
@@ -92,6 +113,29 @@ export default class DataStore {
                 });
             }
         }
+    }
+
+    rowsUpdated(event, updates, doNotPublish) {
+        const { rowSet, _update_queue } = this;
+        const results = [];
+        for (let i=0;i<updates.length; i++){
+            const [idx, ...updatedValues] = updates[i];
+            const result = rowSet.update(idx, updatedValues);
+            if (result) {
+                if (rowSet instanceof RowSet) {
+                    results.push(result);
+                } else {
+                    result.forEach(rowUpdate => {
+                        results.push(rowUpdate);
+                    });
+                }
+            }
+        }
+
+        if (results.length > 0 && doNotPublish !== true){
+            _update_queue.update(results);
+        }
+
     }
 
     getData(dataType) {
@@ -275,7 +319,6 @@ export default class DataStore {
         const { rowSet, _columns, _groupState, _sortCriteria, _groupby } = this;
         const { range: _range } = rowSet;
         this._groupby = groupby;
-
         if (groupby === null) {
             this.rowSet = RowSet.fromGroupRowSet(this.rowSet);
         } else {

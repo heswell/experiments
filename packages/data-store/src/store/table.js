@@ -40,15 +40,10 @@ export default class Table extends EventEmitter {
         this.columnCount = 0;
         this.status = null;
 
-        // console.log(`Table 
-        //     columns = ${JSON.stringify(columns,null,2)}
-        //     columnMap = ${JSON.stringify(this.columnMap,null,2)}    
-        //     `)
-
         if (data){
-            this.parseData(data);
+            this.load(data);
         } else if (dataPath){
-            this.loadData(dataPath);
+            this.fetchData(dataPath);
         }
 
         this.installDataGenerators(config);
@@ -65,6 +60,56 @@ export default class Table extends EventEmitter {
         }
         this.emit('rowUpdated', rowIdx, results);
     }
+
+    bulkUpdate(updates, doNotPublish){
+        const results = [];
+        for (let rowUpdate of updates){
+            const [idx] = rowUpdate;
+            const row = this.rows[idx];
+            const rowResult = [idx]
+            for (let i=1;i<rowUpdate.length;i+=2){
+                const colIdx = rowUpdate[i];
+                const value = rowUpdate[i+1];
+                rowResult.push(colIdx, row[colIdx], value);
+                row[colIdx] = value;
+            }
+            results.push(rowResult);
+        }
+        this.emit('rowsUpdated', results, doNotPublish);
+    }
+
+    // Don't think this is worth the overhead
+    // bulkUpdate(updates){
+        // const map = new Map();
+    // const results = [];
+    // let rowResult;
+    // for (let rowUpdate of updates){
+    //     const [idx] = rowUpdate;
+    //     const row = this.rows[idx];
+
+    //     if (map.has(idx)){
+    //         rowResult = map.get(idx);
+    //     } else {
+    //         results.push(rowResult = [idx]);
+    //         map.set(idx, rowResult)
+    //     }
+
+    //     for (let i=1;i<rowUpdate.length;i+=2){
+    //         const colIdx = rowUpdate[i];
+    //         const value = rowUpdate[i+1];
+    //         const pos = rowResult.indexOf(colIdx);
+    //         if (pos === -1 || (pos-1)%3){ // don't mistake a value for a column Index
+    //             rowResult.push(colIdx, row[colIdx], value);
+    //         } else {
+    //             // updates are in sequence so later update for same column replaces earlier value
+    //             rowResult.splice(pos+1, 2, row[colIdx], value);
+    //         }
+    //         row[colIdx] = value;
+    //     }
+    // }
+    // console.log(results)
+    // this.emit('rowsUpdated', results);
+    // }
 
     insert(data){
         let columnnameList = this.columns ? this.columns.map(c => c.name): null;
@@ -102,14 +147,14 @@ export default class Table extends EventEmitter {
         return out.join('\n');
     }
 
-    async loadData(url){
+    async fetchData(url){
         fetch(url,{
 
         })
             .then(data => data.json())
             .then(json => {
                 console.log(`Table.loadData: got ${json.length} rows`);
-                this.parseData(json);
+                this.load(json);
             })
             .catch(err => {
                 console.error(err);
@@ -117,7 +162,7 @@ export default class Table extends EventEmitter {
 
     }
 
-    parseData(data){
+    load(data){
         let columnnameList = this.columns ? this.columns.map(c => c.name): null;
         const rows = [];
         for (let i=0;i<data.length;i++){

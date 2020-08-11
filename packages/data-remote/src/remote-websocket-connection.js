@@ -7,7 +7,6 @@ const connectionAttempts = {};
 
 const setWebsocket = Symbol('setWebsocket');
 const connectionCallback = Symbol('connectionCallback');
-const destroyConnection = Symbol('destroyConnection');
 
 export default async function connect(connectionString, callback, connectionStatusCallback) {
     return makeConnection(connectionString, msg => {
@@ -50,7 +49,11 @@ async function makeConnection(url, callback, connection){
       connection = new Connection(ws, url, callback);
     }
 
-    callback({type: 'connection-status', status: reconnecting ? 'reconnected' : 'connected'});
+    const status = reconnecting ? 'reconnected' : 'connected';
+
+    callback({type: 'connection-status', status});
+
+    connection.status = status;
 
     return connection;
   
@@ -83,9 +86,13 @@ class Connection {
 
     this.url = url;
     this[connectionCallback] = callback;
-
     this[setWebsocket](ws);
+    this.status = 'ready';
 
+  }
+
+  reconnect(){
+    reconnect(this);
   }
 
   [setWebsocket](ws){
@@ -105,23 +112,31 @@ class Connection {
     ws.onerror = evt => {
       console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: red;font-weight: bold;','color:red; font-size: 14px;');
       callback({type: 'connection-status', status: 'disconnected', reason: 'error'});
-      reconnect(this);
-      this.send = queue;
+      if (this.status !== 'closed'){
+        reconnect(this);
+        this.send = queue;
+      }
     }
 
     ws.onclose = evt => {
       console.log(`%c⚡ %c${this.url}`, 'font-size: 24px;color: orange;font-weight: bold;','color:orange; font-size: 14px;');
       callback({type: 'connection-status', status: 'disconnected', reason: 'close'});
-      reconnect(this);
-      this.send = queue;
+      if (this.status !== 'closed'){
+        reconnect(this);
+        this.send = queue;
+      }
     }
 
     const send = msg => {
       ws.send(JSON.stringify(msg));
     }
 
+    const warn = msg => {
+      logger.log(`Message cannot be sent, socket closed: ${msg.type}`);
+    }
+
     const queue = msg => {
-      console.log(`queuing message ${JSON.stringify(msg)}`)
+      console.log(`queuing message ${JSON.stringify(msg)} until websocket reconnected`)
     }
 
     const abort = msg => {
@@ -130,10 +145,14 @@ class Connection {
 
     this.send = send;
 
+    this.close = () => {
+      console.log('[Connection] close websocket')
+      this.status = 'closed';
+      ws.close();
+      this.send = warn;
+    }
+
   }
 
-  [destroyConnection](){
-    console.log(`destroy !!!!!`)
-  }
 }
 

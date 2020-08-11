@@ -17,6 +17,9 @@ export default [{
         resolve(),
         commonjs(),
         ...(isProd ? [terser({
+            mangle: {
+                reserved: ['workerCode']
+            },
             output: {
                 comments: /webpackIgnore/
             }
