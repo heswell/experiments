@@ -26,11 +26,6 @@ export const toKeyedColumn = (column, key) =>
           ? column
           : {...column, key};
 
-export const toColumn = column =>
-  typeof column === 'string'
-      ? { name: column }
-      : column;
-
 export function buildColumnMap(columns){
   const start = metadataKeys.count;  
   if (columns){
@@ -60,8 +55,8 @@ export function projectUpdates(updates){
     return results;
 }
 
-export function projectColumns(map, columns){
-  const length = columns.length;
+export function projectColumns(tableRowColumnMap, columns){
+  const columnCount = columns.length;
   const {IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count} = metadataKeys;
   return (startIdx, offset, selectedRows=[]) => (row,i) => {
       // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
@@ -69,8 +64,8 @@ export function projectColumns(map, columns){
       // be overwritten with a different value below if rows are sorted/filtered 
       const baseRowIdx = row[IDX];
       const out = [];
-      for (let i=0; i < length;i++){
-          const colIdx = map[columns[i].name];
+      for (let i=0; i < columnCount;i++){
+          const colIdx = tableRowColumnMap[columns[i].name];
           out[count+i] = row[colIdx];
       }
 
@@ -78,8 +73,7 @@ export function projectColumns(map, columns){
       out[RENDER_IDX] = 0;
       out[DEPTH] = 0;
       out[COUNT] = 0;
-      // assume row[0] is key for now
-      out[KEY] = row[map.KEY]; /// How do we identify, can it be done in table ?
+      out[KEY] = row[tableRowColumnMap.KEY];
       out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
       return out;
   }

@@ -33,12 +33,11 @@ const NO_OPTIONS = {
 
 export default class BaseRowSet {
 
-    constructor(table, columns, offset = 0) {
+    constructor(table, offset = 0) {
         this.table = table;
         this.offset = offset;
         this.baseOffset = offset;
         this.range = NULL_RANGE;
-        this.columns = columns;
         this.currentFilter = null;
         this.filterSet = null;
         this.sortSet = undefined;
@@ -314,7 +313,7 @@ export class RowSet extends BaseRowSet {
     }
     //TODO consolidate API of rowSet, groupRowset
     constructor(table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
-        super(table, columns, offset);
+        super(table, offset);
         this.type = "rowData";
         this.project = projectColumns(table.columnMap, columns);
         this.sortCols = null;
@@ -326,7 +325,6 @@ export class RowSet extends BaseRowSet {
             this.currentFilter = filter;
             this.filter(filter);
         }
-
     }
 
     buildSortSet() {
@@ -384,6 +382,10 @@ export class RowSet extends BaseRowSet {
     }
     get rawData() {
         return this.data;
+    }
+
+    setSubscribedColumns(columns) {
+        console.log(`Rowset setSubscribedColumns ${columns.join(',')}`)
     }
 
     setStatus(status) {

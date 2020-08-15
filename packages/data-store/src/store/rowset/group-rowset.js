@@ -28,7 +28,8 @@ const EMPTY_ARRAY = [];
 export class GroupRowSet extends BaseRowSet {
 
     constructor(rowSet, columns, groupby, groupState, sortCriteria = null, filter=rowSet.currentFilter) {
-        super(rowSet.table, columns, rowSet.baseOffset);
+        super(rowSet.table, rowSet.baseOffset);
+        this.columns = columns;
         this.groupby = groupby;
         this.groupState = groupState;
         this.aggregations = [];

@@ -186,7 +186,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
                     // as soon as we know we're regrouping, aggregate the open groups, in reverse order
                     for (let ii = levels - 1; ii >= level; ii--) {
                         const group = currentGroups[ii];
-                        aggregate(group, groups, sortSet, rows, columns, aggregations, leafCount, filter);
+                        aggregate(group, groups, sortSet, rows, aggregations, leafCount, filter);
                         if (filterSet && Math.abs(group[DEPTH]) === 1 && group[FILTER_COUNT] > 0){
                             group[NEXT_FILTER_IDX] = filterIdx;
                             filterIdx += group[FILTER_COUNT];
@@ -217,7 +217,7 @@ export function groupRows(rows, sortSet, columns, columnMap, groupby, options = 
     for (let i = levels - 1; i >= 0; i--) {
         if (currentGroups[i] !== null){
             const group = currentGroups[i];
-            aggregate(group, groups, sortSet, rows, columns, aggregations, leafCount, filter);
+            aggregate(group, groups, sortSet, rows, aggregations, leafCount, filter);
             if (filterSet && Math.abs(group[DEPTH]) === 1 && group[FILTER_COUNT] > 0){
                 group[NEXT_FILTER_IDX] = filterIdx;
             }
@@ -616,12 +616,12 @@ export function aggregateGroup(groups, grpIdx, sortSet, rows, columns, aggregati
             const dataIdx =colIdx +  metadataKeys.count - 2; // <<<<<<<<<<<
             groups[i][dataIdx] = 0;
         }
-        aggregate(groups[i], groups, sortSet, rows, columns, aggregations, groups[i][COUNT])
+        aggregate(groups[i], groups, sortSet, rows, aggregations, groups[i][COUNT])
     }
 
 }
 
-function aggregate(groupRow, groupRows, sortSet, rows, columns, aggregations, leafCount, filter=null) {
+function aggregate(groupRow, groupRows, sortSet, rows, aggregations, leafCount, filter=null) {
     const {DEPTH, COUNT, FILTER_COUNT, IDX_POINTER, count: metadataOffset} = metadataKeys;
     let absDepth = Math.abs(groupRow[DEPTH]);
     let count = 0;

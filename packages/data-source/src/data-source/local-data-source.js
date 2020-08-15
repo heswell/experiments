@@ -102,9 +102,18 @@ export default class LocalDataSource extends EventEmitter {
     this.clientFilterCallback = null;
   }
 
+  // This is a bit odd - we should call this setSchema
   setColumns(columns){
     this.columns = columns;
     return this;
+  }
+
+  // Maybe we just need a modify subscription
+  setSubscribedColumns(columns){
+    if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
+      this.columns = columns;
+      this.dataStore.setSubscribedColumns(columns);
+    }
   }
 
   setRange(lo, hi, dataType=ROW_DATA) {

@@ -1,6 +1,7 @@
 export declare class EventEmitter<Events> {
   on: <E extends keyof Events>(event: E, callback: (E, arg: Events[E]) => void) => void; 
   emit: <E extends keyof Events>(event: E, arg?: Events[E], ...args: any[]) => void;
+  removeAllListeners: (evtType?: string) => void;
 }
 
 export declare const uuid: () => string;
@@ -19,6 +20,7 @@ export declare const toColumn: any;
 export declare const getFilterType: any;
 export declare const mapSortCriteria: any;
 export declare const projectColumns: any;
+export declare const projectUpdates: any;
 export declare const projectColumnsFilter: any;
 export declare const toKeyedColumn: any;
 

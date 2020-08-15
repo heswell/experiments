@@ -1,6 +1,6 @@
 import { resetRange } from './range-utils';
 import { RowSet, GroupRowSet } from './rowset/index';
-import { addFilter, DataTypes, IN, NOT_IN, buildColumnMap, toColumn, getFilterType } from '@heswell/utils';
+import { addFilter, DataTypes, IN, NOT_IN, toColumn, getFilterType } from '@heswell/utils';
 import UpdateQueue from './update-queue';
 
 const DEFAULT_INDEX_OFFSET = 100;
@@ -14,9 +14,6 @@ export default class DataStore {
         this._groupState = null;
         this._sortCriteria = sortCriteria;
 
-        this._columns = null;
-        this._columnMap = null;
-        // column defs come from client, this is where we assign column keys
         this.columns = columns;
 
         this._groupby = groupBy;
@@ -36,11 +33,6 @@ export default class DataStore {
 
     }
 
-    // Set the columns from client
-    set columns(columns) {
-        this._columns = columns.map(toColumn);
-        this._columnMap = buildColumnMap(this._columns);
-    }
 
     destroy() {
         this._table.removeListener('rowUpdated', this.rowUpdated);
@@ -60,15 +52,15 @@ export default class DataStore {
 
         let range = rowSet ? rowSet.range : null;
 
-        // TODO we should pass columns into the rowset as it will be needed for computed columns
-        this.rowSet = new RowSet(table, this._columns, this._index_offset);
+        // TODO we should pass yarn build into the rowset as it will be needed for computed columns
+        this.rowSet = new RowSet(table, this.columns, this._index_offset);
         // Is one filterRowset enough, or should we manage one for each column ?
         this.filterRowSet = null;
 
         // What if data is BOTH grouped and sorted ...
         if (groupBy !== null) {
             // more efficient to compute this directly from the table projection
-            this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupby, this._groupState);
+            this.rowSet = new GroupRowSet(this.rowSet, this.columns, this._groupby, this._groupState);
         } else if (this._sortCriteria !== null) {
             this.rowSet.sort(this._sortCriteria);
         }
@@ -144,6 +136,10 @@ export default class DataStore {
             : dataType === DataTypes.FILTER_DATA
                 ? this.filterRowSet
                 : null;
+    }
+
+    setSubscribedColumns(columns) {
+        this.rowSet.setSubscribedColumns(columns);
     }
 
     //TODO we seem to get a setRange when we reverse sort order, is that correct ?
@@ -316,14 +312,14 @@ export default class DataStore {
     }
 
     groupBy(groupby) {
-        const { rowSet, _columns, _groupState, _sortCriteria, _groupby } = this;
+        const { rowSet, columns, _groupState, _sortCriteria, _groupby } = this;
         const { range: _range } = rowSet;
         this._groupby = groupby;
         if (groupby === null) {
             this.rowSet = RowSet.fromGroupRowSet(this.rowSet);
         } else {
             if (_groupby === null) {
-                this.rowSet = new GroupRowSet(rowSet, _columns, groupby, _groupState, _sortCriteria);
+                this.rowSet = new GroupRowSet(rowSet, columns, groupby, _groupState, _sortCriteria);
             } else {
                 rowSet.groupBy(groupby);
             }
@@ -353,11 +349,11 @@ export default class DataStore {
     }
 
     getFilterData(column, range) {
-        const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
+        const { rowSet, filterRowSet, _filter: filter } = this;
         // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
         // to go back to the source, using a filter which excludes the one in place on the target column. 
         const columnName = column.name;
-        const colDef = this._columns.find(col => col.name === columnName);
+        const colDef = this.columns.find(col => col.name === columnName);
         // No this should be decided beforehand (on client) 
         const type = getFilterType(colDef);
 
