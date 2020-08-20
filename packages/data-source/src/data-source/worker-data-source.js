@@ -78,6 +78,13 @@ export default class WorkerDataSource extends EventEmitter {
     return this;
   }
 
+  setSubscribedColumns(columns){
+    if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
+      this.columns = columns;
+      // ???
+    }
+  }
+
   setRange(lo, hi, dataType=ROW_DATA) {
     this.worker.postMessage({type: 'setRange', range: {lo, hi}, dataType});
   }
@@ -177,6 +184,18 @@ export default class WorkerDataSource extends EventEmitter {
   //   })
 
   // }
+
+  startStressTest(){
+    this.worker.postMessage({type: 'startStress'});
+  }
+
+  startLoadTest(){
+    this.worker.postMessage({type: 'startLoad'});
+  }
+
+  stopTest(){
+    this.worker.postMessage({type: 'stopTest'});
+  }
 
 }
 

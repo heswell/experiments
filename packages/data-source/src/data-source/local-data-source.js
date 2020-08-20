@@ -1,7 +1,7 @@
 // @ts-check
 
 import {createLogger, DataTypes, EventEmitter, logColor} from '@heswell/utils'
-import {DataStore as DataView, Table} from '@heswell/data-store';
+import {DataStore, Table} from '@heswell/data-store';
 import LocalUpdateQueue from './local-update-queue';
 
 const {ROW_DATA} = DataTypes;
@@ -20,18 +20,15 @@ const logger = createLogger('LocalDataSource', logColor.blue);
 
 export default class LocalDataSource extends EventEmitter {
   constructor({
+    columns,
     data,
     primaryKey,
-    url,
+    dataUrl,
     tableName
   }) {
     super();
-    this.eventualView = 
-      url ? buildDataView(url) :
-      data ? loadData(data) :
-      Promise.reject('bad params');
 
-    this.columns = null;
+    this.columns = columns;
     this.primaryKey = primaryKey;
 
     this.tableName = tableName;
@@ -47,6 +44,24 @@ export default class LocalDataSource extends EventEmitter {
     this.pendingRangeRequest = null;
     this.pendingFilterColumn= null;
     this.pendingFilterRange = null;
+
+    this.status = 'initialising';
+
+    this.dataStoreReady = new Promise(resolve => {
+
+      const eventualData = 
+      dataUrl ? buildDataView(dataUrl) :
+      data ? loadData(data) :
+      Promise.reject('bad params, LOcalDataSource expects either data or a dataUrl');
+
+      eventualData.then(({default: data}) => {
+        const table = new Table({ data, columns, primaryKey: this.primaryKey });
+        this.dataStore = new DataStore(table, {columns}, this.updateQueue);
+        this.status = 'ready';
+        resolve();
+      });
+    })  ;
+
   }
 
   async subscribe({
@@ -58,13 +73,10 @@ export default class LocalDataSource extends EventEmitter {
 
     if (!columns) throw Error("LocalDataView subscribe called without columns");
     
-    // TODO options can include sort, groupBy etc
-    
+    await this.dataStoreReady;
+
+    // this only makes sense if a localdatasource can holdmore than one table - maybe ?
     this.tableName = tableName;
-    this.columns = columns;
-    const { default: data } = await this.eventualView
-    const table = new Table({ data, columns, primaryKey: this.primaryKey });
-    this.dataStore = new DataView(table, {columns}, this.updateQueue);
     this.clientCallback = callback;
 
     this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
@@ -112,7 +124,9 @@ export default class LocalDataSource extends EventEmitter {
   setSubscribedColumns(columns){
     if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
       this.columns = columns;
-      this.dataStore.setSubscribedColumns(columns);
+      if (this.dataStore !== null){
+        this.dataStore.setSubscribedColumns(columns);
+      }
     }
   }
 

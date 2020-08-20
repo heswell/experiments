@@ -82,6 +82,14 @@ export default class RemoteDataSource  extends EventEmitter {
     return this;
   }
 
+  setSubscribedColumns(columns){
+    if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
+      this.columns = columns;
+      // ???
+    }
+  }
+
+
   setRange(lo, hi, dataType=ROW_DATA) {
     this.server.handleMessageFromClient({
       viewport: this.viewport,
