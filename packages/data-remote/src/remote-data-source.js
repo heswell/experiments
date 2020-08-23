@@ -57,7 +57,6 @@ export default class RemoteDataSource  extends EventEmitter {
   }, callback) {
 
     if (!tableName) throw Error("RemoteDataSource subscribe called without table name");
-    // if (!columns) throw Error("RemoteDataSource subscribe called without columns");
 
     this.viewport = viewport;
     this.tableName = tableName;

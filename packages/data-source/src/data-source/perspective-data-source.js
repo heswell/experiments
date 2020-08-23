@@ -189,15 +189,16 @@ export default class PerspectiveDataSource extends EventEmitter {
   }
 
   // Maybe we just need a modify subscription
-  setSubscribedColumns(columns){
-    console.log(`setSubscribedColumns`,columns)
-
-    // if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
-    //   this.columns = columns;
-    //   if (this.dataStore !== null){
-    //     this.dataStore.setSubscribedColumns(columns);
-    //   }
-    // }
+  async setSubscribedColumns(columns){
+    this.columnNames = columns;  
+    if (this.status === 'ready'){
+      await this.createView();
+      if (this.range){
+        this.pushDataToClient();
+      }
+    } else {
+      console.log('not ready but weve set columnNames')
+    }
   }
 
   async setRange(lo, hi, dataType=ROW_DATA) {

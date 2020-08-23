@@ -20,7 +20,7 @@ const logger = createLogger('LocalDataSource', logColor.blue);
 
 export default class LocalDataSource extends EventEmitter {
   constructor({
-    columns,
+    schema,
     data,
     primaryKey,
     dataUrl,
@@ -28,7 +28,7 @@ export default class LocalDataSource extends EventEmitter {
   }) {
     super();
 
-    this.columns = columns;
+    this.columns = schema.columns;
     this.primaryKey = primaryKey;
 
     this.tableName = tableName;
@@ -55,8 +55,8 @@ export default class LocalDataSource extends EventEmitter {
       Promise.reject('bad params, LOcalDataSource expects either data or a dataUrl');
 
       eventualData.then(({default: data}) => {
-        const table = new Table({ data, columns, primaryKey: this.primaryKey });
-        this.dataStore = new DataStore(table, {columns}, this.updateQueue);
+        const table = new Table({ data, columns: schema.columns, primaryKey: this.primaryKey });
+        this.dataStore = new DataStore(table, {columns: schema.columns}, this.updateQueue);
         this.status = 'ready';
         resolve();
       });
@@ -116,7 +116,6 @@ export default class LocalDataSource extends EventEmitter {
 
   // Maybe we just need a modify subscription
   setSubscribedColumns(columns){
-    console.log(`setSubscribedColumns`,columns)
     if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
       this.columns = columns;
       if (this.dataStore !== null){
