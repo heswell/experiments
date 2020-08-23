@@ -89,6 +89,10 @@ export class GroupRowSet extends BaseRowSet {
         this.range = NULL_RANGE;
     }
 
+    setSubscribedColumns(columns) {
+        console.log(`GroupRowset setSubscribedColumns ${columns.join(',')}`)
+    }
+
     setRange(range, useDelta=true){
         // A common scenario, eg after groupBy or sort, reposition range at top of viewport
         if (useDelta === false && range.lo === 0){

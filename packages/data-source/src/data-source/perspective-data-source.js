@@ -1,78 +1,42 @@
 // @ts-nocheck
 import perspective from '@finos/perspective';
 
-import {createLogger, DataTypes, EventEmitter, logColor, metadataKeys } from '@heswell/utils'
-import LocalUpdateQueue from './local-update-queue';
+import {createLogger, DataTypes, EventEmitter, logColor } from '@heswell/utils'
+import * as utils from './perspective-utils';
 
 const {ROW_DATA} = DataTypes;
 
 const logger = createLogger('LocalDataSource', logColor.blue);
 
 function buildPivotColumns(groupBy, pivotBy, columns){
+
   console.log(`buildPivotColumns
     groupBy ${groupBy ? groupBy.join(',') : ''}
     pivotBy ${pivotBy ? pivotBy.join(',') : ''}
-  `, columns)
-  return columns.map(path => {
+  `, columns);
+
+  return columns.reduce((list,path) => {
     const heading = path.split('|').reverse();
-    return {
-      name: heading[0],
-      heading
+    const [colName] = heading;
+    if (colName === '__ROW_PATH__'){
+      groupBy.forEach(name => {
+        list.push({name, heading: [name]});
+      })
+    } else if (!groupBy || !groupBy.includes(colName)){
+      list.push({
+        name: colName,
+        heading
+      });
     }
-  })
-}
-
-const perspectiveType = type => {
-  switch(type){
-    case 'number': return 'float';
-    default: return type || 'string';
-  }
-}
-
-const convertToPSPSchema = columns => {
-  return columns.reduce((map, column) => {
-    map[column.name] = perspectiveType(column.type)
-    return map;
-  },{});
-}
-
-const rowsFromColumns = (data, columns, groupColumns, pivotColumns, idx) => {
-  const {count: metadataOffset, DEPTH, COUNT} = metadataKeys;
-  let rowIdx = idx;
-  const dataColumns = Object.keys(data);
-  const count = data[dataColumns[0]].length;
-  const results = Array(count);
-  for (let i=0;i<count;i++){
-    results[i] = [rowIdx+i,0,0,rowIdx+i];
-    for (let j=0;j<columns.length;j++){
-      const columnName = columns[j];
-      if (data[columnName]){
-        results[i][metadataOffset+j] = data[columnName][i];
-      }
-    }
-    if (data.__ROW_PATH__){
-      const path = data.__ROW_PATH__[i];
-      if (path.length){
-        results[i][DEPTH] = groupColumns.length - path.length + 1
-        for (let k=0;k<path.length;k++){
-          const colName = groupColumns[k];
-          if (data[colName]){
-            const colIdx = columns.indexOf(colName);
-            results[i][metadataOffset + colIdx] = path[k];
-            results[i][COUNT] = data[colName][i];
-          }
-        }
-      }
-    }
-  }
-  return results;
+    return list;
+  },[])
 }
 
 export default class PerspectiveDataSource extends EventEmitter {
   constructor({
-    columns,
     table,
-    configUrl
+    configUrl,
+    dataUrl
   }) {
     super();
 
@@ -84,8 +48,8 @@ export default class PerspectiveDataSource extends EventEmitter {
       expand_level_1: false
     }
 
-    this.columns = columns;
-    this.columnNames = columns.map(c=>c.name)
+    this.columns = undefined;
+    this.columnNames = undefined;
 
     this.range = null;
     this.subscription = null;
@@ -96,58 +60,66 @@ export default class PerspectiveDataSource extends EventEmitter {
     this.groupBy = undefined;
     this.pivotBy = undefined;
 
-    // do we need this ?
-    this.updateQueue = new LocalUpdateQueue();
     this.dataStore = null;
     this.clientCallback = null;
+    this.status = 'initialising';
 
     this.pendingRangeRequest = null;
     this.pendingFilterColumn= null;
     this.pendingFilterRange = null;
 
-
-    console.log(`about to load configUrl ${configUrl}`)
-    const loadConfig = async () => await import(/* webpackIgnore: true */ configUrl);
-    this.eventualConfig = loadConfig();
+    this.readyToSubscribe = configUrl
+      ? this.loadFromConfig(configUrl)
+      : this.loadFromArrow(dataUrl)
 
   }
 
+  loadFromConfig(configUrl){
+    return new Promise(resolve => {
+      const loadConfig = async () => await import(/* webpackIgnore: true */ configUrl);
+      loadConfig().then(async ({config: {columns, dataUrl}}) => {
+        const {generateData} = await import(/* webpackIgnore: true */ dataUrl);
+        const schema = utils.convertToPSPSchema(columns);
+        this.table = perspective.worker().table( schema,  { limit: 5000 });
+        this.table.update(generateData());
+        this.generateData = generateData;
+        this.columns = columns;
+        this.columnNames = this.columns.map(c=>c.name)
+        this.status = 'ready';
+        resolve();
+      })
+    });
+  }
+
+  loadFromArrow(dataUrl){
+    return new Promise(async (resolve) => {
+      const data = await fetch(dataUrl);
+      const arrayBuffer = await data.arrayBuffer();
+      this.table = perspective.worker().table(arrayBuffer);
+      const schema = await this.table.schema(false);
+      this.columns = utils.convertFromPSPSchema(schema);
+      this.columnNames = this.columns.map(c=>c.name)
+      resolve();
+    })
+  }
+
   async subscribe({
-    columns = this.columns,
     range
     // TODO support groupBy, sort etc
   }, callback) {
 
-    if (!columns) throw Error("LocalDataView subscribe called without columns");
-    
-    const {config} = await this.eventualConfig;
-    const {generateData} = await import(/* webpackIgnore: true */ config.dataUrl);
-    const schema = convertToPSPSchema(config.columns)
+    await this.readyToSubscribe;
 
-    const table = perspective.worker().table( schema,  { limit: 5000 });
-    table.update(generateData());
-
-    const view = await table.view({
-      columns: columns.map(c => c.name)
+    console.log(`create view with columns ${this.columnNames.join(',')}`)
+    const view = await this.table.view({
+      columns: this.columnNames
     });
     view.on_update(() => this.update());  
 
-    this.columns = columns;
-    this.table = table;
     this.view = view;
-    this.generateData = generateData;
     this.clientCallback = callback;
 
-
-    // this.updateQueue.on(DataTypes.ROW_DATA, (evtName, message) => callback(message));
-
-    // if (this.pendingFilterColumn){
-    //   this.getFilterData(this.pendingFilterColumn, this.pendingFilterRange);
-    //   this.pendingFilterColumn = null;
-    //   this.pendingFilterRange = null;
-    // }
-
-    callback({type: 'subscribed', columns});
+    callback({type: 'subscribed', columns: this.columns});
 
     if (range){
       this.setRange(range.lo, range.hi);
@@ -159,7 +131,7 @@ export default class PerspectiveDataSource extends EventEmitter {
     const {lo, hi} = this.range;
     const [columns,size] = await Promise.all([this.view.to_columns({start_row: lo, end_row: hi}), this.view.num_rows()]);
 
-    const rows = rowsFromColumns(columns, this.columnNames, this.groupBy, this.pivotBy, lo);
+    const rows = utils.rowsFromColumns(columns, this.columnNames, this.groupBy, this.pivotBy, lo);
     this.clientCallback({
       rows,
       range: this.range,
@@ -186,7 +158,7 @@ export default class PerspectiveDataSource extends EventEmitter {
   async pushDataToClient(){
     const {columnNames, groupBy, pivotBy, range, view} = this;
     const [columns,size] = await Promise.all([view.to_columns({start_row: range.lo, end_row: range.hi}), view.num_rows()]);
-    const rows = rowsFromColumns(columns, columnNames, groupBy, pivotBy, range.lo);
+    const rows = utils.rowsFromColumns(columns, columnNames, groupBy, pivotBy, range.lo);
     this.clientCallback({ rows, range, size });
   }
 
@@ -198,7 +170,6 @@ export default class PerspectiveDataSource extends EventEmitter {
       this.view.delete();
       this.view = null;
     }
-    this.updateQueue.removeAllListeners(DataTypes.ROW_DATA);
   }
 
   subscribeToFilterData(column, range, callback) {
@@ -212,12 +183,6 @@ export default class PerspectiveDataSource extends EventEmitter {
     this.clientFilterCallback = null;
   }
 
-  // This is a bit odd - we should call this setSchema
-  setColumns(columns){
-    this.columns = columns;
-    return this;
-  }
-
   setColumnNames(columns){
     this.columnNames = columns;
     return this;
@@ -225,6 +190,8 @@ export default class PerspectiveDataSource extends EventEmitter {
 
   // Maybe we just need a modify subscription
   setSubscribedColumns(columns){
+    console.log(`setSubscribedColumns`,columns)
+
     // if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
     //   this.columns = columns;
     //   if (this.dataStore !== null){
@@ -246,7 +213,7 @@ export default class PerspectiveDataSource extends EventEmitter {
     const {groupBy, pivotBy} = this;
     this.groupBy = groupColumns ? groupColumns.map(([columnName]) => columnName) : undefined;
     this.pivotBy = pivotColumns ? pivotColumns.map(([columnName]) => columnName): undefined;
-    const pivotAdded = this.pivotBy && !pivotBy; // or if pivot column added
+    const pivotAdded = this.pivotBy && !pivotBy; // what about if pivot column added
 
     if (pivotAdded){
       this.columnNames = this.columnNames.filter(columnName => !this.pivotBy.includes(columnName));

@@ -27,9 +27,9 @@ const defaultRange = { lo: 0, hi: 0 };
   ----------------------------------------------------------------*/
 export default class RemoteDataSource  extends EventEmitter {
 
-  constructor({tableName, serverName = AvailableProxies.Viewserver, url}) {
+  constructor({tableName, serverName = AvailableProxies.Viewserver, serverUrl}) {
     super();
-    this.url = url;
+    this.url = serverUrl;
     this.serverName = serverName;
     this.tableName = tableName;
     this.server = NullServer;  
@@ -38,6 +38,15 @@ export default class RemoteDataSource  extends EventEmitter {
     this.viewport = null;
     this.filterDataCallback = null;
     this.filterDataMessage = null;
+    this.status = 'initialising'
+
+    if (!serverUrl){
+      throw Error('RemoteDataSource expects serverUrl')
+    }
+
+    this.readyToSubscribe = ConnectionManager.connect(this.url, this.serverName).then(
+      server => this.server = server 
+    );
   }
 
   async subscribe({
@@ -55,7 +64,7 @@ export default class RemoteDataSource  extends EventEmitter {
     this.columns = columns;
     logger.log(`subscribe to ${tableName} range = ${JSON.stringify(range)}`)
 
-    this.server = await ConnectionManager.connect(this.url, this.serverName);
+    await this.readyToSubscribe;
 
     this.server.subscribe({
         viewport,

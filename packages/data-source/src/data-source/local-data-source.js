@@ -47,7 +47,7 @@ export default class LocalDataSource extends EventEmitter {
 
     this.status = 'initialising';
 
-    this.dataStoreReady = new Promise(resolve => {
+    this.readyToSubscribe = new Promise(resolve => {
 
       const eventualData = 
       dataUrl ? buildDataView(dataUrl) :
@@ -73,7 +73,7 @@ export default class LocalDataSource extends EventEmitter {
 
     if (!columns) throw Error("LocalDataView subscribe called without columns");
     
-    await this.dataStoreReady;
+    await this.readyToSubscribe;
 
     // this only makes sense if a localdatasource can holdmore than one table - maybe ?
     this.tableName = tableName;
@@ -114,14 +114,9 @@ export default class LocalDataSource extends EventEmitter {
     this.clientFilterCallback = null;
   }
 
-  // This is a bit odd - we should call this setSchema
-  setColumns(columns){
-    this.columns = columns;
-    return this;
-  }
-
   // Maybe we just need a modify subscription
   setSubscribedColumns(columns){
+    console.log(`setSubscribedColumns`,columns)
     if (columns.length !== this.columns.length || !columns.every(columnName => this.columns.includes(columnName))){
       this.columns = columns;
       if (this.dataStore !== null){
