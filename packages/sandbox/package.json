@@ -25,8 +25,8 @@
     "@heswell/viewserver": "^1.5.2",
     "d3-array": "^2.2.0",
     "dygraphs": "^2.1.0",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
     "react-motion": "^0.5.2",
     "stretch-layout": "0.3.2"
   },

@@ -21,7 +21,6 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-plugin-transform-jsx": "^2.0.0",
-    "react-jss": "file:/Users/steve/git/jss/packages/react-jss/",
     "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-postcss": "^2.0.3",
@@ -31,12 +30,13 @@
     "jss-plugin-cache": "^10.1.1",
     "jss-plugin-camel-case": "^10.1.1",
     "jss-plugin-default-unit": "^10.1.1",
-    "jss-plugin-nested": "^10.1.1"
+    "jss-plugin-nested": "^10.1.1",
+    "react-jss": "10.3.0"
   },
   "peerDependencies": {
     "classnames": "^2.2.6",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0"
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
   },
   "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
 }

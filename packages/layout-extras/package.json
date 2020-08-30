@@ -22,7 +22,7 @@
     "babel-jest": "^24.9.0",
     "babel-plugin-transform-jsx": "^2.0.0",
     "jest": "^24.9.0",
-    "react": "^16.9.0",
+    "react": "16.13.1",
     "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-filesize": "^6.2.1",
@@ -32,7 +32,7 @@
     "@heswell/utils": "^1.3.4"
   },
   "peerDependencies": {
-    "react": "^16.9.0"
+    "react": "16.13.1"
   },
   "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
 }

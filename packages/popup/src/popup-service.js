@@ -5,6 +5,8 @@ import useStyles from './use-popup-style';
 
 // import './popup-service.css';
 
+window.popupReact = React;
+
 let _dialogOpen = false;
 const _popups = [];
 
@@ -155,7 +157,7 @@ export class PopupService {
     static keepWithinThePage(el) {
 
         //onsole.log(`PopupService.keepWithinThePage`);
-
+debugger;
         const container = el.querySelector('.popup-container');
         const {top, left, width, height} = container.firstChild.getBoundingClientRect();
 
