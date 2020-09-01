@@ -104,7 +104,6 @@ export default class LocalDataSource extends EventEmitter {
   }
 
   subscribeToFilterData(column, range, callback) {
-    logger.log(`direct call to <subscribeToFilterData>`)
     this.clientFilterCallback = callback;
     this.getFilterData(column, range);
   }

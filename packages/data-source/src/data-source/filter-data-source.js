@@ -24,7 +24,7 @@ export default class FilterDataSource extends EventEmitter {
         this.options = options;
     }
 
-    subscribe({columns, range}, callback){
+    async subscribe({columns, range}, callback){
 
         logger.log(`filter-data-view subscribe ${JSON.stringify(range)}`)
         this.columns = columns;
@@ -32,24 +32,23 @@ export default class FilterDataSource extends EventEmitter {
         this.range = range;
         this.keyCount = range.hi - range.lo;
 
-        const cb = this.clientCallback = (message) => {
+        const cb = this.clientCallback = message => {
             if (message){
                 const {stats, ...data} = message;
-                console.log(`filter-data-local stats=${JSON.stringify(stats,null,2)}`)
                 callback(data);
-                // this.dataCounts = dataCounts;
+                // // this.dataCounts = dataCounts;
                 if (stats){
-                    this.emit('data-count',stats);
+                    //this.emit('data-count',stats);
                 }
             }
         }
 
         this.dataSource.subscribeToFilterData(this.column, range, cb);
 
-        // This can't be called until subscribeToFilterData is called, as the filterSet will not have been created on dataView
-        if (this.options.filter){
-            this.filter(this.options.filter)
-        }
+        // // This can't be called until subscribeToFilterData is called, as the filterSet will not have been created on dataView
+        // if (this.options.filter){
+        //     this.filter(this.options.filter)
+        // }
     }
 
     unsubscribe(){

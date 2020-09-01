@@ -1,6 +1,6 @@
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import copy from 'rollup-plugin-copy'
+import filesize from 'rollup-plugin-filesize';
 
 export default [
     {
@@ -14,7 +14,8 @@ export default [
             resolve({
                 preferBuiltins: false
             }),
-            commonjs()
+            commonjs(),
+            filesize()
         ]
     },
 ];

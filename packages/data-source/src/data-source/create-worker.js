@@ -1181,9 +1181,9 @@ const OR = 'OR';
 const STARTS_WITH = 'SW';
 
 const SET_FILTER_DATA_COLUMNS = [
-    {name: 'name', key:0}, 
-    {name: 'count', key:1, width: 40, type: 'number'}, 
-    {name: 'totalCount', key:2, width: 40, type: 'number'}
+    {name: 'name'},
+    {name: 'count', width: 40, type: 'number'}, 
+    {name: 'totalCount', width: 40, type: 'number'}
 ];
 
 const BIN_FILTER_DATA_COLUMNS = [

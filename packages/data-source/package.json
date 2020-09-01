@@ -25,6 +25,7 @@
     "d3-array": "^2.2.0"
   },
   "peerDependencies": {
+    "@finos/perspective": "^0.5.2",
     "@heswell/data-store": "^1.2.0",
     "@heswell/utils": "^1.0.9",
     "@heswell/worker": "^1.0.0"

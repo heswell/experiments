@@ -1,5 +1,6 @@
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import filesize from 'rollup-plugin-filesize';
 
 export default [
     {
@@ -8,7 +9,10 @@ export default [
             file: 'dist/index.js',
             format: 'es',
             sourcemap: true
-        }
+        },
+        plugins: [
+            filesize()
+        ]
     },
     {
         input: './src/servers/viewserver/server-proxy.js',
@@ -21,7 +25,8 @@ export default [
             resolve({
                 preferBuiltins: false
             }),
-            commonjs()
+            commonjs(),
+            filesize()
         ]
     },
     {
@@ -35,7 +40,8 @@ export default [
             resolve({
                 preferBuiltins: false
             }),
-            commonjs()
+            commonjs(),
+            filesize()
         ]
     },
 ];

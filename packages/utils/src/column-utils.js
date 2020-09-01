@@ -105,11 +105,20 @@ export function projectColumnsFilter(map, columns, meta, filter){
 }
 
 export function getFilterType(column){
-  return column.filter || getDataType(column);
+  return column.filter || filterTypeFromColumnType(column);
 }
 
 // {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
 // {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
+
+const filterTypeFromColumnType = column => {
+    // TODO add remaining filter types
+    switch (getDataType(column)){
+        case 'number': return 'number'
+        default: return 'set';
+    }
+
+}
 
 export function getDataType({type=null}){
   if (type === null){

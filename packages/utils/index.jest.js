@@ -5,6 +5,5 @@ export {
   mapSortCriteria,
   projectColumns,
   projectColumnsFilter,
-  toColumn,
   toKeyedColumn
 } from './src/column-utils';

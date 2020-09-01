@@ -19,17 +19,11 @@
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-react": "^7.0.0",
-    "babel-jest": "^24.9.0",
-    "babel-plugin-transform-jsx": "^2.0.0",
     "jest": "^24.9.0",
-    "react": "16.13.1",
     "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-filesize": "^6.2.1",
     "rollup-plugin-postcss": "^2.0.3",
-    "snowpack": "^1.0.3",
     "typescript": "3.8.3"
   },
   "dependencies": {
@@ -42,12 +36,6 @@
     "@heswell/utils": "^1.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1"
-  },
-  "snowpack": {
-    "webDependencies": [
-      "d3-selection",
-      "d3-transition"
-    ]
   },
   "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
 }

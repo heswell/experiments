@@ -1,0 +1,71 @@
+Arguments: 
+  /usr/local/bin/node /Users/steve/.yarn/bin/yarn.js add --dev -W @vbabel/core
+
+PATH: 
+  /Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/Users/steve/.sdkman/candidates/java/current/bin:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build
+
+Yarn version: 
+  1.22.4
+
+Node version: 
+  14.8.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.npmjs.org/@vbabel%2fcore: Not found
+      at Request.params.callback [as _callback] (/Users/steve/.yarn/lib/cli.js:66987:18)
+      at Request.self.callback (/Users/steve/.yarn/lib/cli.js:140748:22)
+      at Request.emit (events.js:314:20)
+      at Request.<anonymous> (/Users/steve/.yarn/lib/cli.js:141720:10)
+      at Request.emit (events.js:314:20)
+      at IncomingMessage.<anonymous> (/Users/steve/.yarn/lib/cli.js:141642:12)
+      at Object.onceWrapper (events.js:420:28)
+      at IncomingMessage.emit (events.js:326:22)
+      at endReadableNT (_stream_readable.js:1244:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+npm manifest: 
+  {
+    "name": "root",
+    "private": true,
+    "scripts": {
+      "clean": "lerna run --parallel clean",
+      "viewserver": "node --experimental-modules scripts/run-viewserver.mjs",
+      "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs"
+    },
+    "workspaces": [
+      "packages/*"
+    ],
+    "devDependencies": {
+      "@rollup/plugin-wasm": "^3.0.0",
+      "rollup-plugin-copy": "^3.3.0",
+      "rollup-plugin-filesize": "^6.2.1",
+      "rollup-plugin-visualizer": "^3.3.1",
+      "source-map-loader": "^0.2.4"
+    },
+    "dependencies": {
+      "classnames": "^2.2.6",
+      "dygraphs": "^2.1.0",
+      "global": "^4.4.0",
+      "material-design-icons": "^3.0.1",
+      "react-motion": "^0.5.2"
+    },
+    "babel": {
+      "presets": [
+        "@babel/env"
+      ],
+      "plugins": [
+        "dynamic-import-node"
+      ],
+      "sourceMaps": true,
+      "retainLines": true
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

@@ -2,7 +2,6 @@ const {
     mapSortCriteria,
     buildColumnMap,
     projectColumns,
-    toColumn,
     getFilterType,
     metaData
 } = require('./dist/index.js');
@@ -97,16 +96,6 @@ describe('columnUtils', () => {
         ['302', 102, 0, 0, 0, '102', 0],
         ['303', 103, 0, 0, 0, '103', 0]
       ])
-    })
-  });
-
-  describe('toColumn', () => {
-    test('converts simple string to struct', () => {
-      expect(toColumn('Col 1')).toEqual({name: 'Col 1'})
-    })
-    test('returns column object as-is', () => {
-      const col = {name: 'Col 2'}
-      expect(toColumn(col)).toEqual(col)
     })
   });
 
