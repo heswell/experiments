@@ -48,7 +48,9 @@ const handlers = {
 export const initModel = ({ layoutType, props, layout }) =>
     initialize(null, { layoutType, props, layout })
 
-export default (state, action) => (handlers[action.type] || MISSING_HANDLER)(state, action);
+export default (state, action) => {
+    return (handlers[action.type] || MISSING_HANDLER)(state, action);
+}
 
 function initialize(_, action) {
     if (stretchLoaded()){
@@ -66,7 +68,9 @@ function initialize(_, action) {
         } else {
             layoutProps = props;
         }
+
         return applyLayout(getLayoutModel(layoutType, layoutProps));
+
     } else {
         return null;
     }

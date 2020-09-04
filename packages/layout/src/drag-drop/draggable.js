@@ -121,14 +121,11 @@ function preDragMouseupHandler() {
 function initDrag(layoutModel, path, dragRect, dragPos) {
 
     _dragContainer = getDragContainer(layoutModel, path);
-    console.log(`dragContainer = ${_dragContainer.$path}`);
     var start = window.performance.now();
 
     // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
     _measurements = BoxModel.measure(layoutModel);
     var end = window.performance.now();
-
-    console.log(`initDrag taking measurements took ${end - start} ms dragContainer `, _measurements);
 
     var { type, $path } = _dragContainer;
 
@@ -211,8 +208,8 @@ function dragMousemoveHandler(evt) {
     }
 }
 
-function dragMouseupHandler(evt) {
-    onDragEnd(evt);
+function dragMouseupHandler(_evt) {
+    onDragEnd();
 }
 
 function onDragEnd() {

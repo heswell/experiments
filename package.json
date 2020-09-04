@@ -4,7 +4,9 @@
   "scripts": {
     "clean": "lerna run --parallel clean",
     "viewserver": "node --experimental-modules scripts/run-viewserver.mjs",
-    "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs"
+    "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "workspaces": [
     "packages/*"
@@ -16,6 +18,12 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-react": "^7.10.4",
     "@rollup/plugin-wasm": "^3.0.0",
+    "@storybook/addon-actions": "^6.0.21",
+    "@storybook/addon-essentials": "^6.0.21",
+    "@storybook/addon-links": "^6.0.21",
+    "@storybook/react": "^6.0.21",
+    "babel-loader": "^8.1.0",
+    "react-is": "^16.13.1",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-filesize": "^6.2.1",
     "rollup-plugin-visualizer": "^3.3.1",

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import cx from 'classnames';
 import { useComponentRegistry } from '../registry/component-registry';
 import LayoutItem from './layout-item';
+import rootWrapper from './layout-root-wrapper';
 import {registerClass, typeOf, isLayout} from '../component-registry';
 import { LayoutRoot } from './layout-root';
 import { Action } from '../model/layout-reducer';
@@ -12,10 +13,10 @@ export default function TabbedContainer(props){
 
     const {layoutModel, dispatch, onTabSelectionChanged} = props;
 
+    //  TODO
     if (layoutModel === undefined){
-        return (
-            <LayoutRoot><TabbedContainer {...props} /></LayoutRoot>
-        )
+        // this causes problems DO NOT USE 
+        return rootWrapper(TabbedContainer, props);
     }
 
     const el = useRef(null);

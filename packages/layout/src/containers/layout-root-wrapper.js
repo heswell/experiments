@@ -6,10 +6,12 @@ import defaultComponents from './mui-components';
 import { LayoutRoot } from './layout-root';
 
 const rootWrapper = (LayoutComponent, props) => {
-  const PureLayout = React.memo(LayoutComponent);
+  /// ANTIPATTERN this caused a new Component to be created every render, which caused
+  // children to be unmounted and recreated
+  // const PureLayout = React.memo(LayoutComponent);
   return (
     <ComponentRegistryProvider components={defaultComponents}>
-      <LayoutRoot><PureLayout {...props} /></LayoutRoot>
+      <LayoutRoot><LayoutComponent {...props} /></LayoutRoot>
     </ComponentRegistryProvider>
 
   ) 

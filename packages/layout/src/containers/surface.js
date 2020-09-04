@@ -1,10 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { LayoutRoot } from './layout-root';
+import {DragContainer} from '../drag-drop/draggable.js';
+
 
 const PureSurface = React.memo(Surface);
 PureSurface.displayName = 'Surface';
@@ -15,11 +17,15 @@ export default function Surface(props){
 
     if (layoutModel === undefined){
         return (
-            <LayoutRoot><PureSurface {...props} /></LayoutRoot>
+            <LayoutRoot><PureSurface {...props} dragContainer={true}/></LayoutRoot>
         )
     }
     // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
-
+    useEffect(() => {
+        if (props.dragContainer){
+            DragContainer.register(layoutModel.$path);
+        }
+    },[]);
 
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')

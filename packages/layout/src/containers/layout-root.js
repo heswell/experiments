@@ -9,9 +9,9 @@ import useLayout from './layout-hook';
 const EMPTY_OBJECT = {};
 
 /** @type {LayoutRootComponent} */
-export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) => {
-    const {props: {onLayoutModel, ...props}} = child;
-    const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(child), props }, inheritedLayout);
+export const LayoutRoot = ({ children: childrenProp, layoutModel: inheritedLayout } ) => {
+    const {props: {onLayoutModel, ...props}} = childrenProp;
+    const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(childrenProp), props }, inheritedLayout);
     const [_, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
     
@@ -99,10 +99,10 @@ export const LayoutRoot = ({ children: child, layoutModel: inheritedLayout } ) =
     }
 
     const rootProps = { ...props, layoutModel, dispatch, key: layoutModel ? layoutModel.$id : null };
-    const layoutRoot = typeOf(child) === layoutModel.type
-        ? child
+    const layoutRoot = typeOf(childrenProp) === layoutModel.type
+        ? childrenProp
         : componentFromLayout(layoutModel);
-
+    
     const layoutRootComponent = React.cloneElement(layoutRoot, rootProps);
 
     let dragComponent = undefined;

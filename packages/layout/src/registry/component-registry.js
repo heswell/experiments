@@ -35,7 +35,7 @@ export const ComponentRegistryProvider = ({components=[], children}) => {
 
 export const useComponentRegistry = (componentId, component) => {
   const context = React.useContext(ComponentRegistryContext);
-  if (context === undefined){
+  if (!context){
     throw new Error('useComponentRegistry must be used within a ComponentRegistryContext');
   }
   if (component !== undefined){
