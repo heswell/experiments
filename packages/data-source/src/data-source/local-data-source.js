@@ -49,10 +49,11 @@ export default class LocalDataSource extends EventEmitter {
 
     this.readyToSubscribe = new Promise(resolve => {
 
-      const eventualData = 
-      dataUrl ? buildDataView(dataUrl) :
-      data ? loadData(data) :
-      Promise.reject('bad params, LOcalDataSource expects either data or a dataUrl');
+      const eventualData = dataUrl
+        ? buildDataView(dataUrl)
+        : data
+          ? loadData(data)
+          : Promise.reject('bad params, LOcalDataSource expects either data or a dataUrl');
 
       eventualData.then(({default: data}) => {
         const table = new Table({ data, columns: schema.columns, primaryKey: this.primaryKey });

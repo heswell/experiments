@@ -1,6 +1,0 @@
-body {
-  width: 800px;
-  height: 300px;
-  transition-property: height, width;
-  transition-duration: .3s;
-}

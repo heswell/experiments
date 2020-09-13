@@ -1,6 +1,7 @@
 //@ts-nocheck
 
 import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import PropTypes from 'prop-types';
 import cx from 'classnames';
 import GridContext from "./grid-context";
 import {MenuProvider} from './context-menu/menu-context';
@@ -171,3 +172,38 @@ Grid.InlineHeader = InlineHeader;
 Grid.Footer = Footer;
 
 export default Grid;
+
+Grid.propTypes = {
+  /**
+   * CSS class name for Grid component.
+   */
+  className: PropTypes.string,
+  /**
+   * Definitions for Grid columns.
+   */
+  columns: PropTypes.shape({
+    label: PropTypes.string,
+    name: PropTypes.string.isRequired,
+    width: PropTypes.number
+  }),
+  /**
+   * Grid width. May either a pixel value or one of `auto` or `fill`
+   * `auto` width is determined by content, but will not exceed available space.
+   * `fill` width will take up all available space.
+   */
+  height: PropTypes.oneOfType(
+    [
+      PropTypes.number, 
+      PropTypes.oneOf(['auto', 'fill'])
+    ]),
+  /**
+   * Grid height. May either a pixel value or one of 'auto' or 'fill'
+   * `auto` height is determined by content, but will not exceed available space.
+   * `fill` height will take up all available space.
+   */
+  width: PropTypes.oneOfType(
+    [
+      PropTypes.number, 
+      PropTypes.oneOf(['auto', 'fill'])
+    ]),
+}

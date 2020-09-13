@@ -38,6 +38,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
   }
 
   const selectComponent = selectedLayoutNode => {
+    console.log(`select node ${selectedLayoutNode.$path} ${selectedLayoutNode.$id}`)
     setState({
       ...state,
       selectedLayoutNode
@@ -72,7 +73,13 @@ export default function LayoutBuilder({width = 800, height = 1000}){
             <button onClick={saveLayout}>Save</button>
           </div>
         </FlexBox>
-        <DynamicContainer style={{flex:1}} dropTarget onLayoutModel={onLayoutModel}>
+        <DynamicContainer style={{flex:1}} dropTarget 
+          onLayoutModel={onLayoutModel}
+          selectedNode={state.selectedLayoutNode ? {
+            $id: state.selectedLayoutNode.$id,
+            $path: state.selectedLayoutNode.$path
+          }: null}
+          >
           <PlaceHolder style={{width: '100%',height: '100%', backgroundColor: 'rgba(100,0,0,.2)'}} resizeable/>
         </DynamicContainer>
         <FlexBox style={{flexDirection: 'row', height: 400}}>

@@ -39,6 +39,10 @@ export default function DynamicContainer(props) {
         }
     },[layoutModel])
 
+    useEffect(() => {
+        console.log(`selected node has changed`)
+    },[props.selectedNode]);
+
     const { title, header, computedStyle } = layoutModel;
     const className = cx("DynamicContainer");
 

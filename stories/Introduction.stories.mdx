@@ -8,6 +8,8 @@ import Plugin from './assets/plugin.svg';
 import Repo from './assets/repo.svg';
 import StackAlt from './assets/stackalt.svg';
 
+import { Component, LayoutItem } from '@heswell/layout';
+
 <Meta title="Example/Introduction" />
 
 <style>{`
@@ -192,3 +194,17 @@ We recommend building UIs with a [**component-driven**](https://componentdriven.
 <div class="tip-wrapper">
   <span class="tip">Tip</span>Edit the Markdown in <code>src/storybook-examples/welcome.mdx</code>
 </div>
+
+  <LayoutItem
+    title="Tye Boss" 
+    header
+    style={{
+      position: 'relative !important',
+      width: 300,
+      height: 150,
+      padding: 20,
+      border: '5px solid black',
+      backgroundColor: 'yellow'
+      }} >
+    <Component />
+  </LayoutItem>

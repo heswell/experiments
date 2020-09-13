@@ -6,7 +6,7 @@ import defaultComponents from './mui-components';
 import { LayoutRoot } from './layout-root';
 
 const rootWrapper = (LayoutComponent, props) => {
-  /// ANTIPATTERN this caused a new Component to be created every render, which caused
+  /// ANTIPATTERN this creates a new function every render, which caused
   // children to be unmounted and recreated
   // const PureLayout = React.memo(LayoutComponent);
   return (

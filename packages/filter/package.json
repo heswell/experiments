@@ -1,0 +1,39 @@
+{
+  "name": "@heswell/filter",
+  "version": "0.0.1",
+  "author": {
+    "name": "heswell"
+  },
+  "description": "Heswell filter components and utilities",
+  "keywords": [],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "build": "rollup -c --environment BUILD:production",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "rollup": "1.29.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-filesize": "^6.2.1",
+    "rollup-plugin-terser": "^5.1.2"
+  },
+  "dependencies": {
+  },
+  "peerDepencencies": {
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
+  }
+}

@@ -1,0 +1,227 @@
+[
+  {
+    "description": "@type {ColumnBearerComponent}",
+    "displayName": "ColumnBearer",
+    "methods": [],
+    "filename": "/column-bearer.jsx"
+  },
+  {
+    "description": "@type {CanvasType}",
+    "displayName": "Canvas",
+    "methods": [],
+    "filename": "/canvas.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "ComponentProvider",
+    "methods": [],
+    "props": {
+      "components": {
+        "defaultValue": {
+          "value": "{}",
+          "computed": false
+        },
+        "required": false
+      }
+    },
+    "filename": "/component-context.jsx"
+  },
+  {
+    "description": "@type {ColumnGroupHeaderType}",
+    "displayName": "ColumnGroupHeader",
+    "methods": [],
+    "props": {
+      "columns": {
+        "defaultValue": {
+          "value": "columnGroup.columns",
+          "computed": true
+        },
+        "required": false
+      }
+    },
+    "filename": "/column-group-header.jsx"
+  },
+  {
+    "description": "@type {DraggableComponent}",
+    "displayName": "Draggable",
+    "methods": [],
+    "filename": "/draggable.jsx"
+  },
+  {
+    "description": "@type {GroupCellType}",
+    "displayName": "GroupCell",
+    "methods": [],
+    "filename": "/grid-group-cell.jsx"
+  },
+  {
+    "description": "@type {(s: GridModel, a: GridModelAction) => GridModel}",
+    "methods": [],
+    "filename": "/grid-model-reducer.js"
+  },
+  {
+    "description": "@type {GridComponent}",
+    "displayName": "Grid",
+    "methods": [],
+    "props": {
+      "className": {
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": "CSS class name for Grid component."
+      },
+      "columns": {
+        "type": {
+          "name": "shape",
+          "value": {
+            "label": {
+              "name": "string",
+              "required": false
+            },
+            "name": {
+              "name": "string",
+              "required": true
+            },
+            "width": {
+              "name": "number",
+              "required": false
+            }
+          }
+        },
+        "required": false,
+        "description": "Definitions for Grid columns."
+      },
+      "height": {
+        "type": {
+          "name": "union",
+          "value": [
+            {
+              "name": "number"
+            },
+            {
+              "name": "enum",
+              "value": [
+                {
+                  "value": "'auto'",
+                  "computed": false
+                },
+                {
+                  "value": "'fill'",
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        },
+        "required": false,
+        "description": "Grid width. May either a pixel value or one of `auto` or `fill`\n`auto` width is determined by content, but will not exceed available space.\n`fill` width will take up all available space."
+      },
+      "width": {
+        "type": {
+          "name": "union",
+          "value": [
+            {
+              "name": "number"
+            },
+            {
+              "name": "enum",
+              "value": [
+                {
+                  "value": "'auto'",
+                  "computed": false
+                },
+                {
+                  "value": "'fill'",
+                  "computed": false
+                }
+              ]
+            }
+          ]
+        },
+        "required": false,
+        "description": "Grid height. May either a pixel value or one of 'auto' or 'fill'\n`auto` height is determined by content, but will not exceed available space.\n`fill` height will take up all available space."
+      }
+    },
+    "filename": "/grid.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "GroupHeaderCell",
+    "methods": [],
+    "props": {
+      "className": {
+        "defaultValue": {
+          "value": "undefined",
+          "computed": true
+        },
+        "required": false
+      },
+      "groupState": {
+        "defaultValue": {
+          "value": "{}",
+          "computed": false
+        },
+        "required": false
+      }
+    },
+    "filename": "/group-header-cell.jsx"
+  },
+  {
+    "description": "@type {HeaderCellComponent}",
+    "displayName": "HeaderCell",
+    "methods": [],
+    "filename": "/header-cell.jsx"
+  },
+  {
+    "description": "@type {HeaderCellComponent}",
+    "displayName": "HeadingCell",
+    "methods": [],
+    "filename": "/heading-cell.jsx"
+  },
+  {
+    "description": "@type {RowType}",
+    "displayName": "Row",
+    "methods": [],
+    "filename": "/row.jsx"
+  },
+  {
+    "description": "",
+    "methods": [],
+    "filename": "/sort-indicator.jsx"
+  },
+  {
+    "description": "",
+    "methods": [],
+    "filename": "/sort-icon.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "InsertIndicator",
+    "methods": [],
+    "filename": "/insert-indicator.jsx"
+  },
+  {
+    "description": "@type {ViewportComponent}",
+    "displayName": "Viewport",
+    "methods": [],
+    "filename": "/viewport.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "CheckboxCell",
+    "methods": [],
+    "filename": "/cell-renderers/checkbox-cell.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "MenuProvider",
+    "methods": [],
+    "filename": "/context-menu/menu-context.jsx"
+  },
+  {
+    "description": "",
+    "displayName": "GridContextMenu",
+    "methods": [],
+    "filename": "/context-menu/grid-context-menu.jsx"
+  }
+]

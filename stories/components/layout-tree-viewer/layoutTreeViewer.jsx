@@ -216,4 +216,5 @@ export default class LayoutTreeViewer extends React.Component {
 
 }
 
-const hasChildren = model => model.children && model.children.length > 0;
+const hasChildren = model => model.children && model.children.length && !hasLayout(model)
+const hasLayout = model => model.children.length === 1 && model.children[0].type === 'layout';
