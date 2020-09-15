@@ -22,8 +22,7 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "d3-array": "^2.2.0",
-    "typescript": "^3.8.3"
+    "d3-array": "^2.2.0"
   },
   "peerDependencies": {
     "@heswell/utils": "^1.0.9"

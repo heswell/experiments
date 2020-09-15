@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {LocalDataSource, FilterDataSource} from '@heswell/data-source';
 import {DataTypes, STARTS_WITH} from '@heswell/utils';
 
@@ -36,14 +36,23 @@ const schema = {
 ]};
 const dataConfig = {dataUrl: '/data/instruments.js', schema};
 
-// const noop = () => undefined;
-//const dataSource = new LocalDataSource(dataConfig);
-// const filterSource = new FilterDataSource(dataSource, nameColumn);
 
 export const DefaultSetFilter = () => {
   const column = schema.columns[1];
- const dataSource = new LocalDataSource(dataConfig);
- const filterSource = new FilterDataSource(dataSource, column);
+  const dataSource = new LocalDataSource(dataConfig);
+  const filterSource = new FilterDataSource(dataSource, column);
+
+  useEffect(() => {
+    dataSource.subscribe({
+      columns: schema.columns
+    },
+      ({filter, stats}) => {
+        console.log(`stats from dataSource ${JSON.stringify(stats)}`)
+        filter && setFilter(filter)
+      }).then(() => {
+        // dataSource.getFilterData(nameColumn)
+      });
+  },[dataSource])
 
   return (
     <SetFilter 

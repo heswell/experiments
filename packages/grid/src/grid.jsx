@@ -143,11 +143,10 @@ const Grid = (props) => {
 
   const { height, width, headerHeight, headingDepth } = gridModel;
   const totalHeaderHeight = custom.header.height + headerHeight * headingDepth + custom.inlineHeader.height;
-
   return (// Question, how much overhead are we introducing be adding gridModel to GridContext ? Perhaps it belongs in it's own context
       <GridContext.Provider value={{ custom, dataSource, dispatchGridAction, dispatchGridModelAction: dispatchGridModel, gridModel }}>
         <MenuProvider>
-          <ComponentProvider value={components}>
+          <ComponentProvider components={components}>
             <div className={cx(classes.Grid, props.className)} ref={gridEl} style={{ width, height, paddingTop: totalHeaderHeight }}>
               {custom.header.component}
               <Viewport
@@ -181,11 +180,12 @@ Grid.propTypes = {
   /**
    * Definitions for Grid columns.
    */
-  columns: PropTypes.shape({
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
     label: PropTypes.string,
     name: PropTypes.string.isRequired,
     width: PropTypes.number
-  }),
+  })),
   /**
    * Grid width. May either a pixel value or one of `auto` or `fill`
    * `auto` width is determined by content, but will not exceed available space.
