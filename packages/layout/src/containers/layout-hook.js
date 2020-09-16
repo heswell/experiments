@@ -1,7 +1,6 @@
 import {stretchLoading} from '../model/stretch';
 import layoutReducer, { initModel, Action } from '../model/layout-reducer';
-
-import {useReducer} from 'react';
+import {useContext, useReducer} from 'react';
 
 const NULL_LAYOUT = {
   $id: undefined,
@@ -16,15 +15,20 @@ const NULL_LAYOUT = {
 
 /** @type {LayoutHook} */
 const useLayout = (initialData, inheritedLayout=NULL_LAYOUT) => {
-  const [layoutModel, dispatchLayoutAction] = useReducer(layoutReducer, {...initialData, layout: inheritedLayout.computedStyle}, initModel);
+  let {layoutModel, dispatch} = initialData.props;
 
-  if (layoutModel === null){
-      stretchLoading.then(() => {
-          dispatchLayoutAction({type: Action.INITIALIZE, ...initialData});
-      });
-  }
+  if (!layoutModel){
+    ([layoutModel, dispatch] = useReducer(layoutReducer, {...initialData, layout: inheritedLayout.computedStyle}, initModel));
   
-  return [layoutModel, dispatchLayoutAction];
+    if (layoutModel === null){
+      stretchLoading.then(() => {
+          dispatch({type: Action.INITIALIZE, ...initialData});
+      });
+    }
+  
+  }
+
+  return [layoutModel, dispatch];
 
 }
 

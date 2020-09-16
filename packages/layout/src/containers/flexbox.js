@@ -3,22 +3,16 @@ import cx from 'classnames';
 import rootWrapper from './layout-root-wrapper';
 import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
+import useLayout from './layout-hook';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { Action } from '../model/layout-reducer';
 import { getManagedDimension } from '../model/layout-json'; 
 
-
 /** @type {FlexboxComponent} */
 const FlexBox = function FlexBox(props){
-    const {layoutModel, dispatch} = props;
-    if (layoutModel === undefined){
-        // this causes problems DO NOT USE 
-        return rootWrapper(FlexBox, props);
-    }
-    // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
-
+    const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
     const splitChildren = useRef(null);
 
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
@@ -47,23 +41,31 @@ const FlexBox = function FlexBox(props){
         while ((child = children[idx2]) && !child.resizeable) idx2++;
         splitChildren.current =  [idx1, splitterIdx, idx2];
     }
-  
-    const { type, title, header, computedStyle } = layoutModel;
-    const className = cx(type, props.className);
+    
+    if (layoutModel === null){
 
-    return (
-        <div className={className} style={computedStyle}>
-            {header &&
-                <ComponentHeader
-                    title={`${title}`}
-                    onMouseDown={e => this.handleMouseDown(e)}
-                    style={header.style}
-                    menu={header.menu} />
-            }
-            {renderChildren()}
-        </div>
-    );
+        return null;
 
+    } else {
+            const { type, title, header, computedStyle } = layoutModel;
+            const className = cx(type, props.className);
+            return ( 
+                <div className={className} style={computedStyle}>
+                    {header &&
+                        <ComponentHeader
+                            title={`${title}`}
+                            onMouseDown={e => this.handleMouseDown(e)}
+                            style={header.style}
+                            menu={header.menu} />
+                    }
+                    {renderChildren()}
+                </div>
+            );
+    }
+
+
+
+    
     function renderChildren(){
 
         const { style: { flexDirection }, children: layoutChildren, visibility } = layoutModel;

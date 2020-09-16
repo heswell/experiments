@@ -1,5 +1,6 @@
 
 import React from 'react';
+import defaultComponents from '../containers/default-components';
 
 //TODO how do we make all this dynamic
 
@@ -35,17 +36,26 @@ export const ComponentRegistryProvider = ({components=[], children}) => {
 
 export const useComponentRegistry = (componentId, component) => {
   const context = React.useContext(ComponentRegistryContext);
-  if (!context){
-    throw new Error('useComponentRegistry must be used within a ComponentRegistryContext');
-  }
-  if (component !== undefined){
-    context.register(componentId, component);
-  } else {
-    const c = context.get(componentId);
-    if (c === undefined){
-      throw new Error(`no component for componentId ${componentId} in ComponentRegistry`);
+  if (context){
+    if (component !== undefined){
+      context.register(componentId, component);
     } else {
-      return c;
+      const c = context.get(componentId);
+      if (c){
+        return c;
+      }
     }
   }
+
+  const defaultComponent = defaultComponents[componentId];
+  if (defaultComponent){
+    return defaultComponent;
+  }
+
+  if (context){
+    throw new Error(`no default component for componentId ${componentId} and no such component registered with ComponentRegistry context`);
+  } else {
+    throw new Error(`no default component for componentId ${componentId} and no ComponentRegistry context`);
+  }
+
 }

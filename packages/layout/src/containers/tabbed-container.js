@@ -4,7 +4,6 @@ import { useComponentRegistry } from '../registry/component-registry';
 import LayoutItem from './layout-item';
 import rootWrapper from './layout-root-wrapper';
 import {registerClass, typeOf, isLayout} from '../component-registry';
-import { LayoutRoot } from './layout-root';
 import { Action } from '../model/layout-reducer';
 import { componentFromLayout } from '../util/component-from-layout-json';
 
