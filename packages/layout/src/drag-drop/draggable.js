@@ -23,7 +23,12 @@ const SCALE_FACTOR = 0.4;
 
 export class DragContainer {
 
+    static get paths(){
+        return _dragContainers;
+    }
+
     static register(path) {
+        console.log(`DragContainer register path ${path}`)
         // need to decide how to store these
         _dragContainers.push(path);
     }

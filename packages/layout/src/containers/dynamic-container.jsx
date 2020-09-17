@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
-import { LayoutRoot } from './layout-root';
+// import { LayoutRoot } from './layout-root';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
@@ -20,12 +20,12 @@ export default function DynamicContainer(props) {
 
     const { layoutModel, dispatch, dropTarget, onLayoutModel } = props;
     // We must allow for a layoutModel being passed in via props even when we are acting as root
-    if (props.root || layoutModel === undefined) {
-        const { root, ...rest } = props;
-        return (
-            <LayoutRoot layoutModel={layoutModel}><PureLayout {...rest} /></LayoutRoot>
-        )
-    }
+    // if (props.root || layoutModel === undefined) {
+    //     const { root, ...rest } = props;
+    //     return (
+    //         <LayoutRoot layoutModel={layoutModel}><PureLayout {...rest} /></LayoutRoot>
+    //     )
+    // }
 
     useEffect(() => {
         if (dropTarget){

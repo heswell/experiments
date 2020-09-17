@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from '../model/layout-reducer';
 import { typeOf } from '../component-registry';
-import { Draggable } from '../drag-drop/draggable';
+import { Draggable, DragContainer } from '../drag-drop/draggable';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import LayoutItem from './layout-item';
 import useLayout from './layout-hook';
@@ -9,9 +9,9 @@ import useLayout from './layout-hook';
 const EMPTY_OBJECT = {};
 
 /** @type {LayoutRootComponent} */
-export const LayoutRoot = ({ children: childrenProp, layoutModel: inheritedLayout } ) => {
+const DraggableLayout = ({ children: childrenProp, layoutModel: inheritedLayout } ) => {
     const {props: {onLayoutModel, ...props}} = childrenProp;
-    const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(childrenProp), props }, inheritedLayout);
+    const [layoutModel, dispatchLayoutAction] = useLayout({ layoutType: typeOf(childrenProp), props }, inheritedLayout, true);
     const [_, setDrag] = useState(-1.0);
     const dragOperation = useRef(null);
     
@@ -29,6 +29,15 @@ export const LayoutRoot = ({ children: childrenProp, layoutModel: inheritedLayou
 
     const dispatch = useCallback(action => {
         if (action.type === 'drag-start') {
+            if (DragContainer.paths.length === 0){
+                DragContainer.register('0');
+            } else {
+                const paths = DragContainer.paths;
+                const path = action.layoutModel.$path;
+                if (!paths.some(p => path.startsWith(p))){
+                    return;
+                }
+            }
             const { evt, ...options } = action;
             Draggable.handleMousedown(evt, prepareToDrag.bind(null, options), options.instructions);
         } else {
@@ -39,6 +48,7 @@ export const LayoutRoot = ({ children: childrenProp, layoutModel: inheritedLayou
     function prepareToDrag({ layoutModel, dragRect, instructions = EMPTY_OBJECT }, evt, xDiff, yDiff) {
         const dragPos = {x: evt.clientX, y: evt.clientY};
         // we need to wait for this to take effect before we continue with the drag
+        console.log(`onDragStart actual drag detected`)
         dispatchLayoutAction({ type: Action.DRAG_START, layoutModel, dragRect, dragPos, instructions});
     }
 
@@ -147,3 +157,4 @@ export const LayoutRoot = ({ children: childrenProp, layoutModel: inheritedLayou
 
 }
 
+export default DraggableLayout;

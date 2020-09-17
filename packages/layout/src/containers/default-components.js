@@ -1,3 +1,4 @@
+
 import Tabstrip, {Tab} from '../components/tabstrip/tabstrip';
 
 const components = {

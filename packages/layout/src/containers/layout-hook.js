@@ -1,6 +1,6 @@
-import {stretchLoading} from '../model/stretch';
+import { useCallback, useReducer } from 'react';
+import { stretchLoading } from '../model/stretch';
 import layoutReducer, { initModel, Action } from '../model/layout-reducer';
-import {useContext, useReducer} from 'react';
 
 const NULL_LAYOUT = {
   $id: undefined,
@@ -14,19 +14,34 @@ const NULL_LAYOUT = {
 
 
 /** @type {LayoutHook} */
-const useLayout = (initialData, inheritedLayout=NULL_LAYOUT) => {
-  let {layoutModel, dispatch} = initialData.props;
+const useLayout = (initialData, inheritedLayout = NULL_LAYOUT, dragEnabled) => {
+  let { layoutModel, dispatch } = initialData.props;
 
-  if (!layoutModel){
-    ([layoutModel, dispatch] = useReducer(layoutReducer, {...initialData, layout: inheritedLayout.computedStyle}, initModel));
-  
-    if (layoutModel === null){
+  if (!layoutModel) {
+
+    let dispatchLayoutAction;
+    ([layoutModel, dispatchLayoutAction] = useReducer(layoutReducer, { ...initialData, layout: inheritedLayout.computedStyle }, initModel));
+
+    dispatch = dragEnabled
+      ? dispatchLayoutAction
+      : useCallback(action => {
+        if (action.type === 'drag-start') {
+          // This is handled by the layout root. If layout root is present, context will be set.
+          // If we are in this code path, there is no layout root, so draggable layout not supported.
+        } else {
+          dispatchLayoutAction(action);
+        }
+      }, [layoutModel]);
+
+    if (layoutModel === null) {
       stretchLoading.then(() => {
-          dispatch({type: Action.INITIALIZE, ...initialData});
+        dispatch({ type: Action.INITIALIZE, ...initialData });
       });
     }
-  
+
   }
+
+
 
   return [layoutModel, dispatch];
 

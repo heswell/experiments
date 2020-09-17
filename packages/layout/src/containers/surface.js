@@ -4,7 +4,7 @@ import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
-import { LayoutRoot } from './layout-root';
+// import { LayoutRoot } from './layout-root';
 import {DragContainer} from '../drag-drop/draggable.js';
 
 
@@ -15,11 +15,11 @@ export default function Surface(props){
 
     const {layoutModel, dispatch} = props;
 
-    if (layoutModel === undefined){
-        return (
-            <LayoutRoot><PureSurface {...props} dragContainer={true}/></LayoutRoot>
-        )
-    }
+    // if (layoutModel === undefined){
+    //     return (
+    //         <LayoutRoot><PureSurface {...props} dragContainer={true}/></LayoutRoot>
+    //     )
+    // }
     // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
     useEffect(() => {
         if (props.dragContainer){

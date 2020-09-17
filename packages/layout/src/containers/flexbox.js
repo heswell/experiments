@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
-import rootWrapper from './layout-root-wrapper';
+// import rootWrapper from './layout-root-wrapper';
 import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import useLayout from './layout-hook';
@@ -9,11 +9,18 @@ import { registerClass, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { Action } from '../model/layout-reducer';
 import { getManagedDimension } from '../model/layout-json'; 
+import {DragContainer} from '../drag-drop/draggable.js';
 
 /** @type {FlexboxComponent} */
 const FlexBox = function FlexBox(props){
     const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
     const splitChildren = useRef(null);
+
+    useEffect(() => {
+        if (props.dropTarget){
+            DragContainer.register(layoutModel.$path);
+        }
+    },[]);
 
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')

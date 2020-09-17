@@ -76,7 +76,7 @@ interface LayoutModel extends LayoutProps {
 }
 
 type layoutDispatcher = (action: LayoutAction) => void;
-type LayoutHook = (initialData: object, inheritedLayout?: LayoutModel) => [LayoutModel, layoutDispatcher]
+type LayoutHook = (initialData: object, inheritedLayout?: LayoutModel, dragEnabled?: boolean) => [LayoutModel, layoutDispatcher]
 
 
 type getLayoutModel = (type: string, props: unknown) => LayoutModel;

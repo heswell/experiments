@@ -1,10 +1,77 @@
 import React, { useState, useRef, useCallback } from 'react';
+import styled from '@emotion/styled';
 import cx from 'classnames';
 import { PopupService, ContextMenu, MenuItem } from '@heswell/ui-controls';
 import './tabstrip.css';
 
 const OVERFLOW_WIDTH = 24;
 const noop = () => {}
+
+const TabstripRoot = styled.div`
+    overflow: hidden;
+    display: flex;
+`;
+
+const TabstripInnerSleeve = styled.div`
+    transition: all .4s linear;
+    height: 100%;
+    overflow: hidden;
+`;
+
+const TabstripInner = styled.ul`
+    transition: transform .3s;
+    display: inline-block;
+    margin:0;
+    padding:0;
+    height: 100%;
+    white-space: nowrap;
+    overflow:hidden;
+    margin: 0;
+    padding: 0;
+  
+`;
+
+const TabRoot = styled.li`
+    flex: 0 0 auto;
+    display: inline-flex;
+    height: 100%;
+    white-space: nowrap;
+    & .tab-caption {
+        box-sizing: border-box;
+        text-decoration: none;
+        padding: 3px 6px;
+        display: block;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+        overflow:hidden;
+        margin-left: -1px;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: inherit;
+    }
+    &:not(.active){
+        background: #ccc;
+        color: white;
+    }
+    &.active {
+        background: white;
+    }
+    &:hover .close {
+        visibility: visible;
+    }
+`;
+
+const TabClose = styled.i`
+    font-size: 16px;
+    padding: 2px 2px 0 0;
+    cursor: pointer;
+    visibility: hidden;
+`;
 
 export const Tab = ({allowClose=true, idx, label, isSelected, onClick, onClose, onMouseDown}) => {
 
@@ -20,13 +87,13 @@ export const Tab = ({allowClose=true, idx, label, isSelected, onClick, onClose, 
     };
 
     return (
-        <li className={cx('Tab', {'active': isSelected})}
+        <TabRoot className={cx('Tab', {'active': isSelected})}
             onClick={handleClick}
             onMouseDown={onMouseDown}>
             <a href="#" className="tab-caption" data-idx={idx}>{label}</a>
             {allowClose &&
-                <i className='material-icons close' onClick={handleClose}>close</i>}
-        </li>
+                <TabClose className='material-icons close' onClick={handleClose}>close</TabClose>}
+        </TabRoot>
     );
 
 }
@@ -60,15 +127,15 @@ export default function Tabstrip({
     });
 
     return (
-        <div ref={el}
+        <TabstripRoot ref={el}
             className={cx('Tabstrip', className, {overflowing})}
             style={style}
             onMouseDown={onMouseDown}>
-            <div className="tabstrip-inner-sleeve">
-                <ul className="tabstrip-inner">{tabs}</ul>
-            </div>
+            <TabstripInnerSleeve className="tabstrip-inner-sleeve">
+                <TabstripInner className="tabstrip-inner">{tabs}</TabstripInner>
+            </TabstripInnerSleeve>
             {overflowing && <TabstripOverflow onClick={showOverflow} />}
-        </div>
+        </TabstripRoot>
     );
 }
 

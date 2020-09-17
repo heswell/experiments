@@ -4,7 +4,7 @@ import { PopupService } from '@heswell/ui-controls';
 import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
-import { LayoutRoot } from './layout-root';
+// import { LayoutRoot } from './layout-root';
 import useStyles from '../use-styles';
 
 // import './layout-item.css';
@@ -17,11 +17,11 @@ export default function LayoutItem(props){
     const {children: component, layoutModel, dispatch, title, ...componentProps} = props;
 
     // this is bad because followed by hooks- use context
-    if (layoutModel === undefined){
-        return (
-            <LayoutRoot><PureLayoutItem {...props} /></LayoutRoot>
-        )
-    }
+    // if (layoutModel === undefined){
+    //     return (
+    //         <LayoutRoot><PureLayoutItem {...props} /></LayoutRoot>
+    //     )
+    // }
 
     const el = useRef(null);
 
