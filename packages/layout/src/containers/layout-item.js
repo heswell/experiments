@@ -4,6 +4,8 @@ import { PopupService } from '@heswell/ui-controls';
 import ComponentHeader from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
+import { isRegistered, registerClass, ComponentRegistry, typeOf } from '../component-registry';
+
 // import { LayoutRoot } from './layout-root';
 import useStyles from '../use-styles';
 
@@ -26,11 +28,17 @@ export default function LayoutItem(props){
     const el = useRef(null);
 
     const handleMouseDown = evt => {
+        console.log(`handleMouseDown`)
         evt.stopPropagation();
         const dragRect = el.current.getBoundingClientRect();
+        // when would we ever have this onMouseDown ?s
         if (props.onMouseDown) {
-            props.onMouseDown({ layoutModel, position });
+            props.onMouseDown({ layoutModel });
         } else {
+            const componentType = typeOf(component);
+            if (!isRegistered(componentType)){
+                registerClass(componentType, component.type);
+            }
             // check if we are allowed to drag ?
             dispatch({type: Action.DRAG_START, evt, layoutModel, dragRect });
         }
@@ -72,7 +80,12 @@ export default function LayoutItem(props){
 
             {component.type === 'div'
                 ? React.cloneElement(component, { style })
-                : React.cloneElement(component, { ...componentProps, style, dispatch }) }
+                : React.cloneElement(component, { 
+                    ...componentProps,
+                    style,
+                    dispatch,
+                    onMouseDown: handleMouseDown
+                }) }
         </div>
     );
 

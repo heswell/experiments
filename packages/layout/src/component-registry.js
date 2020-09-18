@@ -8,6 +8,8 @@ export function isContainer(className){
     return _containers[className] === true;
 }
 
+export const isRegistered = className => !!ComponentRegistry[className];
+
 export function registerClass(className, component, isContainer){
     ComponentRegistry[className] = component;
 

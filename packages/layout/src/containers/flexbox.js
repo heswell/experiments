@@ -70,9 +70,6 @@ const FlexBox = function FlexBox(props){
             );
     }
 
-
-
-    
     function renderChildren(){
 
         const { style: { flexDirection }, children: layoutChildren, visibility } = layoutModel;

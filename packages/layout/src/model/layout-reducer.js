@@ -325,6 +325,7 @@ function _removeChild(model, child) {
 function unwrap(layoutModel, child) {
     const {
         $path,
+        drag,
         type,
         style: {flex, flexBasis, flexGrow, flexShrink, width, height},
         layoutStyle: {flexBasis: layoutBasis, flexGrow: layoutGrow, flexShrink: layoutShrink}
@@ -334,6 +335,7 @@ function unwrap(layoutModel, child) {
     if ($path === '0') {
         unwrappedChild = {
             ...unwrappedChild,
+            drag,
             //TODO get this bit right, do we need top, left as well ?
             style: {
                 ...child.style,
@@ -347,6 +349,7 @@ function unwrap(layoutModel, child) {
         const {style: {[dim]: size, ...style}, layoutStyle: {[dim]: layoutSize, ...layoutStyle}} = unwrappedChild;
         unwrappedChild = {
             ...unwrappedChild,
+            drag,
             style: {
                 ...style,
                 flex,
