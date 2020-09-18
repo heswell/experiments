@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import cx from 'classnames';
 import { useComponentRegistry } from '../registry/component-registry';
 import LayoutItem from './layout-item';
-import {registerClass, typeOf, isLayout} from '../component-registry';
+import {registerType, typeOf, isLayout} from '../component-registry';
 import { Action } from '../model/layout-reducer';
 import { componentFromLayout } from '../util/component-from-layout-json';
 
@@ -78,7 +78,7 @@ export default function TabbedContainer(props){
     }
 }
 
-registerClass('TabbedContainer', TabbedContainer, true);
+registerType('TabbedContainer', TabbedContainer, true);
 
 function titleFor(component){
     return (component.props && component.props.title) || 'Tab X';

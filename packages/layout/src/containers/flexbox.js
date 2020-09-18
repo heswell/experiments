@@ -5,7 +5,7 @@ import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import useLayout from './layout-hook';
 import ComponentHeader from '../component/component-header.jsx';
-import { registerClass, isLayout, typeOf } from '../component-registry';
+import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { Action } from '../model/layout-reducer';
 import { getManagedDimension } from '../model/layout-json'; 
@@ -126,4 +126,4 @@ const FlexBox = function FlexBox(props){
 export default FlexBox;
 
 // needs to be registerComponent
-registerClass('FlexBox', FlexBox, true);
+registerType('FlexBox', FlexBox, true);

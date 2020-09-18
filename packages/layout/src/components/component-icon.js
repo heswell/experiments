@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import cx from 'classnames';
-import {registerClass} from '../component-registry';
+import {registerType} from '../component-registry';
 
 export default class ComponentIcon extends Component {
 
@@ -19,4 +19,4 @@ export default class ComponentIcon extends Component {
 	}
 }
 
-registerClass('ComponentIcon', ComponentIcon);
+registerType('ComponentIcon', ComponentIcon);

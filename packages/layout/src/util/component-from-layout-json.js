@@ -3,11 +3,11 @@ import Component from '../component/component';
 import LayoutItem from '../containers/layout-item';
 import PlaceHolder from '../components/place-holder/place-holder.jsx';
 
-import { registerClass, ComponentRegistry } from '../component-registry';
+import { registerType, ComponentRegistry } from '../component-registry';
 
-registerClass('PlaceHolder', PlaceHolder);
-registerClass('LayoutItem', LayoutItem);
-registerClass('Component', Component);
+registerType('PlaceHolder', PlaceHolder);
+registerType('LayoutItem', LayoutItem);
+registerType('Component', Component);
 
 export function componentFromLayout(layout) {
     // onsole.log(`%ccomponentFromLayout\n${JSON.stringify(layout,null,2)}`,'background-color:ivory;color:brown;')

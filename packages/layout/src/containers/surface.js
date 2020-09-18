@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 import LayoutItem from './layout-item';
 import ComponentHeader from '../component/component-header.jsx';
-import { registerClass, isLayout, typeOf } from '../component-registry';
+import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 // import { LayoutRoot } from './layout-root';
 import {DragContainer} from '../drag-drop/draggable.js';
@@ -86,4 +86,4 @@ export default function Surface(props){
 }
 
 // needs to be registerComponent
-registerClass('Surface', Surface, true);
+registerType('Surface', Surface, true);

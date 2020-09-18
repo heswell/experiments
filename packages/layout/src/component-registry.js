@@ -10,7 +10,7 @@ export function isContainer(className){
 
 export const isRegistered = className => !!ComponentRegistry[className];
 
-export function registerClass(className, component, isContainer){
+export function registerType(className, component, isContainer){
     ComponentRegistry[className] = component;
 
     if (isContainer){

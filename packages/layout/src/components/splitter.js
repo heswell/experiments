@@ -22,8 +22,6 @@ export default class Splitter extends React.Component {
             this.props.className
         );
 
-        // var style = { position: 'absolute', top, left, width, height, cursor: this.props.cursor };
-
         return <div className={className} style={style} />
     }
 
