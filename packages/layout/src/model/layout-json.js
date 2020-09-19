@@ -29,21 +29,20 @@ const LayoutProps = {
   dragStyle: true, // still used ? flexbox-shuffle ?
   header: defaultHeaderSpec,
   resizeable: true,
+  splitterSize: true
 }
 
-  /** @type {getLayoutModel} */
+  /** 
+   * Extract layoutModel from tree of react elememts
+   * 
+   * @type {getLayoutModel} */
   export const getLayoutModel = (type, {children, contentModel, style, ...props}) => {
     const ownProps = Object.keys(props).filter(prop => LayoutProps[prop] === undefined);
-    
     const $id = props.id || uuid();
-    const {active, dragStyle, header, resizeable} = getLayoutProps(type, props)
-
+    const layoutProps = getLayoutProps(type, props)
     return {
       $id,
-      active,
-      dragStyle,
-      header,
-      resizeable,
+      ...layoutProps,
       type,
       style,
       props: ownProps.length === 0 ? {title: type} : ownProps.reduce((o, n) => {o[n] = props[n]; return o}, {}),
@@ -116,6 +115,7 @@ function getLayoutProps(type, props){
     return addDefaultLayoutProps(type, results);
 }
 
+// TODO how do we set these ate runtime
 export function addDefaultLayoutProps(type, layoutProps){
     if (type === 'TabbedContainer'){
         if (!layoutProps.header){
@@ -158,7 +158,7 @@ function extendHeader(header, layoutStyle){
     }
 }
 
-function extendLayoutModelChildren({type, active, style, children=EMPTY_ARRAY}, path){
+function extendLayoutModelChildren({type, active, style, children=EMPTY_ARRAY, splitterSize=6}, path){
     if (type === 'layout' || type === 'Splitter'){
       return undefined;
     } else {
@@ -182,7 +182,7 @@ function extendLayoutModelChildren({type, active, style, children=EMPTY_ARRAY}, 
                 list.push({
                     type: 'Splitter',
                     style: {
-                      flex: '0 0 6px',
+                      flex: `0 0 ${splitterSize}px`,
                       cursor: style.flexDirection === 'column' ? 'ns-resize' : 'ew-resize'
                     }
                 });

@@ -250,7 +250,6 @@ function dragDrop({ drag, ...state }, action) {
     const { dropTarget: { component: target, pos }, targetPosition } = action;
 
     console.log(`drop ${source.style.backgroundColor} onto ${target.style.backgroundColor || target.type}`)
-
     if (pos.position.Header) {
         if (target.type === 'TabbedContainer') {
             let before, after;
@@ -500,6 +499,8 @@ function _wrap(model, source, target, pos) {
             type,
             active,
             $id: uuid(),
+            // TODO we should be able to configure this in setDefaultLayoutProps
+            splitterSize: type === 'FlexBox' && model.type === 'FlexBox' ? model.splitterSize : undefined,
             style,
             resizeable: target.resizeable,
             children: (pos.position.SouthOrEast || pos.position.Header)
