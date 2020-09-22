@@ -4,23 +4,23 @@ import cx from 'classnames';
 import Splitter from '../components/splitter';
 import LayoutItem from './layout-item';
 import useLayout from './layout-hook';
-import ComponentHeader from '../component/component-header.jsx';
+import { renderHeader } from '../component/component-header.jsx';
 import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { Action } from '../model/layout-reducer';
-import { getManagedDimension } from '../model/layout-json'; 
-import {DragContainer} from '../drag-drop/draggable.js';
+import { getManagedDimension } from '../model/layout-json';
+import { DragContainer } from '../drag-drop/draggable.js';
 
 /** @type {FlexboxComponent} */
-const FlexBox = function FlexBox(props){
+const FlexBox = function FlexBox(props) {
     const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
     const splitChildren = useRef(null);
 
     useEffect(() => {
-        if (props.dropTarget){
+        if (props.dropTarget) {
             DragContainer.register(layoutModel.$path);
         }
-    },[]);
+    }, []);
 
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
@@ -34,10 +34,10 @@ const FlexBox = function FlexBox(props){
         measurements[idx1] += distance;
         measurements[idx2] -= distance;
         // Why pass $path separately - assume there is a reason for now
-        dispatch({type: Action.SPLITTER_RESIZE, layoutModel, dim, path: layoutModel.$path, measurements})
+        dispatch({ type: Action.SPLITTER_RESIZE, layoutModel, dim, path: layoutModel.$path, measurements })
     }
 
-    const splitterDragEnd = () => splitChildren.current = null; 
+    const splitterDragEnd = () => splitChildren.current = null;
 
     const identifySplitChildren = splitterIdx => {
         const children = layoutModel.children;
@@ -46,31 +46,33 @@ const FlexBox = function FlexBox(props){
         let child;
         while ((child = children[idx1]) && !child.resizeable) idx1--;
         while ((child = children[idx2]) && !child.resizeable) idx2++;
-        splitChildren.current =  [idx1, splitterIdx, idx2];
+        splitChildren.current = [idx1, splitterIdx, idx2];
     }
-    
-    if (layoutModel === null){
+
+    const handleMouseDown = e => {
+        console.log(`FlexBox header mousedown`)
+    }
+
+    if (layoutModel === null) {
 
         return null;
 
     } else {
-            const { type, title, header, computedStyle } = layoutModel;
-            const className = cx(type, props.className);
-            return ( 
-                <div className={className} style={computedStyle}>
-                    {header &&
-                        <ComponentHeader
-                            title={`${title}`}
-                            onMouseDown={e => this.handleMouseDown(e)}
-                            style={header.style}
-                            menu={header.menu} />
-                    }
-                    {renderChildren()}
-                </div>
-            );
+        const { type, computedStyle } = layoutModel;
+        const className = cx(type, props.className);
+        return (
+            <div className={className} style={computedStyle}>
+                {renderHeader(props, {
+                    dispatch,
+                    onMouseDown: handleMouseDown
+                },
+                    layoutModel)}
+                {renderChildren()}
+            </div>
+        );
     }
 
-    function renderChildren(){
+    function renderChildren() {
 
         const { style: { flexDirection }, children: layoutChildren, visibility } = layoutModel;
 
@@ -114,7 +116,7 @@ const FlexBox = function FlexBox(props){
                 if (isLayout(child)) {
                     results.push(React.cloneElement(child, { ...layoutProps }));
                 } else {
-                    const {style, ...childProps} = child.props;
+                    const { style, ...childProps } = child.props;
                     results.push(<LayoutItem {...childProps} {...layoutProps}>{child}</LayoutItem>);
                 }
                 childIdx += 1;

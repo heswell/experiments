@@ -15,7 +15,11 @@ export default [{
             babelrc: false,
             exclude: 'node_modules/**',
             "presets": [["@babel/react", {modules: false}]],
-            "plugins": ["@babel/plugin-syntax-dynamic-import"]
+            "plugins": [
+                "@babel/plugin-syntax-dynamic-import",
+                "@babel/plugin-proposal-optional-chaining",
+                "@babel/plugin-proposal-nullish-coalescing-operator"
+            ]
         }),
         postcss({
             plugins: [],

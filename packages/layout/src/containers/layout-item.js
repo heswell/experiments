@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import { PopupService } from '@heswell/ui-controls';
-import ComponentHeader from '../component/component-header.jsx';
+import {renderHeader} from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
 import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
@@ -14,15 +14,9 @@ const PureLayoutItem = React.memo(LayoutItem);
 PureLayoutItem.displayName = 'LayoutItem';
 
 export default function LayoutItem(props){
+    // TODO do we need to use useLayout ?
     // TODO should we pass dispatch, title to the nested component ?
     const {children: component, layoutModel, dispatch, title, ...componentProps} = props;
-
-    // this is bad because followed by hooks- use context
-    // if (layoutModel === undefined){
-    //     return (
-    //         <LayoutRoot><PureLayoutItem {...props} /></LayoutRoot>
-    //     )
-    // }
 
     const el = useRef(null);
 
@@ -64,18 +58,10 @@ export default function LayoutItem(props){
     // });
 
     const {LayoutItem} = useStyles();
-    const {computedStyle, header, children: [{computedStyle: style}]} = layoutModel;
+    const {computedStyle, children: [{computedStyle: style}]} = layoutModel;
     return (
-        <div className={LayoutItem} ref={el}
-            style={computedStyle} >
-            {header &&
-                <ComponentHeader
-                    title={title}
-                    style={header.style}
-                    menu={header.menu}
-                    onMouseDown={handleMouseDown}
-                    onAction={handleAction} /> }
-
+        <div className={LayoutItem} ref={el} style={computedStyle} >
+            {renderHeader(props, {onAction: handleAction, onMouseDown: handleMouseDown}, layoutModel)}
             {component.type === 'div'
                 ? React.cloneElement(component, { style })
                 : React.cloneElement(component, { 

@@ -96,6 +96,7 @@ export const alignItems = value =>
   value === 'flex-end' ? AlignItems.FlexEnd :
   value === 'baseline' ? AlignItems.Baseline :
   AlignItems.Center;
+  
 
 export const justifyContent = value =>
   value === 'center' ? JustifyContent.Center :

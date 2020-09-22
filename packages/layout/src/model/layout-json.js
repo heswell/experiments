@@ -15,9 +15,9 @@ const EMPTY_ARRAY = [];
 
 const DEFAULT_HEADER_HEIGHT = 26;
 
-const defaultHeaderSpec = () => ({
+const defaultHeaderSpec = (prop) => ({
   menu: true,
-  style: {height: DEFAULT_HEADER_HEIGHT}
+  style: {height: prop?.height ?? DEFAULT_HEADER_HEIGHT}
 })
 
 export const getManagedDimension = style => style.flexDirection === 'column' ? ['height', 'width'] : ['width', 'height'];
@@ -98,7 +98,7 @@ function getLayoutProps(type, props){
     Object.entries(props).forEach(([key, value]) => {
         if (layoutProp = LayoutProps[key]){
             if (typeof layoutProp === 'function'){
-                layoutProp = layoutProp();
+                layoutProp = layoutProp(value);
             }
             if (layoutProp === true){
                 results[key] = value;

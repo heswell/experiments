@@ -1,3 +1,5 @@
+import {stretchLayout, alignItems, justifyContent} from './src/model/stretch';
+
 export {default as Application} from './src/application/application';
 export {default as DynamicContainer} from './src/containers/dynamic-container.jsx';
 export {default as DraggableLayout} from './src/containers/draggable-layout';
@@ -12,5 +14,5 @@ export * from './src/model/path-utils';
 export * from './src/model/layout-utils';
 export {Action} from './src/model/layout-reducer.js';
 export {registerType} from './src/component-registry';
-export {stretchLayout} from './src/model/stretch';
 export {isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle} from './src/model/css-properties';
+export {stretchLayout, alignItems as stretchAlign, justifyContent as stretchJustify};

@@ -1,14 +1,36 @@
-import React, {useCallback} from 'react';
+import React, { useCallback } from 'react';
 import useStyles from '../use-styles';
 
-// import './component-header.css';
+const NOOP = () => { }
 
-const NOOP = () => {}
+export function renderHeader(props, {dispatch, onAction, onMouseDown}, layoutModel = props.layoutModel) {
+    const { header } = layoutModel;
+    if (header) {
+        const {header: {component: Component}, title} = props;
+        // TODO ComponentRegistry ?
+        const Header = Component || ComponentHeader;
+        return (
+            <Header
+                dispatch={dispatch}
+                // should we really be doing this - it's really just for the design time header, maybe Context ?
+                layoutModel={layoutModel}
+                title={`${title}`}
+                onAction={onAction}
+                onMouseDown={onMouseDown}
+                style={header.style}
+                menu={header.menu} />
+        )
 
-export default function ComponentHeader({menu = true, style, title, onAction=NOOP, onMouseDown}){
-    const menuClick = useCallback(e => onAction('menu', { left: e.clientX, top: e.clientY }),[onAction]);
+    } else {
+        return null;
+    }
+}
+
+
+export default function ComponentHeader({ menu = true, style, title, onAction = NOOP, onMouseDown }) {
+    const menuClick = useCallback(e => onAction('menu', { left: e.clientX, top: e.clientY }), [onAction]);
     const mouseDown = e => e.stopPropagation();
-    const {ComponentHeader} = useStyles();
+    const { ComponentHeader } = useStyles();
     return (
         <header className={ComponentHeader} onMouseDown={onMouseDown} style={style}>
             <span className="title">{title}</span>

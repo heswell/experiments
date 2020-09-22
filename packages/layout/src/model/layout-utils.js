@@ -70,6 +70,8 @@ export function computeLayout(
     }, path || model.$path);
     stretchLayout(layoutModel);
    
+    console.log({layoutModel})
+
     // printLayout(layoutModel);
     return layoutModel;
 }

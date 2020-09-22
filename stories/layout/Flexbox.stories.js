@@ -1,4 +1,6 @@
 import React from 'react';
+import styled from '@emotion/styled';
+import {Header} from '../components/design-time';
 
 import { FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/layout';
 import './layout.css';
@@ -9,6 +11,10 @@ export default {
   title: 'Layout/Flexbox',
   component: FlexBox
 };
+
+const GreyFlexBox = styled(FlexBox)`
+  background-color: #ccc;
+`;
 
 export const SingleChild = () => 
   <FlexBox style={{width:600,height:300,flexDirection: 'row', border:'2px solid black', backgroundColor: '#ccc'}}>
@@ -37,6 +43,27 @@ export const TowerWithinTerrace = () =>
       <Component title='R Component' style={{flex: 1, backgroundColor: 'red'}} resizeable/>
   </FlexBox>
 </FlexBox>
+
+export const TerraceAlignment = () => {
+
+  return (
+  <GreyFlexBox
+    header={{height: 60, component: Header}}
+    style={{
+      width:600,
+      height:300,
+      alignItems: 'center',
+      justifyContent: 'space-around',
+      flexDirection: 'row',
+      border:'2px solid black',
+      margin: 20, 
+      padding: '10 30'}}>
+    <Component style={{flex: '0 1 50px', height: 32, backgroundColor: 'yellow'}}/>
+    <Component style={{width: '20%', height: 50, backgroundColor: 'red'}}/>
+    <Component style={{width: '20%', height: 32, backgroundColor: 'cornflowerblue'}}/>
+    <Component style={{width: '20%', height: 100, backgroundColor: 'brown'}}/>
+  </GreyFlexBox>
+  )};
 
 export const QuadTerraceWithinTower = () =>
   <FlexBox style={{flexDirection: 'column', width: 500, height: 500,}}>
