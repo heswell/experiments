@@ -5,10 +5,7 @@ import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
 import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
 
-// import { LayoutRoot } from './layout-root';
 import useStyles from '../use-styles';
-
-// import './layout-item.css';
 
 const PureLayoutItem = React.memo(LayoutItem);
 PureLayoutItem.displayName = 'LayoutItem';

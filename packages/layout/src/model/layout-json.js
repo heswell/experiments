@@ -173,17 +173,18 @@ function extendLayoutModelChildren({type, active, style, children=EMPTY_ARRAY, s
       } else if (child.type === 'layout'){
           return children;
       } else {
-
         const splitters = getSplitterPositions(type, children);
         const styleOverrides = getStyleOverrides(type, active);
   
         return children.reduce((list, child, i) => {
+            const isColumn = style.flexDirection === 'column';
+            const size = isColumn ? "height" : "width";
             if (splitters[i]) {
                 list.push({
                     type: 'Splitter',
                     style: {
-                      flex: `0 0 ${splitterSize}px`,
-                      cursor: style.flexDirection === 'column' ? 'ns-resize' : 'ew-resize'
+                      [size]: splitterSize,
+                      cursor: isColumn ? 'ns-resize' : 'ew-resize'
                     }
                 });
             }

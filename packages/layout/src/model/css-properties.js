@@ -29,7 +29,9 @@ const stretchStyle = {
   "marginRight": "marginEnd",
   "marginEnd": "marginEnd",
   "maxHeight": "maxHeight",
+  "maxWidth": "maxWidth",
   "minHeight": "minHeight",
+  "minWidth": "minWidth",
   "paddingTop": "paddingTop",
   "paddingBottom": "paddingBottom",
   "paddingLeft": "paddingStart",
@@ -63,7 +65,9 @@ export const singleDimensionProperty = {
   'marginStart': true,
   'marginEnd': true,
   'minHeight': true,
+  'minWidth': true,
   'maxHeight': true,
+  'maxWidth': true,
   'start': true,
   'width': true
 };

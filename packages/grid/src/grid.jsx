@@ -97,7 +97,9 @@ const Grid = (props) => {
     }
   },[gridModel.groupColumns, gridModel.pivotColumns])
 
+  console.log(`Grid render groupState ${gridModel.groupState}`, dataSource)
   useEffectSkipFirst(() => {
+    console.log('groupState changed')
       dataSource.setGroupState(gridModel.groupState);
   }, [dataSource, gridModel.groupState]);
 

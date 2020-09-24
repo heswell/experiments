@@ -1,9 +1,12 @@
 import React from 'react';
+import useFilterStyles from './use-styles';
 
 const NO_STATS = {}
 
-export function FilterCounts({ classes, column, stats=NO_STATS/*, searchText*/ }) {
+function FilterCounts({ column, stats=NO_STATS/*, searchText*/ }) {
   const { totalRowCount, filteredRowCount, filteredSelected } = stats;
+  const classes = useFilterStyles();
+
   return (
       <div className={classes.FilterCounts}>
           <div className="filter-row-counts">
@@ -32,3 +35,4 @@ export function FilterCounts({ classes, column, stats=NO_STATS/*, searchText*/ }
       </div>
   )
 }
+export default FilterCounts;

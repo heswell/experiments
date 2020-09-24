@@ -33,12 +33,14 @@ export default class FilterDataSource extends EventEmitter {
         this.keyCount = range.hi - range.lo;
 
         const cb = this.clientCallback = message => {
+            console.log({message})
             if (message){
                 const {stats, ...data} = message;
                 callback(data);
                 // // this.dataCounts = dataCounts;
                 if (stats){
-                    //this.emit('data-count',stats);
+                    logger.log(`emit stats`)
+                    this.emit('data-count',stats);
                 }
             }
         }
@@ -65,6 +67,13 @@ export default class FilterDataSource extends EventEmitter {
             this.range = {lo, hi};
             this.dataSource.setRange(lo, hi, DataTypes.FILTER_DATA);
         }
+      }
+
+      setGroupState(groupState){
+          console.log('why is this ever called', groupState)
+      }
+      setSubscribedColumns(columns){
+          console.log('why is this ever called', columns)
       }
   
     select(idx, rangeSelect, keepExistingSelection) {

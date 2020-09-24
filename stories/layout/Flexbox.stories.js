@@ -16,6 +16,13 @@ const GreyFlexBox = styled(FlexBox)`
   background-color: #ccc;
 `;
 
+const StyledInput = styled.input`
+  box-sizing: border-box;
+  border: solid 1px #ccc;
+  height: 100%;
+  width: 100%;
+`;
+
 export const SingleChild = () => 
   <FlexBox style={{width:600,height:300,flexDirection: 'row', border:'2px solid black', backgroundColor: '#ccc'}}>
     <Component title='R Component' style={{flex: 1, backgroundColor: 'red', margin: 10, border: '3px solid black'}}/>
@@ -25,6 +32,12 @@ export const TerraceTwoChildren = () =>
   <FlexBox style={{width:600,height:300,flexDirection: 'row', border:'2px solid black',margin: 20, padding: '10 30', backgroundColor: '#ccc'}}>
     <Component title='Y Component' style={{flex: 1, backgroundColor: 'yellow', border: '10px solid rgba(0,0,0,.4)'}}/>
     <Component title='R Component' style={{flex: 1, backgroundColor: 'red'}}/>
+  </FlexBox>
+
+export const TerraceAutoSizing = () =>
+  <FlexBox style={{width: 'auto', height: 'auto', flexDirection: 'row', border:'2px solid black',margin: 20, padding: '10 30', backgroundColor: '#ccc'}}>
+    <Component title='Y Component' style={{width: 200, minHeight: 200, maxHeight: 230, backgroundColor: 'yellow', border: '10px solid rgba(0,0,0,.4)'}} resizeable  />
+    <Component title='R Component' style={{width: 300, height: 300, backgroundColor: 'red'}} resizeable />
   </FlexBox>
 
 export const TerraceWithHeader = () =>
@@ -44,6 +57,8 @@ export const TowerWithinTerrace = () =>
   </FlexBox>
 </FlexBox>
 
+const inputStyle = {minWidth: 80, maxWidth: 120, flex: '1 1 80px', height: 24}
+
 export const TerraceAlignment = () => {
 
   return (
@@ -58,10 +73,10 @@ export const TerraceAlignment = () => {
       border:'2px solid black',
       margin: 20, 
       padding: '10 30'}}>
-    <Component style={{flex: '0 1 50px', height: 32, backgroundColor: 'yellow'}}/>
-    <Component style={{width: '20%', height: 50, backgroundColor: 'red'}}/>
-    <Component style={{width: '20%', height: 32, backgroundColor: 'cornflowerblue'}}/>
-    <Component style={{width: '20%', height: 100, backgroundColor: 'brown'}}/>
+        <StyledInput defaultValue="Test 1" style={inputStyle}/>
+        <StyledInput defaultValue="Test 2"  style={inputStyle} />
+        <StyledInput defaultValue="Test 3"  style={inputStyle} />
+        <StyledInput defaultValue="Test 4"  style={inputStyle} />
   </GreyFlexBox>
   )};
 

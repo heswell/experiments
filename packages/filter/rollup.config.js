@@ -32,6 +32,7 @@ export default {
     ],
     "external": [
         "@heswell/data-source",
+        "@heswell/layout",
         "@heswell/utils",
         "classnames",
         "react",

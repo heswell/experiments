@@ -1,9 +1,10 @@
 // @ts-nocheck
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import cx from 'classnames';
-import {DataTypes, getFilterType, includesColumn, STARTS_WITH} from '@heswell/utils'
-import {Draggable, useGridStyles} from '@heswell/grid';
+import { DataTypes, getFilterType, includesColumn, STARTS_WITH } from '@heswell/utils'
+import { Draggable, useGridStyles } from '@heswell/grid';
 import useFilterStyles from './use-styles';
+import {FilterCounts} from '../filter-counts';
 
 import dataSourceFactory from './data-source-factory';
 
@@ -19,7 +20,7 @@ import { PopupService } from '../popup-service/popup-service';
 const NO_COUNT = {}
 
 //TODO do we nedd to tear down the filterSource ?
-const ColumnFilter =  ({
+const ColumnFilter = ({
     column,
     dataSource,
     filter,
@@ -34,9 +35,9 @@ const ColumnFilter =  ({
         return () => {
             console.log('ColumnFilter UNMOUNT');
         }
-    },[])
+    }, [])
 
-    const [filterType] = useState(getFilterType(column)); 
+    const [filterType] = useState(getFilterType(column));
     const [stats, setStats] = useState(NO_COUNT);
     const [searchText, setSearchText] = useState('');
     const onDataCount = (_, stats) => {
@@ -44,12 +45,13 @@ const ColumnFilter =  ({
         setStats(stats);
     }
     const filterSource = useRef(dataSourceFactory(dataSource, filterType, column, onDataCount));
+    
     const rootEl = useRef(null);
     const toggleFilterDisplay = () => {
         onFilterOpen(column);
     }
 
-    const {HeaderCell} = useGridStyles();
+    const { HeaderCell } = useGridStyles();
     const classes = useFilterStyles();
 
     // close filter is a user action
@@ -64,35 +66,35 @@ const ColumnFilter =  ({
             // clickhandler which would otherwise immediately re-open filter.
             onFilterClose();
         }, 50);
-    },[]);
+    }, []);
 
     const handleKeyDown = useCallback(e => {
         // use value directly from element so we have no dependency
         const value = e.target.value;
         if (e.keyCode === 13) { // ENTER
-            if (value.trim() === ''){
+            if (value.trim() === '') {
                 onClearFilter(column);
             } else {
                 dataSource.filter({
                     type: STARTS_WITH,
                     colName: column.name,
                     value
-               });
+                });
             }
         }
-    },[]);
+    }, []);
 
     const clearFilter = useCallback(() => {
         onClearFilter(column);
         setSearchText('');
-    },[])
+    }, [])
 
     const handleFilter = (/*filter*/) => {
         // Do we still need - see Numberfilter and group
     }
 
     useEffect(() => {
-        if (showFilter){
+        if (showFilter) {
             const component = getFilter();
             const el = rootEl.current;
             const { left, top } = el.getBoundingClientRect();
@@ -103,7 +105,7 @@ const ColumnFilter =  ({
                 // PopupService.showPopup({ left: Math.round(left), top: top - 26, component: test });
             })
         }
-    },[showFilter/*, filter, stats*/]);
+    }, [showFilter/*, filter, stats*/]);
 
     const moveFilter = (e, deltaX, deltaY) => {
         console.log(`move Filter by ${deltaX} ${deltaY}`)
@@ -111,7 +113,7 @@ const ColumnFilter =  ({
     }
 
     const handleSearchText = value => {
-        filterSource.current.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
+        filterSource.current.filter({ type: STARTS_WITH, colName: 'name', value }, DataTypes.FILTER_DATA, true);
     }
 
     // on unmount only ...
@@ -123,12 +125,17 @@ const ColumnFilter =  ({
         return (
             <Draggable onDrag={moveFilter}>
                 <FilterPanel
-                classes={classes}
+                    classes={classes}
                     column={column}
-                    style={{width: 300, height: 350}} 
+                    style={{ width: 300, height: 350 }}
                     onHide={closeFilter}
                     onSearch={handleSearchText}>
                     {childFilter}
+                    <FilterCounts
+                        classes={classes}
+                        column={column}
+                        style={{ height: 50 }}
+                        stats={stats} />
                 </FilterPanel>
             </Draggable>
 
@@ -153,7 +160,7 @@ const ColumnFilter =  ({
                             column={column}
                             filter={filter}
                             dataSource={filterSource.current}
-                            stats={stats} />
+                        />
                     );
             }
 
@@ -169,13 +176,13 @@ const ColumnFilter =  ({
             //     onApplyFilter={handleFilter}
             // />;
         }
-       
+
     }
 
     const isActive = includesColumn(filter, column);
-    const className = cx(HeaderCell, classes.filter, { 
-        [classes.active]: isActive, 
-        'filter-showing': showFilter 
+    const className = cx(HeaderCell, classes.filter, {
+        [classes.active]: isActive,
+        'filter-showing': showFilter
     });
 
     return (
@@ -187,7 +194,7 @@ const ColumnFilter =  ({
             <div className={classes.filterInputContainer}>
                 <input className={classes.filterInput} type='text'
                     onChange={e => setSearchText(e.target.value)}
-                    onKeyDown={handleKeyDown} value={searchText}/>
+                    onKeyDown={handleKeyDown} value={searchText} />
             </div>
             {isActive &&
                 <div className={classes.filterClearButton} onClick={clearFilter}>

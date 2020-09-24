@@ -157,7 +157,6 @@ export class PopupService {
     static keepWithinThePage(el) {
 
         //onsole.log(`PopupService.keepWithinThePage`);
-debugger;
         const container = el.querySelector('.popup-container');
         const {top, left, width, height} = container.firstChild.getBoundingClientRect();
 

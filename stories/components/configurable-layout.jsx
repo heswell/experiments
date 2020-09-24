@@ -61,7 +61,6 @@ export default function ConfigurableLayout({ children }) {
     }
 
     const onLayoutModel = useCallback((layoutModel, dispatcher) => {
-        debugger;
         if (layoutDispatcher.current === null) {
             layoutDispatcher.current = dispatcher;
         }

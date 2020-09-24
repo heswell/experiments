@@ -1,6 +1,6 @@
 import React from 'react';
-
 import { Component, LayoutItem } from '@heswell/layout';
+
 import './material-design.css';
 
 export default {

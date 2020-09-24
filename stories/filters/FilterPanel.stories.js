@@ -1,14 +1,18 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {LocalDataSource, FilterDataSource} from '@heswell/data-source';
+import { FilterCounts, FilterPanel, SetFilter } from '@heswell/filter';
+import { DataTypes, STARTS_WITH } from '@heswell/utils';
 
-import { SetFilter } from '@heswell/filter';
+import './fonts.css';
 
 export default {
-  title: 'Filter/SetFilter',
-  component: SetFilter
+  title: 'Filter/FilterPanel',
+  component: FilterPanel
 };
 
+
 const nameColumn = { name: 'Name', width: 200};
+const noop = () => void(0);
 
 const schema = {
   columns: [
@@ -29,28 +33,53 @@ const schema = {
 ]};
 const dataConfig = {dataUrl: '/data/instruments.js', schema};
 
-export const DefaultSetFilter = () => {
+export const DefaultFilterPanel = () => {
   const column = schema.columns[1];
   const dataSource = useMemo(() => new LocalDataSource(dataConfig),[]);
   const filterSource = useMemo(() => new FilterDataSource(dataSource, column),[]);
+  const [filter, setFilter] = useState(null);
+  const [stats, setStats] = useState({});
 
   useEffect(() => {
+    filterSource.on('data-count', (_, stats) => {
+      console.log(`stats from emit`, stats)
+      setStats(stats)
+    });
     dataSource.subscribe({
       columns: schema.columns
     },
       ({filter, stats}) => {
-        console.log(`stats from dataSource ${JSON.stringify(stats)}`)
-      }
-      );
+        console.log(`stats from dataSource subscription ${JSON.stringify(stats)}`)
+        filter && setFilter(filter)
+      });
+
+  
   },[dataSource])
 
+  const handleSearch = value => {
+    filterSource.filter({type: STARTS_WITH, colName: 'name', value}, DataTypes.FILTER_DATA, true);
+  }
+
   return (
-    <SetFilter 
-      column={column}
-      dataSource={filterSource}
+    <FilterPanel
       style={{width: 300, height: 350}}
-    />
-  )
+      column={nameColumn}
+      onHide={noop}
+      onMouseDown={noop}
+      onSearch={handleSearch}>
+      <SetFilter
+        style={{flex:1}}
+        column={nameColumn}
+        filter={filter}
+        dataSource={filterSource}
+      />
+      <FilterCounts
+          column={column}
+          style={{ height: 50 }}
+          stats={stats} />
+
+    </FilterPanel>
+)
 }
 
   /*
