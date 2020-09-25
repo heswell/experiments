@@ -3,6 +3,7 @@ import { PopupService } from '@heswell/ui-controls';
 import {renderHeader} from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
+import useLayout from './layout-hook';
 import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
 
 import useStyles from '../use-styles';
@@ -11,9 +12,11 @@ const PureLayoutItem = React.memo(LayoutItem);
 PureLayoutItem.displayName = 'LayoutItem';
 
 export default function LayoutItem(props){
+    const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
+
     // TODO do we need to use useLayout ?
     // TODO should we pass dispatch, title to the nested component ?
-    const {children: component, layoutModel, dispatch, title, ...componentProps} = props;
+    const {children: component, title, ...componentProps} = props;
 
     const el = useRef(null);
 

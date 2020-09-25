@@ -3,10 +3,10 @@ import useStyles from '../use-styles';
 
 const NOOP = () => { }
 
-export function renderHeader(props, {dispatch, onAction, onMouseDown}, layoutModel = props.layoutModel) {
+export function renderHeader(props, { dispatch, onAction, onMouseDown }, layoutModel = props.layoutModel) {
     const { header } = layoutModel;
     if (header) {
-        const {header: {component: Component}, title} = props;
+        const { header: { component: Component } = {component: undefined}, title } = props;
         // TODO ComponentRegistry ?
         const Header = Component || ComponentHeader;
         return (
@@ -20,6 +20,7 @@ export function renderHeader(props, {dispatch, onAction, onMouseDown}, layoutMod
                 style={header.style}
                 menu={header.menu} />
         )
+
 
     } else {
         return null;

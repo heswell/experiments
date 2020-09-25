@@ -21,7 +21,7 @@ const getDefaultComponents = () => [
             width: 150,
             height: 200
         }
-    }, null);
+    }, '*' /* path */);
     stretchLayout(layoutModel);
     return layoutModel;
 });
@@ -45,9 +45,10 @@ export default function ComponentPalette({
     const [components] = useState(propComponents || getDefaultComponents());
 
     function handleMouseDown(evt, idx) {
-        console.log(`mouderDown ${idx}`)
+        console.log(`[ComponentPalette] mouseDown ${idx}`)
         const component = components[idx];
         const {left, top} = evt.currentTarget.getBoundingClientRect();
+
         dispatch({
             type: Action.DRAG_START, 
             evt, 

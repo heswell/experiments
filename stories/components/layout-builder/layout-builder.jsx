@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 
-import { FlexBox,  PlaceHolder, DynamicContainer } from '@heswell/layout';
+import { FlexBox,  PlaceHolder, DraggableLayout, DynamicContainer } from '@heswell/layout';
 import { Control, Select } from '@heswell/ui-controls';
 
 import LayoutConfigurator from '../layout-configurator';
@@ -65,6 +65,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
   const selectedIdx = availableValues.indexOf(state.selectedLayoutId)
 
   return (
+    <DraggableLayout>
       <FlexBox style={{flexDirection:"column",width: 900, height: 900, backgroundColor: 'rgb(90,90,90)'}}>
         <FlexBox style={{height: 60}}>
           <ComponentPalette style={{flex: 1, backgroundColor: 'inherit'}}/>
@@ -93,6 +94,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
             onChange={handleChange}/>
         </FlexBox>
       </FlexBox>
+    </DraggableLayout>
   )
 }
 

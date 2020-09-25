@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 import LayoutItem from './layout-item';
+import useLayout from './layout-hook';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
@@ -12,15 +13,8 @@ const PureSurface = React.memo(Surface);
 PureSurface.displayName = 'Surface';
 
 export default function Surface(props){
+    const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
 
-    const {layoutModel, dispatch} = props;
-
-    // if (layoutModel === undefined){
-    //     return (
-    //         <LayoutRoot><PureSurface {...props} dragContainer={true}/></LayoutRoot>
-    //     )
-    // }
-    // should not really use hooks after this point BUT this component is ALWAYS called either with or without model, so usage of hooks never varies...
     useEffect(() => {
         if (props.dragContainer){
             DragContainer.register(layoutModel.$path);
@@ -30,22 +24,27 @@ export default function Surface(props){
     // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
     // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
 
- 
-    var { type, title, header, computedStyle } = layoutModel;
-    const className = cx(type);
-
-    return (
-        <div className={className} style={computedStyle}>
-            {header &&
-                <ComponentHeader
-                    title={`${title}`}
-                    onMouseDown={e => this.handleMouseDown(e)}
-                    style={header.style}
-                    menu={header.menu} />
-            }
-            {renderChildren()}
-        </div>
-    );
+    
+    if (layoutModel === null){
+        return null;
+    } else {
+        var { type, title, header, computedStyle } = layoutModel;
+        const className = cx(type);
+    
+        return (
+            <div className={className} style={computedStyle}>
+                {header &&
+                    <ComponentHeader
+                        title={`${title}`}
+                        onMouseDown={e => this.handleMouseDown(e)}
+                        style={header.style}
+                        menu={header.menu} />
+                }
+                {renderChildren()}
+            </div>
+        );
+    
+    }
 
     function renderChildren(){
 

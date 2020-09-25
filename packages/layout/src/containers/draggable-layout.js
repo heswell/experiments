@@ -8,6 +8,7 @@ import useLayout from './layout-hook';
 
 const EMPTY_OBJECT = {};
 
+// We need to add props to restrict drag behaviour to, for example, popups only
 /** @type {LayoutRootComponent} */
 const DraggableLayout = ({ children: childrenProp, layoutModel: inheritedLayout } ) => {
     const {props: {onLayoutModel, ...props}} = childrenProp;
@@ -29,11 +30,11 @@ const DraggableLayout = ({ children: childrenProp, layoutModel: inheritedLayout 
 
     const dispatch = useCallback(action => {
         if (action.type === 'drag-start') {
+            const path = action.layoutModel.$path;
             if (DragContainer.paths.length === 0){
                 DragContainer.register('0');
-            } else {
+            } else if (path !== "*"){
                 const paths = DragContainer.paths;
-                const path = action.layoutModel.$path;
                 if (!paths.some(p => path.startsWith(p))){
                     return;
                 }

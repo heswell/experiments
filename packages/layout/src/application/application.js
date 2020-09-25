@@ -1,11 +1,12 @@
 
 import React from 'react';
 import cx from 'classnames';
-import {uuid} from '@heswell/utils';
+import { uuid } from '@heswell/utils';
 
+import DraggableLayout from '../containers/draggable-layout';
 import Surface from '../containers/surface';
 import '../components/component-icon';
-import {followPath} from '../model/path-utils';
+import { followPath } from '../model/path-utils';
 import {
     switchTab,
     replace as replaceInLayout
@@ -16,10 +17,10 @@ const NO_STYLE = {}
 
 export default class Application extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
-        var {width: appWidth, height: appHeight, dialogs=[], style: {width=appWidth, height=appHeight, backgroundColor}=NO_STYLE} = props;
+        var { width: appWidth, height: appHeight, dialogs = [], style: { width = appWidth, height = appHeight, backgroundColor } = NO_STYLE } = props;
 
         this.resizeListener = this.resizeListener.bind(this);
 
@@ -37,66 +38,68 @@ export default class Application extends React.Component {
 
     }
 
-    componentDidCatch(error, info){
-        console.log(`error`,error)
-        this.setState({hasError: true})
+    componentDidCatch(error, info) {
+        console.log(`error`, error)
+        this.setState({ hasError: true })
     }
 
-    componentDidMount(){
+    componentDidMount() {
 
-        let {width, height} = this.state;
-        
-        if (width === undefined || height === undefined){
-            const {height: clientHeight, width: clientWidth} = this.el.current.getBoundingClientRect();
-            if (height === undefined){
+        let { width, height } = this.state;
+
+        if (width === undefined || height === undefined) {
+            const { height: clientHeight, width: clientWidth } = this.el.current.getBoundingClientRect();
+            if (height === undefined) {
                 height = clientHeight;
             }
-            if (width === undefined){
+            if (width === undefined) {
                 width = clientWidth;
             }
-            this.setState({height, width})
+            this.setState({ height, width })
         }
 
         window.addEventListener('resize', this.resizeListener, false);
         // this.store.dispatch(initializeLayoutModel(this.state.layoutModel));
     }
 
-    componentWillUnmount(){
+    componentWillUnmount() {
         window.removeEventListener('resize', this.resizeListener, false);
     }
 
-    render(){
+    render() {
 
-        const {width, height, backgroundColor, dragging, hasError} = this.state;
-        const style = {position: 'absolute', top: 0, left: 0, width, height, backgroundColor};
+        const { width, height, backgroundColor, dragging, hasError } = this.state;
+        const style = { position: 'absolute', top: 0, left: 0, width, height, backgroundColor };
         const className = cx('Application', this.props.className);
 
-        if (width === undefined || height === undefined){
-            return <div style={{height: '100%'}} ref={this.el}/>;
+        if (width === undefined || height === undefined) {
+            return <div style={{ height: '100%' }} ref={this.el} />;
         }
-        else if (hasError){
+        else if (hasError) {
             return <div style={style} className={className}>Error</div>
         }
 
         return (
             <div style={style} className={className} ref={this.el}>
-                <Surface layoutModel={this.props.layoutModel}
-                    style={{width,height}}
-                    dragging={dragging}
-                    onLayoutModel={this.props.onLayoutModel}>
-                    {this.getContent()}
-                </Surface>
+                <DraggableLayout>
+                    <Surface layoutModel={this.props.layoutModel}
+                        style={{ width, height }}
+                        dragging={dragging}
+                        onLayoutModel={this.props.onLayoutModel}>
+                        {this.getContent()}
+                    </Surface>
+                </DraggableLayout>
             </div>
         );
     }
 
-    getContent(){
+    getContent() {
 
-        var {children} = this.props;
-        var {dialogs} = this.state;
+        var { children } = this.props;
+        var { dialogs } = this.state;
 
-        if (React.isValidElement(children)){
-            if (dialogs.length === 0){
+        if (React.isValidElement(children)) {
+            if (dialogs.length === 0) {
                 return children;
             }
             else {
@@ -108,39 +111,39 @@ export default class Application extends React.Component {
 
     }
 
-    getLayoutModel(width, height, id=uuid()){
+    getLayoutModel(width, height, id = uuid()) {
 
-        console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`,'color:blue;font-weight:bold');
+        console.log(`%cApplication.getLayoutModel width ${width} height ${height} id ${id}`, 'color:blue;font-weight:bold');
         return {
             type: 'Surface', // Should it be 'Application' ?
             $id: id,
             $path: '0',
-            style: {position: 'absolute', width, height},
-            layout: {top: 0,left: 0, width, height},
+            style: { position: 'absolute', width, height },
+            layout: { top: 0, left: 0, width, height },
             children: []
         };
 
     }
 
-    componentWillReceiveProps(nextProps){
-        const {dialogs} = nextProps;
-        if (dialogs !== this.props.dialogs){
+    componentWillReceiveProps(nextProps) {
+        const { dialogs } = nextProps;
+        if (dialogs !== this.props.dialogs) {
             // could this mess with dialogs already in state ?
-            this.setState({dialogs});
+            this.setState({ dialogs });
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState){
-        var {width, height} = this.state;
+    shouldComponentUpdate(nextProps, nextState) {
+        var { width, height } = this.state;
 
-        return  nextState.width !== width || 
-                nextState.height !== height ||
-                nextState.draggedComponent !== undefined ||
-                nextState.dialogs !== this.state.dialogs ||
-                nextState.layoutModel !== this.state.layoutModel;
+        return nextState.width !== width ||
+            nextState.height !== height ||
+            nextState.draggedComponent !== undefined ||
+            nextState.dialogs !== this.state.dialogs ||
+            nextState.layoutModel !== this.state.layoutModel;
     }
 
-    resizeListener(){
+    resizeListener() {
         // var {width, height} = document.body.getBoundingClientRect();
 
         // if (width !== this.state.width || height !== this.state.height){
@@ -154,10 +157,10 @@ export default class Application extends React.Component {
 
     }
 
-	// TODO where does this belong
-    getComponentState(componentId){
+    // TODO where does this belong
+    getComponentState(componentId) {
 
-        const {componentState} = this.store.getState();
+        const { componentState } = this.store.getState();
         return componentState[componentId];
 
     }
@@ -166,5 +169,5 @@ export default class Application extends React.Component {
 
 Application.defaultProps = {
     reducers: {},
-    bootstrap: () => {}
+    bootstrap: () => { }
 };
