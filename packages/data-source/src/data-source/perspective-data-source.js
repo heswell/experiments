@@ -235,13 +235,14 @@ export default class PerspectiveDataSource extends EventEmitter {
   }
 
   async sort(columns) {
-    console.log(columns);
-    this.sortBy = columns.map(([name, dir]) => ([name, dir === 'dsc' ? 'desc' : 'asc']));
+    if (columns){
+      this.sortBy = columns.map(([name, dir]) => ([name, dir === 'dsc' ? 'desc' : 'asc']));
 
-    await this.createView();
-
-    if (this.range){
-      this.pushDataToClient();
+      await this.createView();
+  
+      if (this.range){
+        this.pushDataToClient();
+      }
     }
 
   }

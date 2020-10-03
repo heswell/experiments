@@ -13,7 +13,7 @@ export default createUseStyles(theme => ({
 
     backgroundColor: 'var(--grid-background)',
     boxSizing: 'border-box',
-    position: 'absolute',
+    position: 'relative',
     fontFamily: 'Roboto',
     fontSize: 'var(--grid-font-size)',
     overflow: 'hidden',

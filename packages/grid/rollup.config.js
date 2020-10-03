@@ -10,7 +10,6 @@ export default {
     input: 'index.js',
     output: {
         dir: 'dist',
-        // file: 'dist/index.js',
         format: 'cjs',
         sourcemap: true
     },
