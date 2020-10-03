@@ -1,6 +1,6 @@
 {
   "name": "@heswell/popup",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Popup",
   "main": "dist/index.js",
   "module": "index.js",
@@ -22,17 +22,15 @@
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-terser": "^5.1.2"
   },
-  "dependencies": {
-  },
   "peerDependencies": {
     "classnames": "^2.2.6",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-jss": "10.3.0",
     "jss-plugin-cache": "^10.1.1",
     "jss-plugin-camel-case": "^10.1.1",
     "jss-plugin-default-unit": "^10.1.1",
-    "jss-plugin-nested": "^10.1.1"
+    "jss-plugin-nested": "^10.1.1",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-jss": "10.3.0"
   },
   "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
 }

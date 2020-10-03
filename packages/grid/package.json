@@ -1,6 +1,6 @@
 {
   "name": "@heswell/grid",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",

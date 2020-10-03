@@ -1,6 +1,6 @@
 {
   "name": "@heswell/data-store",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "Heswell data store",
   "main": "dist/index.js",
   "module": "index.js",
