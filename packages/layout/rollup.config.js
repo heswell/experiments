@@ -1,7 +1,10 @@
-import babel from 'rollup-plugin-babel'
+import babel from '@rollup/plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import filesize from 'rollup-plugin-filesize';
 import visualizer from 'rollup-plugin-visualizer'
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+// import wasm from '@rollup/plugin-wasm';
 
 export default [{
     input: 'index.js',
@@ -11,6 +14,11 @@ export default [{
         sourcemap: true
     },
     plugins: [
+        resolve({
+            extensions: ['.js', '.jsx', '.wasm']
+        }),
+        commonjs(),
+        // wasm(),
         babel({
             babelrc: false,
             exclude: 'node_modules/**',
@@ -36,7 +44,9 @@ export default [{
         "classnames",
         "react",
         "react-dom",
-        "stretch-layout"
+        "react-jss",
+        "@heswell/stretch",
+        "@emotion/styled"
     ]
 
 }, /* Just for Jest */ /*{

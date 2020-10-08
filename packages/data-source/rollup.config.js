@@ -27,6 +27,7 @@ export default [{
         filesize()
     ],
     external: [
+        "@finos/perspective",
         "@heswell/utils"
     ]
 

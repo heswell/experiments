@@ -13,7 +13,9 @@ const buildDataView = async url => {
 }
 
 const loadData = data => {
-  return Promise.resolve({default: data});
+  return data.constructor === Promise
+    ? data.then(data => ({default: data}))
+    : Promise.resolve({default: data});
 }
 
 const logger = createLogger('LocalDataSource', logColor.blue);
@@ -73,7 +75,7 @@ export default class LocalDataSource extends EventEmitter {
   }, callback) {
 
     if (!columns) throw Error("LocalDataView subscribe called without columns");
-    
+
     await this.readyToSubscribe;
 
     // this only makes sense if a localdatasource can holdmore than one table - maybe ?

@@ -36,5 +36,8 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-terser": "^5.1.2"
+  },
+  "dependencies": {
+    "stretch-layout": "^0.3.2"
   }
 }
