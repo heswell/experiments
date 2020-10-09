@@ -1,6 +1,6 @@
 {
   "name": "@heswell/data-source",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Heswell data sources",
   "main": "dist/index.js",
   "module": "index.js",
