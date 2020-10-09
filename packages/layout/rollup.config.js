@@ -4,7 +4,7 @@ import filesize from 'rollup-plugin-filesize';
 import visualizer from 'rollup-plugin-visualizer'
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-// import wasm from '@rollup/plugin-wasm';
+import wasm from '@rollup/plugin-wasm';
 
 export default [{
     input: 'index.js',
@@ -18,7 +18,9 @@ export default [{
             extensions: ['.js', '.jsx', '.wasm']
         }),
         commonjs(),
-        // wasm(),
+        wasm({
+            maxFileSize: 200000
+        }),
         babel({
             babelrc: false,
             exclude: 'node_modules/**',

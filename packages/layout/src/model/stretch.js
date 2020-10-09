@@ -1,36 +1,32 @@
 import { isContainer } from '../component-registry';
 
-let FlexDirection;
-let AlignItems;
-let JustifyContent;
-let PositionType;
-let Display;
+import {
+  Allocator,
+  FlexDirection,
+  AlignItems,
+  JustifyContent,
+  Node,
+  PositionType,
+  Display,
+  waitUntilReady
+}  from '../stretch/stretch_layout';
 
-let stretch;
 let allocator;
+
+const ARRAY = [];
+
 let ready = false;
 
 export const isReady = () => ready;
 
-const ARRAY = [];
-
 export const getDisplay = () => Display;
 
-export const stretchLoading = import(/* webpackChunkName: "stretch" */ '@heswell/stretch').then(initStretch);
+//export const stretchLoading = import(/* webpackChunkName: "stretch" */ '../stretch/stretch_layout').then(initStretch);
 
-export function initStretch(stretchModule){
-  stretch = stretchModule;
-  allocator = new stretch.Allocator();
-  ({
-    Display,
-    FlexDirection,
-    AlignItems,
-    JustifyContent,
-    PositionType
-  } = stretch);
-  console.log(`STRETCH LOADED`)
-  return ready = true;
-}
+export const stretchLoading = waitUntilReady.then(() => {
+  allocator = new Allocator();
+  ready = true;
+})
 
 export function stretchLayout(config){
   // Note, when passed an absolute layoutStyle, top appears to be ignored
@@ -80,7 +76,7 @@ function setChildStyles(config, layout){
 
 
 function stretchNode({layoutStyle, children=ARRAY}){
-  const node = new stretch.Node(allocator, layoutStyle);
+  const node = new Node(allocator, layoutStyle);
   children.forEach(child => node.addChild(stretchNode(child)));
   return node;
 }

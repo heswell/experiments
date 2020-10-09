@@ -35,6 +35,7 @@ const useLayout = (initialData, inheritedLayout = NULL_LAYOUT, dragEnabled) => {
 
     if (layoutModel === null) {
       stretchLoading.then(() => {
+        console.log('stretch is ready')
         dispatch({ type: Action.INITIALIZE, ...initialData });
       });
     }
