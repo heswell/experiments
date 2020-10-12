@@ -5,11 +5,14 @@ type ComponentRegistryProvider = React.FC<{components?: ComponentRegistryList;}>
 
 type useComponentRegistry = (componentId: string, component?: React.FC) => React.FC | undefined;
 
+type LayoutSelectionModel = 'single' | 'multtiple' | never;
+
 interface LayoutProps {
   active?: number;
   dragStyle?: string;
   header?: {style?: unknown; menu?: boolean;};
   resizeable?: boolean;
+  selectionModel?: LayoutSelectionModel;
   visibility?: string;
 }
 
@@ -75,15 +78,20 @@ interface LayoutModel extends LayoutProps {
   type: string;
 }
 
+type InitialData = {
+  layoutType: string;
+  props: any;
+}
+
 type layoutDispatcher = (action: LayoutAction) => void;
-type LayoutHook = (initialData: object, inheritedLayout?: LayoutModel, dragEnabled?: boolean) => [LayoutModel, layoutDispatcher]
+type LayoutHook = (initialData: InitialData, inheritedLayout?: LayoutModel, dragEnabled?: boolean) => [LayoutModel, layoutDispatcher]
 
 
 type getLayoutModel = (type: string, props: unknown) => LayoutModel;
 
 type getLayoutProps = (type: string, props: object) => LayoutProps;
 
-interface LayoutComponentProps {
+interface LayoutComponentProps extends LayoutProps {
   className?: string;
   dispatch: layoutDispatcher;
   layoutModel: LayoutModel;
@@ -107,6 +115,7 @@ type TabbedContainerComponent = (props: TabbedContainerProps) => JSX.Element;
 
 interface FlexboxProps extends LayoutComponentProps {
   children: React.ReactNode;
+  dropTarget?: boolean;
 }
 
 type FlexboxComponent = (props: FlexboxProps) => JSX.Element;

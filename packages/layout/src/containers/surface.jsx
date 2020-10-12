@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 import LayoutItem from './layout-item';
-import useLayout from './layout-hook';
+import useLayout from './use-layout';
 import ComponentHeader from '../component/component-header.jsx';
 import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';

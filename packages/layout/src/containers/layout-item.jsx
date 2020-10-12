@@ -3,7 +3,7 @@ import { PopupService } from '@heswell/ui-controls';
 import {renderHeader} from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
-import useLayout from './layout-hook';
+import useLayout from './use-layout';
 import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
 
 import useStyles from '../use-styles';
@@ -63,7 +63,7 @@ export default function LayoutItem(props){
         <div className={LayoutItem} ref={el} style={computedStyle} >
             {renderHeader(props, {onAction: handleAction, onMouseDown: handleMouseDown}, layoutModel)}
             {component.type === 'div'
-                ? React.cloneElement(component, { style })
+                ? React.cloneElement(component, { style, resizeable: undefined })
                 : React.cloneElement(component, { 
                     ...componentProps,
                     style,
@@ -73,4 +73,4 @@ export default function LayoutItem(props){
         </div>
     );
 
-} 
+}

@@ -4,7 +4,7 @@ import { typeOf } from '../component-registry';
 import { Draggable, DragContainer } from '../drag-drop/draggable';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import LayoutItem from './layout-item';
-import useLayout from './layout-hook';
+import useLayout from './use-layout';
 
 const EMPTY_OBJECT = {};
 

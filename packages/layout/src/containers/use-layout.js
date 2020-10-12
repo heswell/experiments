@@ -4,6 +4,7 @@ import layoutReducer, { initModel, Action } from '../model/layout-reducer';
 
 const NULL_LAYOUT = {
   $id: undefined,
+  $path: undefined,
   children: undefined,
   computedStyle: undefined,
   layoutModel: undefined,
@@ -11,7 +12,6 @@ const NULL_LAYOUT = {
   style: undefined,
   type: undefined
 }
-
 
 /** @type {LayoutHook} */
 const useLayout = (initialData, inheritedLayout = NULL_LAYOUT, dragEnabled) => {
@@ -39,10 +39,7 @@ const useLayout = (initialData, inheritedLayout = NULL_LAYOUT, dragEnabled) => {
         dispatch({ type: Action.INITIALIZE, ...initialData });
       });
     }
-
   }
-
-
 
   return [layoutModel, dispatch];
 

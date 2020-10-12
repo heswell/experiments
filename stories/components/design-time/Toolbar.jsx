@@ -3,14 +3,12 @@ import styled from '@emotion/styled';
 import { Action, stretchAlign, stretchJustify } from '@heswell/layout';
 import StateButton from './state-button';
 
-const Header = styled.div`
-  background-color: green;
-`;
-
-const RadioGroup = styled.div`
-  background-color: red;
+const Toolbar = styled.div`
+  background-color: white;
   display: flex;
   align-items: center;
+  padding: 3px;
+  border-bottom: solid 1px #ccc;
 `;
 
 const stretchStyle = (attribute, value) => {
@@ -37,7 +35,7 @@ const recomputeLayoutStyle = (layoutModel, attribute, value) => {
   }
 }
 
-const DesignTimeHeader = (props) => {
+const DesignTimeToolbar = (props) => {
 
   const { dispatch, layoutModel } = props;
   const { style: { alignItems = "stretch", justifyContent = "flex-start" } } = layoutModel;
@@ -50,27 +48,26 @@ const DesignTimeHeader = (props) => {
       target: layoutModel,
       replacement
     });
-
   }
 
   return (
-    <Header style={props.style}>
+    <Toolbar style={props.style}>
       <StateButton.Group name="alignItems" onChange={handleChange} value={alignItems}>
-        <StateButton label="Start" value="flex-start" />
-        <StateButton label="Baseline" value="baseline" />
-        <StateButton label="Center" value="center" />
-        <StateButton label="End" value="flex-end" />
-        <StateButton label="Stretch" value="stretch" />
+        <StateButton label="Start" value="flex-start" icon="format_align_left"/>
+        <StateButton label="Baseline" value="baseline" icon="format_underlined"  />
+        <StateButton label="Center" value="center" icon="format_align_center"/>
+        <StateButton label="End" value="flex-end" icon="format_align_right"/>
+        <StateButton label="Stretch" value="stretch" icon="format_align_justify"/>
       </StateButton.Group>
       <StateButton.Group name="justifyContent" onChange={handleChange} value={justifyContent}>
-        <StateButton label="Start" value="flex-start" />
-        <StateButton label="Space around" value="space-around" />
-        <StateButton label="Space between " value="space-between" />
-        <StateButton label="Center" value="center" />
-        <StateButton label="End" value="flex-end" />
+        <StateButton label="Start" value="flex-start" icon="vertical_align_bottom"/>
+        <StateButton label="Space around" value="space-around" icon="format_line_spacing"/>
+        <StateButton label="Space between " value="space-between" icon="vertical_align_center"/>
+        <StateButton label="Center" value="center" icon="border_top"/>
+        <StateButton label="End" value="flex-end" icon="vertical_align_top"/>
       </StateButton.Group>
-    </Header>
+    </Toolbar>
   )
 }
 
-export default DesignTimeHeader;
+export default DesignTimeToolbar;
