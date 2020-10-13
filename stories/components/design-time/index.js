@@ -1,9 +1,5 @@
 import {useContext} from 'react';
-import DesignContext from './design-time-context'; 
-export {default as Toolbar} from './Toolbar.jsx';
+export {default as LayoutToolbar} from './LayoutToolbar.jsx';
 
-export const DesignProvider = DesignContext.Provider;
+export * from './design-time-context';
 
-export const useDesignTime = () => {
-  return useContext(DesignContext);
-}

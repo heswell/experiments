@@ -7,7 +7,7 @@ export default createUseStyles(theme => ({
     backgroundColor: '#ccc',
     alignItems: 'center',
     '& > button': {
-      flex : '0 0 26px',
+      flex: '0 0 26px',
       height: '100%',
       marginLeft: 'auto',
       padding: 1,
@@ -19,14 +19,33 @@ export default createUseStyles(theme => ({
     },
     '& > .title': {
       cursor: 'default',
-      flex : '1 1 auto',
+      flex: '1 1 auto',
       marginLeft: 6,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap'
     }
-},
+  },
   LayoutItem: {
     backgroundColor: '#fff'
+  },
+  selected: {
+    "&:after": {
+      content: '" "',
+      display: 'block',
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      right: 0,
+      botttom: 0,
+      height:'100%',
+      border: 'solid 2px cornflowerblue',
+      boxSizing: 'border-box',
+    },
+    "&> *": {
+      zIndex: 1
+    }
   }
 }));
+
+

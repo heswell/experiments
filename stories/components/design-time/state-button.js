@@ -1,4 +1,4 @@
-import React, {useContext, useRef} from 'react';
+import React, { useContext, useRef } from 'react';
 import styled from '@emotion/styled';
 
 let controlId = 0;
@@ -6,15 +6,14 @@ let controlId = 0;
 const StateButtonContext = React.createContext(null);
 
 const StateButtonGroupRoot = styled.div`
-  display: inline-flex;
   align-items: center;
-  border: solid 1px #ccc;
-  &:not(:first-of-type) {
-    margin-left: 6px;
-  }
+  background-color: #ccc;
+  display: inline-flex;
+  padding: 1px;
 `;
 
 const StateButtonRoot = styled.div`
+  background-color: white;
   color: #2C3E50;
   display: inline-flex;
   align-items: center;
@@ -22,6 +21,9 @@ const StateButtonRoot = styled.div`
   width: 24px;
   height: 24px;
   overflow: hidden;
+  &:not(:first-of-type) {
+    margin-left: 1px;
+  }
   & input {
     position: absolute;
     left: -100px;
@@ -37,28 +39,25 @@ const StateButtonRoot = styled.div`
     width: 100%;
     height: 100%;
     overflow; hidden;
-    & .material-icons {
-      font-size: 20px;
-    }
   }
 `;
 
 const useStateButton = (props) => {
   const context = useContext(StateButtonContext);
-  if (context){
+  if (context) {
     return [context.name, context.onChange, context.value === props.value]
   } else {
     return [props.name, props.onChange, props.selected];
   }
 }
 
-const StateButtonGroup = ({children, name, onChange, value}) => {
+const StateButtonGroup = ({ children, className, name, onChange, value }) => {
   const changeHandler = e => onChange(name, e.target.value);
-  
+
   return (
-    <StateButtonGroupRoot>
-      <StateButtonContext.Provider value={{name, onChange: changeHandler, value}}>
-      {children}
+    <StateButtonGroupRoot className={className}>
+      <StateButtonContext.Provider value={{ name, onChange: changeHandler, value }}>
+        {children}
       </StateButtonContext.Provider>
     </StateButtonGroupRoot>
   )
@@ -67,9 +66,9 @@ const StateButtonGroup = ({children, name, onChange, value}) => {
 const StateButton = (props) => {
   const id = useRef(++controlId)
   const [name, onChange, checked] = useStateButton(props)
-  const {icon, label, value} = props;
+  const { label, value } = props;
   return (
-    <StateButtonRoot title={label}>
+    <StateButtonRoot className={props.className} title={label}>
       <input
         type="radio"
         id={id.current}
@@ -78,9 +77,9 @@ const StateButton = (props) => {
         checked={checked}
         onChange={onChange} />
       <label htmlFor={id.current}>
-        <i className="material-icons">{icon}</i>
+        {props.children}
       </label>
-      
+
     </StateButtonRoot>
 
   )

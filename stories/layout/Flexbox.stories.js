@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import { DesignProvider, Toolbar as DesignTimeToolbar } from '../components/design-time';
+import { DesignProvider, LayoutToolbar } from '../components/design-time';
 
 import { FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/layout';
 import './layout.css';
@@ -12,7 +12,7 @@ export default {
   component: FlexBox
 };
 
-const StyledInput = styled.input`
+const StyledItem = styled.div`
   box-sizing: border-box;
   border: solid 1px #ccc;
   height: 100%;
@@ -53,27 +53,23 @@ export const TowerWithinTerrace = () =>
     </FlexBox>
   </FlexBox>
 
-const inputStyle = { minWidth: 80, maxWidth: 120, flex: '1 1 80px', height: 24 }
+const inputStyle = { minWidth: 80, maxWidth: 120, flex: '1 1 80px', minHeight: 24, maxHeight: 24 }
 
 export const TerraceAlignment = () => {
 
   return (
     <DesignProvider>
       <FlexBox
-        header={{ height: 32, component: DesignTimeToolbar }}
+        header={{ height: 61, component: LayoutToolbar }}
         style={{
           width: 600,
           height: 300,
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          flexDirection: 'row',
           border: '2px solid black',
-          padding: '10 30'
         }}>
-        <StyledInput defaultValue="Test 1" style={inputStyle} />
-        <StyledInput defaultValue="Test 2" style={inputStyle} />
-        <StyledInput defaultValue="Test 3" style={inputStyle} />
-        <StyledInput defaultValue="Test 4" style={inputStyle} />
+        <StyledItem style={inputStyle} >Item 1</StyledItem>
+        <StyledItem style={inputStyle} >Item 2</StyledItem>
+        <StyledItem style={inputStyle} >Item 3</StyledItem>
+        <StyledItem style={inputStyle} >Item 4</StyledItem>
       </FlexBox>
     </DesignProvider>
   )

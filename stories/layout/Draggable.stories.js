@@ -2,7 +2,14 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 
-import { FlexBox, TabbedContainer, DynamicContainer, Component, DraggableLayout } from '@heswell/layout';
+import {
+  Component,
+  DynamicContainer,
+  FlexBox,
+  TabbedContainer,
+  DraggableLayout,
+  SelectionProvider
+} from '@heswell/layout';
 
 import './layout.css';
 import './popup.css';
@@ -22,7 +29,7 @@ const Box = styled.div`
   justify-content: center;
 `;
 
-const DraggableBox = ({style, onMouseDown}) =>
+const DraggableBox = ({ style, onMouseDown }) =>
   <div style={style}>
     <Box onMouseDown={onMouseDown}> Hello Mum</Box>
   </div>
@@ -46,22 +53,24 @@ export const DeeperNesting = () =>
   </DraggableLayout>
 
 export const DeeperNestingNoHandles = () =>
-  <DraggableLayout>
-    <FlexBox style={{ width: 800, height: 500, flexDirection: 'row' }} splitterSize={1}>
-      <DraggableBox title='Y Component' style={{ flex: 1, backgroundColor: 'yellow' }} resizeable />
-      <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable  splitterSize={1}>
-        <FlexBox style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }} resizeable  splitterSize={1}>
-          <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable  splitterSize={1}>
-            <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'orange' }} resizeable />
-            <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'brown' }} resizeable />
+  <SelectionProvider>
+    <DraggableLayout>
+      <FlexBox style={{ width: 800, height: 500, flexDirection: 'row' }} splitterSize={1}>
+        <DraggableBox title='Y Component' style={{ flex: 1, backgroundColor: 'yellow' }} resizeable />
+        <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable splitterSize={1}>
+          <FlexBox style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: 'row' }} resizeable splitterSize={1}>
+            <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable splitterSize={1}>
+              <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'orange' }} resizeable />
+              <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'brown' }} resizeable />
+            </FlexBox>
+            <DraggableBox title='R Component' style={{ flex: 1, backgroundColor: 'rebeccapurple' }} resizeable />
           </FlexBox>
-          <DraggableBox title='R Component' style={{ flex: 1, backgroundColor: 'rebeccapurple' }} resizeable />
+          <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'blue' }} resizeable />
+          <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'red' }} resizeable />
         </FlexBox>
-        <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'blue' }} resizeable />
-        <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'red' }} resizeable />
       </FlexBox>
-    </FlexBox>
-  </DraggableLayout>
+    </DraggableLayout>
+  </SelectionProvider>
 
 export const ComplexNestedLayout = () =>
   <DraggableLayout>

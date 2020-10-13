@@ -1,4 +1,4 @@
-import {stretchLayout, alignItems, justifyContent} from './src/model/stretch';
+import {stretchLayout, alignItems, flexDirection, justifyContent} from './src/model/stretch';
 
 export {default as Application} from './src/application/application';
 export {default as DynamicContainer} from './src/containers/dynamic-container.jsx';
@@ -12,7 +12,12 @@ export {default as PlaceHolder} from './src/components/place-holder/place-holder
 export {adjustHeaderPosition,getLayoutModel, extendLayoutModel} from './src/model/layout-json';
 export * from './src/model/path-utils';
 export * from './src/model/layout-utils';
+export * from './src/selection-context';
 export {Action} from './src/model/layout-reducer.js';
 export {registerType} from './src/component-registry';
 export {isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle} from './src/model/css-properties';
-export {stretchLayout, alignItems as stretchAlign, justifyContent as stretchJustify};
+export {
+  stretchLayout,
+  alignItems as stretchAlign,
+  flexDirection as stretchDirection,
+  justifyContent as stretchJustify};

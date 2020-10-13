@@ -12,7 +12,6 @@ interface LayoutProps {
   dragStyle?: string;
   header?: {style?: unknown; menu?: boolean;};
   resizeable?: boolean;
-  selectionModel?: LayoutSelectionModel;
   visibility?: string;
 }
 

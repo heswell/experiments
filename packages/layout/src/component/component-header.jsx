@@ -3,7 +3,7 @@ import useStyles from '../use-styles';
 
 const NOOP = () => { }
 
-export function renderHeader(props, { dispatch, onAction, onMouseDown }, layoutModel = props.layoutModel) {
+export function renderHeader(props, { dispatch, onAction=undefined, onMouseDown }, layoutModel = props.layoutModel) {
     const { header } = layoutModel;
     if (header) {
         const { header: { component: Component } = {component: undefined}, title } = props;

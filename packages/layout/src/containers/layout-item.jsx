@@ -1,9 +1,11 @@
 import React, { useRef, useCallback } from 'react';
+import cx from 'classnames';
 import { PopupService } from '@heswell/ui-controls';
 import {renderHeader} from '../component/component-header.jsx';
 import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
 import useLayout from './use-layout';
+import {useSelection} from '../selection-context';
 import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
 
 import useStyles from '../use-styles';
@@ -13,6 +15,7 @@ PureLayoutItem.displayName = 'LayoutItem';
 
 export default function LayoutItem(props){
     const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
+     const [isSelected, onClick] = useSelection(layoutModel);
 
     // TODO do we need to use useLayout ?
     // TODO should we pass dispatch, title to the nested component ?
@@ -57,10 +60,14 @@ export default function LayoutItem(props){
     //     // 'dragging': dragging
     // });
 
-    const {LayoutItem} = useStyles();
+
+    const {LayoutItem, selected} = useStyles();
+    const className = cx(LayoutItem, {
+        [selected]: isSelected
+    })
     const {computedStyle, children: [{computedStyle: style}]} = layoutModel;
     return (
-        <div className={LayoutItem} ref={el} style={computedStyle} >
+        <div className={className} ref={el} style={computedStyle} onClick={onClick}>
             {renderHeader(props, {onAction: handleAction, onMouseDown: handleMouseDown}, layoutModel)}
             {component.type === 'div'
                 ? React.cloneElement(component, { style, resizeable: undefined })

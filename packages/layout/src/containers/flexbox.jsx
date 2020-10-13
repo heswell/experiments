@@ -8,21 +8,23 @@ import { registerType, isLayout, typeOf } from '../component-registry';
 import { componentFromLayout } from '../util/component-from-layout-json';
 import { Action } from '../model/layout-reducer';
 import { getManagedDimension } from '../model/layout-json';
+import {useSelection} from '../selection-context';
 import { DragContainer } from '../drag-drop/draggable.js';
+
+import useStyles from '../use-styles';
 
 /** @type {FlexboxComponent} */
 const FlexBox = function FlexBox(props) {
     const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
     const splitChildren = useRef(null);
+    const [isSelected, onClick] = useSelection(layoutModel);
+    const {selected} = useStyles();
 
     useEffect(() => {
         if (props.dropTarget) {
             DragContainer.register(layoutModel.$path);
         }
     }, []);
-
-    // onsole.log(`%cFlexBox render ${layoutModel.$path}`,'color: blue; font-weight: bold;')
-    // console.log(`%cmodel = ${JSON.stringify(model,null,2)}`,'color: blue; font-weight: bold;')
 
     const splitterDragStart = (idx) => identifySplitChildren(idx);
 
@@ -58,9 +60,12 @@ const FlexBox = function FlexBox(props) {
 
     } else {
         const { type, computedStyle } = layoutModel;
-        const className = cx(type, props.className);
+        const className = cx(type, props.className, {
+            [selected]: isSelected
+        })
+    
         return (
-            <div className={className} style={computedStyle}>
+            <div className={className} style={computedStyle} onClick={onClick}>
                 {renderHeader(props, {
                     dispatch,
                     onMouseDown: handleMouseDown
