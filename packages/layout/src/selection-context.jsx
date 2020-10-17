@@ -31,7 +31,11 @@ export const useSelection = (layoutModel) => {
       selected?.$id === layoutModel.$id,
       e => {
         console.log(`set selected ${layoutModel.type} ${layoutModel.$id}`)
-        setSelected(layoutModel);
+        if (selected?.$id === layoutModel.$id){
+          setSelected(null);
+        } else {
+          setSelected(layoutModel);
+        }
         e.stopPropagation();
       }
     ]

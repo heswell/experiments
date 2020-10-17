@@ -11,7 +11,7 @@ export {default as Component} from './src/component/component';
 export {default as PlaceHolder} from './src/components/place-holder/place-holder.jsx';
 export {adjustHeaderPosition,getLayoutModel, extendLayoutModel} from './src/model/layout-json';
 export * from './src/model/path-utils';
-export * from './src/model/layout-utils';
+export * from './src/model/stretch';
 export * from './src/selection-context';
 export {Action} from './src/model/layout-reducer.js';
 export {registerType} from './src/component-registry';

@@ -2,8 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import PropHelper from './prop-helper';
 import Measure, {useMeasure} from './measure';
-import BaseGrid from './base-grid';
+import GridBase from './grid-base';
 import {Footer, Header, InlineHeader} from './grid-adornments';
+
+// TODO use a null datasource and empty columns defs
+// display a warning if loaded with no dataSOurce
 
 const Grid = (props) => {
 
@@ -18,7 +21,7 @@ const Grid = (props) => {
     )
   } else {
     return (
-      <BaseGrid {...props} height={height} width={width} />
+      <GridBase {...props} height={height} width={width} />
     )
   }
 

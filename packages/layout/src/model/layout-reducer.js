@@ -1,7 +1,7 @@
 import { uuid } from '@heswell/utils';
 import { addDefaultLayoutProps, getLayoutModel, getManagedDimension, resetPath } from './layout-json';
 import { containerOf, followPath, followPathToParent, nextStep } from './path-utils';
-import { computeLayout, recomputeChildLayout, printLayout, stretchLoaded } from './layout-utils';
+import { computeLayout, recomputeChildLayout, /*printLayout,*/ isReady as stretchReady } from './stretch';
 import { removeVisualStyles } from './css-properties';
 
 // These are stretch values, need to import (dynamically)
@@ -53,7 +53,7 @@ export default (state, action) => {
 }
 
 function initialize(_, action) {
-    if (stretchLoaded()){
+    if (stretchReady()){
         const {layoutType, props, layout} = action;
         let layoutProps;
         if (layout){

@@ -1,4 +1,5 @@
 import {  indexOfCol, metadataKeys } from '@heswell/utils'
+import { SortDescending } from './context-menu/context-menu-actions';
 
 export const getHorizontalScrollbarHeight = columnGroups =>
   columnGroups
@@ -128,16 +129,12 @@ export const getColumnOffset = (gridModel, columnGroupIdx, columnIdx) => {
 }
 
 const mapSortColumns = sortColumns => {
-  if (sortColumns){
     const entries = Object.entries(sortColumns);
-    if (entries.length === 1){
-      return entries;
-    } else {
-      return entries.sort(([,a],[,b]) => a-b).map(([col, pos]) => [col, pos > 0 ? 'asc' : 'dsc']);
-    }  
-  } else {
-    return null;
-  }
+    const sortedEntries = entries.length === 1
+      ? entries
+      : entries.sort(([,a],[,b]) => a-b);
+
+    return sortedEntries.map(([col, pos]) => [col, pos > 0 ? 'asc' : 'dsc']);
 }
 
 function toggleGroupState(gridModel, row) {
@@ -298,12 +295,32 @@ function updateGroupColumn({columnGroups: groups}, column, updates){
 export const columnKeysToIndices = (keys,columns) =>
     keys.map(key => columns.findIndex(c => c.key === key));
 
+function addGroupColumn({groupColumns}, column, direction='asc'){
+  if (groupColumns){
+    return mapSortColumns(groupColumns).concat([[column.name, direction]]);
 
+  } else {
+    return [[column.name, direction]];
+  }
+}
+
+function removeGroupColumn({groupColumns}, column){
+  if (!groupColumns){
+    throw Error(`GridModel.removeColumnGroups: cannot remove column ${column.name}, no grouping in place`)
+  } else if (Object.keys(groupColumns).length === 1){
+    return null;
+  } else {
+    return mapSortColumns(groupColumns).filter(([columnName]) => columnName !== column.name)
+  }
+}
+    
 export const GridModel = {
+  addGroupColumn,
   columns: gridModel => flattenColumnGroup(gridModel.columnGroups.flatMap(columnGroup => columnGroup.columns)),
   columnNames: gridModel => GridModel.columns(gridModel).map(column => column.name),
   groupBy: gridModel => gridModel.groupColumns && mapSortColumns(gridModel.groupColumns),
   pivotBy: gridModel => gridModel.pivotColumns && mapSortColumns(gridModel.pivotColumns),
+  removeGroupColumn,
   sortBy: gridModel => gridModel.sortColumns && mapSortColumns(gridModel.sortColumns),
   toggleGroupState,
   updateGroupColumn,

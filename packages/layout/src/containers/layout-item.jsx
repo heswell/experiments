@@ -16,7 +16,7 @@ PureLayoutItem.displayName = 'LayoutItem';
 export default function LayoutItem(props){
     const [layoutModel, dispatch] = useLayout({ layoutType: "FlexBox", props }/*, inheritedLayout*/);
      const [isSelected, onClick] = useSelection(layoutModel);
-
+console.log(`LayoutItem render`)
     // TODO do we need to use useLayout ?
     // TODO should we pass dispatch, title to the nested component ?
     const {children: component, title, ...componentProps} = props;

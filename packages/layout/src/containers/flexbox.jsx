@@ -27,7 +27,7 @@ const FlexBox = function FlexBox(props) {
     }, []);
 
     const splitterDragStart = (idx) => identifySplitChildren(idx);
-
+console.log('flexbox rener')
     const splitterMoved = distance => {
         const [idx1, , idx2] = splitChildren.current;
         const [dim] = getManagedDimension(layoutModel.style);

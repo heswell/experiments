@@ -171,6 +171,7 @@ export default class LocalDataSource extends EventEmitter {
   }
 
   group(columns) {
+    this.emit('group', columns);
     if (this.clientCallback){
       this.clientCallback(this.dataStore.groupBy(columns))
     } else if (this.dataStore){

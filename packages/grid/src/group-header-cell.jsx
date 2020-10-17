@@ -33,9 +33,7 @@ const GroupHeaderCell = ({
     column.current = groupCol;
   }, [groupCol])
 
-  const handleClick = () => {
-    onClick(groupCol);
-  }
+  const handleClick = () => onClick(groupCol);
 
   // All duplicated in header-cell
   const handleResizeStart = () => onResize('begin', column.current);

@@ -210,30 +210,11 @@ function sortRows(state, {column, direction, add=false, remove=false}){
 }
 
 /** @type {GridModelReducer<'group'>} */
-function groupRows(state, {column, direction, add, remove}){
+function groupRows(state, {columns=null}){
 
-  let groupBy;
-  let groupColumns;
+  const groupColumns = columns && columns.reduce((map, [columnName, direction]) => (map[columnName] = direction, map),{});
+  const {columnGroups} = buildColumnGroups(state, GridModel.columns(state), columns);
 
-  if (!state.groupColumns){
-    groupColumns = {[column.name]: direction || 'asc'};
-    groupBy = GridModel.groupBy({groupColumns});
-  } else if (add){
-    groupColumns = addSortColumn(state.groupColumns, column)
-    groupBy = GridModel.groupBy({groupColumns});
-  } else if (remove){
-    if (Object.keys(state.groupColumns).length === 1){
-      groupBy = null;
-      groupColumns = null;
-    } else {
-      groupColumns = removeSortColumn(state.groupColumns, column);
-      groupBy = GridModel.groupBy({groupColumns});
-    }
-  } else {
-    return state;
-  }
-
-  const {columnGroups} = buildColumnGroups(state, GridModel.columns(state), groupBy);
   return {
       ...state,
       groupColumns,

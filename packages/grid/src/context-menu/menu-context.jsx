@@ -1,5 +1,6 @@
 import React, {lazy, Suspense, useContext} from 'react'
 import GridContext from "../grid-context";
+import {GridModel} from '../grid-model-utils';
 import { PopupService } from '@heswell/popup';
 import {getMenuOptions} from './menu-descriptors';
 import * as Action from './context-menu-actions';
@@ -26,7 +27,7 @@ const MenuContext = React.createContext(null);
 
 const MenuContextProvider = ({children, showMenu}) => {
 
-  const { dispatchGridModelAction } = useContext(GridContext);
+  const { dispatchGridModelAction, dispatchGridAction, gridModel } = useContext(GridContext);
 
   const showContextMenu = showMenu || showDefaultContextMenu;
   
@@ -55,11 +56,17 @@ const MenuContextProvider = ({children, showMenu}) => {
       }
       case Action.Group: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'group', column});
+        return dispatchGridAction({
+          type: 'group', 
+          columns: GridModel.addGroupColumn({}, column)
+        });
       }
       case Action.GroupAdd: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'group', column, add: true});
+        return dispatchGridAction({
+          type: 'group', 
+          columns: GridModel.addGroupColumn(gridModel,column)
+        });
       }
       case Action.Pivot: {
         const {column} = options;

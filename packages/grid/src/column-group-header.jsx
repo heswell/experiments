@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useContext, useImperativeHandle, useRef } from "react";
 import cx from 'classnames';
 import GridContext from "./grid-context";
+import {GridModel} from './grid-model-utils';
 import ColumnGroupContext from "./column-group-context";
 
 import HeaderCell from "./header-cell";
@@ -18,7 +19,7 @@ const ColumnGroupHeader = React.memo(forwardRef(function ColumnGroupHeader({
 ) {
   const columnGroupHeader = useRef(null);
   const scrollingHeaderWrapper = useRef(null);
-  const { custom, dispatchGridModelAction, gridModel } = useContext(GridContext);
+  const { custom, dispatchGridAction, dispatchGridModelAction, gridModel } = useContext(GridContext);
 
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: (width) => {
@@ -46,8 +47,11 @@ const ColumnGroupHeader = React.memo(forwardRef(function ColumnGroupHeader({
   ,[columnGroup, columnGroupIdx])
 
   const handleRemoveGroup = useCallback(column => {
-    dispatchGridModelAction({ type: 'group', column, remove: true });
-  },[]);
+    dispatchGridAction({ 
+      type: 'group',
+      columns: GridModel.removeGroupColumn(gridModel, column)
+    });
+  },[gridModel]);
 
   const {customHeaderHeight: top, customInlineHeaderHeight, headerHeight, headingDepth, sortColumns} = gridModel;
   const height = headerHeight * headingDepth;

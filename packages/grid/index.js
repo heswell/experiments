@@ -1,5 +1,5 @@
 export {default as Grid} from './src/grid';
-export {default as BaseGrid} from './src/base-grid';
+export {default as GridBase} from './src/grid-base';
 export {default as GridContext} from './src/grid-context';
 export {default as ColumnGroupContext} from './src/column-group-context';
 export {default as useGridStyles} from './src/use-styles';

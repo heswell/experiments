@@ -6,7 +6,6 @@ import GridContext from "./grid-context";
 import {MenuProvider} from './context-menu/menu-context';
 import {ComponentProvider} from './component-context';
 import modelReducer, { initModel } from "./grid-model-reducer";
-import useGridAction from "./use-grid-action";
 import useStyles from './use-styles';
 import useEffectSkipFirst from './use-effect-skip-first';
 import useAdornments from './use-adornments';
@@ -15,11 +14,8 @@ import Viewport from "./viewport";
 import { measureColumns} from './grid-model-utils';
 import components from './standard-renderers';
 
-// TODO use a null datasource and empty columns defs
-// display a warning if loaded with no dataSOurce
-
 /** @type {GridComponent} */
-const BaseGrid = (props) => {
+const GridBase = (props) => {
   // TODO height needs to default to auto
   const gridEl = useRef(null);
   const viewport = useRef(null);
@@ -45,7 +41,7 @@ const BaseGrid = (props) => {
 
   },[]);
 
-  const handleHorizontalScrollStart = _scrollLeft => {
+  const handleHorizontalScrollStart = () => {
     if (!draggingColumn.current){
       viewport.current.beginHorizontalScroll();
       gridEl.current.classList.add("scrolling-x");
@@ -60,15 +56,22 @@ const BaseGrid = (props) => {
       const {headerHeight, headingDepth, customHeaderHeight, customInlineHeaderHeight} = gridModel;
       const totalHeaderHeight = headerHeight * headingDepth + customHeaderHeight + customInlineHeaderHeight;
       gridEl.current.style.paddingTop = totalHeaderHeight + 'px';
-      // scrollableHeader.current.endHorizontalScroll(scrollLeft);
     }
   };
 
-  const dispatchGridAction = useGridAction({
+  const invokeDataSourceOperation = (operation) => {
+    switch (operation.type){
+      case 'group': return dataSource.group(operation.columns);
+      default: console.log(`[GridBase] dataSourceOperation: unknown operation ${operation.type}`)
+    }
+  }
+
+  const dispatchGridAction = action => ({
+    "group": invokeDataSourceOperation,
     "selection": handleSelectionChange,
     "scroll-end-horizontal": handleHorizontalScrollEnd,
     "scroll-start-horizontal": handleHorizontalScrollStart
-  });
+  }[action.type])(action);
 
   const custom = useAdornments(props);
   
@@ -78,12 +81,32 @@ const BaseGrid = (props) => {
     initModel
   );
 
+  const datasourceHandler = useCallback((eventName, ...args) => {
+    switch(eventName){
+      case 'group': return dispatchGridModel({type: 'group', columns: args[0]});
+      default: 
+        console.log(`don't know how to handle data source event ${eventName}`)
+    }
+  },[])
+
+  // New 
+  useEffect(() => {
+    dataSource.on('*', datasourceHandler);
+    return () => {
+      console.log(`UNregister dataSource emitted events`);
+      dataSource.removeListener('*', datasourceHandler);
+    }
+  },[dataSource]);  
+
   //TODO do we need to useCallback here - can we ever send stale props ?
   useEffectSkipFirst(() => {
     dispatchGridModel({type: 'initialize', props});
     if (props.dataSource !== dataSource){
       setDataSource(props.dataSource)
     }
+
+    // register for dataSource events
+
   },[props.columns, props.columnSizing, props.dataSource, props.groupBy])
 
   useDataSourceModelBindings(dataSource, gridModel);
@@ -150,5 +173,5 @@ const BaseGrid = (props) => {
   );
 }
 
-export default BaseGrid;
+export default GridBase;
 
