@@ -211,6 +211,7 @@ export default class PerspectiveDataSource extends EventEmitter {
   }
 
   async group(groupColumns, pivotColumns) {
+    this.emit('group', groupColumns);
     const {groupBy, pivotBy} = this;
     this.groupBy = groupColumns ? groupColumns.map(([columnName]) => columnName) : undefined;
     this.pivotBy = pivotColumns ? pivotColumns.map(([columnName]) => columnName): undefined;
@@ -235,6 +236,7 @@ export default class PerspectiveDataSource extends EventEmitter {
   }
 
   async sort(columns) {
+    this.emit('sort', columns);
     if (columns){
       this.sortBy = columns.map(([name, dir]) => ([name, dir === 'dsc' ? 'desc' : 'asc']));
 

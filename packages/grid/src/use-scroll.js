@@ -14,7 +14,6 @@ export default function useScroll(scrollPos, callback, scrollThreshold = 0) {
       // important for the horizontal scroll on Canvas
       e.stopPropagation();
       const scrollPosition = e.target[scrollPos];
-      console.log(`scrollPosition = ${scrollPosition}`)
       if (scrollPosition !== pos.current) {
         pos.current = scrollPosition;
         if (timeoutHandle.current === null) {

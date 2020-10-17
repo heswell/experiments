@@ -57,7 +57,6 @@ function setSize(state, { rowCount }) {
 //TODO we HAVE to remove out=of-range rows and add empty placeholders
 /** @type {DataReducer} */
 function setRange(state, { range }) {
-  console.log(`setRange ${range.lo} ${range.hi}`)
   // return {
   //   ...state,
   //   range,
@@ -99,7 +98,7 @@ function setData(state, action) {
   //     ? action.range
   //     : state.range;
   const range = action.range;
-  console.log(`setData <<<<<<<  incoming... ${rows.length} rows range ${range.lo} ${range.hi}`)
+  //console.log(`setData <<<<<<<  incoming... ${rows.length} rows range ${range.lo} ${range.hi}`)
   // console.table(rows)
 
   // console.log(`setData <<<<<<<  existing...`)

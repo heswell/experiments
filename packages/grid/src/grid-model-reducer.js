@@ -206,7 +206,6 @@ function sortRows(state, {columns}){
 
 /** @type {GridModelReducer<'group'>} */
 function groupRows(state, {columns=null}){
-
   const groupColumns = columns && columns.reduce((map, [columnName, direction]) => (map[columnName] = direction, map),{});
   const {columnGroups} = buildColumnGroups(state, GridModel.columns(state), columns);
 
