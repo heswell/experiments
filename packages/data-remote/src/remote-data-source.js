@@ -146,6 +146,7 @@ export default class RemoteDataSource  extends EventEmitter {
   }
 
   group(columns) {
+    this.emit('group', columns);
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.groupBy,
@@ -162,6 +163,7 @@ export default class RemoteDataSource  extends EventEmitter {
   }
 
   sort(columns) {
+    this.emit('sort', columns);
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.sort,

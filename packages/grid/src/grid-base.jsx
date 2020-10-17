@@ -62,12 +62,14 @@ const GridBase = (props) => {
   const invokeDataSourceOperation = (operation) => {
     switch (operation.type){
       case 'group': return dataSource.group(operation.columns);
+      case 'sort': return dataSource.sort(operation.columns);
       default: console.log(`[GridBase] dataSourceOperation: unknown operation ${operation.type}`)
     }
   }
 
   const dispatchGridAction = action => ({
     "group": invokeDataSourceOperation,
+    "sort": invokeDataSourceOperation,
     "selection": handleSelectionChange,
     "scroll-end-horizontal": handleHorizontalScrollEnd,
     "scroll-start-horizontal": handleHorizontalScrollStart
@@ -84,6 +86,7 @@ const GridBase = (props) => {
   const datasourceHandler = useCallback((eventName, ...args) => {
     switch(eventName){
       case 'group': return dispatchGridModel({type: 'group', columns: args[0]});
+      case 'sort': return dispatchGridModel({type: 'sort', columns: args[0]});
       default: 
         console.log(`don't know how to handle data source event ${eventName}`)
     }

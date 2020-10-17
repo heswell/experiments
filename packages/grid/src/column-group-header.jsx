@@ -21,6 +21,21 @@ const ColumnGroupHeader = React.memo(forwardRef(function ColumnGroupHeader({
   const scrollingHeaderWrapper = useRef(null);
   const { custom, dispatchGridAction, dispatchGridModelAction, gridModel } = useContext(GridContext);
 
+const sortIndicator = (sortColumns, column) => {
+  if (!sortColumns){
+    return undefined;
+  } else {
+    const multiColumnSort = Object.keys(sortColumns).length > 1;
+    const sorted = sortColumns[column.name];
+    return sorted === undefined
+      ? undefined
+      : multiColumnSort
+        ? sorted
+        : sorted > 0 ? 'asc' : 'dsc'
+  }
+  
+}
+
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: (width) => {
       columnGroupHeader.current.style.width = width + 'px';
@@ -63,9 +78,9 @@ const ColumnGroupHeader = React.memo(forwardRef(function ColumnGroupHeader({
           className={cx({[classes.noBottomBorder]: item.label === ''})}
           column={item}
           onResize={handleHeadingResize}
-          // onMove={onColumnMove}
       />
   )
+
 
   const { contentWidth, headings = [], width } = columnGroup;
   return (
@@ -98,7 +113,7 @@ const ColumnGroupHeader = React.memo(forwardRef(function ColumnGroupHeader({
             key={column.key}
             onDrag={handleDrag}
             onResize={handleColumnResize}
-            sorted={sortColumns ? sortColumns[column.name]: undefined}
+            sorted={sortIndicator(sortColumns, column)}
           />
         ))}
       </div>

@@ -36,19 +36,31 @@ const MenuContextProvider = ({children, showMenu}) => {
     switch (type){
       case Action.SortAscending: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'sort', column, direction: 'asc'});
+        return dispatchGridAction({
+          type: 'sort', 
+          columns: GridModel.setSortColumn(gridModel, column)
+        });
       }
       case Action.SortDescending: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'sort', column, direction: 'dsc'});
+        return dispatchGridAction({
+          type: 'sort', 
+          columns: GridModel.setSortColumn(gridModel, column, 'dsc')
+        });
       }
       case Action.SortAddAscending: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'sort', column, direction: 'asc', add: true});
+        return dispatchGridAction({
+          type: 'sort', 
+          columns: GridModel.addSortColumn(gridModel, column)
+        });
       }
       case Action.SortAddDescending: {
         const {column} = options;
-        return dispatchGridModelAction({type: 'sort', column, direction: 'dsc', add: true});
+        return dispatchGridAction({
+          type: 'sort', 
+          columns: GridModel.addSortColumn(gridModel, column, 'dsc')
+        });
       }
       case Action.SortRemove: {
         const {column} = options;

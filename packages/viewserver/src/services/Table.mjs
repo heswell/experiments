@@ -7,7 +7,7 @@ export default class Table extends BaseTable {
         try {
             const {default: data} = await import(`${dataPath}.mjs`);
             if (data) {
-                this.parseData(data);
+                this.load(data);
             } 
         } catch(e){
             console.error(`failed to load data from path '${dataPath}'`, e)

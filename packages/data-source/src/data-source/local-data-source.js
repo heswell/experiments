@@ -188,7 +188,7 @@ export default class LocalDataSource extends EventEmitter {
   }
 
   sort(columns) {
-    console.log(columns)
+    this.emit('sort', columns);
     if (this.clientCallback){
       this.clientCallback(this.dataStore.sort(columns));
     } else if (this.dataStore){

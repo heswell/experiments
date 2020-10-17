@@ -1,6 +1,7 @@
 import React, {useCallback, useContext, useRef} from "react";
 import cx from 'classnames';
 import GridContext from "./grid-context";
+import {GridModel} from './grid-model-utils';
 import useContextMenu from './context-menu/use-context-menu';
 import useStyles from './use-styles';
 import {useDragStart} from './use-drag';
@@ -13,7 +14,7 @@ const HeaderCell = function HeaderCell({ className, column, onDrag, onResize, so
   const el = useRef(null);
   const col = useRef(column);
   const isResizing = useRef(false);
-  const {dispatchGridModelAction} = useContext(GridContext);
+  const {dispatchGridAction, gridModel} = useContext(GridContext);
   // essential that handlers for resize do not use stale column
   // we could mitigate this by only passing column key and passing delta,
   // so we don't rely on current width in column
@@ -31,7 +32,10 @@ const HeaderCell = function HeaderCell({ className, column, onDrag, onResize, so
     if (isResizing.current){
       isResizing.current = false;
     } else {
-      dispatchGridModelAction({type: 'sort', column});
+      dispatchGridAction({
+        type: 'sort',
+        columns: GridModel.setSortColumn(gridModel, column)
+      });
     }
   }
 

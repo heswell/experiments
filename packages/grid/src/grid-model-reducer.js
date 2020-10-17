@@ -1,4 +1,4 @@
-import { addSortColumn, metadataKeys, removeSortColumn, setSortColumn } from '@heswell/utils'
+import { addSortColumn, metadataKeys, removeSortColumn, sortByToMap } from '@heswell/utils'
 import {
   assignKeysToColumns,
   columnKeysToIndices,
@@ -195,13 +195,8 @@ function toggleRow(state, {row}){
 }
 
 /** @type {GridModelReducer<'sort'>} */
-function sortRows(state, {column, direction, add=false, remove=false}){
-
-  const sortColumns = add 
-    ? addSortColumn(state.sortColumns, column, direction)
-    : remove
-      ? removeSortColumn(state.sortColumns, column)
-      : setSortColumn(state.sortColumns, column, direction);
+function sortRows(state, {columns}){
+  const sortColumns = columns && sortByToMap(columns);
 
   return {
     ...state,
