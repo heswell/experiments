@@ -145,7 +145,7 @@ const DraggableLayout = ({ children: childrenProp, layoutModel: inheritedLayout 
             dispatch: dispatchLayoutAction
         };
 
-        dragComponent = <LayoutItem {...layoutItemProps}>{componentFromLayout(draggedItemLayoutModel)}</LayoutItem>;
+        dragComponent = <LayoutItem className="dragging" {...layoutItemProps}>{componentFromLayout(draggedItemLayoutModel)}</LayoutItem>;
 
     }
 

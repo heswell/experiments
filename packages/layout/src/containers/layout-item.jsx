@@ -62,7 +62,7 @@ console.log(`LayoutItem render`)
 
 
     const {LayoutItem, selected} = useStyles();
-    const className = cx(LayoutItem, {
+    const className = cx(LayoutItem, props.className, {
         [selected]: isSelected
     })
     const {computedStyle, children: [{computedStyle: style}]} = layoutModel;

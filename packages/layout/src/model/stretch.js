@@ -106,14 +106,6 @@ export function stretchLayout(config) {
   // Note, when passed an absolute layoutStyle, top appears to be ignored
   const node = stretchNode(config);
   const layout = node.computeLayout();
-  console.log({
-    layout: {
-      x: layout.x,
-      y: layout.y,
-      w: layout.width,
-      h: layout.height
-    }
-  })
   node.free();
   setComputedStyle(config, layout);
   setChildStyles(config, layout);
@@ -150,14 +142,6 @@ function setComputedStyle(config, { x: left, y: top, width, height }) {
 function setChildStyles(config, layout) {
   for (let i = 0, count = layout.childCount; i < count; i++) {
     const childConfig = config.children[i]
-    console.log(config.children[i].type, {
-      childLayout: {
-        x: layout.child(i).x,
-        y: layout.child(i).y,
-        w: layout.child(i).width,
-        h: layout.child(i).height
-      }
-    });
     setComputedStyle(childConfig, layout.child(i));
     setChildStyles(childConfig, layout.child(i));
   }

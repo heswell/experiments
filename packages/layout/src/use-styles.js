@@ -27,7 +27,11 @@ export default createUseStyles(theme => ({
     }
   },
   LayoutItem: {
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
+    "&.dragging": {
+      border: "solid red 1px",
+      zIndex: 2 
+    }
   },
   selected: {
     "&:after": {
@@ -37,10 +41,11 @@ export default createUseStyles(theme => ({
       left: 0,
       top: 0,
       right: 0,
-      botttom: 0,
+      bottom: 0,
       height:'100%',
       border: 'solid 2px cornflowerblue',
       boxSizing: 'border-box',
+      zIndex: 1
     },
     "&> *": {
       zIndex: 1
