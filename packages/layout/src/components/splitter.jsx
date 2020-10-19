@@ -1,112 +1,97 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useCallback, useEffect, useRef } from 'react';
 import cx from 'classnames';
 
-var _splitter,
-    _mousedown = false,
-    _direction,
-    _diff = 0;
+const useLatestHandler = (handler) => {
+    const latestHandler = useRef(handler);
+    useEffect(() => {
+        latestHandler.current = handler;
+    }, [handler]);
+    return latestHandler;
+}
 
-
-export default class Splitter extends React.Component {
-
-    render() {
-
-        const { computedStyle: style } = this.props.layoutModel
-
-        // onsole.log(`%c     Splitter ${top},${left},${width},${height}`,`background-color:brown;color:lime;`);
-
-        var className = cx(
-            'Splitter',
-            this.props.className
-        );
-
-        return <div className={className} style={style} />
+const MIN_GRIP_SIZE = 10;
+const DEFAULT_GRIP = {top:0, right:0, bottom:0, left: 0};
+const getGripStyle = ({width, height}, direction) => {
+    if (direction === 'vertical'){
+        if (height < MIN_GRIP_SIZE){
+            const diff = MIN_GRIP_SIZE - height;
+            return {
+                top: -Math.ceil(diff/2),
+                right: 0,
+                bottom: -Math.ceil(diff/2),
+                left: 0 
+            }
+        }
+    } else {
+        if (width < MIN_GRIP_SIZE){
+            const diff = MIN_GRIP_SIZE - width;
+            return {
+                top: 0,
+                right: -Math.ceil(diff/2),
+                bottom: 0,
+                left: -Math.ceil(diff/2) 
+            };
+        }
     }
 
-    componentDidMount() {
-        this._mouseDownHandler = this.handleMousedown.bind(this);
-        ReactDOM.findDOMNode(this).addEventListener('mousedown', this._mouseDownHandler, false);
-    }
+    return DEFAULT_GRIP;
+}
 
-    componentWillUnmount() {
-        ReactDOM.findDOMNode(this).removeEventListener('mousedown', this._mouseDownHandler, false);
-        this._mouseDownHandler = null;
-    }
+const Splitter = ({ absIdx, className, direction, layoutModel, onDrag, onDragEnd, onDragStart }) => {
 
-    handleMousedown(e) {
+    const root = useRef(null);
+    const lastPos = useRef(null);
 
-        _splitter = this;
-        _mousedown = true;
-        _diff = 0;
+    const handleDrag = useLatestHandler(onDrag);
+  
+    const handleMouseMove = useCallback(evt => {
+        const clientPos = direction === 'vertical' ? "clientY" : "clientX";
+        const pos = evt[clientPos];
+        const diff = pos - lastPos.current;
+        // we seem to get a final value of zero
+        if (pos && (pos !== lastPos.current)) {
+            handleDrag.current(diff);
+        }
+        lastPos.current = pos;
+    }, [])
 
-        initDrag.call(this, e);
+    const handleMouseUp = useCallback(e => {
+        window.removeEventListener("mousemove", handleMouseMove, false);
+        window.removeEventListener("mouseup", handleMouseUp, false);
+        onDragEnd();
+    }, [onDragEnd])
 
-        window.addEventListener("mousemove", mouseMoved, false);
-        window.addEventListener("mouseup", mouseUp, false);
+    const handleMouseDown = useCallback(e => {
+        lastPos.current = direction === "vertical" ? e.clientY : e.clientX;
+        onDragStart(absIdx);
 
+        window.addEventListener("mousemove", handleMouseMove, false);
+        window.addEventListener("mouseup", handleMouseUp, false);
         e.preventDefault();
-    }
+
+    }, [absIdx, onDragStart]);
+
+    useEffect(() => {
+        root.current.addEventListener('mousedown', handleMouseDown, false);
+        return () => {
+            root.current.removeEventListener('mousedown', handleMouseDown, false);
+        }
+    }, [])
+
+    const { computedStyle: style } = layoutModel
+    var className = cx(
+        'Splitter',
+        className
+    );
+
+    const gripStyle = getGripStyle(style, direction); 
+    return (
+        <div className={className} ref={root} style={{...style, overflow: 'visible'}}>
+            <div className="splitter-handle" style={{position: 'absolute', ...gripStyle, backgroundColor: 'rgba(0,0,0,.01)', zIndex: 1}}/>
+        </div>
+    )
 
 }
 
-function mouseMoved(evt) {
-    return onDrag.call(_splitter, evt)
-}
-
-function mouseUp(evt) {
-    return onDragEnd.call(_splitter, evt)
-}
-
-function initDrag(e) {
-
-    _direction = this.props.direction;
-
-    var vertical = _direction === "vertical";
-    // var dim = vertical ? "height" : "width";
-
-    this.lastPos = (vertical ? e.clientY : e.clientX);
-
-    this.props.onDragStart(this.props.absIdx);
-
-}
-
-function onDrag(evt) {
-
-    var clientPos/*,
-        dimension*/;
-
-    if (_direction === 'vertical') {
-        clientPos = "clientY";
-        // dimension = "height";
-    }
-    else {
-        clientPos = "clientX";
-        // dimension = "width";
-    }
-
-    var pos = evt[clientPos],
-        diff = pos - this.lastPos;
-
-
-    // we seem to get a final value of zero
-    if (pos && (pos !== this.lastPos)) {
-        this.props.onDrag(diff);
-    }
-
-    this.lastPos = pos;
-
-}
-
-function onDragEnd() {
-
-    _mousedown = false;
-    _splitter = null;
-
-    window.removeEventListener("mousemove", mouseMoved, false);
-    window.removeEventListener("mouseup", mouseUp, false);
-
-    this.props.onDragEnd();
-
-}
+export default Splitter;

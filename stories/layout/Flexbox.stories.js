@@ -1,6 +1,5 @@
 import React from 'react';
-import styled from '@emotion/styled';
-import { DesignProvider, LayoutToolbar } from '../components/design-time';
+import {TerraceAlignment} from '../components/alignment-tools/terrace-with-alignment';
 
 import { FlexBox, TabbedContainer, DynamicContainer, Component } from '@heswell/layout';
 import './layout.css';
@@ -12,12 +11,6 @@ export default {
   component: FlexBox
 };
 
-const StyledItem = styled.div`
-  box-sizing: border-box;
-  border: solid 1px #ccc;
-  height: 100%;
-  width: 100%;
-`;
 
 export const SingleChild = () =>
   <FlexBox style={{ width: 600, height: 300, flexDirection: 'row', border: '2px solid black', backgroundColor: '#ccc' }}>
@@ -53,27 +46,7 @@ export const TowerWithinTerrace = () =>
     </FlexBox>
   </FlexBox>
 
-const inputStyle = { minWidth: 80, maxWidth: 120, flex: '1 1 80px', minHeight: 24, maxHeight: 24 }
-
-export const TerraceAlignment = () => {
-
-  return (
-    <DesignProvider>
-      <FlexBox
-        header={{ height: 61, component: LayoutToolbar }}
-        style={{
-          width: 600,
-          height: 300,
-          border: '2px solid black',
-        }}>
-        <StyledItem style={inputStyle} >Item 1</StyledItem>
-        <StyledItem style={inputStyle} >Item 2</StyledItem>
-        <StyledItem style={inputStyle} >Item 3</StyledItem>
-        <StyledItem style={inputStyle} >Item 4</StyledItem>
-      </FlexBox>
-    </DesignProvider>
-  )
-};
+export const TerraceWithAlignment = () => <TerraceAlignment />;
 
 export const QuadTerraceWithinTower = () =>
   <FlexBox style={{ flexDirection: 'column', width: 500, height: 500, }}>

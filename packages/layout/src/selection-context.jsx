@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 const SelectionContext = React.createContext(null);
 export default SelectionContext;
@@ -24,11 +24,19 @@ export const SelectionProvider = ({children, onSelect}) => {
 }
 
 export const useSelection = (layoutModel) => {
-  const context = useContext(SelectionContext);
-  if (context && layoutModel){
-    const  [selected, setSelected] = context;
+  const context = useContext(SelectionContext) || [];
+  const  [selected, setSelected] = context;
+  const isSelected = selected && selected.$id === layoutModel.$id;
+
+  useEffect(() => {
+    if (isSelected && layoutModel !== selected){
+      setSelected(layoutModel);
+    }
+  },[isSelected, layoutModel]);
+
+  if (context.length && layoutModel){
     return [
-      selected?.$id === layoutModel.$id,
+      isSelected,
       e => {
         console.log(`set selected ${layoutModel.type} ${layoutModel.$id}`)
         if (selected?.$id === layoutModel.$id){

@@ -6,7 +6,9 @@ export default DesignContext;
 export const DesignProvider = props => {
 
   const handleSelect = selectedItem => {
-    console.log(`item selected`, selectedItem)
+    if (props.onSelect){
+      props.onSelect(selectedItem);
+    }
   }
 
   return (

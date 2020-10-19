@@ -1,9 +1,10 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import { Action, stretchAlign, stretchDirection, stretchJustify } from '@heswell/layout';
+import { Action } from '@heswell/layout';
 import StateButton from './state-button';
 import LayoutIcon from './assets/LayoutIcon';
 import LayoutToolbarContext from './LayoutToolbarContext';
+import { recomputeLayoutStyle} from './design-utils';
 
 const LayoutToolbar = styled.div`
   background-color: white;
@@ -27,30 +28,6 @@ justify-content: space-between;
 }
 `;
 
-const stretchStyle = (attribute, value) => {
-  switch(attribute){
-    case 'alignItems': return stretchAlign(value);
-    case 'justifyContent': return stretchJustify(value);
-    case 'flexDirection': return stretchDirection(value);
-    default: return 0;
-  }
-}
-
-const recomputeLayoutStyle = (layoutModel, attribute, value) => {
-  const { layoutStyle, style } = layoutModel;
-  return {
-    ...layoutModel,
-    style: {
-      ...style,
-      [attribute]: value
-    },
-    layoutStyle: {
-      ...layoutStyle,
-      [attribute]: stretchStyle(attribute, value)
-    }
-
-  }
-}
 
 const DesignTimeToolbar = (props) => {
 
@@ -58,7 +35,7 @@ const DesignTimeToolbar = (props) => {
   const { style: { alignItems = "stretch", flexDirection="row", justifyContent = "flex-start" } } = layoutModel;
 
   const handleChange = (name, value) => {
-    const replacement = recomputeLayoutStyle(layoutModel, name, value)
+    const replacement = recomputeLayoutStyle(layoutModel, name, value);
 
     dispatch({
       type: Action.REPLACE,

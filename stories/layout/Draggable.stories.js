@@ -53,8 +53,8 @@ export const DeeperNesting = () =>
   </DraggableLayout>
 
 export const DeeperNestingNoHandles = () =>
-  <SelectionProvider>
-    <DraggableLayout>
+  // <SelectionProvider>
+  //   <DraggableLayout>
       <FlexBox style={{ width: 800, height: 500, flexDirection: 'row' }} splitterSize={1}>
         <DraggableBox title='Y Component' style={{ flex: 1, backgroundColor: 'yellow' }} resizeable />
         <FlexBox style={{ flex: 1, flexDirection: 'column' }} resizeable splitterSize={1}>
@@ -69,8 +69,8 @@ export const DeeperNestingNoHandles = () =>
           <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1, backgroundColor: 'red' }} resizeable />
         </FlexBox>
       </FlexBox>
-    </DraggableLayout>
-  </SelectionProvider>
+  //   </DraggableLayout>
+  // </SelectionProvider>
 
 export const ComplexNestedLayout = () =>
   <DraggableLayout>

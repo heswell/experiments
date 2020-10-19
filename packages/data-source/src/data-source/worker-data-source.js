@@ -127,8 +127,9 @@ export default class WorkerDataSource extends EventEmitter {
     // })
   }
 
-  group(groupBy) {
-    this.worker.postMessage({type: 'groupBy', groupBy});
+  group(columns) {
+    this.emit('group', columns);
+    this.worker.postMessage({type: 'groupBy', groupBy: columns});
   }
 
   setGroupState(groupState) {
@@ -139,6 +140,7 @@ export default class WorkerDataSource extends EventEmitter {
   }
 
   sort(columns) {
+    this.emit('sort', columns);
     this.worker.postMessage({
       type: 'sort',
       sortCriteria: columns
