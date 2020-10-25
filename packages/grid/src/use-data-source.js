@@ -1,92 +1,84 @@
 // @ts-nocheck
-import {useCallback, useEffect, useRef, useState} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import dataReducer from './grid-data-reducer';
 
 //TODO allow subscription details to be set before subscribe call
-export default function useDataSource(dataSource, subscriptionDetails, callback){
+export default function useDataSource(dataSource, subscriptionDetails, callback) {
 
   const isRunning = useRef(false);
   const frame = useRef(null);
+  
   const latestState = useRef(null);
-  const messagesPerRender = useRef(0);
-
-  // dev stats
-  const startTime = useRef(0)
-  const messageCount = useRef(0);
-  const renderCount = useRef(0);
-
-  const [data, setState] = useState(dataReducer(undefined, {type: 'clear'}));
-
-  const dispatchData = action => setState(state => latestState.current = dataReducer(state, action));
-
-  const dispatchUpdate = useCallback(action => {
-    messageCount.current += 1;
-    messagesPerRender.current += 1;
-    latestState.current = dataReducer(latestState.current, action);
-  },[]);
-
-  const init = () => {
-    renderCount.current = 0;
-    messageCount.current = 0;
+  function getLatestState(){
+    let instance = latestState.current;
+    if (instance !== null){
+      return instance;
+    }
+    let newInstance = dataReducer(undefined, { 
+      type: 'clear', 
+      range: subscriptionDetails.range,
+      bufferSize: dataSource.bufferSize
+    })
+    latestState.current = newInstance;
+    return newInstance;
   }
 
+  getLatestState();
+
+  const messagesPerRender = useRef(0);
+
+  const [rows, setRows] = useState(latestState.current.rows);
+
+  const dispatchData = action => {
+    latestState.current = dataReducer(latestState.current, action);
+    // only if they have changed ...
+    setRows(latestState.current.rows);
+  }
+
+  const dispatchUpdate = useCallback(action => {
+    messagesPerRender.current += 1;
+    latestState.current = dataReducer(latestState.current, action);
+  }, []);
+
   const applyUpdate = () => {
-    if (messagesPerRender.current > 0){
-      renderCount.current += 1;
-      setState(latestState.current);
-      // Only
-      // dataSource.worker.postMessage({type: 'rate', value: messagesPerRender.current})
-      // console.log(`messages per render = ${messagesPerRender.current}`)
+    if (messagesPerRender.current > 0) {
+      setRows(latestState.current.rows);
       messagesPerRender.current = 0;
     }
 
-    if (isRunning.current){
+    if (isRunning.current) {
+      //TODO disable the timeouts if we're scrolling
       // TODO pair this with a timeout that turns update mode back off if we go a while without updates
       frame.current = requestAnimationFrame(applyUpdate)
     }
   }
 
+  const setRange = useCallback((lo, hi) => {
+    dispatchData({type: 'range', range: {lo,hi}});
+    if (latestState.current.dataRequired){
+      console.log(`%csetRange [${lo},${hi}] dataRequired`,'color:brown;font-weight: bold;')
+      dataSource.setRange(lo, hi);
+    } else {
+      console.log(`setRange [${lo},${hi}] NO dataRequired`)
+    }
+  }, [dataSource]);
+
   useEffect(() => {
-    console.log(`%c Viewport useEffect dataSource changed - subscribe to new datasource`,'color:blue;font-weight:bold;', dataSource)
-     init();
-    // dispatchData({type: 'clear'});
+    console.log(`%c Viewport useEffect dataSource changed - subscribe to new datasource`, 'color:blue;font-weight:bold;', dataSource)
 
     dataSource.subscribe(subscriptionDetails,
-      /* postMessageToClient */
-      msg => {
-        if (msg.type === 'subscribed'){
-          callback('subscribed', msg.columns);
-          //dispatchGridModelAction({type: 'set-columns', columns: msg.columns})
-        } else if (msg.size !== undefined){
-          callback('size', msg.size);
-        } else if (msg.type === 'pivot'){
-          callback('pivot', msg.columns);
-        } else if (msg.type === 'test-started'){
-          //----------------- Test Only ----------------------
-          init();
-            // isRunning.current = true;
-            startTime.current = performance.now();
-        } else if (msg.type === 'test-ended'){
-          isRunning.current = false;
-          if (frame.current){
-            cancelAnimationFrame(frame.current);
-            frame.current = null;
-           }
-           applyUpdate();
-           const {messageCount, updateCount} = msg;
-           const end = performance.now();
-           const elapsed = Math.round(end - startTime.current);
-           const mps = Math.floor(((messageCount * updateCount)/ elapsed) * 1000)
-           dataSource.emit('message', `test ended ${messageCount} messages, totalling ${messageCount * updateCount} updates
-            took ${elapsed}ms
-             ${renderCount.current} renders
-             ${Math.round((renderCount.current/ elapsed) * 1000)} frames per second
-             ${new Intl.NumberFormat('en-UK', { maximumSignificantDigits: 3 }).format(mps)} updates per second 
-          `);
-           //----------------- Test Only ----------------------
+      function datasourceMessageHandler({ type: messageType, ...msg }) {
+        if (messageType === 'subscribed') {
+          return callback(messageType, msg.columns);
         }
-        
-        if (msg.filter !== undefined){
+        if (msg.size !== undefined) {
+          callback('size', msg.size);
+        } else if (msg.type === 'pivot') {
+          // Callback is for data oriented operations, should this be emitted ?
+          callback('pivot', msg.columns);
+        }
+
+        if (msg.filter !== undefined) {
           dataSource.emit('filter', msg.filter);
         }
 
@@ -94,17 +86,17 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
           dispatchData({
             type: "data",
             rows: msg.rows,
-            rowCount: msg.size,
+            rowCount: msg.size, // why the discrepance netween rowCount & size ?
             offset: msg.offset,
             range: msg.range,
           });
-        } else if (msg.updates){
+        } else if (msg.updates) {
           dispatchUpdate({
             type: 'update',
             updates: msg.updates
           })
 
-          if (!isRunning.current){
+          if (!isRunning.current) {
             isRunning.current = true;
             applyUpdate();
           }
@@ -118,12 +110,12 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
         type: "data",
         rows: [],
         rowCount: 0,
-        range: {lo:0, hi:0}
+        range: { lo: 0, hi: 0 }
       });
     }
-    
+
   }, [dataSource]);
 
 
-  return data;
+  return [rows, setRange];
 }

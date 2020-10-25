@@ -224,11 +224,15 @@ type RowKeys = {
 }
 
 type GridData = {
-  offset: number;
+  bufferIdx: {lo: number, hi: number },
+  buffer: any[],
+  bufferSize: number,
   rows: any[];
+  offset: number;
   rowCount: number;
   range: RowsetRange;
-  _keys: RowKeys
+  keys: RowKeys,
+  dataRequired: boolean
 };
 
 type DataAction = any;

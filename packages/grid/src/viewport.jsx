@@ -89,14 +89,6 @@ const Viewport = forwardRef(function Viewport(
     }
   }));
 
-  // I don't think we should need this
-  const setRange = useCallback(
-    (lo, hi) => {
-      dataSource.setRange(lo, hi);
-    },
-    [dataSource]
-  );
-
   const handleColumnBearerScroll = scrollDistance =>
     canvasRefs.current[scrollableCanvasIdx].current.scrollBy(scrollDistance);
 
@@ -122,6 +114,37 @@ const Viewport = forwardRef(function Viewport(
     }
   },[gridModel, onColumnDrop, columnDragData]);
 
+      // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
+    // dataSource has changed
+    const subscriptionDetails = {
+      columnNames: gridModelRef.current.columnNames,
+      range: { lo: 0, hi: gridModelRef.current.viewportRowCount }
+    }
+  
+    //TODO useCallback for this callback
+    const [rows, setRange] = useDataSource(dataSource, subscriptionDetails, (type, options) => {
+      switch(type){
+        case 'subscribed':
+          dispatchGridModelAction({type: 'set-available-columns', columns: options})
+           break;
+        case 'pivot':
+            dispatchGridModelAction({type: 'set-pivot-columns', columns: options})
+           break;
+        case 'size':
+            // How do we handle this withoput having this dependency on gridModel ?
+            // THis is the important one, it comes with every rowSet
+            contentHeight.current = options * gridModel.rowHeight;
+            if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0){
+              verticalScrollbarWidth.current = 15;
+            } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15){
+              verticalScrollbarWidth.current = 0;
+            }
+          break;
+  
+        default:
+     }
+    });
+  
   useUpdate(() => {
     setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount);
   },[gridModel.viewportRowCount]);
@@ -155,41 +178,10 @@ const Viewport = forwardRef(function Viewport(
 
   const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
 
-    // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
-    // dataSource has changed
-  const subscriptionDetails = {
-    columnNames: gridModelRef.current.columnNames,
-    range: { lo: 0, hi: gridModelRef.current.viewportRowCount }
-  }
-
-  //TODO useCallback for this callback
-  const data = useDataSource(dataSource, subscriptionDetails, (type, options) => {
-    switch(type){
-      case 'subscribed':
-        dispatchGridModelAction({type: 'set-available-columns', columns: options})
-         break;
-      case 'pivot':
-          dispatchGridModelAction({type: 'set-pivot-columns', columns: options})
-         break;
-      case 'size':
-          // How do we handle this withoput having this dependency on gridModel ?
-          // THis is the important one, it comes with every rowSet
-          contentHeight.current = options * gridModel.rowHeight;
-          if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0){
-            verticalScrollbarWidth.current = 15;
-          } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15){
-            verticalScrollbarWidth.current = 0;
-          }
-        break;
-
-      default:
-   }
-  });
-
   const classes = useStyles();
 
   const toggleStrategy = useMemo(() => getToggleStrategy(dataSource), [dataSource]);
-
+  console.log(`%cViewport render`,'color: blue;font-weight: bold;')
   return (
     <>
       <div
@@ -215,7 +207,7 @@ const Viewport = forwardRef(function Viewport(
               onColumnDragStart={onColumnDragStart}
               ref={canvasRefs.current[idx]}
               rowHeight={gridModel.rowHeight}
-              rows={data.rows}
+              rows={rows}
               toggleStrategy={toggleStrategy} // brand new, not well thought out yet
             />
           )) : null}
@@ -230,7 +222,7 @@ const Viewport = forwardRef(function Viewport(
             onDrag={handleColumnDrag}
             onScroll={handleColumnBearerScroll}
             ref={columnBearer}
-            rows={data.rows}
+            rows={rows}
           />
         </>}
     </>

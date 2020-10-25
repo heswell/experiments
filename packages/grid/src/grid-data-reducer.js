@@ -1,84 +1,91 @@
 
 import { metadataKeys, update as updateRows } from "@heswell/utils";
+import { bufferMinMax, firstAndLastIdx, range as $range, rangeLowHigh, reassignKeys } from './grid-data-helpers';
 import * as Action from "./grid-data-actions";
 
+const { IDX, RENDER_IDX } = metadataKeys;
 
-const INITIAL_RANGE = { lo: 0, hi: -1 };
-
-/** @type {() =>  GridData} */
-export const initData = () => ({
+/** @type {(any) =>  GridData} */
+export const initData = ({ range, bufferSize = 100 }) => ({
+  //TODO RingBuffer ?
+  bufferIdx: { lo: 0, hi: 0 },
+  buffer: [],
+  bufferSize,
   rows: [],
   rowCount: 0,
-  range: INITIAL_RANGE,
+  range,
   offset: 0,
-  _keys: {
+  keys: {
     free: [],
     used: {}
-  }
+  },
+  dataRequired: true
 });
 
 // This assumes model.meta never changes. If it does (columns etc)
 // we will need additional action types to update
 /** @type {DataReducer} */
-export default (state=initData(), action) => {
-    if (action.type === "range") {
-      return setRange(state, action);
-    } else if (action.type === "data") {
-      return setData(state, action);
-    } else if (action.type === "update") {
-      return applyUpdates(state, action);
-    } else if (action.type === Action.ROWCOUNT) {
-      return setSize(state, action);
-    } else if (action.type === 'clear'){
-      return initData();
-    } else {
-      throw Error(`GridDataReducer unknown action type ${action.type}`);
-    }
+export default (state = initData({}), action) => {
+  if (action.type === "range") {
+    return setRange(state, action);
+  } else if (action.type === "data") {
+    return setData(state, action);
+  } else if (action.type === "update") {
+    return applyUpdates(state, action);
+  } else if (action.type === Action.ROWCOUNT) {
+    return setSize(state, action);
+  } else if (action.type === 'clear') {
+    return initData({ range: action.range, bufferSize: action.bufferSize });
+  } else {
+    throw Error(`GridDataReducer unknown action type ${action.type}`);
+  }
 }
 
-function setKeys(keys, { lo, hi }) {
-  const free = [];
-  const keyCount = hi - lo;
-  for (let i = 0; i < keyCount; i++) {
-    const usedKey = keys.used[i];
-    if (usedKey === 3 || usedKey === undefined) {
-      free.push(i);
-    }
-  }
-  return {
-    used: keys.used,
-    free
-  };
-}
 function setSize(state, { rowCount }) {
   return { ...state, rowCount };
 }
-
 //TODO we HAVE to remove out=of-range rows and add empty placeholders
 /** @type {DataReducer} */
 function setRange(state, { range }) {
-  // return {
-  //   ...state,
-  //   range,
-  //   _keys: setKeys(state._keys, range)
-  // }
-  const { rows, rowCount, offset } = state;
-  const keys = setKeys(state._keys, range);
 
-  const [mergedRows, _keys] =
-    rows.length === 0
-      ? [rows, keys]
-      : mergeAndPurge(range, rows, offset, [], rowCount, keys);
+  if (state.range === undefined || range.lo !== state.range.lo || range.hi !== state.range.hi) {
 
-  // const selected = rows.filter(row => row[SELECTED]).map(row => row[IDX]);
-  return {
-    rows: mergedRows,
-    rowCount,
-    offset,
-    range,
-    _keys
-  };
+    const [low, high] = rangeLowHigh(range, state.offset, state.rowCount);
+    let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
+
+    if (low >= firstBufIdx && high <= lastBufIdx) {
+      // we have all required data in buffer already
+      const bufferIdx = {
+        lo: low - firstBufIdx,
+        hi: high - firstBufIdx
+      };
+
+      reassignKeys(state, bufferIdx);
+      const direction = scrollDirection(state.range, range);
+      return {
+        ...state,
+        bufferIdx,
+        rows: state.buffer.slice(bufferIdx.lo, bufferIdx.hi),
+        range,
+        dataRequired: (
+          (direction === 'FWD' && lastBufIdx - high < state.bufferSize / 2) ||
+          (direction === 'BWD' && low < state.bufferSize / 2)) ? true : false
+      }
+
+    } else {
+      return {
+        ...state,
+        range,
+        dataRequired: true
+      }
+    }
+
+  } else {
+    return state;
+  }
+
 }
+
 
 function applyUpdates(state, action) {
   const rows = updateRows(state.rows, action.updates, metadataKeys);
@@ -90,155 +97,133 @@ function applyUpdates(state, action) {
 
 /** @type {DataReducer} */
 function setData(state, action) {
-  // const { IDX, SELECTED } = meta;
-  // console.log(`data-reducer setData ${action.range.lo} ${action.range.hi}`)
-  const { rows, rowCount, offset } = action;
-  // const range =
-  //   action.range.reset || state.range === INITIAL_RANGE
-  //     ? action.range
-  //     : state.range;
-  const range = action.range;
-  //console.log(`setData <<<<<<<  incoming... ${rows.length} rows range ${range.lo} ${range.hi}`)
-  // console.table(rows)
-
-  // console.log(`setData <<<<<<<  existing...`)
-  // console.table(state.rows)
-
-  const [mergedRows, _keys] = mergeAndPurge(
-    range,
-    state.rows,
-    offset,
-    rows,
+  const { offset, rowCount } = action;
+  const [buffer, bufferIdx, keys, rowsChanged] = addToBuffer(
+    state,
+    action.rows,
     rowCount,
-    state._keys
+    offset,
   );
 
-  // console.log(`setData >>>>>>  out...`)
-  // console.table(mergedRows)
   return {
-    rows: mergedRows,
+    bufferIdx,
+    buffer,
+    bufferSize: state.bufferSize,
+    rows: rowsChanged ? buffer.slice(bufferIdx.lo, bufferIdx.hi) : state.rows,
     rowCount,
     offset,
-    range,
-    _keys
+    range: state.range,
+    keys,
+    dataRequired: false
   };
 }
 
 // TODO create a pool of these and reuse them
-function emptyRow(idx, ) {
+function emptyRow(idx,) {
   const { IDX, count } = metadataKeys;
   const row = Array(count);
   row[IDX] = idx;
   return row;
 }
 
-/** @type {(...args: any[]) => [any[], RowKeys]} */
-function mergeAndPurge(
-  { lo, hi },
-  rows,
-  offset = 0,
+/** @type {(...args: any[]) => [any[], {lo:number, hi:number}, RowKeys, boolean]} */
+function addToBuffer(
+  state,
   incomingRows,
   size,
-  keys
+  offset = 0,
 ) {
-  // console.log(`dataReducer.mergeAndPurge: entry
-  //   range ${lo} - ${hi}
-  //   keys:
-  //     free: ${keys.free.join(',')}
-  //     used : ${Object.keys(keys.used).join(',')}
-  //     existing rows : ${rows.map(r=>r[meta.IDX]-offset).join(',')}
-  //     incoming rows : ${incomingRows.map(r=>r[meta.IDX]-offset).join(',')}
-  // `)
 
-  const { IDX, RENDER_IDX } = metadataKeys;
+  const { buffer, bufferSize, range, rows, keys } = state;
+  const [firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows);
+  let [firstBufIdx, lastBufIdx] = firstAndLastIdx(buffer);
+  const [bufferMin, bufferMax] = bufferMinMax(range, size, bufferSize, offset);
   const { free: freeKeys, used: usedKeys } = keys;
-  const low = lo + offset;
-  const high = Math.min(hi + offset, size + offset);
-  const rowCount = hi - lo;
-  const results = [];
-  /** @type {{[key: number]: number}} */
-  const used = {};
-  /** @type {number[]} */
-  const free = freeKeys.slice();
+  const [low, high] = rangeLowHigh(range, offset, size);
 
   let maxKey = rows.length;
-  let pos, row, rowIdx, rowKey;
+  let row, rowIdx, rowKey;
+  let rowsChanged = true;
 
-  // 1) iterate existing rows, copy to correct slot in results if still in range
-  //    if not still in range, collect rowKey
+  if (firstBufIdx !== -1 && firstBufIdx < bufferMin) {
+    const doomedCount = bufferMin - firstBufIdx;
+    buffer.splice(0, doomedCount);
+    firstBufIdx = bufferMin;
 
-  for (let i = 0; i < rows.length; i++) {
-    row = rows[i];
-    if (row) {
-      rowIdx = row[IDX];
-      rowKey = row[RENDER_IDX];
-      pos = rowIdx - low;
-
-      if (usedKeys[rowKey] === 1 && rowIdx >= low && rowIdx < high) {
-        results[pos] = rows[i];
-        used[rowKey] = 1;
-      } else if (usedKeys[rowKey] === 1 && rowKey < rowCount) {
-        free.push(rowKey);
-        used[rowKey] = undefined;
-      }
-    }
+  } else if (lastBufIdx !== -1 && lastBufIdx > bufferMax) {
+    const doomedCount = lastBufIdx - bufferMax + 1;
+    buffer.splice(-doomedCount, doomedCount);
+    lastBufIdx = bufferMax;
   }
 
-  // 2) iterate new rows, if not already in results (shouldn't be) , move to correct slot in results
-  //      assign rowKey from free values
-  for (let i = 0; i < incomingRows.length; i++) {
+  if (firstBufIdx === -1) {
+    firstBufIdx = firstRowIdx;
+  }
+  if (lastBufIdx === -1) {
+    lastBufIdx = lastRowIdx;
+  }
+
+
+  const writePosition = firstRowIdx - firstBufIdx;
+  if (writePosition < 0){
+    firstBufIdx += writePosition;
+  }
+
+  const lo = low - firstBufIdx;
+  const hi = high - firstBufIdx;
+
+  if (firstRowIdx >= high || lastRowIdx < low) {
+    rowsChanged = false;
+  } else {
+    reassignKeys(state, { lo, hi });
+  }
+
+  const count = incomingRows.length
+  for (let i = 0, idx = writePosition; i < count; i++, idx++) {
     row = incomingRows[i];
-    if (row) {
-      rowIdx = row[IDX];
-      pos = rowIdx - low;
+    rowIdx = row[IDX];
 
-      if (rowIdx >= low && rowIdx < high) {
-        if (results[pos]) {
-          rowKey = results[pos][RENDER_IDX];
-        } else {
-          rowKey = free.shift();
-          if (rowKey === undefined) {
-            rowKey = maxKey++;
-          }
-          used[rowKey] = 1;
-        }
-        results[pos] = row;
-        row[RENDER_IDX] = rowKey;
+    if (rowIdx >= low && rowIdx < high) {
+      if (buffer[idx]) {
+        // is this right - it is if we're replacing the same row
+        rowKey = buffer[idx][RENDER_IDX];
       } else {
-        console.warn("new row outside range");
+        rowKey = freeKeys.shift();
       }
-    }
-  }
-  // 3) assign empty row to any free slots in results
-  // TODO make this more efficient
-  // TODO how do we determine this -2
-  for (let i = 0, freeIdx = 0; i < rowCount; i++) {
-    if (results[i] === undefined) {
-      const row = (results[i] = emptyRow(i + low));
-      if (free[freeIdx] === undefined){
-        free[freeIdx] = i;
+      if (rowKey === undefined) {
+        rowKey = maxKey++;
+        usedKeys[rowKey] = 1;
       }
-      rowKey = free[freeIdx++]; // don't remove from free
       row[RENDER_IDX] = rowKey;
-      used[rowKey] = 3;
+    }
+    if (idx < 0) {
+      // not efficient, to be addressed
+      buffer.splice(-writePosition - -idx, 0, row);
+    } else {
+      buffer[idx] = row;
     }
   }
-
-  //   console.log(`dataReducer.mergeAndPurge: exit
-  //   range ${lo} - ${hi}
-  //   keys:
-  //     free: ${free.join(',')}
-  //     used : ${Object.keys(used).join(',')}
-  //     row keys : ${results.map(r=>r[RENDER_IDX]).join(',')}
-  // `)
-
-  // console.table(results)
 
   return [
-    results,
+    buffer,
+    { lo, hi },
     {
-      free,
-      used
-    }
+      free: freeKeys,
+      used: usedKeys
+    },
+    rowsChanged
   ];
+}
+
+
+function scrollDirection(range1, range2) {
+  if (range1 === null) {
+    return 'INIT';
+  } else if (range2.lo > range1.lo) {
+    return 'FWD';
+  } else if (range2.lo < range1.lo) {
+    return 'BWD';
+  } else {
+    return 'UNKNOWN'
+  }
 }
