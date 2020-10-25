@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import Selector, {ComponentType} from '../inform/controls/selector/selector';
+import Selector, {ComponentType} from '../form/controls/selector/selector';
 import {searcher} from '../list';
 
 import './select.css';

@@ -1,5 +1,5 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import Selector from '../inform/controls/selector/selector';
+import Selector from '../form/controls/selector/selector';
 
 import './combo-box.css';
 

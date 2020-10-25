@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {format, parseISO} from 'date-fns';
-import Calendar from '../inform/controls/calendar';
-import Selector,  {ComponentType} from '../inform/controls/selector/selector';
+import Calendar from '../form/controls/calendar';
+import Selector,  {ComponentType} from '../form/controls/selector/selector';
 
 import './date-picker.css';
 
