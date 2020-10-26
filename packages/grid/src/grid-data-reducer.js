@@ -5,6 +5,16 @@ import * as Action from "./grid-data-actions";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
+const dupeCheck = rows => {
+  const map = {}
+  for (let i=0;i<rows.length;i++){
+    if (map[rows[i][RENDER_IDX]] !== undefined) {
+      debugger;
+    }
+    map[rows[i][RENDER_IDX]] = true;
+  }
+}
+
 /** @type {(any) =>  GridData} */
 export const initData = ({ range, bufferSize = 100 }) => ({
   //TODO RingBuffer ?
@@ -53,7 +63,7 @@ function setRange(state, { range }) {
     const [low, high] = rangeLowHigh(range, state.offset, state.rowCount);
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
 
-    if (low >= firstBufIdx && high <= lastBufIdx) {
+    if (low >= firstBufIdx && high <= lastBufIdx + 1) {
       // we have all required data in buffer already
       const bufferIdx = {
         lo: low - firstBufIdx,
@@ -62,10 +72,15 @@ function setRange(state, { range }) {
 
       reassignKeys(state, bufferIdx);
       const direction = scrollDirection(state.range, range);
+
+      const rows = state.buffer.slice(bufferIdx.lo, bufferIdx.hi);
+
+      dupeCheck(rows);
+
       return {
         ...state,
         bufferIdx,
-        rows: state.buffer.slice(bufferIdx.lo, bufferIdx.hi),
+        rows,
         range,
         dataRequired: (
           (direction === 'FWD' && lastBufIdx - high < state.bufferSize / 2) ||
@@ -146,6 +161,15 @@ function addToBuffer(
   let rowsChanged = true;
 
   if (firstBufIdx !== -1 && firstBufIdx < bufferMin) {
+    // before we remove, do we need to reclaim keys ?
+    for (let i=firstBufIdx;i<bufferMin; i++){
+      const [bil, bih] = rangeLowHigh(state.bufferIdx, offset, size);
+      if (i >= bil && i< bih){
+        const rowKey = buffer[i-offset][RENDER_IDX];
+        freeKeys.push(rowKey);
+        usedKeys[rowKey] = undefined;
+      }
+    }
     const doomedCount = bufferMin - firstBufIdx;
     buffer.splice(0, doomedCount);
     firstBufIdx = bufferMin;

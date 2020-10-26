@@ -1,6 +1,6 @@
 import { metadataKeys } from "@heswell/utils";
 
-const { IDX, RENDER_IDX } = metadataKeys;
+const { RENDER_IDX } = metadataKeys;
 
 export function firstAndLastIdx(rows) {
   const count = rows.length;
@@ -43,14 +43,16 @@ export function reassignKeys(state, { lo, hi }) {
 
   // rows that have moved out of range need to give back their key
   if (lo > bufferIdx.lo) {
-    // reclaim keys
-    for (let i = bufferIdx.lo; i < lo; i++) {
+    // reclaim keys, careful not to go beyond the range where we have keys
+    const stop = Math.min(lo, bufferIdx.hi);
+    for (let i = bufferIdx.lo; i < stop; i++) {
       // we can just leave the key in the out-of-range row, it will be reassigned a key if it comes back into range
       const rowKey = buffer[i][RENDER_IDX];
       freeKeys.push(rowKey);
       usedKeys[rowKey] = undefined;
     }
   } else if (lo < bufferIdx.lo) {
+    // Is this right - do these rows actually have keys ?
     for (let i = lo; i < bufferIdx.lo; i++) {
       // we can just leave the key in the out-of-range row, it will be reassigned a key if it comes back into range
       const rowKey = buffer[i][RENDER_IDX];
@@ -61,12 +63,16 @@ export function reassignKeys(state, { lo, hi }) {
 
   // rows that have moved into range need to be assigned key
   if (hi > bufferIdx.hi) {
-    const stop = Math.min(hi, buffer.length)
     // assign keys
-    for (let i = bufferIdx.hi; i < stop; i++) {
+    const stop = Math.min(hi, buffer.length)
+    const start = Math.max(lo, bufferIdx.hi);
+    for (let i = start; i < stop; i++) {
       let rowKey = freeKeys.shift();
       if (rowKey === undefined) {
         rowKey = maxKey++;
+      }
+      if (usedKeys[rowKey] === 1){
+        debugger;
       }
       usedKeys[rowKey] = 1;
       buffer[i][RENDER_IDX] = rowKey;
@@ -76,6 +82,9 @@ export function reassignKeys(state, { lo, hi }) {
       let rowKey = freeKeys.shift();
       if (rowKey === undefined) {
         rowKey = maxKey++;
+      }
+      if (usedKeys[rowKey] === 1){
+        debugger;
       }
       usedKeys[rowKey] = 1;
       buffer[i][RENDER_IDX] = rowKey;
