@@ -1,6 +1,4 @@
-import {DataType} from '../store/types';
 import { DataSource, SubscriptionOptions } from './data-source';
-import { Column } from '@heswell/ingrid';
 
 export interface Stats {
   totalRowCount: number;
@@ -20,9 +18,9 @@ type Events = {
 }
 
 declare class FilterDataSource extends EventEmitter<Events> {
-  constructor(dataSource: DataSource, column: Column, options: any);
+  constructor(dataSource: DataSource, column: any, options: any);
   group: (groupBy: any) => void;
-  setRange: (lo: number, hi: number, dataType?: DataType) => void;
+  setRange: (lo: number, hi: number, dataType?: any) => void;
   subscribe: (options: SubscriptionOptions, callback:() => void) => Promise<void>;
   select: (idx: number, rangeSelect: boolean, keepExistingSelection: boolean) => void;
   setGroupState: (groupState: any) => void;

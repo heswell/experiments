@@ -1,10 +1,9 @@
-import {Column} from '@heswell/ingrid';
 
 type sortDirection = 'asc' | 'dsc';
 type sortColumn = [string, sortDirection];
 
 export interface SubscriptionOptions {
-  columns: Column[];
+  columns: any[];
   range?: Range;
 }
 

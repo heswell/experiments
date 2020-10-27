@@ -30,5 +30,14 @@ module.exports = {
   [127, 0, 0, 0, 0, 'key-27'],
   [128, 0, 0, 0, 0, 'key-28'],
   [129, 0, 0, 0, 0, 'key-29'],
-]
+],
+getRows: (from, to, offset=100) => {
+  const results = [];
+  for (let i=from; i<to; i++){
+    results.push([i+offset, 0,0,0, `key-${format(i)}`])
+  }
+  return results;
 }
+}
+
+const format = n => `000${n}`.slice(-3);

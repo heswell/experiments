@@ -1,5 +1,5 @@
 const { GridDataReducer } = require('../dist/index.js');
-const { rows } = require('./test-data.js');
+const { rows, getRows } = require('./test-data.js');
 
 describe('grid-data-reducer', () => {
 
@@ -310,6 +310,72 @@ describe('grid-data-reducer', () => {
   describe('dataRequired', () => {
 
     test('no data required on snall scrolls', () => {
+
+    })
+  });
+
+  describe('real world tests', () => {
+
+    test.only('doomed rows removed, keys reclaimed', () => {
+      let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 100, range: { lo: 0, hi: 20 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(0,120)});
+      state = GridDataReducer(state, { type: 'range', range: { lo: 3, hi: 23 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 16, hi: 36 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 46, hi: 66 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 73, hi: 93 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(120,193)});
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 103, hi: 123 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 122, hi: 142 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 137, hi: 157 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(193,257)});
+      expect(state.buffer.length).toBe(220);
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 150, hi: 170 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 160, hi: 180 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 165, hi: 185 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 168, hi: 188 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 170, hi: 190 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 172, hi: 192 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 174, hi: 194 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 175, hi: 195 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 177, hi: 197 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 178, hi: 198 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 180, hi: 200 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 181, hi: 201 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 182, hi: 202 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 183, hi: 203 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 184, hi: 204 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 185, hi: 205 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 186, hi: 206 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 187, hi: 207 } });
+
+      // we\re gaining 150 rows here and losing 50, we end up with 320 - is this right ?
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(257,407)});
+      expect(state.buffer.length).toBe(320);
+
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 188, hi: 208 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 189, hi: 209 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 190, hi: 210 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 191, hi: 211 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 192, hi: 212 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 193, hi: 213 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 194, hi: 214 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 195, hi: 215 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 203, hi: 223 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 211, hi: 231 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 237, hi: 257 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(407,457)});
+      expect(state.buffer.length).toBe(320);
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 269, hi: 289 } });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 290, hi: 310 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows:getRows(457,510)});
+
+      expect(state.buffer.length).toBe(320);
+
+
 
     })
   })

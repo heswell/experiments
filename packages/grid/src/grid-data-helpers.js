@@ -71,9 +71,6 @@ export function reassignKeys(state, { lo, hi }) {
       if (rowKey === undefined) {
         rowKey = maxKey++;
       }
-      if (usedKeys[rowKey] === 1){
-        debugger;
-      }
       usedKeys[rowKey] = 1;
       buffer[i][RENDER_IDX] = rowKey;
     }
@@ -82,9 +79,6 @@ export function reassignKeys(state, { lo, hi }) {
       let rowKey = freeKeys.shift();
       if (rowKey === undefined) {
         rowKey = maxKey++;
-      }
-      if (usedKeys[rowKey] === 1){
-        debugger;
       }
       usedKeys[rowKey] = 1;
       buffer[i][RENDER_IDX] = rowKey;

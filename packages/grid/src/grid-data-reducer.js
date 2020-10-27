@@ -77,6 +77,10 @@ function setRange(state, { range }) {
 
       dupeCheck(rows);
 
+      if (state.keys.free.length > 0){
+        debugger;
+      }
+  
       return {
         ...state,
         bufferIdx,
@@ -120,6 +124,10 @@ function setData(state, action) {
     offset,
   );
 
+    if (keys.free.length > 0){
+      debugger;
+    }
+
   return {
     bufferIdx,
     buffer,
@@ -161,16 +169,16 @@ function addToBuffer(
   let rowsChanged = true;
 
   if (firstBufIdx !== -1 && firstBufIdx < bufferMin) {
+    const doomedCount = bufferMin - firstBufIdx;
     // before we remove, do we need to reclaim keys ?
-    for (let i=firstBufIdx;i<bufferMin; i++){
-      const [bil, bih] = rangeLowHigh(state.bufferIdx, offset, size);
-      if (i >= bil && i< bih){
+    for (let index=0,i=firstBufIdx;i<bufferMin; i++, index++){
+      // apply the doomedCount to offset as the index will be adjusted once we remove the rows
+      if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi){
         const rowKey = buffer[i-offset][RENDER_IDX];
         freeKeys.push(rowKey);
         usedKeys[rowKey] = undefined;
       }
     }
-    const doomedCount = bufferMin - firstBufIdx;
     buffer.splice(0, doomedCount);
     firstBufIdx = bufferMin;
 
@@ -226,6 +234,10 @@ function addToBuffer(
     } else {
       buffer[idx] = row;
     }
+  }
+
+  if (keys.free.length > 0){
+    debugger;
   }
 
   return [
