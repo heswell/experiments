@@ -35,7 +35,9 @@ export function range(rows) {
 // Given a new bufferIdx, compare with the existing bufferIdx,
 // see which rows are moving into/out of range and transfer keys
 // accordingly
-export function reassignKeys(state, { lo, hi }) {
+// The idxOffset allows for leading buffer items which have been removed, 
+// requiring an adjustment to the original bufferIdx
+export function reassignKeys(state, { lo, hi }, idxOffset=0) {
 
   // assign keys to the items moving into range
   const { buffer, bufferIdx, keys: { free: freeKeys, used: usedKeys } } = state;
@@ -44,8 +46,9 @@ export function reassignKeys(state, { lo, hi }) {
   // rows that have moved out of range need to give back their key
   if (lo > bufferIdx.lo) {
     // reclaim keys, careful not to go beyond the range where we have keys
-    const stop = Math.min(lo, bufferIdx.hi);
-    for (let i = bufferIdx.lo; i < stop; i++) {
+    const start = Math.max(0, bufferIdx.lo - idxOffset);
+    const stop = Math.min(lo, bufferIdx.hi-idxOffset);
+    for (let i = start; i < stop; i++) {
       // we can just leave the key in the out-of-range row, it will be reassigned a key if it comes back into range
       const rowKey = buffer[i][RENDER_IDX];
       freeKeys.push(rowKey);
@@ -65,7 +68,7 @@ export function reassignKeys(state, { lo, hi }) {
   if (hi > bufferIdx.hi) {
     // assign keys
     const stop = Math.min(hi, buffer.length)
-    const start = Math.max(lo, bufferIdx.hi);
+    const start = Math.max(lo, bufferIdx.hi - idxOffset);
     for (let i = start; i < stop; i++) {
       let rowKey = freeKeys.shift();
       if (rowKey === undefined) {

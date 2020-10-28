@@ -75,19 +75,13 @@ function setRange(state, { range }) {
 
       const rows = state.buffer.slice(bufferIdx.lo, bufferIdx.hi);
 
-      dupeCheck(rows);
-
-      if (state.keys.free.length > 0){
-        debugger;
-      }
-  
       return {
         ...state,
         bufferIdx,
         rows,
         range,
         dataRequired: (
-          (direction === 'FWD' && lastBufIdx - high < state.bufferSize / 2) ||
+          (direction === 'FWD' && (lastBufIdx < state.rowCount + state.offset - 1) && lastBufIdx - high < state.bufferSize / 2) ||
           (direction === 'BWD' && low < state.bufferSize / 2)) ? true : false
       }
 
@@ -123,10 +117,6 @@ function setData(state, action) {
     rowCount,
     offset,
   );
-
-    if (keys.free.length > 0){
-      debugger;
-    }
 
   return {
     bufferIdx,
@@ -167,9 +157,10 @@ function addToBuffer(
   let maxKey = rows.length;
   let row, rowIdx, rowKey;
   let rowsChanged = true;
+  let removedFromFrontOfBuffer = 0
 
   if (firstBufIdx !== -1 && firstBufIdx < bufferMin) {
-    const doomedCount = bufferMin - firstBufIdx;
+    removedFromFrontOfBuffer = bufferMin - firstBufIdx;
     // before we remove, do we need to reclaim keys ?
     for (let index=0,i=firstBufIdx;i<bufferMin; i++, index++){
       // apply the doomedCount to offset as the index will be adjusted once we remove the rows
@@ -179,7 +170,7 @@ function addToBuffer(
         usedKeys[rowKey] = undefined;
       }
     }
-    buffer.splice(0, doomedCount);
+    buffer.splice(0, removedFromFrontOfBuffer);
     firstBufIdx = bufferMin;
 
   } else if (lastBufIdx !== -1 && lastBufIdx > bufferMax) {
@@ -207,7 +198,7 @@ function addToBuffer(
   if (firstRowIdx >= high || lastRowIdx < low) {
     rowsChanged = false;
   } else {
-    reassignKeys(state, { lo, hi });
+    reassignKeys(state, { lo, hi }, removedFromFrontOfBuffer);
   }
 
   const count = incomingRows.length
@@ -224,8 +215,8 @@ function addToBuffer(
       }
       if (rowKey === undefined) {
         rowKey = maxKey++;
-        usedKeys[rowKey] = 1;
       }
+      usedKeys[rowKey] = 1;
       row[RENDER_IDX] = rowKey;
     }
     if (idx < 0) {
@@ -234,10 +225,6 @@ function addToBuffer(
     } else {
       buffer[idx] = row;
     }
-  }
-
-  if (keys.free.length > 0){
-    debugger;
   }
 
   return [
