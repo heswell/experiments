@@ -34,10 +34,6 @@ describe('grid-data-reducer', () => {
       })
     });
 
-  });
-
-  describe('data', () => {
-
     test('initial load', () => {
       const initialState = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
       const state = GridDataReducer(initialState, {
@@ -62,6 +58,11 @@ describe('grid-data-reducer', () => {
       ]);
 
     })
+
+
+  });
+
+  describe('FWD scrolling', () => {
 
     test('scroll 1 row', () => {
       let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
@@ -235,6 +236,51 @@ describe('grid-data-reducer', () => {
       ]);
 
     });
+
+    test('jump to end', () => {
+      let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 100, rows: getRows(0,30) });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 90, hi: 100 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 100, rows: getRows(70,100) });
+
+      expect(state.buffer.length).toBe(30);
+      expect(state.rows).toEqual([
+        [ 190, 0, 0, 0, 'key-090' ],
+        [ 191, 1, 0, 0, 'key-091' ],
+        [ 192, 2, 0, 0, 'key-092' ],
+        [ 193, 3, 0, 0, 'key-093' ],
+        [ 194, 4, 0, 0, 'key-094' ],
+        [ 195, 5, 0, 0, 'key-095' ],
+        [ 196, 6, 0, 0, 'key-096' ],
+        [ 197, 7, 0, 0, 'key-097' ],
+        [ 198, 8, 0, 0, 'key-098' ],
+        [ 199, 9, 0, 0, 'key-099' ]
+       ]);
+    });
+  });
+
+  describe('BWD scrolling', () => {
+
+    test(`scroll back 1 row`, () => {
+      let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 100, rows: getRows(0,30) });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 90, hi: 100 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 100, rows: getRows(70,100) });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 89, hi: 99 } });
+      expect(state.rows).toEqual([
+        [ 189, 9, 0, 0, 'key-089' ],
+        [ 190, 0, 0, 0, 'key-090' ],
+        [ 191, 1, 0, 0, 'key-091' ],
+        [ 192, 2, 0, 0, 'key-092' ],
+        [ 193, 3, 0, 0, 'key-093' ],
+        [ 194, 4, 0, 0, 'key-094' ],
+        [ 195, 5, 0, 0, 'key-095' ],
+        [ 196, 6, 0, 0, 'key-096' ],
+        [ 197, 7, 0, 0, 'key-097' ],
+        [ 198, 8, 0, 0, 'key-098' ]       ]);
+
+    })
+
 
   })
 
@@ -419,7 +465,7 @@ describe('grid-data-reducer', () => {
 
 
     })
-  })
+  });
 
 
 });
