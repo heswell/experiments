@@ -27,6 +27,7 @@ const CHECKBOX_COLUMN = {
   }
 };
 
+const RENDER_BUFFER = 25;
 const RESIZING = {resizing: true};
 const NOT_RESIZING = {resizing: false};
 
@@ -128,7 +129,7 @@ export const initModel = ([gridProps, custom]) => {
   state.headingDepth = headingDepth;
   state.horizontalScrollbarHeight = getHorizontalScrollbarHeight(columnGroups);
   state.viewportHeight = height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
-  state.viewportRowCount =  Math.ceil((height - totalHeaderHeight) / rowHeight) + 1;
+  state.viewportRowCount =  Math.ceil((height - totalHeaderHeight) / rowHeight) + 1 + RENDER_BUFFER;
 
   return state;
 };
@@ -157,7 +158,7 @@ function setPivotColumns(state, action){
       headingDepth,
       horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
       viewportHeight: state.height - totalHeaderHeight,
-      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1
+      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1 + RENDER_BUFFER
     };
     
 }
@@ -175,7 +176,7 @@ function setAvailableColumns(state, action){
       headingDepth,
       horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
       viewportHeight: state.height - totalHeaderHeight,
-      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1
+      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1 + RENDER_BUFFER
     };
     
   } else {

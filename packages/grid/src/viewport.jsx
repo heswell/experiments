@@ -121,8 +121,7 @@ const Viewport = forwardRef(function Viewport(
       range: { lo: 0, hi: gridModelRef.current.viewportRowCount }
     }
   
-    //TODO useCallback for this callback
-    const [rows, setRange] = useDataSource(dataSource, subscriptionDetails, (type, options) => {
+    const dataSourceCallback = useCallback((type, options) => {
       switch(type){
         case 'subscribed':
           dispatchGridModelAction({type: 'set-available-columns', columns: options})
@@ -143,29 +142,15 @@ const Viewport = forwardRef(function Viewport(
   
         default:
      }
-    });
+    },[dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
+
+    //TODO useCallback for this callback
+    const [rows, setRange] = useDataSource(dataSource, subscriptionDetails, dataSourceCallback);
   
   useUpdate(() => {
     setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount);
   },[gridModel.viewportRowCount]);
 
-  const scrollCallback = useCallback(
-    (scrollEvent, scrollTop) => {
-      if (scrollEvent === "scroll") {
-        const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
-        if (firstRow !== firstVisibleRow.current) {
-          firstVisibleRow.current = firstRow;
-          setRange(firstRow, firstRow + gridModel.viewportRowCount);
-        }
-      } else if (scrollEvent === "scroll-start") {
-        canvasRefs.current.forEach(({current}) => current.beginVerticalScroll( ));
-      } else {
-        const scrollTop = viewportEl.current.scrollTop;
-        canvasRefs.current.forEach(({current}) => current.endVerticalScroll(scrollTop));
-      }
-    },
-    [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
-  );
 
     useLayoutEffect(() => {
       if (columnDragData){
@@ -176,6 +161,23 @@ const Viewport = forwardRef(function Viewport(
       }
     },[columnDragData])
 
+    const scrollCallback = useCallback(
+      (scrollEvent, scrollTop) => {
+        if (scrollEvent === "scroll") {
+          const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
+          if (firstRow !== firstVisibleRow.current) {
+            firstVisibleRow.current = firstRow;
+            setRange(firstRow, firstRow + gridModel.viewportRowCount);
+          }
+        } else if (scrollEvent === "scroll-start") {
+          canvasRefs.current.forEach(({current}) => current.beginVerticalScroll( ));
+        } else {
+          canvasRefs.current.forEach(({current}) => current.endVerticalScroll(scrollTop));
+        }
+      },
+      [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
+    );
+  
   const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
 
   const classes = useStyles();
