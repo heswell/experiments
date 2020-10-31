@@ -56,15 +56,11 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
   const setRange = useCallback((lo, hi) => {
     dispatchData({type: 'range', range: {lo,hi}});
     if (latestState.current.dataRequired){
-      console.log(`%csetRange [${lo},${hi}] dataRequired`,'color:brown;font-weight: bold;')
       dataSource.setRange(lo, hi);
-    } else {
-      console.log(`setRange [${lo},${hi}] NO dataRequired`)
     }
   }, [dataSource]);
 
   useEffect(() => {
-    console.log(`%c Viewport useEffect dataSource changed - subscribe to new datasource`, 'color:blue;font-weight:bold;', dataSource)
 
     dataSource.subscribe(subscriptionDetails,
       function datasourceMessageHandler({ type: messageType, ...msg }) {

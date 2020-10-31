@@ -37,53 +37,64 @@ export function range(rows) {
 // accordingly
 // The idxOffset allows for leading buffer items which have been removed, 
 // requiring an adjustment to the original bufferIdx
-export function reassignKeys(state, { lo, hi }, idxOffset=0) {
+export function reassignKeys(state, { lo, hi }, direction, idxOffset=0) {
   // What about scenario where range increases/shrinks ?
   // assign keys to the items moving into range
   const { buffer, bufferIdx, keys: { free: freeKeys, used: usedKeys } } = state;
   let maxKey = state.rows.length;
 
-  // rows that have moved out of range need to give back their key
-  if (lo > bufferIdx.lo) {
+  // rows that have moved out of range need to give back their key, unless we have already removed them,
+  // in which case we will have already retrieved the key
+  if (direction === 'FWD') {
     // reclaim keys, careful not to go beyond the range where we have keys
     const start = Math.max(0, bufferIdx.lo - idxOffset);
     const stop = Math.min(lo, bufferIdx.hi-idxOffset);
     for (let i = start; i < stop; i++) {
       // we can just leave the key in the out-of-range row, it will be reassigned a key if it comes back into range
-      const rowKey = buffer[i][RENDER_IDX];
-      freeKeys.push(rowKey);
-      usedKeys[rowKey] = undefined;
+      if (buffer[i]){
+        const rowKey = buffer[i][RENDER_IDX];
+        freeKeys.push(rowKey);
+        usedKeys[rowKey] = undefined;
+      }
     }
-  } else if (hi < bufferIdx.hi) {
-    for (let i = hi; i < bufferIdx.hi; i++) {
-      // we can just leave the key in the out-of-range row, it will be reassigned a key if it comes back into range
-      const rowKey = buffer[i][RENDER_IDX];
-      freeKeys.push(rowKey);
-      usedKeys[rowKey] = undefined;
+  } else if (direction === 'BWD') {
+    const start = Math.max(hi, bufferIdx.lo);
+    // this isn't great, we can be looping over a ranbge which has been entirely removed
+    for (let i = start; i < bufferIdx.hi; i++) {
+      if (buffer[i]){
+        const rowKey = buffer[i][RENDER_IDX];
+        freeKeys.push(rowKey);
+        usedKeys[rowKey] = undefined;
+      }
     }
   }
 
   // rows that have moved into range need to be assigned key
-  if (hi > bufferIdx.hi) {
+  if (direction === 'FWD') {
     // assign keys
     const stop = Math.min(hi, buffer.length)
     const start = Math.max(lo, bufferIdx.hi - idxOffset);
     for (let i = start; i < stop; i++) {
-      let rowKey = freeKeys.shift();
-      if (rowKey === undefined) {
-        rowKey = maxKey++;
+      if (buffer[i]){
+        let rowKey = freeKeys.shift();
+        if (rowKey === undefined) {
+          rowKey = maxKey++;
+        }
+        usedKeys[rowKey] = 1;
+        buffer[i][RENDER_IDX] = rowKey;
       }
-      usedKeys[rowKey] = 1;
-      buffer[i][RENDER_IDX] = rowKey;
     }
-  } else if (lo < bufferIdx.lo) {
-    for (let i = lo; i < bufferIdx.lo; i++) {
-      let rowKey = freeKeys.shift();
-      if (rowKey === undefined) {
-        rowKey = maxKey++;
+  } else if (direction === 'BWD') {
+    const stop = Math.min(hi, bufferIdx.lo)
+    for (let i = lo; i < stop; i++) {
+      if (buffer[i]){
+        let rowKey = freeKeys.shift();
+        if (rowKey === undefined) {
+          rowKey = maxKey++;
+        }
+        usedKeys[rowKey] = 1;
+        buffer[i][RENDER_IDX] = rowKey;
       }
-      usedKeys[rowKey] = 1;
-      buffer[i][RENDER_IDX] = rowKey;
     }
   }
 

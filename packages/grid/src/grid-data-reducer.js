@@ -7,7 +7,7 @@ const { IDX, RENDER_IDX } = metadataKeys;
 
 const dupeCheck = rows => {
   const map = {}
-  for (let i=0;i<rows.length;i++){
+  for (let i = 0; i < rows.length; i++) {
     if (map[rows[i][RENDER_IDX]] !== undefined) {
       debugger;
     }
@@ -70,8 +70,9 @@ function setRange(state, { range }) {
         hi: high - firstBufIdx
       };
 
-      reassignKeys(state, bufferIdx);
       const direction = scrollDirection(state.range, range);
+
+      reassignKeys(state, bufferIdx, direction);
 
       const rows = state.buffer.slice(bufferIdx.lo, bufferIdx.hi);
 
@@ -82,7 +83,7 @@ function setRange(state, { range }) {
         range,
         dataRequired: (
           (direction === 'FWD' && (lastBufIdx < state.rowCount + state.offset - 1) && lastBufIdx - high < state.bufferSize / 2) ||
-          (direction === 'BWD' && low < state.bufferSize / 2)) ? true : false
+          (direction === 'BWD' && firstBufIdx > state.offset && (low - firstBufIdx < state.bufferSize / 2))) ? true : false
       }
 
     } else {
@@ -108,6 +109,7 @@ function applyUpdates(state, action) {
   };
 }
 
+// TODO we must not assume that the server will send buffer data
 /** @type {DataReducer} */
 function setData(state, action) {
   const { offset, rowCount } = action;
@@ -131,14 +133,6 @@ function setData(state, action) {
   };
 }
 
-// TODO create a pool of these and reuse them
-function emptyRow(idx,) {
-  const { IDX, count } = metadataKeys;
-  const row = Array(count);
-  row[IDX] = idx;
-  return row;
-}
-
 /** @type {(...args: any[]) => [any[], {lo:number, hi:number}, RowKeys, boolean]} */
 function addToBuffer(
   state,
@@ -154,18 +148,24 @@ function addToBuffer(
   const { free: freeKeys, used: usedKeys } = keys;
   const [low, high] = rangeLowHigh(range, offset, size);
 
+  const scrollDirection = firstBufIdx !== -1 && firstBufIdx < bufferMin
+    ? 'FWD' 
+    : lastBufIdx > bufferMax
+      ? 'BWD'
+      : '';
+
   let maxKey = rows.length;
   let row, rowIdx, rowKey;
   let rowsChanged = true;
   let removedFromFrontOfBuffer = 0
 
-  if (firstBufIdx !== -1 && firstBufIdx < bufferMin) {
-    removedFromFrontOfBuffer = bufferMin - firstBufIdx;
-    // before we remove, do we need to reclaim keys ?
-    for (let index=0,i=firstBufIdx;i<bufferMin; i++, index++){
-      // apply the doomedCount to offset as the index will be adjusted once we remove the rows
-      if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi){
-        const rowKey = buffer[i-offset][RENDER_IDX];
+  if (scrollDirection === 'FWD') {
+    // Forward scrolling
+    removedFromFrontOfBuffer = Math.min(buffer.length, bufferMin - firstBufIdx);
+    // inefficient we only need to loop over inner ranfe
+    for (let index = 0, i = firstBufIdx; i < bufferMin; i++, index++) {
+      if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi) {
+        const rowKey = buffer[index][RENDER_IDX];
         freeKeys.push(rowKey);
         usedKeys[rowKey] = undefined;
       }
@@ -173,9 +173,22 @@ function addToBuffer(
     buffer.splice(0, removedFromFrontOfBuffer);
     firstBufIdx = bufferMin;
 
-  } else if (lastBufIdx !== -1 && lastBufIdx > bufferMax) {
-    const doomedCount = lastBufIdx - bufferMax + 1;
-    buffer.splice(-doomedCount, doomedCount);
+  } else if (scrollDirection === 'BWD') {
+    // Backward scrolling
+    const doomedCount = Math.min(buffer.length, lastBufIdx - bufferMax + 1);
+    for (let index = bufferMax - firstBufIdx + 1, i = bufferMax + 1; i < lastBufIdx; i++, index++) {
+
+      if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi) {
+        const rowKey = buffer[index][RENDER_IDX];
+        freeKeys.push(rowKey);
+        usedKeys[rowKey] = undefined;
+      }
+    }
+    if (doomedCount === buffer.length) {
+      buffer.length = 0;
+    } else {
+      buffer.splice(-doomedCount, doomedCount);
+    }
     lastBufIdx = bufferMax;
   }
 
@@ -188,7 +201,7 @@ function addToBuffer(
 
 
   const writePosition = firstRowIdx - firstBufIdx;
-  if (writePosition < 0){
+  if (writePosition < 0) {
     firstBufIdx += writePosition;
   }
 
@@ -197,8 +210,8 @@ function addToBuffer(
 
   if (firstRowIdx >= high || lastRowIdx < low) {
     rowsChanged = false;
-  } else {
-    reassignKeys(state, { lo, hi }, removedFromFrontOfBuffer);
+  } else if (buffer.length){
+    reassignKeys(state, { lo, hi }, scrollDirection, removedFromFrontOfBuffer);
   }
 
   const count = incomingRows.length

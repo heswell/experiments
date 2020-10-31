@@ -131,10 +131,10 @@ export default class LocalDataSource extends EventEmitter {
     if (this.dataStore === null){
       this.pendingRangeRequest = [lo,hi, dataType]
     } else {
+      const low = Math.max(0, lo - this.bufferSize);
       const high = hi + this.bufferSize;
       // await Promise.resolve();
-      const result = this.dataStore.setRange({lo, hi: high}, true, dataType);
-      console.log(`%c[local-data-source]]setRange [${lo},${hi}] on datastore yields ${range(result.rows)}`,'color:red;font-weight: bold;')
+      const result = this.dataStore.setRange({lo: low, hi: high}, true, dataType);
       if (dataType === ROW_DATA){
         this.clientCallback(result);
       } else {

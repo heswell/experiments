@@ -181,7 +181,7 @@ const Viewport = forwardRef(function Viewport(
   const classes = useStyles();
 
   const toggleStrategy = useMemo(() => getToggleStrategy(dataSource), [dataSource]);
-  console.log(`%cViewport render`,'color: blue;font-weight: bold;')
+
   return (
     <>
       <div
