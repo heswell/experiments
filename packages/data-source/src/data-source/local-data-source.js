@@ -133,8 +133,8 @@ export default class LocalDataSource extends EventEmitter {
     } else {
       const low = Math.max(0, lo - this.bufferSize);
       const high = hi + this.bufferSize;
-      // await Promise.resolve();
       const result = this.dataStore.setRange({lo: low, hi: high}, true, dataType);
+      console.log(`%cLocalDataSource.setRange ${lo}:${hi} => [${result.rows[0][0]-100} ... ${result.rows[result.rows.length-1][0]-100}]`,'color:brown;font-weight: bold;')
       if (dataType === ROW_DATA){
         this.clientCallback(result);
       } else {

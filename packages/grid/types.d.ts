@@ -111,6 +111,7 @@ type GridModel = {
   minColumnWidth?: number;
   noColumnHeaders?: boolean;
   pivotColumns: SortColumns;
+  renderBufferSize: number;
   rowHeight: number;
   sortColumns: SortColumns;
   viewportHeight: number;
@@ -227,6 +228,7 @@ type GridData = {
   bufferIdx: {lo: number, hi: number },
   buffer: any[],
   bufferSize: number,
+  renderBufferSize: number,
   rows: any[];
   offset: number;
   rowCount: number;
@@ -286,7 +288,7 @@ interface CanvasProps {
   onColumnDragStart?: onColumnDragStart;
   ref?: CanvasRef;
   rowHeight: number;
-  rows: Row[];
+  data: {rows: Row[], offset: number};
   toggleStrategy: ToggleStrategy;
 }
 

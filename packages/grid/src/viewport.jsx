@@ -14,7 +14,7 @@ import useUpdate from "./use-update";
 import useStyles from './use-styles';
 import useDataSource from './use-data-source';
 import GridContext from "./grid-context";
-import {getColumnGroupColumnIdx, GridModel} from './grid-model-utils.js';
+import {getColumnGroupColumnIdx} from './grid-model-utils.js';
 
 import Canvas from "./canvas";
 import ColumnBearer from './column-bearer';
@@ -116,10 +116,8 @@ const Viewport = forwardRef(function Viewport(
 
       // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
     // dataSource has changed
-    const subscriptionDetails = {
-      columnNames: gridModelRef.current.columnNames,
-      range: { lo: 0, hi: gridModelRef.current.viewportRowCount }
-    }
+    const {columnNames, renderBufferSize, viewportRowCount} = gridModelRef.current;
+    const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount+ renderBufferSize }};
   
     const dataSourceCallback = useCallback((type, options) => {
       switch(type){
@@ -144,12 +142,11 @@ const Viewport = forwardRef(function Viewport(
      }
     },[dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
 
-    //TODO useCallback for this callback
-    const [rows, setRange] = useDataSource(dataSource, subscriptionDetails, dataSourceCallback);
+    const [data, setRange] = useDataSource(dataSource, subscriptionDetails, gridModel.renderBufferSize, dataSourceCallback);
   
   useUpdate(() => {
-    setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount);
-  },[gridModel.viewportRowCount]);
+    setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount + gridModel.renderBufferSize);
+  },[gridModel.renderBufferSize, gridModel.viewportRowCount]);
 
 
     useLayoutEffect(() => {
@@ -209,7 +206,7 @@ const Viewport = forwardRef(function Viewport(
               onColumnDragStart={onColumnDragStart}
               ref={canvasRefs.current[idx]}
               rowHeight={gridModel.rowHeight}
-              rows={rows}
+              data={data}
               toggleStrategy={toggleStrategy} // brand new, not well thought out yet
             />
           )) : null}
@@ -224,7 +221,7 @@ const Viewport = forwardRef(function Viewport(
             onDrag={handleColumnDrag}
             onScroll={handleColumnBearerScroll}
             ref={columnBearer}
-            rows={rows}
+            rows={data.rows}
           />
         </>}
     </>

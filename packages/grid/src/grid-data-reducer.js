@@ -1,26 +1,17 @@
 
 import { metadataKeys, update as updateRows } from "@heswell/utils";
-import { bufferMinMax, firstAndLastIdx, range as $range, rangeLowHigh, reassignKeys } from './grid-data-helpers';
+import { bufferMinMax, firstAndLastIdx, range as $range, rangeLowHigh, reassignKeys, scrollDirection } from './grid-data-helpers';
 import * as Action from "./grid-data-actions";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-const dupeCheck = rows => {
-  const map = {}
-  for (let i = 0; i < rows.length; i++) {
-    if (map[rows[i][RENDER_IDX]] !== undefined) {
-      debugger;
-    }
-    map[rows[i][RENDER_IDX]] = true;
-  }
-}
-
 /** @type {(any) =>  GridData} */
-export const initData = ({ range, bufferSize = 100 }) => ({
+export const initData = ({ range, bufferSize = 100, renderBufferSize=0 }) => ({
   //TODO RingBuffer ?
   bufferIdx: { lo: 0, hi: 0 },
   buffer: [],
   bufferSize,
+  renderBufferSize,
   rows: [],
   rowCount: 0,
   range,
@@ -36,6 +27,7 @@ export const initData = ({ range, bufferSize = 100 }) => ({
 // we will need additional action types to update
 /** @type {DataReducer} */
 export default (state = initData({}), action) => {
+  console.log(action.type)
   if (action.type === "range") {
     return setRange(state, action);
   } else if (action.type === "data") {
@@ -45,7 +37,7 @@ export default (state = initData({}), action) => {
   } else if (action.type === Action.ROWCOUNT) {
     return setSize(state, action);
   } else if (action.type === 'clear') {
-    return initData({ range: action.range, bufferSize: action.bufferSize });
+    return initData({ range: action.range, bufferSize: action.bufferSize, renderBufferSize: action.renderBufferSize });
   } else {
     throw Error(`GridDataReducer unknown action type ${action.type}`);
   }
@@ -57,20 +49,30 @@ function setSize(state, { rowCount }) {
 //TODO we HAVE to remove out=of-range rows and add empty placeholders
 /** @type {DataReducer} */
 function setRange(state, { range }) {
-
   if (state.range === undefined || range.lo !== state.range.lo || range.hi !== state.range.hi) {
-
+    console.log(`setRange ${range.lo} - ${range.hi} buffer length ${state.buffer.length} bufferSize: ${state.bufferSize} renderBufferSize ${state.renderBufferSize}`)
     const [low, high] = rangeLowHigh(range, state.offset, state.rowCount);
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
 
     if (low >= firstBufIdx && high <= lastBufIdx + 1) {
+
+      const direction = scrollDirection(state.range, range);
+
       // we have all required data in buffer already
       const bufferIdx = {
         lo: low - firstBufIdx,
         hi: high - firstBufIdx
       };
 
-      const direction = scrollDirection(state.range, range);
+      // do we have rows available to fill renderBuffer ?
+      if (state.renderBufferSize){
+        if (bufferIdx.lo > 0){
+          console.log(`we have ${bufferIdx.lo} spare leading data rows and renderBufferSize = ${state.renderBufferSize}`)
+        }
+        if (bufferIdx.hi < state.buffer.length){
+          console.log(`we have ${state.buffer.length - bufferIdx.hi} spare trailing data rows and renderBufferSize = ${state.renderBufferSize}`)
+        }
+      }
 
       reassignKeys(state, bufferIdx, direction);
 
@@ -82,7 +84,7 @@ function setRange(state, { range }) {
         rows,
         range,
         dataRequired: (
-          (direction === 'FWD' && (lastBufIdx < state.rowCount + state.offset - 1) && lastBufIdx - high < state.bufferSize / 2) ||
+          ((direction === 'FWD' || direction === 'EXPAND') && (lastBufIdx < state.rowCount + state.offset - 1) && lastBufIdx - high < state.bufferSize / 2) ||
           (direction === 'BWD' && firstBufIdx > state.offset && (low - firstBufIdx < state.bufferSize / 2))) ? true : false
       }
 
@@ -124,6 +126,7 @@ function setData(state, action) {
     bufferIdx,
     buffer,
     bufferSize: state.bufferSize,
+    renderBufferSize: state.renderBufferSize,
     rows: rowsChanged ? buffer.slice(bufferIdx.lo, bufferIdx.hi) : state.rows,
     rowCount,
     offset,
@@ -211,6 +214,7 @@ function addToBuffer(
   if (firstRowIdx >= high || lastRowIdx < low) {
     rowsChanged = false;
   } else if (buffer.length){
+
     reassignKeys(state, { lo, hi }, scrollDirection, removedFromFrontOfBuffer);
   }
 
@@ -251,15 +255,3 @@ function addToBuffer(
   ];
 }
 
-
-function scrollDirection(range1, range2) {
-  if (range1 === null) {
-    return 'INIT';
-  } else if (range2.lo > range1.lo) {
-    return 'FWD';
-  } else if (range2.lo < range1.lo) {
-    return 'BWD';
-  } else {
-    return 'UNKNOWN'
-  }
-}

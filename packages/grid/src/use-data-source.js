@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dataReducer from './grid-data-reducer';
 
 //TODO allow subscription details to be set before subscribe call
-export default function useDataSource(dataSource, subscriptionDetails, callback) {
+export default function useDataSource(dataSource, subscriptionDetails, renderBufferSize, callback) {
 
   const isRunning = useRef(false);
   const frame = useRef(null);
@@ -17,7 +17,8 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
     let newInstance = dataReducer(undefined, { 
       type: 'clear', 
       range: subscriptionDetails.range,
-      bufferSize: dataSource.bufferSize
+      bufferSize: dataSource.bufferSize,
+      renderBufferSize
     })
     latestState.current = newInstance;
     return newInstance;
@@ -27,13 +28,14 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
 
   const messagesPerRender = useRef(0);
 
-  const [rows, setRows] = useState(latestState.current.rows);
+  const [data, setData] = useState({rows: latestState.current.rows, offset: latestState.current.offset});
 
-  const dispatchData = action => {
+  const dispatchData = useCallback(action => {
     latestState.current = dataReducer(latestState.current, action);
-    // only if they have changed ...
-    setRows(latestState.current.rows);
-  }
+    if (latestState.current.rows !== data.rows){
+      setData({rows: latestState.current.rows, offset: latestState.current.offset});
+    }
+  },[data]);
 
   const dispatchUpdate = useCallback(action => {
     messagesPerRender.current += 1;
@@ -42,7 +44,7 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
 
   const applyUpdate = () => {
     if (messagesPerRender.current > 0) {
-      setRows(latestState.current.rows);
+      setData(latestState.current.rows);
       messagesPerRender.current = 0;
     }
 
@@ -54,11 +56,13 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
   }
 
   const setRange = useCallback((lo, hi) => {
-    dispatchData({type: 'range', range: {lo,hi}});
+    dispatchData({
+      type: 'range', range: { lo, hi }});
+    
     if (latestState.current.dataRequired){
       dataSource.setRange(lo, hi);
     }
-  }, [dataSource]);
+  }, [dataSource, dispatchData]);
 
   useEffect(() => {
 
@@ -113,5 +117,5 @@ export default function useDataSource(dataSource, subscriptionDetails, callback)
   }, [dataSource]);
 
 
-  return [rows, setRange];
+  return [data, setRange];
 }

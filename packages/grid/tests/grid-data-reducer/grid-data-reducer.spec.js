@@ -369,6 +369,78 @@ describe('grid-data-reducer', () => {
   })
 
 
+  describe('growing the range', () => {
+
+    test('first few rows', () => {
+      let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
+      state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows });
+      state = GridDataReducer(state, { type: 'range', range: { lo: 0, hi: 11 } });
+
+      expect(state.rows).toEqual([
+        [ 100, 0, 0, 0, 0, 'key-00' ],
+        [ 101, 1, 0, 0, 0, 'key-01' ],
+        [ 102, 2, 0, 0, 0, 'key-02' ],
+        [ 103, 3, 0, 0, 0, 'key-03' ],
+        [ 104, 4, 0, 0, 0, 'key-04' ],
+        [ 105, 5, 0, 0, 0, 'key-05' ],
+        [ 106, 6, 0, 0, 0, 'key-06' ],
+        [ 107, 7, 0, 0, 0, 'key-07' ],
+        [ 108, 8, 0, 0, 0, 'key-08' ],
+        [ 109, 9, 0, 0, 0, 'key-09' ],
+        [ 110, 10, 0, 0, 0, 'key-10' ]
+      ]);
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 0, hi: 13 } });
+
+      expect(state.rows).toEqual([
+        [ 100, 0, 0, 0, 0, 'key-00' ],
+        [ 101, 1, 0, 0, 0, 'key-01' ],
+        [ 102, 2, 0, 0, 0, 'key-02' ],
+        [ 103, 3, 0, 0, 0, 'key-03' ],
+        [ 104, 4, 0, 0, 0, 'key-04' ],
+        [ 105, 5, 0, 0, 0, 'key-05' ],
+        [ 106, 6, 0, 0, 0, 'key-06' ],
+        [ 107, 7, 0, 0, 0, 'key-07' ],
+        [ 108, 8, 0, 0, 0, 'key-08' ],
+        [ 109, 9, 0, 0, 0, 'key-09' ],
+        [ 110, 10, 0, 0, 0, 'key-10' ],
+        [ 111, 11, 0, 0, 0, 'key-11' ],
+        [ 112, 12, 0, 0, 0, 'key-12' ]
+      ]);
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 0, hi: 16 } });
+      expect(state.dataRequired).toEqual(false);
+
+      expect(state.rows).toEqual([
+        [ 100, 0, 0, 0, 0, 'key-00' ],
+        [ 101, 1, 0, 0, 0, 'key-01' ],
+        [ 102, 2, 0, 0, 0, 'key-02' ],
+        [ 103, 3, 0, 0, 0, 'key-03' ],
+        [ 104, 4, 0, 0, 0, 'key-04' ],
+        [ 105, 5, 0, 0, 0, 'key-05' ],
+        [ 106, 6, 0, 0, 0, 'key-06' ],
+        [ 107, 7, 0, 0, 0, 'key-07' ],
+        [ 108, 8, 0, 0, 0, 'key-08' ],
+        [ 109, 9, 0, 0, 0, 'key-09' ],
+        [ 110, 10, 0, 0, 0, 'key-10' ],
+        [ 111, 11, 0, 0, 0, 'key-11' ],
+        [ 112, 12, 0, 0, 0, 'key-12' ],
+        [ 113, 13, 0, 0, 0, 'key-13' ],
+        [ 114, 14, 0, 0, 0, 'key-14' ],
+        [ 115, 15, 0, 0, 0, 'key-15' ]
+      ]);
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 0, hi: 21} });
+      expect(state.dataRequired).toEqual(true);
+
+      
+      console.log(state)
+
+    })
+
+  })
+
+
   describe('buffer pruning', () => {
 
     test('no buffer pruning until buffer is filled', () => {
@@ -611,7 +683,19 @@ describe('grid-data-reducer', () => {
 
     });
 
-    test.only('scroll gently forward, then backwards', () => {
+    test.only('jump to near end, scroll backwards, using renderBuffer', () => {
+        let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 100, range: { lo: 0, hi: 63 } });
+        state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1247, rows: getRows(0, 163) });
+        state = GridDataReducer(state, { type: 'range', range: { lo: 1186, hi: 1269 } });
+debugger;
+        state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1247, rows: getRows(1086, 1247) });
+        console.log(state)
+        state = GridDataReducer(state, { type: 'range', range: { lo: 1184, hi: 1267 } });
+
+
+    })
+
+    test('scroll gently forward, then backwards', () => {
       let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 100, range: { lo: 0, hi: 40 } });
       state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1247, rows: getRows(0, 140) });
 
@@ -620,7 +704,6 @@ describe('grid-data-reducer', () => {
       state = GridDataReducer(state, { type: 'range', range: { lo: 3, hi: 43 } });
       state = GridDataReducer(state, { type: 'range', range: { lo: 4, hi: 44 } });
       state = GridDataReducer(state, { type: 'range', range: { lo: 3, hi: 43 } });
-
 
     });
 

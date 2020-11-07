@@ -27,7 +27,6 @@ const CHECKBOX_COLUMN = {
   }
 };
 
-const RENDER_BUFFER = 25;
 const RESIZING = {resizing: true};
 const NOT_RESIZING = {resizing: false};
 
@@ -79,6 +78,7 @@ export const initModel = ([gridProps, custom]) => {
     minColumnWidth = MIN_COLUMN_WIDTH,
     noColumnHeaders=false,
     pivotBy: pivotByProp,
+    renderBufferSize=20,
     rowHeight = 24,
     selectionModel, // default should be none
     width } = gridProps;
@@ -110,6 +110,7 @@ export const initModel = ([gridProps, custom]) => {
     horizontalScrollbarHeight: undefined,
     minColumnWidth,
     pivotColumns,
+    renderBufferSize,
     rowHeight,
     selectionModel,
     sortColumns: null,
@@ -129,7 +130,7 @@ export const initModel = ([gridProps, custom]) => {
   state.headingDepth = headingDepth;
   state.horizontalScrollbarHeight = getHorizontalScrollbarHeight(columnGroups);
   state.viewportHeight = height - totalHeaderHeight - customFooterHeight - customInlineHeaderHeight;
-  state.viewportRowCount =  Math.ceil((height - totalHeaderHeight) / rowHeight) + 1 + RENDER_BUFFER;
+  state.viewportRowCount =  Math.ceil((height - totalHeaderHeight) / rowHeight) + 1;
 
   return state;
 };
@@ -158,7 +159,7 @@ function setPivotColumns(state, action){
       headingDepth,
       horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
       viewportHeight: state.height - totalHeaderHeight,
-      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1 + RENDER_BUFFER
+      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1
     };
     
 }
@@ -176,7 +177,7 @@ function setAvailableColumns(state, action){
       headingDepth,
       horizontalScrollbarHeight: getHorizontalScrollbarHeight(columnGroups),
       viewportHeight: state.height - totalHeaderHeight,
-      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1 + RENDER_BUFFER
+      viewportRowCount:  Math.ceil((state.height - totalHeaderHeight) / state.rowHeight) + 1
     };
     
   } else {

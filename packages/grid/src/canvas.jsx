@@ -17,7 +17,8 @@ import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
 import Row from "./row";
 import { getColumnOffset } from './grid-model-utils';
 
-const byKey = ([key1], [key2]) => key1 - key2;
+const {IDX, RENDER_IDX} = metadataKeys;
+const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
 /** @type {CanvasType} */
 const Canvas = forwardRef(function Canvas(
@@ -30,7 +31,7 @@ const Canvas = forwardRef(function Canvas(
     horizontalScrollbarHeight,
     onColumnDragStart,
     rowHeight,
-    rows,
+    data: {rows, offset},
     toggleStrategy
   },
   ref
@@ -236,17 +237,7 @@ const Canvas = forwardRef(function Canvas(
     dispatchGridAction({ type: 'selection', idx, row, rangeSelect, keepExistingSelection });
   }, [])
 
-
   const onHorizontalScroll = useScroll("scrollLeft", horizontalScrollHandler, 5);
-
-  // we don't need this, absIdx is already in the row (with offset)
-  // key is already in the row
-  const rowPositions = rows
-    .map((row, idx) => {
-      const absIdx = firstVisibleRow + idx;
-      return [row[metadataKeys.RENDER_IDX], absIdx, row];
-    })
-    .sort(byKey);
 
   const rootClassName = cx(classes.Canvas, {
     [classes.fixed]: columnGroup.locked,
@@ -257,7 +248,7 @@ const Canvas = forwardRef(function Canvas(
     ? height - horizontalScrollbarHeight
     : height;
 
-
+  console.log(`%cCanvas.render ${rows.length} rows`,'color: blue; font-weight: bold;')  
   return (
     <div
       className={rootClassName}
@@ -277,20 +268,18 @@ const Canvas = forwardRef(function Canvas(
         ref={contentEl}
         style={{ width: contentWidth, height: Math.max(contentHeight + horizontalScrollbarHeight, height) }}
       >
-        {rowPositions.map(([rowKey, absIdx, row]) => {
-          return (
+        {rows.sort(byKey).map(row => 
             <Row
-              key={rowKey}
+              key={row[RENDER_IDX]}
               columns={columns}
               height={rowHeight}
-              idx={absIdx}
+              idx={row[IDX] - offset}
               keys={cellKeys}
               onClick={handleRowClick}
               row={row}
               toggleStrategy={toggleStrategy}
             />
-          );
-        })}
+        )}
       </div>
     </div>
   );
