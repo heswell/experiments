@@ -28,21 +28,10 @@ export default createUseStyles(theme => ({
     }
   },
 
-  headerContainer: {
-    whiteSpace: 'nowrap',
-    '& $ColumnGroupHeader': {
-      display: 'inline-block'
-    }
-  },
-
   ColumnGroupHeader: {
     verticalAlign: 'top',
     overflow: 'hidden',
     backgroundColor: 'var(--grid-header-background)'
-  },
-
-  headerCells: {
-    display: 'flex'
   },
 
   Viewport: {
@@ -72,9 +61,6 @@ export default createUseStyles(theme => ({
 
   fixed: {
     overflow: 'hidden',
-    '& $canvasContentWrapper': {
-      overflow: 'hidden'
-    },
     '& $GridCell': {
       backgroundColor: '#efeded'
     }
@@ -85,8 +71,6 @@ export default createUseStyles(theme => ({
     overscrollBehaviorX: 'contain',
     overflowY: 'hidden'
   },
-
-  canvasContentWrapper: {},
 
   canvasContent: {
     position: 'relative'
