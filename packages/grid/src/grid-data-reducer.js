@@ -27,7 +27,6 @@ export const initData = ({ range, bufferSize = 100, renderBufferSize=0 }) => ({
 // we will need additional action types to update
 /** @type {DataReducer} */
 export default (state = initData({}), action) => {
-  console.log(action.type)
   if (action.type === "range") {
     return setRange(state, action);
   } else if (action.type === "data") {
@@ -50,8 +49,7 @@ function setSize(state, { rowCount }) {
 /** @type {DataReducer} */
 function setRange(state, { range }) {
   if (state.range === undefined || range.lo !== state.range.lo || range.hi !== state.range.hi) {
-    console.log(`setRange ${range.lo} - ${range.hi} buffer length ${state.buffer.length} bufferSize: ${state.bufferSize} renderBufferSize ${state.renderBufferSize}`)
-    const [low, high] = rangeLowHigh(range, state.offset, state.rowCount);
+    const [low, high] = rangeLowHigh(range, state.offset, state.rowCount, state.renderBufferSize);
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
 
     if (low >= firstBufIdx && high <= lastBufIdx + 1) {
@@ -63,16 +61,6 @@ function setRange(state, { range }) {
         lo: low - firstBufIdx,
         hi: high - firstBufIdx
       };
-
-      // do we have rows available to fill renderBuffer ?
-      if (state.renderBufferSize){
-        if (bufferIdx.lo > 0){
-          console.log(`we have ${bufferIdx.lo} spare leading data rows and renderBufferSize = ${state.renderBufferSize}`)
-        }
-        if (bufferIdx.hi < state.buffer.length){
-          console.log(`we have ${state.buffer.length - bufferIdx.hi} spare trailing data rows and renderBufferSize = ${state.renderBufferSize}`)
-        }
-      }
 
       reassignKeys(state, bufferIdx, direction);
 
@@ -144,12 +132,12 @@ function addToBuffer(
   offset = 0,
 ) {
 
-  const { buffer, bufferSize, range, rows, keys } = state;
+  const { buffer, bufferSize, range, renderBufferSize, rows, keys } = state;
   const [firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows);
   let [firstBufIdx, lastBufIdx] = firstAndLastIdx(buffer);
   const [bufferMin, bufferMax] = bufferMinMax(range, size, bufferSize, offset);
   const { free: freeKeys, used: usedKeys } = keys;
-  const [low, high] = rangeLowHigh(range, offset, size);
+  const [low, high] = rangeLowHigh(range, offset, size, renderBufferSize);
 
   const scrollDirection = firstBufIdx !== -1 && firstBufIdx < bufferMin
     ? 'FWD' 

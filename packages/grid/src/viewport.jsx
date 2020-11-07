@@ -116,8 +116,8 @@ const Viewport = forwardRef(function Viewport(
 
       // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
     // dataSource has changed
-    const {columnNames, renderBufferSize, viewportRowCount} = gridModelRef.current;
-    const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount+ renderBufferSize }};
+    const {columnNames, viewportRowCount} = gridModelRef.current;
+    const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount }};
   
     const dataSourceCallback = useCallback((type, options) => {
       switch(type){

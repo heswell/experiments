@@ -13,8 +13,11 @@ export function firstAndLastIdx(rows) {
   }
 }
 
-export function rangeLowHigh(range, offset, size) {
-  return [range.lo + offset, Math.min(range.hi + offset, size + offset)]
+export function rangeLowHigh(range, offset, size, renderBufferSize=0) {
+  return [
+    Math.max(offset, range.lo + offset - renderBufferSize), 
+    Math.min(range.hi + renderBufferSize + offset, size + offset)
+  ];
 }
 
 export function bufferMinMax(range, size, bufferSize, offset) {

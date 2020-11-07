@@ -248,7 +248,6 @@ const Canvas = forwardRef(function Canvas(
     ? height - horizontalScrollbarHeight
     : height;
 
-  console.log(`%cCanvas.render ${rows.length} rows`,'color: blue; font-weight: bold;')  
   return (
     <div
       className={rootClassName}
