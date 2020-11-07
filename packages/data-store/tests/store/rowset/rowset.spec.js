@@ -667,7 +667,6 @@ describe('select', () => {
         const rowSet = getTestRowset();
         rowSet.setRange({lo: 0, hi: 10});
         let result = rowSet.select(0, /* rangeSelect */ false, /*keepExistingSelection */ false);
-        debugger;
         expect(result).toEqual([[100,SELECTED,1]])
         let {rows} = rowSet.setRange({lo: 0, hi: 10}, false);
         expect(rows.map(row => row[SELECTED])).toEqual([1,0,0,0,0,0,0,0,0,0])

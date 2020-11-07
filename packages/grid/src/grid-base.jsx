@@ -88,7 +88,7 @@ const GridBase = (props) => {
       case 'group': return dispatchGridModel({type: 'group', columns: args[0]});
       case 'sort': return dispatchGridModel({type: 'sort', columns: args[0]});
       default: 
-        console.log(`don't know how to handle data source event ${eventName}`)
+        // console.log(`don't know how to handle data source event ${eventName}`)
     }
   },[])
 

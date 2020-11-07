@@ -5881,20 +5881,20 @@ function createRange(from, to, pauseDuration=5, pauseFrequency=30){
 
 const url = new URL(self.location);
 const tableUrl = url.hash.slice(2);  
-console.log(tableUrl)
+console.log(`tableUrl: ${tableUrl}`)
 const loadTableConfiguration = async () => await import(/* webpackIgnore: true */ tableUrl);
 
 let table;
 let dataStore;
 
-loadTableConfiguration().then(async ({config}) => {
-    const {generateData} = await import(/* webpackIgnore: true */ config.dataUrl);
-    table = new Table$1(config);
-    table.setData(generateData());
-    dataStore = new DataStore(table, {columns: config.columns}, new UpdateQueue$1);
-    registerMessageHandlers();
-    postMessage({type: 'ready'});
-});
+// loadTableConfiguration().then(async ({config}) => {
+//     const {generateData} = await import(/* webpackIgnore: true */ config.dataUrl);
+//     table = new Table$1(config);
+//     table.setData(generateData());
+//     dataStore = new DataStore(table, {columns: config.columns}, new UpdateQueue$1);
+//     registerMessageHandlers();
+//     postMessage({type: 'ready'});
+// });
 
 // update these to change the stress test parameters
 var STRESS_TEST_MESSAGE_COUNT = 1000;

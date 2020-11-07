@@ -7,7 +7,6 @@ import LocalUpdateQueue from './local-update-queue';
 const {ROW_DATA} = DataTypes;
 
 const buildDataView = async url => {
-  console.log(`import url ${url}`)
   return import(/* webpackIgnore: true */ url)
     .catch(err => console.log(`failed to load data at ${url} ${err}`))
 }
@@ -22,6 +21,7 @@ const logger = createLogger('LocalDataSource', logColor.blue);
 
 export default class LocalDataSource extends EventEmitter {
   constructor({
+    bufferSize=100,
     schema,
     data,
     primaryKey,
@@ -30,6 +30,7 @@ export default class LocalDataSource extends EventEmitter {
   }) {
     super();
 
+    this.bufferSize = bufferSize;
     this.columns = schema.columns;
     this.primaryKey = primaryKey;
 
@@ -55,7 +56,7 @@ export default class LocalDataSource extends EventEmitter {
         ? buildDataView(dataUrl)
         : data
           ? loadData(data)
-          : Promise.reject('bad params, LOcalDataSource expects either data or a dataUrl');
+          : Promise.reject('bad params, LocalDataSource expects either data or a dataUrl');
 
       eventualData.then(({default: data}) => {
         const table = new Table({ data, columns: schema.columns, primaryKey: this.primaryKey });
@@ -130,7 +131,10 @@ export default class LocalDataSource extends EventEmitter {
     if (this.dataStore === null){
       this.pendingRangeRequest = [lo,hi, dataType]
     } else {
-      const result = this.dataStore.setRange({lo, hi}, true, dataType);
+      const low = Math.max(0, lo - this.bufferSize);
+      const high = hi + this.bufferSize;
+      const result = this.dataStore.setRange({lo: low, hi: high}, true, dataType);
+      console.log(`%cLocalDataSource.setRange ${lo}:${hi} => [${result.rows[0][0]-100} ... ${result.rows[result.rows.length-1][0]-100}]`,'color:brown;font-weight: bold;')
       if (dataType === ROW_DATA){
         this.clientCallback(result);
       } else {
@@ -208,5 +212,14 @@ export default class LocalDataSource extends EventEmitter {
         this.pendingFilterRange = range;
       }
   }
+}
+
+
+function range(rows){
+  return rows.length === 0
+    ? '[]'
+    : rows.length === 1
+      ? `[${rows[0][0]}]`
+      : `[${rows[0][0]} ... ${rows[rows.length-1][0]}]`
 }
 

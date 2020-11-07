@@ -20,18 +20,24 @@ const workerQueue = () => ({
   ----------------------------------------------------------------*/
 export default class WorkerDataSource extends EventEmitter {
 
-  constructor({tableName, url}) {
+  constructor({
+    bufferSize=100,
+    schema,
+    tableName,
+    configUrl,
+  }) {
     super();
-    this.url = url;
+
+    this.bufferSize = bufferSize;
+    this.columns = schema.columns;
+
     this.tableName = tableName;
-    this.columns = null;
     this.subscription = null;
     this.viewport = null;
     this.filterDataCallback = null;
     this.filterDataMessage = null;
     this.worker = workerQueue();
-    // this.pendingWorker = createWorker(`http://localhost:3000${url}`);
-    this.pendingWorker = new Worker(`worker.js#?${url}`, {type: 'module'});
+    this.pendingWorker = new Worker(`worker.js#?${configUrl}`, {type: 'module'});
   }
 
   async subscribe({
@@ -86,7 +92,9 @@ export default class WorkerDataSource extends EventEmitter {
   }
 
   setRange(lo, hi, dataType=ROW_DATA) {
-    this.worker.postMessage({type: 'setRange', range: {lo, hi}, dataType});
+    const low = Math.max(0, lo - this.bufferSize);
+    const high = hi + this.bufferSize;
+    this.worker.postMessage({type: 'setRange', range: {lo: low, hi: high}, dataType});
   }
 
   select(idx, rangeSelect, keepExistingSelection, dataType=ROW_DATA){

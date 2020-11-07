@@ -7,6 +7,7 @@ import Range from './async-range'
 
 const url = new URL(self.location);
 const tableUrl = url.hash ? url.hash.slice(2) : '';  
+console.log(`table config url ${tableUrl}`)
 const loadTableConfiguration = async () => await import(/* webpackIgnore: true */ tableUrl);
 
 let table;

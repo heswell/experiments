@@ -31,11 +31,10 @@
       "request": "launch",
       "name": "Jest Tests",
       "args":[ 
-        "${workspaceRoot}/packages/data-store/node_modules/.bin/jest",
-        "--",
-        "./rowset.spec"
+        "${workspaceRoot}/packages/grid/node_modules/.bin/jest",
+        "grid-data-reducer.spec"
       ],
-      "cwd": "${workspaceRoot}/packages/data-store"
+      "cwd": "${workspaceRoot}/packages/grid"
   },
   ]
 }

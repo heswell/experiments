@@ -14,7 +14,7 @@ import useUpdate from "./use-update";
 import useStyles from './use-styles';
 import useDataSource from './use-data-source';
 import GridContext from "./grid-context";
-import {getColumnGroupColumnIdx, GridModel} from './grid-model-utils.js';
+import {getColumnGroupColumnIdx} from './grid-model-utils.js';
 
 import Canvas from "./canvas";
 import ColumnBearer from './column-bearer';
@@ -89,14 +89,6 @@ const Viewport = forwardRef(function Viewport(
     }
   }));
 
-  // I don't think we should need this
-  const setRange = useCallback(
-    (lo, hi) => {
-      dataSource.setRange(lo, hi);
-    },
-    [dataSource]
-  );
-
   const handleColumnBearerScroll = scrollDistance =>
     canvasRefs.current[scrollableCanvasIdx].current.scrollBy(scrollDistance);
 
@@ -122,27 +114,40 @@ const Viewport = forwardRef(function Viewport(
     }
   },[gridModel, onColumnDrop, columnDragData]);
 
-  useUpdate(() => {
-    setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount);
-  },[gridModel.viewportRowCount]);
+      // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
+    // dataSource has changed
+    const {columnNames, viewportRowCount} = gridModelRef.current;
+    const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount }};
+  
+    const dataSourceCallback = useCallback((type, options) => {
+      switch(type){
+        case 'subscribed':
+          dispatchGridModelAction({type: 'set-available-columns', columns: options})
+           break;
+        case 'pivot':
+            dispatchGridModelAction({type: 'set-pivot-columns', columns: options})
+           break;
+        case 'size':
+            // How do we handle this withoput having this dependency on gridModel ?
+            // THis is the important one, it comes with every rowSet
+            contentHeight.current = options * gridModel.rowHeight;
+            if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0){
+              verticalScrollbarWidth.current = 15;
+            } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15){
+              verticalScrollbarWidth.current = 0;
+            }
+          break;
+  
+        default:
+     }
+    },[dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
 
-  const scrollCallback = useCallback(
-    (scrollEvent, scrollTop) => {
-      if (scrollEvent === "scroll") {
-        const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
-        if (firstRow !== firstVisibleRow.current) {
-          firstVisibleRow.current = firstRow;
-          setRange(firstRow, firstRow + gridModel.viewportRowCount);
-        }
-      } else if (scrollEvent === "scroll-start") {
-        canvasRefs.current.forEach(({current}) => current.beginVerticalScroll( ));
-      } else {
-        const scrollTop = viewportEl.current.scrollTop;
-        canvasRefs.current.forEach(({current}) => current.endVerticalScroll(scrollTop));
-      }
-    },
-    [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
-  );
+    const [data, setRange] = useDataSource(dataSource, subscriptionDetails, gridModel.renderBufferSize, dataSourceCallback);
+  
+  useUpdate(() => {
+    setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount + gridModel.renderBufferSize);
+  },[gridModel.renderBufferSize, gridModel.viewportRowCount]);
+
 
     useLayoutEffect(() => {
       if (columnDragData){
@@ -153,38 +158,24 @@ const Viewport = forwardRef(function Viewport(
       }
     },[columnDragData])
 
-  const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
-
-    // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
-    // dataSource has changed
-  const subscriptionDetails = {
-    columnNames: gridModelRef.current.columnNames,
-    range: { lo: 0, hi: gridModelRef.current.viewportRowCount }
-  }
-
-  //TODO useCallback for this callback
-  const data = useDataSource(dataSource, subscriptionDetails, (type, options) => {
-    switch(type){
-      case 'subscribed':
-        dispatchGridModelAction({type: 'set-available-columns', columns: options})
-         break;
-      case 'pivot':
-          dispatchGridModelAction({type: 'set-pivot-columns', columns: options})
-         break;
-      case 'size':
-          // How do we handle this withoput having this dependency on gridModel ?
-          // THis is the important one, it comes with every rowSet
-          contentHeight.current = options * gridModel.rowHeight;
-          if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0){
-            verticalScrollbarWidth.current = 15;
-          } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15){
-            verticalScrollbarWidth.current = 0;
+    const scrollCallback = useCallback(
+      (scrollEvent, scrollTop) => {
+        if (scrollEvent === "scroll") {
+          const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
+          if (firstRow !== firstVisibleRow.current) {
+            firstVisibleRow.current = firstRow;
+            setRange(firstRow, firstRow + gridModel.viewportRowCount);
           }
-        break;
-
-      default:
-   }
-  });
+        } else if (scrollEvent === "scroll-start") {
+          canvasRefs.current.forEach(({current}) => current.beginVerticalScroll( ));
+        } else {
+          canvasRefs.current.forEach(({current}) => current.endVerticalScroll(scrollTop));
+        }
+      },
+      [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
+    );
+  
+  const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
 
   const classes = useStyles();
 
@@ -215,7 +206,7 @@ const Viewport = forwardRef(function Viewport(
               onColumnDragStart={onColumnDragStart}
               ref={canvasRefs.current[idx]}
               rowHeight={gridModel.rowHeight}
-              rows={data.rows}
+              data={data}
               toggleStrategy={toggleStrategy} // brand new, not well thought out yet
             />
           )) : null}
