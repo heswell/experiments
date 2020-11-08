@@ -1,7 +1,6 @@
 // @ts-nocheck
 
-import {WorkerTable} from '@heswell/data-source'
-import { DataStore } from "@heswell/data-store";
+import { DataStore, WorkerTable } from "@heswell/data-store";
 import {DataTypes, EventEmitter} from '@heswell/utils';
 import Range from './async-range'
 

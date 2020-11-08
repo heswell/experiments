@@ -2,8 +2,7 @@
   See UpdateQueue
 */
 //TODO does this belong in view ?
-import {EventEmitter} from '@heswell/utils';
-import {DataTypes} from './types';
+import {DataTypes, EventEmitter} from '@heswell/utils';
 
 export default class UpdateQueue extends EventEmitter {
     
