@@ -1,64 +1,75 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, {forwardRef, useEffect, useMemo, useImperativeHandle, useRef, useState } from 'react';
 import cx from 'classnames';
-import Dropdown from '../../../dropdown';
-import List from '../../../list';
-import * as Key from '../../../utils/key-code';
+import Dropdown from '../dropdown';
+import List from '../list';
+import * as Key from '../utils/key-code';
+import {useKeyboardNavigation} from '../list/use-keyboard-navigation';
 
-import './selector.css';
+import './select-base.css';
 
 export const ComponentType = {
   Input : 'input',
   Dropdown : 'dropdown'
 };
 
-const identity = val => val;
+const defaultValueFormatter = values => idx => values[idx];  
 
 export default forwardRef(function Selector({
-  availableValues,
+  values,
   children: childRenderer,
   dropdownClassName,
-  hilitedIdx,
   inputClassName,
   inputIcon = 'keyboard_arrow_down',
   onCancel,
   onChange,
   onCommit,
-  onFocus,
-  onKeyDown,
+  onFocus: onFocusProp,
   onPopupActive,
-  selectedIdx, // sort out confusion between this and state value
   showDropdownOnEdit=true,
-  typeaheadListNavigation,
+  typeToNavigate,
   value: propsValue,
-  valueFormatter=identity
+  valueFormatter,
 
 }, ref){
 
   const inputEl = useRef(null);
   const dropdown = useRef(null);
+  const formatValue = useMemo(() => valueFormatter || defaultValueFormatter(values),[valueFormatter, values])
+  
+  const {
+    hilitedIdx, 
+    handleFocus,
+    handleKeyDown: onKeyDown,
+  } = useKeyboardNavigation({
+    onFocus: onFocusProp,
+    selectedIdx: values.indexOf(value),
+    typeToNavigate,
+    values
+  });
+
 
   const value = propsValue === null ? '' : propsValue;  
 
   useEffect(() => {
     if (inputEl.current){
       const {top, left, width, height} = inputEl.current.getBoundingClientRect();
-      setState({...state, position: {top,left,width,height}});
+      setState(prevState => ({...prevState, position: {top,left,width,height}}));
     }
   },[]);
 
   // untested
   useEffect(() => {
     if (value !== state.value){
-      console.log(`[Selector] useEffect<value, availableValues> state.value ${state.value} props.value ${value}`)
-      setState({...state, value, selectedIdx: availableValues.indexOf(value)})
+      console.log(`[Selector] useEffect<value, values> state.value ${state.value} props.value ${value}`)
+      setState(prevState => ({...prevState, value: value ?? '', selectedIdx: values.indexOf(value)}))
     }
-  },[value, availableValues])
+  },[value, values])
 
   const [state, setState] = useState({
     open: false,
     value: value || '',
     initialValue: value || '',
-    selectedIdx: availableValues.indexOf(value),
+    selectedIdx: values.indexOf(value),
     position: null
 });
 
@@ -74,7 +85,6 @@ const focus = (selectText=true) => {
 }
 
 const focusDropdown = () => {
-  console.log(`focusDropdown`)
   try {
     dropdown.current.focus();
     if (onPopupActive){
@@ -92,54 +102,47 @@ const handleChange = evt => {
   onChange(evt);
 }
 
+// The selection Logic all belongs in selection hook
 const handleKeyDown = e => {
   const {keyCode} = e;
   const open = state.open;
-  console.log(`[Selector] onKeyDown open=${open}`)
   if (keyCode === Key.ENTER){
-    if (state.open && selectedIdx !== null){
-      const val = availableValues[selectedIdx];
+    if (state.open && hilitedIdx !== null){
+      const val = values[hilitedIdx];
       commit(val);
     } else if (state.value !== state.initialValue){
-      console.log(`selector ENTER state.value = '${state.value}' state.initialValue = '${state.initialValue}'`)
       commit();
     } else if (!open){
-      console.log(`selector ENTR => open`)
       setState({...state, open: true});
-      onPopupActive(true);
+      if (onPopupActive){
+        onPopupActive(true);
+      }
     }
   } else if (keyCode === Key.ESC){
     if (open){
       setState({...state, open: false});
-      onPopupActive(false);
+      if (onPopupActive){
+        onPopupActive(false);
+      }
     }
     onCancel();
-  } else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
+  } /* else if (open && (keyCode === Key.UP || keyCode === Key.DOWN)){
     focusDropdown();
-  } else if (onKeyDown){
-    console.log(`calback onKeyDown`)
+  } */ else if (onKeyDown){
     onKeyDown(e)
   } else {
     console.log(`no handler`)
   }
 }
 
-const handleFocus = _evt => {
-  console.log(`[Selector.input] handleFocus => onFocus`)
-  onFocus();
-}
-
 const handleBlur = () => {
   if (state.value !== state.initialValue){
-    console.log(`[Selector.input] handleBlur => commit`)
-    commit();
+//    commit();
   }
 }
 
 const handleClick = () => {
-  console.log(`[Selector.input] handleClick (open=${state.open})`)
   if (!state.open){
-      console.log(`\t...open`)
       setState({...state, open: true});
       if (onPopupActive){
         onPopupActive(true);
@@ -147,9 +150,11 @@ const handleClick = () => {
     }
   }
 
-  const handleCommit = val => {
-    console.log(`[Selector] commit val ${val} => (formatted) ${valueFormatter(val)}`)
-    commit(valueFormatter(val));
+  const handleCommit = value => {
+    commit(formatValue(value));
+    // Is it safe to do this every commit or should be only do it when user
+    // has clicked a list item ?
+    focus(false);
   }
 
   // this just means dropdown has closed without selection, do we really need to cancel anuthing ?
@@ -159,8 +164,10 @@ const handleClick = () => {
       ...state,
       open: false
     });
-    onPopupActive(false);
-    focus(false);
+    if (onPopupActive){
+      onPopupActive(false);
+    }
+  focus(false);
   }
 
   const commit = (value=state.value) => {
@@ -169,14 +176,18 @@ const handleClick = () => {
       ...state,
       open: false,
       value: value,
-      initialValue: value
+      initialValue: value,
+      selectedIdx: values.indexOf(value)
     });
 
     // previously this was in setSTate callback
     if (wasOpen && onPopupActive){
       onPopupActive(false);
     }
-    onCommit(value);
+
+    if (onCommit){
+      onCommit(value);
+    }
 
   }
 
@@ -188,7 +199,7 @@ const handleClick = () => {
     ? childRenderer(ComponentType.Input)
     : null;
 
-  const props = {
+  const inputProps = {
     ref: inputEl,
     onKeyDown: handleKeyDown,
     onBlur: handleBlur,
@@ -202,10 +213,10 @@ const handleClick = () => {
   }
 
   const controlText = childComponent 
-    ? React.cloneElement(childComponent, props)
+    ? React.cloneElement(childComponent, inputProps)
     : (
     <input
-      {...props}
+      {...inputProps}
       type="text" 
       className={className}
       onChange={handleChange}
@@ -222,6 +233,7 @@ const handleClick = () => {
           className={dropdownClassName}
           componentName="List"
           inputEl={inputEl.current}
+          listHeight={400}
           position={state.position}
           onCommit={handleCommit}
           onCancel={handleDropdownCancel}>
@@ -238,10 +250,11 @@ const handleClick = () => {
 
     return dropdown || (
       <List
-        values={availableValues}
+        onChange={handleCommit}
+        values={values}
         selectedIdx={state.selectedIdx}
         hilitedIdx={hilitedIdx}
-        typeaheadListNavigation={typeaheadListNavigation}
+        showFocusVisible
       />
     )
 

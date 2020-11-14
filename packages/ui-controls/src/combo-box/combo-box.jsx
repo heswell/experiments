@@ -1,5 +1,5 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import Selector from '../form/controls/selector/selector';
+import Selector from '../select-base/select-base';
 
 import './combo-box.css';
 
@@ -17,7 +17,7 @@ const defaultValues = [
 export default forwardRef(function ComboBox(props, ref){
 
   const {
-    availableValues: values=defaultValues,
+    values=defaultValues,
     value=''
   } = props;
 
@@ -52,7 +52,7 @@ export default forwardRef(function ComboBox(props, ref){
     <Selector ref={selector}
       {...props}
       value={state.value}
-      availableValues={state.values}
+      values={state.values}
       onChange={handleChange}
       inputClassName="combo-input"/>
   );

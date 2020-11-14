@@ -1,12 +1,12 @@
 import * as Evt from '../../state-events';
-import {transitionNext, clickAnyField} from '../machine-utils';
+import {transitionNext, focusAnyField} from '../machine-utils';
 
 const state = {
     id : 'inactive',
     onEntry: 'resetField',
     on: {
         [Evt.TAB.type]: transitionNext(),
-        [Evt.CLICK.type]: clickAnyField()
+        [Evt.FOCUS.type]: focusAnyField()
     }
 }
 

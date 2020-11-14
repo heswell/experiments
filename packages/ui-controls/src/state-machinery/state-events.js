@@ -1,3 +1,4 @@
+export const FOCUS = {type: 'focus'};
 export const CLICK = {type: 'click'};
 export const COMMIT = {type: 'commit'};
 export const ESC = {type: 'esc'};

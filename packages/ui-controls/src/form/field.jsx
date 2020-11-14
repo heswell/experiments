@@ -29,7 +29,9 @@ export default forwardRef(function Field({
   const handleClickCapture = (_, compositeFieldIdx) => onClickCapture(field, compositeFieldIdx);
   const handleCancel = () => onCancel(field);
   const handleCommit = () => onCommit(field);
-  const handleFocus = (controlIdx=0) => onFocusControl(field, controlIdx);
+  const handleFocus = (controlIdx=0) => {
+    onFocusControl(field, controlIdx);
+  }
 
   function renderChild(){
 

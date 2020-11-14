@@ -129,9 +129,18 @@ export default class Calendar extends React.Component {
     return <div className="calendar-days calendar-row">{days}</div>;
   }
 
+
   renderDateCells(){
     const {onCommit, children: dateRenderer} = this.props;
     const {classNames, weeks} = this.state;
+
+    const handleClick = day => {
+      const date = toDate(day);
+      console.log(`click on ${day} ${date}`)
+
+      onCommit(toDate(date))
+    }
+
     return (
       <div className={cx("calendar-body", ...classNames)} ref={this.calendarBody}>
         <div className="calendar-body-inner-container"
@@ -142,7 +151,7 @@ export default class Calendar extends React.Component {
                 <div key={day} tabIndex={0}
                   data-day={format(day, "yyyy-MM-dd")}
                   className={cx("calendar-cell", {disabled,selected, otherMonth})}
-                  onClick={() => onCommit(toDate(day))}
+                  onClick={() => handleClick(day)}
                   onKeyDown={this.handleKeyDown}>
                   {dateRenderer(formattedDate)}
                 </div>

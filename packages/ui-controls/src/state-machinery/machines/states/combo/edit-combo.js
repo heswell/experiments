@@ -5,7 +5,10 @@ const state = {
     id: 'edit-combo',
     on: {
         [Evt.ESC.type]: { target: '#focus-combo' },
-        [Evt.COMMIT.type]: transitionNext()
+        [Evt.COMMIT.type]: [
+            { target: '#focus-combo', cond: (c) => !c.isKeyboardNavigation()},
+            ...transitionNext()
+        ]
 
     }
 }

@@ -4,7 +4,6 @@ const state = {
     id: 'focus-text-input',
     on: {
         [Evt.TEXT.type]: { target: '#edit-text-input' }
-        // [Evt.ENTER.type]: { target: '#edit-text-input' }
     }
 }
 

@@ -7,7 +7,10 @@ const state = {
     on: {
         [Evt.ESC.type]: { target: '#focus-text-input' },
         [Evt.TAB.type]: transitionNext(),
-        [Evt.ENTER.type]: transitionNext()
+        [Evt.ENTER.type]: [
+            { target: '#focus-text-input', cond: (c) => !c.isKeyboardNavigation()},
+            ...transitionNext()
+        ]
     }
 }
 

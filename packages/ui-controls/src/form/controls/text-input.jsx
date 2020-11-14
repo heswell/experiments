@@ -1,77 +1,76 @@
-import React from 'react';
+import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import * as Key from '../../utils/key-code';
 
-export default class TextInput extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      value: this.props.value || '',
-      initialValue: this.props.value || ''
-    }
-    this.inputEl = React.createRef();
-    this.onChange = this.onChange.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-    this.onFocus = this.onFocus.bind(this);
-  }
+const TextInput = forwardRef(function TextInput (props, ref){
 
-  focus(){
-    if (this.inputEl.current){
-      this.inputEl.current.focus();
-      this.inputEl.current.select();
+  const inputEl = useRef(null);
+  const [state, setState] = useState({
+    value: props.initialValue || props.value || '',
+    initialValue: props.initialValue || ''
+  })
+
+  useImperativeHandle(ref, () => ({focus }));
+
+  const focus = () => {
+    if (inputEl.current){
+      inputEl.current.focus();
+      inputEl.current.select();
     }
   }
 
-  render(){
-    const {onChange, onKeyDown, onBlur, onFocus} = this;
-    return (
-      <input
-        ref={this.inputEl}
-        type="text" 
-        className="control-text"
-        value={this.state.value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        onBlur={onBlur}
-        onFocus={onFocus}
-      />
-    )
-  }
 
-  onFocus(){
-    if (this.props.onFocus){
-      this.props.onFocus()
+  const handleFocus = () => {
+    if (props.onFocus){
+      props.onFocus()
     }
   }
 
-  onChange(e){
-    this.setState({value: e.target.value})
+  const handleChange = (e) => {
+    setState({
+      ...state,
+      value: e.target.value
+    });
   }
-  onKeyDown(e){
+
+  const handleKeyDown = (e) => {
     const {keyCode} = e;
     if (keyCode === Key.ENTER){
-      this.commit();
+      commit();
     } else if (keyCode === Key.ESC){
-      this.setState({
-        value: this.state.initialValue
+      setState({
+        ...state,
+        value: state.initialValue
       });
     }
   }
-  onBlur(){
-    if (this.state.value !== this.state.initialValue){
-      console.log(`[TextInput] onBlur => commit initialValue '${this.state.initialValue}' value '${this.state.value}'`)
-      this.commit();
-    } else {
-      console.log(`[TextInput] onBlur NO commit initialValue '${this.state.initialValue}' value '${this.state.value}'`)
+
+  const handleBlur = () => {
+    if (state.value !== state.initialValue){
+      commit();
     }
   }
 
-  commit(){
-    this.setState({
-      initialValue: this.state.value
-    }, () => {
-      this.props.onCommit(this.state.value);
+  const commit = () => {
+    setState({
+      ...state,
+      initialValue: state.value
     })
+    props.onCommit(state.value);
   }
 
-}
+  return (
+    <input
+      ref={inputEl}
+      type="text" 
+      className="control-text"
+      value={state.value}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+      onFocus={handleFocus}
+    />
+  )
+
+})
+
+export default TextInput;

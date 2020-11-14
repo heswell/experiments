@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {format, parseISO} from 'date-fns';
 import Calendar from '../form/controls/calendar';
-import Selector,  {ComponentType} from '../form/controls/selector/selector';
+import SelectBase,  {ComponentType} from '../select-base/select-base';
 
 import './date-picker.css';
 
@@ -21,13 +21,13 @@ const defaultValues = [
 export default forwardRef(function DatePicker(props, ref){
 
   const {
-    availableValues = defaultValues,
+    values = defaultValues,
     onCommit,
     value
   } = props;
 
   const selector = useRef(null);
-  const [state, setState] = useState({values: availableValues, value});
+  const [state, setState] = useState({values, value});
 
   useEffect(() => {
     if (value !== state.value){
@@ -43,7 +43,9 @@ export default forwardRef(function DatePicker(props, ref){
     }
   }
 
-  const handleCommit = value => onCommit(formatDate(parseISO(value)));
+  const handleCommit = value => {
+    onCommit(formatDate(parseISO(value)));
+  }
   
   const handleChange = e => {
     const value = e.target.value;
@@ -52,14 +54,14 @@ export default forwardRef(function DatePicker(props, ref){
 
   function matchingValues(text){
     const pattern = new RegExp(`^${text}`,'i')
-    return availableValues.filter(value => pattern.test(value))
+    return values.filter(value => pattern.test(value))
   }
 
   return (
-    <Selector ref={selector}
+    <SelectBase ref={selector}
       {...props}
       value={state.value}
-      availableValues={state.values}
+      values={state.values}
       onChange={handleChange}
       onCommit={handleCommit}
       valueFormatter={formatDate}
@@ -80,7 +82,7 @@ export default forwardRef(function DatePicker(props, ref){
         )
 
     }
-    </Selector>
+    </SelectBase>
   )
 
 })

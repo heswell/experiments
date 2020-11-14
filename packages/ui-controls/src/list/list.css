@@ -3,24 +3,40 @@
   margin:0;
   padding:0 1px;
   font-size: .8125rem;
+  max-height: 100%;
+  overflow-y: auto;
+  /* outline: none; */
 }
 
 .list .list-item {
   line-height: 1.25rem;
-  padding: 0 6px;
+  padding: 1px 6px;
+  position: relative;
   cursor: default;
+  margin: 0;
 }
+
+.list .list-item.hilited {
+  background-color: rgba(0,0,0,.1)
+} 
+
+.list.focusVisible .list-item.hilited:before {
+   content: "";
+   position: absolute;
+   top:0;
+   left:0;
+   right:0;
+   bottom:0;
+   border: dotted cornflowerblue 2px;
+} 
+
+.list.focusVisible .list-item.selected.hilited:before {
+  border-color: white;
+} 
 
 .list .list-item.selected {
   background-color: cornflowerblue;
-}
-
-.list .list-item:focus {
-  outline: none;
-}
-
-.list .list-item:hover {
-  background-color: rgba(0,0,0,.1)
+  color: white;
 }
 
 .list-item:focus {

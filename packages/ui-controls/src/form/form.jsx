@@ -1,12 +1,12 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import cx from 'classnames';
-import { Machine} from 'xstate';
 import {states} from '../state-machinery/machines/main'
 import * as StateEvt from '../state-machinery/state-events';
 import formReducer, { initModel} from './form-reducer';
 import * as selector from './form-selectors';
 import Field from './field';
-import {getKeyboardEvent} from '../utils/key-code';
+import {getKeyboardEvent, TAB} from '../utils/key-code';
+import useStateMachine from './use-state-machine';
 import './form.css';
 
 export const DOWN = 'down';
@@ -14,40 +14,52 @@ export const UP = 'up';
 export const RIGHT = 'right';
 export const LEFT = 'left';
 
+const MOUSE_FOCUS = 0;
+const KEYBOARD_FOCUS = 1;
+const focusModes = ['mouse','keyboard']
+
 const Row = ({className, children}) => (
   <div className={className}>{children}</div>
 )
 
 export function Form({ children: renderCallback, data, config }){
+    const focusMode = useRef(KEYBOARD_FOCUS)
 
-  const [model, dispatch] = useReducer(formReducer, config, initModel);
+    // how can we eliminate this ?
+    const ctx = {
+      findField(field, rows, legCount){
+        return selector.findField(modelRef.current, field, rows, legCount)
+      },
+      nextField(navType){
+        return selector.nextField(modelRef.current, navType)
+      },
+      compositeFieldType(field){
+        return selector.compositeFieldType(modelRef.current, field)
+      },
+      nextCompositeFieldType(field){
+        return selector.nextCompositeFieldType(modelRef.current, field)
+      },
+      isComboType(){
+        return selector.isCombo(modelRef.current)
+      },
+      isSelect(){
+        return selector.isSelect(modelRef.current)
+      },
+      isKeyboardNavigation(){
+        console.log(`isKeyboardNavigation ${focusMode.current === KEYBOARD_FOCUS}`)
+        return focusMode.current === KEYBOARD_FOCUS;
+      }
+    }
+    const [model, dispatch] = useReducer(formReducer, config, initModel);
+  
+  const [state, stateTransition] = useStateMachine(states, ctx, dispatch)
   const modelRef = useRef(model);
+  const fieldRefs = useRef([]);
 
   useEffect(() => {
     modelRef.current = model;
   },[model])
 
-  // how can we eliminate this ?
-  const ctx = {
-    findField(field, rows, legCount){
-      return selector.findField(modelRef.current, field, rows, legCount)
-    },
-    nextField(navType){
-      return selector.nextField(modelRef.current, navType)
-    },
-    compositeFieldType(field){
-      return selector.compositeFieldType(modelRef.current, field)
-    },
-    nextCompositeFieldType(field){
-      return selector.nextCompositeFieldType(modelRef.current, field)
-    },
-    isComboType(){
-      return selector.isCombo(modelRef.current)
-    },
-    isSelect(){
-      return selector.isSelect(modelRef.current)
-    }
-  }
 
   useEffect(() => {
     if (model.currentField){
@@ -56,10 +68,6 @@ export function Form({ children: renderCallback, data, config }){
   },[model.currentField, model.compositeFieldIdx])
 
 
-  const stateMachine = useRef(new Machine(states, null, ctx));
-
-  const fieldRefs = useRef([]);
-  const state = useRef(stateMachine.current.initialState);
 
   function setRef(target){
     if (target && target.field){
@@ -74,11 +82,26 @@ export function Form({ children: renderCallback, data, config }){
     focusField(model.currentField, model.compositeFieldIdx);
   }
 
-  function handleClickCapture(field, compositeFieldIdx){
-    console.log(`handleClickCapture ${field.id} [${compositeFieldIdx}]`)
+  const handleFormKeyDownCapture = (e) => {
+    if (e.keyCode === TAB){
+      focusMode.current = KEYBOARD_FOCUS;
+  
+    }
+  }
+
+  const handleFormMouseDownCapture = () => {
+    focusMode.current = MOUSE_FOCUS;
+  }
+
+  const handleFormMouseLeave = () => {
+    focusMode.current = KEYBOARD_FOCUS;
+  }
+
+  function handleFieldClickCapture(field, compositeFieldIdx){
+    console.log(`[Form] handleFieldClickCapture ${field.id} [${compositeFieldIdx}, currentField ${modelRef.current.currentField}`)
     if (field === modelRef.current.currentField && state.current.matches('focus')){
       // we can't rely on focus to handle click events when element clicked already
-      // had focus - what about composites ? 
+      // had focus - what about composites ?
       const stateEvt = {
         ...StateEvt.CLICK,
         field,
@@ -89,22 +112,16 @@ export function Form({ children: renderCallback, data, config }){
   }
 
   function handleCommit(field){
-    const {event} = state.current;
-    if (event !== StateEvt.TAB){
-      console.log(`[leggy-form] handleCommit ${JSON.stringify(field)} ${modelRef.current.compositeFieldIdx}`)
-      // if commit was triggered by blur, because user used TAB, transition has already happened.
-      stateTransition({...StateEvt.COMMIT, field});  
-    }
+    stateTransition({...StateEvt.COMMIT, field});  
   }
 
   function handleFocus(field, compositeFieldIdx=0){
-    console.log(`[leggy-form] handleFocus [${compositeFieldIdx}] ${field.type} `)
+    console.log(`[Form] handleFocus [${compositeFieldIdx}] ${field.type} `)
     const m = modelRef.current;
     if (field !== m.currentField || compositeFieldIdx !== m.compositeFieldIdx){
-        console.log(`\t...StateTransition CLICK because field ${field ? field.id : null} !== ${m.currentField ? m.currentField.id : null} 
-          OR compositeFieldIdx (${compositeFieldIdx}) !== ${m.compositeFieldIdx}`)
-        const stateEvt = {
-          ...StateEvt.CLICK, // should this be FOCUS ?
+          
+          const stateEvt = {
+          ...StateEvt.FOCUS,
           field,
           compositeFieldIdx
         }
@@ -113,31 +130,20 @@ export function Form({ children: renderCallback, data, config }){
   } 
 
   function handleKeyDown(e){
-    // console.log(`keyDown ${e.keyCode} ${e.key}`)
-    const {currentField, compositeFieldIdx} = modelRef.current;
     const stateEvt = getKeyboardEvent(e);
     if (stateEvt){
       stateTransition(stateEvt);
-      if ((state.current.matches('focus') && stateEvt !== StateEvt.ESC)){
-        e.stopPropagation();
-        e.preventDefault();
-      }
+      // if ((state.current.matches('focus') && stateEvt !== StateEvt.ESC)){
+      //   e.stopPropagation();
+      //   e.preventDefault();
+      // }
     }
   }
 
-  function stateTransition(evt){
-    console.group(`%c${evt.type} => from ${JSON.stringify(state.current.value)}  target=[${evt.compositeFieldIdx}]`, 'color: blue;font-weight: bold;')
-    const s2 = state.current = stateMachine.current.transition(state.current, evt)
-    s2.actions.forEach(({type}) => dispatch({type, evt}));
-    console.log(`%c    => ${JSON.stringify(state.current.value)} [${state.current.context.compositeFieldIdx}]`, 'color: blue;font-weight: bold;');
-    console.groupEnd();
-  }
-
   function focusField(field, idx=0){
-    console.log(`[leggy-form] focusField ${field.id} [${idx}] (model current field = ${model.currentField.id})`)
+    console.log(`[Form] focusField ${field.id} [${idx}] (model current field = ${model.currentField.id})`)
     const fieldComponent = fieldRefs.current[field.tabIdx];
     if (fieldComponent){
-      console.log(`setField focus on field ${field.id} [${idx}] IGNORE_FOCUS=true`);
       fieldComponent.focus(idx);
     }
   }
@@ -161,7 +167,7 @@ export function Form({ children: renderCallback, data, config }){
               field={field}
               model={data}
               onCancel={handleCancel}
-              onClickCapture={handleClickCapture}
+              onClickCapture={handleFieldClickCapture}
               onCommit={handleCommit}
               onFocusControl={handleFocus}
               onKeyDown={handleKeyDown}
@@ -173,7 +179,10 @@ export function Form({ children: renderCallback, data, config }){
   }
 
   return (
-      <div className="leggy-form">
+      <div className="leggy-form"
+        onKeyDownCapture={handleFormKeyDownCapture}
+        onMouseDownCapture={handleFormMouseDownCapture}
+        onMouseLeave={handleFormMouseLeave}>
         <div className="add-leg-bar"><span>+</span></div>
         {buildRows()}
       </div>

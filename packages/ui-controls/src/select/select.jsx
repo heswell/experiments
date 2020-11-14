@@ -1,6 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import Selector, {ComponentType} from '../form/controls/selector/selector';
-import {searcher} from '../list';
+import SelectBase, {ComponentType} from '../select-base/select-base';
 
 import './select.css';
 
@@ -10,23 +9,9 @@ const defaultValues = ["Alabama", "Arizona", "California", "Colorado", "Florida"
   "Tennessee", "Texas", "Virginia"];
 
 export default forwardRef(function Select(props, ref){
-
   const selector = useRef(null);
-  const [state, setState] = useState({
-    hilitedIdx: null
-  });
-
-  const onItemSelectedBySearch = (hilitedIdx) => {
-    if (hilitedIdx !== state.hilitedIdx){
-      setState({
-        ...state,
-        hilitedIdx
-      })
-    }
-  }
-
-  const availableValues = props.availableValues || defaultValues;
-  const searchKeyHandler = searcher(availableValues, onItemSelectedBySearch);
+  const [value, setValue] = useState(props.value)
+  const {values=defaultValues, ...restProps} = props;
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -36,21 +21,29 @@ export default forwardRef(function Select(props, ref){
     }
   }));
 
-  // TODO don't need value AND selectedIdx
+  const handleCommit = value => {
+    setValue(value);
+
+    if (props.onCommit){
+      props.onCommit(value)
+    }
+  }
+
     return (
-      <Selector ref={selector}
-        {...props}
-        availableValues={availableValues}
-        typeaheadListNavigation
-        hilitedIdx={state.hilitedIdx}
-        onKeyDown={searchKeyHandler}>
+      <SelectBase ref={selector}
+        {...restProps}
+        values={values}
+        onCommit={handleCommit}
+        typeToNavigate
+        value={value}
+        >
         {child =>
           child === ComponentType.Input && (
             <div tabIndex={0} className="control-text select-input">
-              {props.value}
+              {value}
             </div>
           )
         }
-      </Selector>
+      </SelectBase>
     );
 });

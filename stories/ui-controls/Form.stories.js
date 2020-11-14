@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import { Form, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle } from '@heswell/ui-controls';
 import formConfig, { COMBO, DATE, TOGGLE, SELECT } from './form-config';
 
+import {usa_states} from './usa_states';
+
 import './form.css';
 
 export default {
@@ -67,8 +69,8 @@ export const FormLayout = ({ width = 500, height = 400 }) => {
     }
 
     switch (type) {
-      case COMBO: return <ComboBox {...props} />
-      case SELECT: return <Select {...props} />
+      case COMBO: return <ComboBox {...props} values={usa_states}/>
+      case SELECT: return <Select {...props} values={usa_states}/>
       case DATE: return <DatePicker {...props} />
       case TOGGLE: return <Toggle {...props} values={field.values} shortcuts={field.shortcuts} />
       default: return <TextInput {...props} />

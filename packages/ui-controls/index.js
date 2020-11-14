@@ -4,6 +4,7 @@ import CompositeControl from './src/form/controls/composite-control';
 import DatePicker from './src/date-picker';
 import Toggle from './src/form/controls/toggle';
 
+import List from './src/list';
 import ComboBox from './src/combo-box/combo-box';
 import Select from './src/select/select';
 
@@ -14,4 +15,4 @@ export * from './src/form/field';
 export {default as Control} from './src/form/control';
 
 export const StateEvent = Evt;
-export {TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle}
+export {List, TextInput, ComboBox, CompositeControl, DatePicker, Select, Toggle}
