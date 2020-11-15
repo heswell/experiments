@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dataReducer from './grid-data-reducer';
+import { resetRange } from "@heswell/utils";
 
 //TODO allow subscription details to be set before subscribe call
 export default function useDataSource(dataSource, subscriptionDetails, renderBufferSize, callback) {
@@ -44,7 +45,7 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
 
   const applyUpdate = () => {
     if (messagesPerRender.current > 0) {
-      setData(latestState.current.rows);
+      setData({rows: latestState.current.rows, offset: latestState.current.offset});
       messagesPerRender.current = 0;
     }
 
@@ -64,8 +65,18 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
     }
   }, [dataSource, dispatchData]);
 
-  useEffect(() => {
+  const clearBuffer = () => {
+    const {range, bufferSize, renderBufferSize} = latestState.current;
+    dispatchData({
+      type:'clear',
+      range,
+      bufferSize,
+      renderBufferSize
+    });
+  }
 
+  useEffect(() => {
+    console.log(`subscribe with `, subscriptionDetails)
     dataSource.subscribe(subscriptionDetails,
       function datasourceMessageHandler({ type: messageType, ...msg }) {
         if (messageType === 'subscribed') {
@@ -104,13 +115,17 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
       }
     );
 
+    dataSource.on('group', clearBuffer)
+
     return () => {
       dataSource.unsubscribe();
+      dataSource.removeListener('group', clearBuffer);
+      const {bufferSize, range, renderBufferSize} = latestState.current;
       dispatchData({
-        type: "data",
-        rows: [],
-        rowCount: 0,
-        range: { lo: 0, hi: 0 }
+        type:'clear',
+        range: resetRange(range),
+        bufferSize,
+        renderBufferSize
       });
     }
 

@@ -11,10 +11,11 @@ import React, {
 } from "react";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
+import useEffectSkipFirst from './use-effect-skip-first';
 import useStyles from './use-styles';
 import useDataSource from './use-data-source';
 import GridContext from "./grid-context";
-import {getColumnGroupColumnIdx} from './grid-model-utils.js';
+import { getColumnGroupColumnIdx } from './grid-model-utils.js';
 
 import Canvas from "./canvas";
 import ColumnBearer from './column-bearer';
@@ -23,9 +24,9 @@ import InsertIndicator from './insert-indicator';
 const DEFAULT_TOGGLE_STRATEGY = {};
 
 const getToggleStrategy = dataSource => {
-  const {features={}} = dataSource;
-  if (features.expand_level_1 === false){
-    return {expand_level_1: false}
+  const { features = {} } = dataSource;
+  if (features.expand_level_1 === false) {
+    return { expand_level_1: false }
   } else {
     return DEFAULT_TOGGLE_STRATEGY;
   }
@@ -49,20 +50,20 @@ const Viewport = forwardRef(function Viewport(
 
   useEffect(() => {
     horizontalScrollbarHeight.current = gridModel.horizontalScrollbarHeight;
-  },[gridModel.horizontalScrollbarHeight])
+  }, [gridModel.horizontalScrollbarHeight])
 
   // TODO we could get gridModel here as well. Or would it be better to split gridModel into it's own context ?
   const { dataSource, dispatchGridModelAction } = useContext(GridContext);
 
   const gridModelRef = useRef(gridModel);
-  if (gridModelRef.current !== gridModel){
+  if (gridModelRef.current !== gridModel) {
     // Is there a better way to do this - the dataSource effect needs to get the latest gridModel
     // but changes to gridModel should not trigger re-subscription
     gridModelRef.current = gridModel;
   }
 
   const showColumnBearer = useRef(columnDragData !== null);
-  showColumnBearer.current = columnDragData !== null;  
+  showColumnBearer.current = columnDragData !== null;
 
   const canvasCount = gridModel.columnGroups ? gridModel.columnGroups.length : 0;
   if (canvasRefs.current.length !== canvasCount) {
@@ -73,16 +74,16 @@ const Viewport = forwardRef(function Viewport(
 
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: () => {
-      if (!showColumnBearer.current){
-        const header = gridModel.headerHeight * gridModel.headingDepth + gridModel.customInlineHeaderHeight; 
+      if (!showColumnBearer.current) {
+        const header = gridModel.headerHeight * gridModel.headingDepth + gridModel.customInlineHeaderHeight;
         scrollingEl.current.style.height = `${header + Math.max(contentHeight.current +
-        horizontalScrollbarHeight.current, gridModel.viewportHeight)}px`;
-        canvasRefs.current.forEach(({current}) => current.beginHorizontalScroll());  
+          horizontalScrollbarHeight.current, gridModel.viewportHeight)}px`;
+        canvasRefs.current.forEach(({ current }) => current.beginHorizontalScroll());
       }
     },
     endHorizontalScroll: () => {
-      if (!showColumnBearer.current){
-        canvasRefs.current.forEach(({current}) => current.endHorizontalScroll());
+      if (!showColumnBearer.current) {
+        canvasRefs.current.forEach(({ current }) => current.endHorizontalScroll());
         scrollingEl.current.style.height = `${Math.max(contentHeight.current + horizontalScrollbarHeight.current, gridModel.viewportHeight)}px`;
         return canvasRefs.current[scrollableCanvasIdx].current.scrollLeft;
       }
@@ -93,14 +94,14 @@ const Viewport = forwardRef(function Viewport(
     canvasRefs.current[scrollableCanvasIdx].current.scrollBy(scrollDistance);
 
   const handleColumnDrag = useCallback(async (dragPhase, draggedColumn, insertIdx, insertPos, columnLeft) => {
-    const {columnGroupIdx, columnIdx} = columnDragData;
-    const {current: canvas} = canvasRefs.current[columnGroupIdx];
-    if (dragPhase === 'drag'){ // only called when we cross onto next targetColumn
+    const { columnGroupIdx, columnIdx } = columnDragData;
+    const { current: canvas } = canvasRefs.current[columnGroupIdx];
+    if (dragPhase === 'drag') { // only called when we cross onto next targetColumn
       insertIndicator.current.style.left = insertPos + 'px';
-    } else if (dragPhase === 'drag-end'){
+    } else if (dragPhase === 'drag-end') {
       insertIndicator.current.style.transition = 'left ease .3s';
-      if (canvas.isWithinScrollWindow(draggedColumn)){
-        if (insertIdx > columnIdx){
+      if (canvas.isWithinScrollWindow(draggedColumn)) {
+        if (insertIdx > columnIdx) {
           insertIndicator.current.style.left = (insertPos - draggedColumn.width) + 'px';
           columnBearer.current.setFinalPosition(insertPos - draggedColumn.width);
         } else {
@@ -112,69 +113,72 @@ const Viewport = forwardRef(function Viewport(
       await canvas.endDrag(columnDragData, groupInsertIdx, columnLeft);
       onColumnDrop(dragPhase, draggedColumn, insertIdx);
     }
-  },[gridModel, onColumnDrop, columnDragData]);
+  }, [gridModel, onColumnDrop, columnDragData]);
 
-      // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
-    // dataSource has changed
-    const {columnNames, viewportRowCount} = gridModelRef.current;
-    const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount }};
-  
-    const dataSourceCallback = useCallback((type, options) => {
-      switch(type){
-        case 'subscribed':
-          dispatchGridModelAction({type: 'set-available-columns', columns: options})
-           break;
-        case 'pivot':
-            dispatchGridModelAction({type: 'set-pivot-columns', columns: options})
-           break;
-        case 'size':
-            // How do we handle this withoput having this dependency on gridModel ?
-            // THis is the important one, it comes with every rowSet
-            contentHeight.current = options * gridModel.rowHeight;
-            if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0){
-              verticalScrollbarWidth.current = 15;
-            } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15){
-              verticalScrollbarWidth.current = 0;
-            }
-          break;
-  
-        default:
-     }
-    },[dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
+  // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
+  // dataSource has changed
+  const { columnNames, viewportRowCount } = gridModelRef.current;
+  const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount } };
 
-    const [data, setRange] = useDataSource(dataSource, subscriptionDetails, gridModel.renderBufferSize, dataSourceCallback);
-  
+  const dataSourceCallback = useCallback((type, options) => {
+    switch (type) {
+      case 'subscribed':
+        dispatchGridModelAction({ type: 'set-available-columns', columns: options })
+        break;
+      case 'pivot':
+        dispatchGridModelAction({ type: 'set-pivot-columns', columns: options })
+        break;
+      case 'size':
+        // How do we handle this withoput having this dependency on gridModel ?
+        // THis is the important one, it comes with every rowSet
+        contentHeight.current = options * gridModel.rowHeight;
+        if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0) {
+          verticalScrollbarWidth.current = 15;
+        } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15) {
+          verticalScrollbarWidth.current = 0;
+        }
+        break;
+
+      default:
+    }
+  }, [dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
+
+  const [data, setRange] = useDataSource(dataSource, subscriptionDetails, gridModel.renderBufferSize, dataSourceCallback);
+
   useUpdate(() => {
     setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount + gridModel.renderBufferSize);
-  },[gridModel.renderBufferSize, gridModel.viewportRowCount]);
+  }, [gridModel.renderBufferSize, gridModel.viewportRowCount]);
 
+  useEffectSkipFirst(() => {
+    viewportEl.current.scrollTop = 0;
+  },[dataSource])
 
-    useLayoutEffect(() => {
-      if (columnDragData){
-        const {column, columnGroupIdx} = columnDragData;
-        const columnOffset = canvasRefs.current[columnGroupIdx].current.beginDrag(column);
-        const {left} = viewportEl.current.getBoundingClientRect();
-        insertIndicator.current.style.left = (columnOffset-left) + 'px';
-      }
-    },[columnDragData])
+  useLayoutEffect(() => {
+    if (columnDragData) {
+      const { column, columnGroupIdx } = columnDragData;
+      const columnOffset = canvasRefs.current[columnGroupIdx].current.beginDrag(column);
+      const { left } = viewportEl.current.getBoundingClientRect();
+      insertIndicator.current.style.left = (columnOffset - left) + 'px';
+    }
+  }, [columnDragData])
 
-    const scrollCallback = useCallback(
-      (scrollEvent, scrollTop) => {
-        if (scrollEvent === "scroll") {
-          const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
-          if (firstRow !== firstVisibleRow.current) {
-            firstVisibleRow.current = firstRow;
-            setRange(firstRow, firstRow + gridModel.viewportRowCount);
-          }
-        } else if (scrollEvent === "scroll-start") {
-          canvasRefs.current.forEach(({current}) => current.beginVerticalScroll( ));
-        } else {
-          canvasRefs.current.forEach(({current}) => current.endVerticalScroll(scrollTop));
+  const scrollCallback = useCallback(
+    (scrollEvent, scrollTop) => {
+      if (scrollEvent === "scroll") {
+        const firstRow = Math.floor(scrollTop / gridModel.rowHeight);
+        if (firstRow !== firstVisibleRow.current) {
+          firstVisibleRow.current = firstRow;
+          setRange(firstRow, firstRow + gridModel.viewportRowCount);
         }
-      },
-      [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
-    );
-  
+      } else if (scrollEvent === "scroll-start") {
+        canvasRefs.current.forEach(({ current }) => current.beginVerticalScroll());
+      } else {
+        canvasRefs.current.forEach(({ current }) => current.endVerticalScroll(scrollTop));
+      }
+    },
+    [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
+  );
+
   const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
 
   const classes = useStyles();
@@ -213,19 +217,19 @@ const Viewport = forwardRef(function Viewport(
         </div>
       </div>
       {columnDragData && <>
-          <InsertIndicator ref={insertIndicator}/>
-          <ColumnBearer
-            columnDragData={columnDragData}
-            gridModel={gridModel}
-            initialScrollPosition={canvasRefs.current[scrollableCanvasIdx].current.scrollLeft}
-            onDrag={handleColumnDrag}
-            onScroll={handleColumnBearerScroll}
-            ref={columnBearer}
-            rows={data.rows}
-          />
-        </>}
+        <InsertIndicator ref={insertIndicator} />
+        <ColumnBearer
+          columnDragData={columnDragData}
+          gridModel={gridModel}
+          initialScrollPosition={canvasRefs.current[scrollableCanvasIdx].current.scrollLeft}
+          onDrag={handleColumnDrag}
+          onScroll={handleColumnBearerScroll}
+          ref={columnBearer}
+          rows={data.rows}
+        />
+      </>}
     </>
-  
+
   );
 });
 

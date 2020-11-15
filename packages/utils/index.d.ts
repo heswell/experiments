@@ -49,6 +49,7 @@ export declare const STARTS_WITH: 'SW';
 
 // range
 export declare const getFullRange: any;
+export declare const resetRange: any;
 
 // rows
 export declare const addRowsToIndex: any;

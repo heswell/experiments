@@ -88,7 +88,6 @@ const GridBase = (props) => {
       case 'group': return dispatchGridModel({type: 'group', columns: args[0]});
       case 'sort': return dispatchGridModel({type: 'sort', columns: args[0]});
       default: 
-        // console.log(`don't know how to handle data source event ${eventName}`)
     }
   },[])
 
@@ -96,7 +95,6 @@ const GridBase = (props) => {
   useEffect(() => {
     dataSource.on('*', datasourceHandler);
     return () => {
-      console.log(`UNregister dataSource emitted events`);
       dataSource.removeListener('*', datasourceHandler);
     }
   },[dataSource]);  
@@ -107,9 +105,6 @@ const GridBase = (props) => {
     if (props.dataSource !== dataSource){
       setDataSource(props.dataSource)
     }
-
-    // register for dataSource events
-
   },[props.columns, props.columnSizing, props.dataSource, props.groupBy])
 
   useDataSourceModelBindings(dataSource, gridModel);

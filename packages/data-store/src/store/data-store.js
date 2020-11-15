@@ -1,6 +1,5 @@
-import { resetRange } from './range-utils';
 import { RowSet, GroupRowSet } from './rowset/index';
-import { addFilter, DataTypes, IN, NOT_IN, getFilterType } from '@heswell/utils';
+import { addFilter, DataTypes, IN, NOT_IN, getFilterType, resetRange } from '@heswell/utils';
 import UpdateQueue from './update-queue';
 
 const DEFAULT_INDEX_OFFSET = 100;

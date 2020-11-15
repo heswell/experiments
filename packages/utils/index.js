@@ -42,7 +42,8 @@ export {
 } from './src/filter-utils'
 
 export {
-  getFullRange
+  getFullRange,
+  resetRange
 } from './src/range-utils';
 
 export {
