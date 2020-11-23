@@ -23,8 +23,6 @@ const FlexBox = function FlexBox(props) {
     const [isSelected, onClick] = useSelection(layoutModel);
     const {selected} = useStyles();
 
-    // useDebug(layoutModel);
-
     useEffect(() => {
         if (props.dropTarget) {
             DragContainer.register(layoutModel.$path);
@@ -111,7 +109,6 @@ const FlexBox = function FlexBox(props) {
             var childLayoutModel = layoutChildren[idx];
 
             if (childLayoutModel.type === 'Splitter') {
-
                 results.push(
                     <Splitter
                         key={'splitter-' + childIdx}
@@ -128,7 +125,6 @@ const FlexBox = function FlexBox(props) {
                 const child = typeOf(propChildren[childIdx]) === childLayoutModel.type
                     ? propChildren[childIdx]
                     : componentFromLayout(childLayoutModel);
-
                 const layoutProps = {
                     key: childLayoutModel.$id,
                     idx: childIdx,

@@ -72,6 +72,7 @@ const Splitter = ({ absIdx, className, direction, layoutModel, onDrag, onDragEnd
 
     }, [absIdx, onDragStart]);
 
+    // WHy do we assign the mouseDown listener like this ?
     useEffect(() => {
         root.current.addEventListener('mousedown', handleMouseDown, false);
         return () => {

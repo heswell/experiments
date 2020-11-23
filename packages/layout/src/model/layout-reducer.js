@@ -149,7 +149,7 @@ function switchTab(state, { path, nextIdx }) {
 }
 
 function splitterResize(state, { layoutModel, dim, path, measurements }) {
-    // onsole.log(`%csplitterResize ${dim} ${path} ${measurements}`,'color: blue;font-weight: bold;')
+    console.log(`%csplitterResize ${dim} '${path}' ${measurements}`,'color: blue;font-weight: bold;')
     // is target always the same as state ?
     const target = followPath(state, path);
     const manualLayout = {

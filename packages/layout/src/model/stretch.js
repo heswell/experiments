@@ -81,8 +81,8 @@ export function computeLayout(
 }
 
 export function recomputeChildLayout(model){
-    stretchLayoutChildren(model);
-    return model;
+  stretchLayoutChildren(model);
+  return model;
 }
 
 let allocator;
@@ -120,11 +120,13 @@ export function stretchLayoutChildren(config) {
     },
     children: config.children
   };
-
+  console.log(wrapper)
+  console.time('stretch call')
   const node = stretchNode(wrapper);
   const layout = node.computeLayout();
   node.free();
   setChildStyles(config, layout);
+  console.timeEnd('stretch call')
 }
 
 

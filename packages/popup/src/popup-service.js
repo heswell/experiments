@@ -108,7 +108,7 @@ let incrementingKey = 1;
 
 export class PopupService {
 
-    static showPopup({name='anon', group='all'/*, depth=0*/, position='', left=0, top=0, width='auto', component}) {
+    static showPopup({name='anon', group='all'/*, depth=0*/, position='', left=0, right="auto", top=0, width='auto', component}) {
 
         // onsole.log(`PopupService.showPopup ${name} in ${group} ${left} ${top} ${width} depth ${depth}`);
         if (!component){
@@ -129,7 +129,7 @@ export class PopupService {
         ReactDOM.render(
             createElement(PopupComponent, {key: incrementingKey++, position, style }, component),
             el, 
-            () => {PopupService.keepWithinThePage(el);}
+            () => {PopupService.keepWithinThePage(el, right);}
         );
     }
 
@@ -154,11 +154,11 @@ export class PopupService {
         container.style.left = `${x}px`;
     }
 
-    static keepWithinThePage(el) {
+    static keepWithinThePage(el, right='auto') {
 
         //onsole.log(`PopupService.keepWithinThePage`);
         const container = el.querySelector('.popup-container');
-        const {top, left, width, height} = container.firstChild.getBoundingClientRect();
+        const {top, left, width, height, right: currentRight} = container.firstChild.getBoundingClientRect();
 
         const w = window.innerWidth;
         const h = window.innerHeight;
@@ -171,6 +171,11 @@ export class PopupService {
         const overflowW = w - (left + width);
         if (overflowW < 0) {
             container.style.left = (parseInt(container.style.left,10) + overflowW) + 'px';
+        }
+
+        if (typeof right === 'number' && right !== currentRight){
+            const adjustment = right - currentRight;
+            contsiner.style.left = (left + adjustment) + 'px';
         }
 
     }
