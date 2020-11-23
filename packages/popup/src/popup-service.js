@@ -175,7 +175,7 @@ export class PopupService {
 
         if (typeof right === 'number' && right !== currentRight){
             const adjustment = right - currentRight;
-            contsiner.style.left = (left + adjustment) + 'px';
+            container.style.left = (left + adjustment) + 'px';
         }
 
     }
