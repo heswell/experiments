@@ -6,7 +6,7 @@ import ComponentContextMenu from '../componentContextMenu';
 import { Action } from '../model/layout-reducer';
 import useLayout from './use-layout';
 import {useSelection} from '../selection-context';
-import { isRegistered, registerType, ComponentRegistry, typeOf } from '../component-registry';
+import { isRegistered, registerType, typeOf } from '../component-registry';
 
 import useStyles from '../use-styles';
 
