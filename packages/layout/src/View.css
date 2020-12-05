@@ -1,0 +1,10 @@
+.View {
+  display: flex;
+  flex-direction: column;
+}
+
+.view-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}

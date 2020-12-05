@@ -1,0 +1,127 @@
+.Splitter {
+  background-color: var(--grey60);
+  border-color: var(--background);
+  border-style: solid;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Splitter:hover {
+  background-color: var(--grey40);
+}
+.active.Splitter {
+  background-color: var(--blue500);
+}
+
+.Splitter.column {
+  cursor: ns-resize;
+  height: 11px;
+  border-width: 4px 0;
+}
+
+.Splitter:not(.column) {
+  cursor: ew-resize;
+  width: 11px;
+  border-width: 0 4px;
+}
+
+.Splitter:before {
+  border: none;
+  border-radius: 0;
+  content: "";
+  display: block;
+  padding: 0;
+}
+
+.Splitter:not(.column):before {
+  width: 1px;
+  height: 10px;
+  background: linear-gradient(
+    to bottom,
+    var(--grey900) 10%,
+    transparent 10%,
+    transparent 30%,
+    var(--grey900) 30%,
+    var(--grey900) 40%,
+    transparent 40%,
+    transparent 60%,
+    var(--grey900) 60%,
+    var(--grey900) 70%,
+    transparent 70%,
+    transparent 90%,
+    var(--grey900) 90%
+  );
+}
+
+.active.Splitter.column:before {
+  background: linear-gradient(
+    to right,
+    #ffffff 10%,
+    transparent 10%,
+    transparent 30%,
+    #ffffff 30%,
+    #ffffff 40%,
+    transparent 40%,
+    transparent 60%,
+    #ffffff 60%,
+    #ffffff 70%,
+    transparent 70%,
+    transparent 90%,
+    #ffffff 90%
+  );
+}
+
+.active.Splitter:not(.column):before {
+  background: linear-gradient(
+    to bottom,
+    #ffffff 10%,
+    transparent 10%,
+    transparent 30%,
+    #ffffff 30%,
+    #ffffff 40%,
+    transparent 40%,
+    transparent 60%,
+    #ffffff 60%,
+    #ffffff 70%,
+    transparent 70%,
+    transparent 90%,
+    #ffffff 90%
+  );
+}
+
+.Splitter.column:before {
+  width: 10px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--grey900) 10%,
+    transparent 10%,
+    transparent 30%,
+    var(--grey900) 30%,
+    var(--grey900) 40%,
+    transparent 40%,
+    transparent 60%,
+    var(--grey900) 60%,
+    var(--grey900) 70%,
+    transparent 70%,
+    transparent 90%,
+    var(--grey900) 90%
+  );
+}
+
+/**
+ * 4 x 1px dots, 2px spacing
+ */
+/* const createGradient = (orientation, color) => {
+  const position = orientation === 'horizontal' ? 'right' : 'bottom';
+  return `linear-gradient(to ${position},
+    ${color} 10%,
+    transparent 10%, transparent  30%,
+    ${color} 30%, ${color} 40%,
+    transparent 40%, transparent 60%,
+    ${color} 60%, ${color} 70%,
+    transparent 70%, transparent 90%,
+    ${color} 90%)`;
+}; */

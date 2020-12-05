@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "d3-selection": "./d3-selection.js",
-    "d3-transition": "./d3-transition.js"
-  }
-}

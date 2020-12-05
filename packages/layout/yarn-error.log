@@ -1,0 +1,67 @@
+Arguments: 
+  /usr/local/bin/node /Users/steve/.yarn/bin/yarn.js build
+
+PATH: 
+  /Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.sdkman/candidates/java/current/bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build
+
+Yarn version: 
+  1.22.4
+
+Node version: 
+  14.8.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  SyntaxError: /Users/steve/git/heswell/heswell/packages/layout/package.json: Unexpected token } in JSON at position 680
+      at JSON.parse (<anonymous>)
+      at /Users/steve/.yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/Users/steve/.yarn/lib/cli.js:310:30)
+      at /Users/steve/.yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "@heswell/layout",
+    "version": "3.0.0",
+    "description": "Heswell Layout Components",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "publishConfig": {
+      "access": "public"
+    },
+    "files": [
+      "dist"
+    ],
+    "scripts": {
+      "clean": "rm -rf dist/*",
+      "build": "rollup -c --environment BUILD:production"
+    },
+    "author": "heswell",
+    "license": "MIT",
+    "devDependencies": {
+      "jest": "^24.9.0",
+      "rollup": "1.29.0",
+      "rollup-plugin-babel": "^4.3.3",
+      "rollup-plugin-filesize": "^6.2.1",
+      "rollup-plugin-postcss": "^2.0.3"
+    },
+    "dependencies": {
+      "classnames": "2.2.6",
+      "d3-selection": "2.0.0",
+      "d3-transition": "2.0.0",
+    },
+    "peerDependencies": {
+      "@heswell/utils": "^2.0.0",
+      "react": "16.13.1",
+      "react-dom": "16.13.1"
+    },
+    "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

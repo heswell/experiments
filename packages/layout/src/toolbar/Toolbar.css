@@ -1,0 +1,112 @@
+.Toolbar {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-shrink: 0;
+  height: 32px;
+  justify-content: flex-start;
+  overflow: hidden;
+  position: relative;
+  font-family: OpenSans-Regular;
+  font-size: 12px;
+}
+
+.Toolbar.sm {
+  background-color: pink;
+}
+
+.Toolbar.md {
+  background-color: yellow;
+}
+
+.Toolbar .Toolbar-inner {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: inherit;
+  flex: 1;
+}
+
+.Toolbar .Toolbar-overflow {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 6px 0px 6px 0;
+  align-self: flex-end;
+  border: none;
+  border-radius: 0;
+  background-color: inherit;
+  padding: 0;
+}
+
+.Toolbar .Toolbar-overflow:hover {
+  background-color: lightgrey;
+}
+
+/* .Toolbar .Tool {
+  border: solid 1px lightgrey;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 3px;
+} */
+
+.Toolbar-inner .Icon {
+  border: solid 1px lightgrey;
+  box-sizing: border-box;
+  height: 22px;
+  padding: 1px;
+  width: 22px;
+}
+
+.Toolbar-inner > .toolbar-title {
+  /* this wont alay be right */
+  margin-right: auto;
+}
+
+.Toolbar-inner > .Icon {
+  margin: 5px 3px;
+}
+
+.Toolbar > * {
+  display: inline-block;
+}
+
+.Toolbar .ToolTray .Icon {
+  margin: 5px 0;
+  padding: 1px 3px;
+  width: 26px;
+}
+.Toolbar .ToolTray .Icon:not(:first-child) {
+  border-left: none;
+}
+
+.Toolbar .ToolTray.right {
+  margin-left: auto;
+}
+
+.OverflowContainer {
+  background-color: white;
+}
+
+.Popup .Toolbar {
+  min-width: 80px;
+  height: auto;
+}
+
+.Popup .Toolbar .ToolTray {
+  white-space: nowrap;
+}
+
+.Toolbar .tool-text {
+  width: 80px;
+  border-radius: 0;
+  border: solid 1px darkgrey;
+  border: none;
+}

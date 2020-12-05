@@ -1,0 +1,97 @@
+.Tab {
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--grey400);
+  cursor: pointer;
+  display: flex;
+  font-family: OpenSans-Regular;
+  font-weight: 500;
+  font-size: 12px;
+  height: 100%;
+  /* TODO no margin after last tab*/
+  margin-right: 8px;
+  padding: 0 8px;
+  position: relative;
+}
+
+.Tab:not(:last-child) {
+}
+
+.Tab:hover:not(.closeHover) {
+  background-color: var(--grey20);
+}
+
+.Tab:hover:after,
+.Tab:focus-visible:after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  content: "";
+  opacity: 1;
+  position: absolute;
+  background: var(--grey90);
+}
+
+.Tab.selected {
+  color: var(--grey900);
+  font-family: OpenSans-SemiBold;
+}
+
+.Tab:focus {
+  outline: none;
+}
+
+.Tab:focus-visible {
+  outline: none;
+  background-color: var(--grey20);
+}
+
+.Tab:focus-visible:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  border: dotted cornflowerblue 2px;
+}
+.Tab .tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.Tab .tab-close:hover {
+  background-color: var(--grey40);
+}
+
+.Tab .tab-close .Icon {
+  border: none;
+  transform: scale(0.66);
+  transform-origin: center center;
+}
+
+.Tab .tab-close .icon-path {
+  fill: var(--grey300);
+}
+
+.Tab .tab-text {
+  position: relative;
+}
+
+.Tab.closeable .tab-text {
+  margin-right: 8px;
+}
+
+.Tab .tab-text:before {
+  height: 0;
+  content: attr(data-text);
+  display: block;
+  visibility: hidden;
+  font-family: OpenSans-SemiBold;
+}

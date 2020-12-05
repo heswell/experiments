@@ -4,8 +4,9 @@ import filesize from 'rollup-plugin-filesize';
 import visualizer from 'rollup-plugin-visualizer'
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import wasm from '@rollup/plugin-wasm';
 
-export default {
+export default [{
     input: 'index.js',
     output: {
         file: 'dist/index.js',
@@ -14,9 +15,12 @@ export default {
     },
     plugins: [
         resolve({
-            extensions: ['.js', '.jsx']
+            extensions: ['.js', '.jsx', '.wasm']
         }),
         commonjs(),
+        wasm({
+            maxFileSize: 200000
+        }),
         babel({
             babelrc: false,
             exclude: 'node_modules/**',
@@ -37,10 +41,24 @@ export default {
           visualizer()  
     ],
     "external": [
+        "@heswell/ui-controls",
         "@heswell/utils",
         "classnames",
         "react",
-        "react-dom"
+        "react-dom",
+        "react-jss",
+        "@heswell/stretch",
+        "@emotion/styled"
     ]
 
-};
+}, /* Just for Jest */ /*{
+    input: 'index.jest.js',
+    output: {
+        file: 'tests/dist/index.js',
+        format: 'cjs'
+    },
+    plugins: [
+        resolve(),
+        commonjs()
+    ]
+}*/];

@@ -1,0 +1,4 @@
+.Header {
+  height: 32px;
+  border-bottom: solid 1px var(--grey40);
+}
