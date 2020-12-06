@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import {
-    DynamicContainer, Surface, Action, adjustHeaderPosition,
+    Action, adjustHeaderPosition,
     isLayoutProperty, mapCSSProperties, deriveVisualBorderStyle, followPath
 } from '@heswell/layout';
 import LayoutConfigurator from './layout-configurator'

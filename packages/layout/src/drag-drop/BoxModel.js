@@ -163,12 +163,16 @@ export function pointPositionWithinRect(x, y, rect) {
 
 function measureRootComponent(model, measurements) {
   if (React.isValidElement(model)) {
-    if (model.props.layoutId && model.props.path) {
-      const [rect, el] = measureComponentDomElement(model);
-      measureComponent(model, rect, el, measurements);
-      const type = typeOf(model);
+    const measuredModel = typeOf(model) === 'DraggableLayout'
+      ? model.props.children[0]
+      : model;
+
+    const type = typeOf(measuredModel);
+    if (measuredModel.props.layoutId && measuredModel.props.path) {
+      const [rect, el] = measureComponentDomElement(measuredModel);
+      measureComponent(measuredModel, rect, el, measurements);
       if (type !== "Stack" && isContainer(type)) {
-        collectChildMeasurements(model, measurements);
+        collectChildMeasurements(measuredModel, measurements);
       }
     }
   }
@@ -203,16 +207,24 @@ function collectChildMeasurements(
   preY = 0,
   posY = 0
 ) {
-  //onsole.log(`   collectChildMeasurements	x:${x}	y:${y}	preX:${preX}	posX:${posX}	preY:${preY}	posY:${posY}`);
 
   const type = typeOf(model);
   const isFlexbox = type === "Flexbox";
   const isTower = isFlexbox && model.props.style.flexDirection === "column";
   const isTerrace = isFlexbox && model.props.style.flexDirection === "row";
 
+  console.log(`collect ChildMeasurements for ${type}`)
+
   // Collect all the measurements in first pass ...
   const childMeasurements = model.props.children.map((child) => {
-    const [rect, el] = measureComponentDomElement(child);
+    const measuredChild = typeOf(child) === 'DraggableLayout'
+      ? child.props.children[0]
+      : child;
+
+    console.log(`measure ${typeOf(measuredChild)}`)  
+
+    const [rect, el] = measureComponentDomElement(measuredChild);
+
     return [
       {
         ...rect,
@@ -222,7 +234,7 @@ function collectChildMeasurements(
         left: rect.left - preX
       },
       el,
-      child
+      measuredChild
     ];
   });
 
@@ -291,9 +303,10 @@ function collectChildMeasurements(
 }
 
 function measureComponentDomElement(component) {
-  const el = document.getElementById(component.props.layoutId);
+  const {id, layoutId=id} = component.props;
+  const el = document.getElementById(layoutId);
   if (!el) {
-    console.log(`No DOM for ${typeOf(component)}`);
+    throw Error(`No DOM for ${typeOf(component)} ${layoutId}`);
   }
   // Note: height and width are not required for dropTarget identification, but
   // are used in sizing calculations on drop

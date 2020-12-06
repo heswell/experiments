@@ -1,0 +1,19 @@
+.Palette {
+  padding: 6px 6px 6px 0;
+  display: inline-block;
+}
+
+.Palette .ComponentIcon {
+  font-family: OpenSans-Regular;
+  font-size: 14px;
+  color: black;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 24px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.Palette .ComponentIcon:hover {
+  background-color: var(--grey20);
+}

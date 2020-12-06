@@ -16,6 +16,8 @@ export const useViewAction = () => {
 };
 
 export const useViewActionDispatcher = (root, path, dispatch) => {
+  // TODO should be event, action, then this method can bea assigned directly to a html element
+  // as an event hander
   const dispatchAction = (action, evt) => {
     if (action === "close") {
       handleClose();

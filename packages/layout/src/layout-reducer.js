@@ -108,6 +108,19 @@ function applySize(style, dim, newSize) {
   };
 }
 
+function replaceChild(model, child, replacement){
+  const {path, style} = child.props;
+  const newChild = React.cloneElement(replacement, {
+    path,
+    style: {
+      ...style,
+      ...replacement.props.style
+    }
+  });
+
+  return swapChild(model, child, newChild);
+}
+
 function swapChild(model, child, replacement) {
   if (model === child) {
     return replacement;
@@ -186,11 +199,7 @@ function dragDrop(state, action) {
       return wrap(state, source, target, pos);
     }
   } else if (pos.position.Centre) {
-     console.log("REPLACE");
-    // return replaceChild(state, {
-    //   target: followPath(state, target.$path),
-    //   replacement: source
-    // });
+    return replaceChild(state, target, source);
   } else {
     return dropLayoutIntoContainer(
       state,
@@ -364,7 +373,7 @@ function dropLayoutIntoContainer(
           targetRect
         );
       }
-    } else if (againstTheGrain(pos, targetContainer)) {
+    } else if (!withTheGrain(pos, targetContainer)) {
       return wrap(layoutModel, source, target, pos, targetRect);
     } else if (isContainer(targetContainer)) {
       return wrap(layoutModel, source, target, pos, targetRect);
@@ -394,7 +403,7 @@ function _wrapRoot(model, source, pos, targetRect) {
   };
   // source only has position attributes because of dragging
   const {
-    style: { left: _1, top: _2, ...sourceStyle }
+    style: { left: _1, top: _2, ...sourceStyle }={}
   } = source.props;
   const active = type === "Stack" || pos.position.SouthOrEast ? 1 : 0;
   const [dim] = getManagedDimension(style);
@@ -439,7 +448,8 @@ function _wrapRoot(model, source, pos, targetRect) {
 }
 
 function _wrap(model, source, target, pos, targetRect) {
-  const { idx, finalStep } = nextStep(model.props.path, target.props.path);
+  const {path} = target.props;
+  const { idx, finalStep } = nextStep(model.props.path, path);
   const children = model.props.children.slice();
 
   if (finalStep) {
@@ -463,14 +473,12 @@ function _wrap(model, source, target, pos, targetRect) {
     };
     const targetFirst = pos.position.SouthOrEast || pos.position.Header;
     const nestedSource = React.cloneElement(source, {
-      path: `${target.props.path}.${targetFirst ? 1 : 0}`,
       style: {
         ...source.props.style,
         ...flexStyles
       }
     });
     const nestedTarget = React.cloneElement(target, {
-      path: `${target.props.path}.${targetFirst ? 0 : 1}`,
       style: {
         ...target.props.style,
         ...flexStyles
@@ -494,7 +502,9 @@ function _wrap(model, source, target, pos, targetRect) {
         style,
         resizeable: target.props.resizeable
       },
-      targetFirst ? [nestedTarget, nestedSource] : [nestedSource, nestedTarget]
+      targetFirst
+      ? [resetPath(nestedTarget, `${path}.0`), resetPath(nestedSource, `${path}.1`)]
+      : [resetPath(nestedSource, `${path}.0`), resetPath(nestedTarget, `${path}.1`)]
     );
 
     children.splice(idx, 1, wrapper);
@@ -650,14 +660,6 @@ function withTheGrain(pos, container) {
     : false;
 }
 
-function againstTheGrain(pos, layout) {
-  return pos.position.EastOrWest
-    ? isTower(layout) || isStacket(layout)
-    : pos.position.NorthOrSouth
-    ? isTerrace(layout) || isStacket(layout)
-    : false;
-}
-
 function isTower(model) {
   return (
     typeOf(model) === "Flexbox" && model.props.style.flexDirection === "column"
@@ -668,10 +670,6 @@ function isTerrace(model) {
   return (
     typeOf(model) === "Flexbox" && model.props.style.flexDirection !== "column"
   );
-}
-
-function isStacket(model) {
-  return typeOf(model) === "Stack";
 }
 
 // maybe in layout-json ?

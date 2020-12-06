@@ -2,14 +2,15 @@ import React from 'react';
 
 
 import {
-  registerComponent,
-  useViewAction,
+  // registerComponent,
+  useViewContext,
   Component,
   Flexbox,
   Stack,
   View,
   DraggableLayout,
 } from '@heswell/layout';
+import Builder from '../components/layout-builder/layout-builder';
 
 import "@heswell/layout/dist/index.css";
 import '../assets/OpenSans.css';
@@ -36,21 +37,22 @@ const Box = props => (
 />);
 
 const DraggableBox = (props) => {
-  const dispatchAction = useViewAction();
-  console.log(dispatchAction)
-  const handleMouseDown = (e) => {
-    dispatchAction(e);
+
+  const DraggableBoxBase = () => {
+    const {dispatch, title} = useViewContext();
+    const handleMouseDown = (e) => {
+      // TODO should be able to just dispatch the event
+      dispatch({type: 'mousedown'}, e);
+    }
+  return <Box onMouseDown={handleMouseDown}>{title}</Box>
   }
 
  return ( 
     <View {...props}>
-      <Box onMouseDown={handleMouseDown}> Hello Mum</Box>
+       <DraggableBoxBase /> 
     </View>
   )
 }
-
-registerComponent("DraggableBox", DraggableBox, 'view');
-
 
 export const SimpleNesting = () =>
   <DraggableLayout>
@@ -77,7 +79,7 @@ export const SimpleNesting = () =>
     </Flexbox>
   </DraggableLayout>
 
-export const DeeperNestingNoHandles = () =>
+export const CustomDrag = () =>
   // <SelectionProvider>
     <DraggableLayout>
       <Flexbox style={{ width: 800, height: 500, flexDirection: 'row' }} splitterSize={1}>
@@ -88,10 +90,10 @@ export const DeeperNestingNoHandles = () =>
               <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
               <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
             </Flexbox>
-            <DraggableBox title='R Component' style={{ flex: 1 }} resizeable />
+            <DraggableBox title='T Component' style={{ flex: 1 }} resizeable />
           </Flexbox>
-          <DraggableBox title='B Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
-          <DraggableBox title='R Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
+          <DraggableBox title='Q Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
+          <DraggableBox title='Z Component' style={{ flex: 1, flexGrow: 1, flexShrink: 1 }} resizeable />
         </Flexbox>
       </Flexbox>
   </DraggableLayout>
@@ -138,3 +140,6 @@ export const ComplexNestedLayout = () =>
       <div style={{ height: 32, backgroundColor: 'green' }} />
     </Flexbox>
   </DraggableLayout>
+
+export const NestadDragContainerWithPalette = () =>
+  <Builder />

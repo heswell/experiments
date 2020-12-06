@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
 
-import { FlexBox,  PlaceHolder, DraggableLayout, DynamicContainer } from '@heswell/layout';
+import { Flexbox,  Component as PlaceHolder, DraggableLayout } from '@heswell/layout';
 import { Control, Select } from '@heswell/ui-controls';
 
 import LayoutConfigurator from '../layout-configurator';
 import {  LayoutTreeViewer } from '../layout-tree-viewer';
-import ComponentPalette from '../component-palette/componentPalette';
+import Palette from '../palette/Palette';
 
 import './layout-builder.css';
 
@@ -66,34 +66,34 @@ export default function LayoutBuilder({width = 800, height = 1000}){
 
   return (
     <DraggableLayout>
-      <FlexBox style={{flexDirection:"column",width: 900, height: 900, backgroundColor: 'rgb(90,90,90)'}}>
-        <FlexBox style={{height: 60}}>
-          <ComponentPalette style={{flex: 1, backgroundColor: 'inherit'}}/>
-          <div className="layout-edit-controls" style={{backgroundColor: 'red',width: 150}}>
+      <Flexbox className="LayoutBuilder" style={{flexDirection:"column",width: 900, height: 900}}>
+        <Flexbox className="builder-top" style={{height: 60, backgroundColor: 'rgb(90,90,90)'}}>
+          <Palette style={{flex: 1, backgroundColor: 'inherit'}}/>
+          <div className="layout-edit-controls" style={{backgroundColor: 'red', width: 250}}>
             <Control><Select onCommit={selectLayout} availableValues={availableValues} selectedIdx={selectedIdx} value={state.selectedLayoutId}/></Control>
             <button onClick={saveLayout}>Save</button>
           </div>
-        </FlexBox>
-        <DynamicContainer style={{flex:1}} dropTarget 
+        </Flexbox>
+        <DraggableLayout style={{flex:1}} dropTarget 
           onLayoutModel={onLayoutModel}
-          selectedNode={state.selectedLayoutNode ? {
-            $id: state.selectedLayoutNode.$id,
-            $path: state.selectedLayoutNode.$path
-          }: null}
+          // selectedNode={state.selectedLayoutNode ? {
+          //   $id: state.selectedLayoutNode.$id,
+          //   $path: state.selectedLayoutNode.$path
+          // }: null}
           >
-          <PlaceHolder style={{width: '100%',height: '100%', backgroundColor: 'rgba(100,0,0,.2)'}} resizeable/>
-        </DynamicContainer>
-        <FlexBox style={{flexDirection: 'row', height: 400}}>
-          <LayoutTreeViewer
+          <PlaceHolder style={{width: '100%',height: '100%', backgroundColor: 'lightgrey'}} resizeable/>
+        </DraggableLayout>
+        {/* <Flexbox style={{flexDirection: 'row', height: 400}}>
+          {<LayoutTreeViewer
             style={{width: '50%'}} 
             tree={state.managedLayoutNode}
-            onSelectNode={selectComponent}/>
+            onSelectNode={selectComponent}/>}
           <LayoutConfigurator
             style={{width: '50%'}}
             layoutStyle={layoutStyle}
             onChange={handleChange}/>
-        </FlexBox>
-      </FlexBox>
+        </Flexbox> */}
+      </Flexbox>
     </DraggableLayout>
   )
 }

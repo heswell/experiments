@@ -108,7 +108,6 @@ describe('LayoutReducer', () => {
 
     it('creates a Tabbed Stack wrapper when dropped onto View Header', () => {
       // simulate the drag-start, which stores the draggable component as prop
-
       const layout = React.cloneElement(layoutState, {
         drag: {draggable}
       });
@@ -155,7 +154,48 @@ describe('LayoutReducer', () => {
 
     });
 
-  })
+    it('correctly resets all paths when root re-wrapped', () => {
+
+      // simulate the drag-start, which stores the draggable component as prop
+      const layout = React.cloneElement(layoutState, {
+        drag: {draggable}
+      });
+
+      // TODO use followPath
+      const target = followPath(layoutState, "0");
+
+      const state = LayoutReducer(layout, {
+        type: Action.DRAG_DROP,
+        dropTarget: {
+          pos: {height: 120, position: {North: true}}, 
+          component: target
+        }
+      });
+
+      expect(typeOf(state)).toEqual("Flexbox");
+      expect(state.props.style.flexDirection).toEqual("column");
+      expect(state.props.path).toEqual("0");
+      expect(state.props.children[0].props.path).toEqual("0.0");
+      expect(state.props.children[1].props.path).toEqual("0.1");
+
+      expect(typeOf(state.props.children[1])).toEqual("Flexbox");
+      expect(state.props.children[1].props.style.flexDirection).toEqual("row");
+
+      const {props: {children: [child1, child2]}} = state.props.children[1];
+      expect(child1.props.path).toEqual("0.1.0")
+      expect(child2.props.path).toEqual("0.1.1")
+
+      expect(typeOf(child2)).toEqual("Flexbox");
+      expect(child2.props.style.flexDirection).toEqual("column");
+      const {props: {children: [child3, child4]}} = child2;
+      expect(child3.props.path).toEqual("0.1.1.0")
+      expect(child4.props.path).toEqual("0.1.1.1")
+
+
+
+    })
+
+  });
 
 
 

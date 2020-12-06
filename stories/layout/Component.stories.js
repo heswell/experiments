@@ -1,15 +1,15 @@
 import React from 'react';
-import { Component, LayoutItem } from '@heswell/layout';
+import { Component, View } from '@heswell/layout';
 
 import './material-design.css';
 
 export default {
-  title: 'Layout/Component',
-  component: LayoutItem,
+  title: 'Layout/View',
+  component: View,
 };
 
 export const ComponentWithBorderAndHeader = ({width = 500, height = 400}) =>
-  <LayoutItem
+  <View
     title="Tye Boss" 
     header
     style={{
@@ -20,4 +20,4 @@ export const ComponentWithBorderAndHeader = ({width = 500, height = 400}) =>
       backgroundColor: 'yellow'
       }} >
     <Component />
-  </LayoutItem>
+  </View>

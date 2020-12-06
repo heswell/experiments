@@ -7,3 +7,4 @@ export {default as ViewContext} from './src/ViewContext';
 export {useViewContext, useViewAction} from './src/ViewContext';
 export {default as Component} from './src/Component';
 export {registerComponent} from './src/registry/ComponentRegistry';
+export {applyLayoutProps} from './src/layoutUtils';

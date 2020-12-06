@@ -25,8 +25,10 @@ export class DragContainer {
   }
 
   static register(path) {
-    // need to decide how to store these
-    _dragContainers.push(path);
+    if (!_dragContainers.includes(path)){
+      // need to decide how to store these
+      _dragContainers.push(path);
+    }
   }
 
   static unregister(/*path*/) {}
@@ -37,7 +39,7 @@ function getDragContainer(rootContainer, dragContainerPath) {
   var maxSteps = 0;
 
   //TODO still to be determined how this will work
-  if (rootContainer.path === dragContainerPath) {
+  if (rootContainer.props.path === dragContainerPath) {
     return rootContainer;
   } else if (!dragContainerPath) {
     // If the model has no path (i.e. it hasn't been dragged out of the existing layout)
@@ -125,9 +127,9 @@ function preDragMouseupHandler() {
 function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
   var start = window.performance.now();
-
+  console.log(`initDrag ${rootContainer.props.path} ${dragContainerPath}`)
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
-  _measurements = BoxModel.measure(rootContainer);
+  _measurements = BoxModel.measure(_dragContainer);
   console.log({ measurements: _measurements });
   var end = window.performance.now();
   console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);

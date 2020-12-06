@@ -2,6 +2,8 @@ import React from "react";
 import { uuid } from "@heswell/utils";
 import { expandFlex, typeOf } from "./utils";
 import { ComponentRegistry, isContainer, isView } from "./registry/ComponentRegistry";
+import ViewContext from "./ViewContext";
+
 
 export const getManagedDimension = (style) =>
   style.flexDirection === "column" ? ["height", "width"] : ["width", "height"];
@@ -49,25 +51,37 @@ function getLayoutChildren(type, children, dispatch, path = "0") {
 }
 
 const getLayoutChild = (child, dispatch, path = "0", parentType = null) => {
-  const { children } = child.props;
+  const { children, title } = child.props;
   const type = typeOf(child);
+  const isNativeElement = type[0].match(/[a-z]/);
 
   const id = uuid();
-  return React.cloneElement(
-    child,
-    {
-      layoutId: id,
-      key: id,
-      dispatch,
-      path,
-      style: getStyle(type, child.props, parentType)
-    },
+  const key = id;
+  const style = getStyle(type, child.props, parentType);
+
+  const props = isNativeElement
+    ? { id, key, style } 
+    : { layoutId: id, key, dispatch, path, style };
+
+   const layoutChild = React.cloneElement(
+    child, props,
     isContainer(type) || isView(type)
       ? React.Children.map(children, (child, i) =>
         getLayoutChild(child, dispatch, `${path}.${i}`, type)
       )
       : children
   );
+
+  if (isContainer(type)){
+    return layoutChild;
+  } else {
+    return layoutChild;
+    // return React.createElement(
+    //   ViewContext.Provider,
+    //   { value: {path, title} },
+    //   layoutChild
+    // )
+  }
 };
 
 const getStyle = (type, props, parentType) => {

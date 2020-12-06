@@ -1,3 +1,18 @@
+.LayoutBuilder .PaletteList {
+  display: flex;
+}
+.builder-top {
+  margin-bottom: 12px;
+}
+
+.LayoutBuilder .ComponentIcon {
+  padding: 0 3px;
+  margin: 0 3px;
+  color: white;
+  border: double cornflowerBlue 3px;
+  cursor: pointer;
+}
+
 .control {
   height: 24px;
   background-color: white;
