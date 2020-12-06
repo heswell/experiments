@@ -17,7 +17,10 @@ export const applyLayout = (type, props, dispatch) => {
     if (props.layout) {
       return layoutFromJson(props.layout, dispatch, "0");
     } else {
-      return getLayoutChild(props.children, dispatch, "0", type);
+      return {
+          ...props,
+          children: [getLayoutChild(props.children, dispatch, "0", type)]
+        };
     }
   } else {
     const layoutProps = getLayoutProps(type, props, dispatch, "0");
@@ -130,7 +133,7 @@ export function layoutToJSON(type, props, component) {
   return result;
 }
 
-function componentToJson(component) {
+export function componentToJson(component) {
   const {
     type,
     props: { children, ...props }
@@ -152,7 +155,7 @@ function serializeType(elementType) {
   }
 }
 
-function serializeProps(props) {
+export function serializeProps(props) {
   if (props) {
     // Question, will there ever be a requirement to preserve id value ?
     const { id, path, ...otherProps } = props;

@@ -55,46 +55,101 @@ function switchTab(state, { path, nextIdx }) {
   return swapChild(state, target, replacement);
 }
 
-function splitterResize(state, { path, sizes }) {
-  const target = followPath(state, path);
-  let replacement;
-  if (React.isValidElement(target)) {
-    const children = target.props.children.map((child, i) => {
-      const dim =
-        target.props.style.flexDirection === "column" ? "height" : "width";
-      const {
-        style: { [dim]: size, flexBasis }
-      } = child.props;
-      if (size === sizes[i] || flexBasis === sizes[i]) {
-        return child;
-      } else {
-        return React.cloneElement(child, {
-          style: applySize(child.props.style, dim, sizes[i])
-        });
-      }
-    });
-    replacement = React.cloneElement(target, null, children);
-  } else {
-    replacement = {
-      ...target,
-      children: target.children.map((child, i) => {
-        const dim =
-          target.style.flexDirection === "column" ? "height" : "width";
-        const {
-          style: { [dim]: size, flexBasis }
-        } = child.props;
-        if (size === sizes[i] || flexBasis === sizes[i]) {
-          return child;
-        } else {
-          return React.cloneElement(child, {
-            style: applySize(child.props.style, dim, sizes[i])
-          });
-        }
-      })
-    };
-  }
-  return swapChild(state, target, replacement);
+function splitterResize(rootProps, { path, sizes }) {
+  const target = followPath(rootProps, path);
+  const targetIsRoot = target === rootProps;
+  const {children, style} = targetIsRoot ? target : target.props;
+
+  const replacementChildren = children.map((child, i) => {
+    const dim =
+      style.flexDirection === "column" ? "height" : "width";
+    const {
+      style: { [dim]: size, flexBasis }
+    } = child.props;
+    if (size === sizes[i] || flexBasis === sizes[i]) {
+      return child;
+    } else {
+      return React.cloneElement(child, {
+        style: applySize(child.props.style, dim, sizes[i])
+      });
+    }
+  });
+
+  const replacement = targetIsRoot
+    ? {...target, children: replacementChildren}
+    : React.cloneElement(target, null, replacementChildren);
+
+  return swapChild(rootProps, target, replacement);
 }
+
+/**
+ *  We will be passed a component to drag (with instructions)
+ * OR a path, which indicates that a component within the layout
+ * is to be extracted and dragged to a new position.
+ */
+function dragStart(
+  rootProps,
+  { component, dragRect, dragPos, instructions, path }
+) {
+  // if (React.isValidElement(state)) {
+    var draggable = component || followPath(rootProps, path);
+
+    const newRootProps = {
+      drag: { dragRect, dragPos, dragPath: path, draggable },
+      ...rootProps
+    };
+
+    if (instructions && instructions.DoNotRemove) {
+      return newRootProps;
+    } else {
+      return _removeChild(newRootProps, draggable);
+    }
+  // } else {
+  //   console.log(`layout-reducer: dragStart, expected React element`);
+  // }
+}
+
+function dragDrop(rootProps, action) {
+  const {
+    drag: {draggable: source},
+    dropTarget: { component: target, pos },
+    rootLayout, // this has to go
+    targetRect,
+    targetPosition
+  } = action;
+
+  if (pos.position.Header) {
+    if (typeOf(target) === "Stack") {
+      let before, after;
+      const tabIndex = pos.tab.index;
+      if (pos.tab.index === -1 || tabIndex >= target.props.children.length) {
+        ({
+          props: { path: after }
+        } = target.props.children[target.props.children.length - 1]);
+      } else {
+        ({
+          props: { path: before }
+        } = target.props.children[tabIndex]);
+      }
+      return insert(rootProps, source, null, before, after);
+    } else {
+      return wrap(rootProps, source, target, pos, undefined, rootLayout);
+    }
+  } else if (pos.position.Centre) {
+    return replaceChild(rootProps, target, source);
+  } else {
+    return dropLayoutIntoContainer(
+      rootProps,
+      pos,
+      source,
+      target,
+      targetPosition,
+      targetRect,
+      rootLayout // no
+    );
+  }
+}
+
 
 function applySize(style, dim, newSize) {
   const hasSize = typeof style[dim] === "number";
@@ -147,78 +202,10 @@ function swapChild(model, child, replacement) {
   }
 }
 
-/**
- *  We will be passed a component to drag (with instructions)
- * OR a path, which indicates that a component within the layout
- * is to be extracted and dragged to a new position.
- */
-function dragStart(
-  state,
-  { component, dragRect, dragPos, instructions, path }
-) {
-  if (React.isValidElement(state)) {
-    var draggable = component || followPath(state, path);
 
-    const newState = React.cloneElement(state, {
-      drag: { dragRect, dragPos, dragPath: path, draggable }
-    });
-
-    if (instructions && instructions.DoNotRemove) {
-      return newState;
-    } else {
-      return _removeChild(newState, draggable);
-    }
-  } else {
-    console.log(`layout-reducer: dragStart, expected React element`);
-  }
-}
-
-function dragDrop(state, action) {
-  const { draggable: source } = state.props.drag;
-  const {
-    dropTarget: { component: target, pos },
-    targetRect,
-    targetPosition
-  } = action;
-
-  if (pos.position.Header) {
-    if (typeOf(target) === "Stack") {
-      let before, after;
-      const tabIndex = pos.tab.index;
-      if (pos.tab.index === -1 || tabIndex >= target.props.children.length) {
-        ({
-          props: { path: after }
-        } = target.props.children[target.props.children.length - 1]);
-      } else {
-        ({
-          props: { path: before }
-        } = target.props.children[tabIndex]);
-      }
-      return insert(state, source, null, before, after);
-    } else {
-      return wrap(state, source, target, pos);
-    }
-  } else if (pos.position.Centre) {
-    return replaceChild(state, target, source);
-  } else {
-    return dropLayoutIntoContainer(
-      state,
-      pos,
-      source,
-      target,
-      targetPosition,
-      targetRect
-    );
-  }
-
-  return React.cloneElement(state, {
-    drag: null
-  });
-}
-
-function removeChild(state, { path }) {
-  var target = followPath(state, path);
-  return _removeChild(state, target);
+function removeChild(rootProps, { path }) {
+  var target = followPath(rootProps, path);
+  return _removeChild(rootProps, target);
 }
 
 function _removeChild(model, child) {
@@ -308,42 +295,29 @@ function unwrap(state, child) {
 }
 
 function dropLayoutIntoContainer(
-  layoutModel,
+  rootProps,
   pos,
   source,
   target,
   targetPosition,
-  targetRect
+  targetRect,
+  rootLayout // no
 ) {
-  if (target.props.path === "0") {
-    if (typeOf(target) === "Surface") {
-      const { style, layoutStyle, computedStyle } = source;
-      const { left, top } = targetPosition;
-      return {
-        ...layoutModel,
-        children: layoutModel.children.concat({
-          ...source,
-          style: { ...style, left, top },
-          layoutStyle: { ...layoutStyle, left, top },
-          computedStyle: { ...computedStyle, left, top }
-        })
-      };
-    } else {
-      return wrap(layoutModel, source, target, pos);
-    }
+  if (target.path === "0" || target.props.path === "0") {
+    return wrap(rootProps, source, target, pos, undefined, rootLayout);
   } else {
-    var targetContainer = followPathToParent(layoutModel, target.props.path);
+    var targetContainer = followPathToParent(rootProps, target.props.path);
 
     if (absoluteDrop(target, pos.position)) {
       return insert(
-        layoutModel,
+        rootProps,
         source,
         target.props.path,
         null,
         null,
         pos.width || pos.height
       );
-    } else if (target === layoutModel || isDraggableRoot(layoutModel, target)) {
+    } else if (target === rootProps || isDraggableRoot(rootProps, target)) {
       // Can only be against the grain...
       if (withTheGrain(pos, target)) {
         throw Error("How the hell did we do this");
@@ -354,7 +328,7 @@ function dropLayoutIntoContainer(
     } else if (withTheGrain(pos, targetContainer)) {
       if (pos.position.SouthOrEast) {
         return insert(
-          layoutModel,
+          rootProps,
           source,
           null,
           null,
@@ -364,7 +338,7 @@ function dropLayoutIntoContainer(
         );
       } else {
         return insert(
-          layoutModel,
+          rootProps,
           source,
           null,
           target.props.path,
@@ -374,28 +348,29 @@ function dropLayoutIntoContainer(
         );
       }
     } else if (!withTheGrain(pos, targetContainer)) {
-      return wrap(layoutModel, source, target, pos, targetRect);
+      return wrap(rootProps, source, target, pos, targetRect, rootLayout);
     } else if (isContainer(targetContainer)) {
-      return wrap(layoutModel, source, target, pos, targetRect);
+      return wrap(rootProps, source, target, pos, targetRect, rootLayout);
     } else {
       console.log("no support right now for position = " + pos.position);
     }
   }
 
-  return layoutModel;
+  return rootProps;
 }
 
 // this is replaceChild with extras
-function wrap(model, source, target, pos, targetRect) {
-  return target.props.path === model.props.path
-    ? _wrapRoot(model, source, pos, targetRect)
-    : _wrap(model, source, target, pos, targetRect);
+function wrap(rootProps, source, target, pos, targetRect, rootLayout) {
+  const targetPath = target.path || target.props.path;
+  return targetPath === rootProps.path
+    ? _wrapRoot(rootProps, source, pos, rootLayout)
+    : _wrap(rootProps, source, target, pos, targetRect);
 }
 
-function _wrapRoot(model, source, pos, targetRect) {
+function _wrapRoot(rootProps, source, pos, rootLayout) {
   const { type, flexDirection } = getLayoutSpec(pos);
   const style = {
-    ...model.props.style,
+    ...rootProps.style,
     flexDirection,
     flexGrow: 1,
     flexShrink: 1,
@@ -419,9 +394,9 @@ function _wrapRoot(model, source, pos, targetRect) {
     resizeable: true
   });
 
-  const nestedTarget = React.cloneElement(model, {
+  const nestedTarget = React.cloneElement(rootLayout, {
     style: {
-      ...model.props.style,
+      ...rootProps.style,
       flexBasis: 0,
       flexGrow: 1,
       flexShrink: 1,
@@ -430,13 +405,16 @@ function _wrapRoot(model, source, pos, targetRect) {
     },
     resizeable: true
   });
+
+  const id = uuid();
   var wrapper = React.createElement(
     ComponentRegistry[type],
     {
-      layoutId: uuid(),
+      key: id,
+      layoutId: id,
       path: "0",
       active,
-      dispatch: model.props.dispatch,
+      dispatch: rootProps.dispatch,
       style,
       resizeable: true
     },
@@ -444,13 +422,22 @@ function _wrapRoot(model, source, pos, targetRect) {
       ? [resetPath(nestedTarget, "0.0"), resetPath(nestedSource, "0.1")]
       : [resetPath(nestedSource, "0.0"), resetPath(nestedTarget, "0.1")]
   );
-  return wrapper;
+
+  return {
+    ...rootProps,
+    wrapper
+  }
+
 }
 
 function _wrap(model, source, target, pos, targetRect) {
+
+  let isElement = React.isValidElement(model);
+  const {path: modelPath, children: modelChildren} = isElement ? model.props : model;
+
   const {path} = target.props;
-  const { idx, finalStep } = nextStep(model.props.path, path);
-  const children = model.props.children.slice();
+  const { idx, finalStep } = nextStep(modelPath, path);
+  const children = modelChildren.slice();
 
   if (finalStep) {
     const { type, flexDirection } = getLayoutSpec(pos);
@@ -511,7 +498,12 @@ function _wrap(model, source, target, pos, targetRect) {
   } else {
     children[idx] = _wrap(children[idx], source, target, pos, targetRect);
   }
-  return React.cloneElement(model, null, children);
+  return isElement
+    ? React.cloneElement(model, null, children)
+    : {
+      ...model,
+      children
+    }
 }
 
 function insert(model, source, into, before, after, size, targetRect) {

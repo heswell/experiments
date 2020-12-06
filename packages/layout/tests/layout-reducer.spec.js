@@ -107,16 +107,14 @@ describe('LayoutReducer', () => {
     })
 
     it('creates a Tabbed Stack wrapper when dropped onto View Header', () => {
-      // simulate the drag-start, which stores the draggable component as prop
-      const layout = React.cloneElement(layoutState, {
-        drag: {draggable}
-      });
 
-      // TODO use followPath
-      const target = followPath(layoutState, "0.1.1");
+      const {children: [rootLayout]} = layoutState;
+      const {props: layoutProps} = rootLayout;
+      const target = followPath(layoutProps, "0.1.1");
 
-      const state = LayoutReducer(layout, {
+      const state = LayoutReducer(layoutProps, {
         type: Action.DRAG_DROP,
+        drag: {draggable},
         dropTarget: {
           pos: {position: {Header: true}}, 
           component: target
@@ -161,27 +159,31 @@ describe('LayoutReducer', () => {
         drag: {draggable}
       });
 
-      // TODO use followPath
-      const target = followPath(layoutState, "0");
+      const {children: [rootLayout]} = layoutState;
+      const {props: layoutProps} = rootLayout;
 
-      const state = LayoutReducer(layout, {
+      const target = followPath(layoutProps, "0");
+
+      const {wrapper} = LayoutReducer(layoutProps, {
         type: Action.DRAG_DROP,
+        drag: {draggable},
         dropTarget: {
           pos: {height: 120, position: {North: true}}, 
           component: target
-        }
+        },
+        rootLayout
       });
 
-      expect(typeOf(state)).toEqual("Flexbox");
-      expect(state.props.style.flexDirection).toEqual("column");
-      expect(state.props.path).toEqual("0");
-      expect(state.props.children[0].props.path).toEqual("0.0");
-      expect(state.props.children[1].props.path).toEqual("0.1");
+      expect(typeOf(wrapper)).toEqual("Flexbox");
+      expect(wrapper.props.style.flexDirection).toEqual("column");
+      expect(wrapper.props.path).toEqual("0");
+      expect(wrapper.props.children[0].props.path).toEqual("0.0");
+      expect(wrapper.props.children[1].props.path).toEqual("0.1");
 
-      expect(typeOf(state.props.children[1])).toEqual("Flexbox");
-      expect(state.props.children[1].props.style.flexDirection).toEqual("row");
+      expect(typeOf(wrapper.props.children[1])).toEqual("Flexbox");
+      expect(wrapper.props.children[1].props.style.flexDirection).toEqual("row");
 
-      const {props: {children: [child1, child2]}} = state.props.children[1];
+      const {props: {children: [child1, child2]}} = wrapper.props.children[1];
       expect(child1.props.path).toEqual("0.1.0")
       expect(child2.props.path).toEqual("0.1.1")
 

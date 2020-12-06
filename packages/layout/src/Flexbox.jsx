@@ -3,7 +3,6 @@ import cx from "classnames";
 import Splitter from "./Splitter";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
-// import { componentFromLayout, isTypeOf } from "./utils";
 import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./Flexbox.css";

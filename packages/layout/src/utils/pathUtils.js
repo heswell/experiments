@@ -1,27 +1,34 @@
 import React from "react";
 
 // TODO isn't this equivalent to containerOf ?
-export function followPathToParent(layout, path) {
-  if (path === "0") return null;
-  if (path === layout.props.path) return null;
+export function followPathToParent(source, path) {
+  let isElement = React.isValidElement(source);
+  const sourcePath = isElement ? source.props.path : source.path;
 
-  return followPath(layout, path.replace(/.\d+$/, ""));
+
+  if (path === "0") return null;
+  if (path === sourcePath) return null;
+
+  return followPath(source, path.replace(/.\d+$/, ""));
 }
 
-export function containerOf(layout, target) {
-  if (target === layout) {
+export function containerOf(source, target) {
+  if (target === source) {
     return null;
   } else {
-    let { idx, finalStep } = nextStep(layout.props.path, target.props.path);
+    let isElement = React.isValidElement(source);
+    const {path: sourcePath, children} = isElement ? source.props : source;
+
+    let { idx, finalStep } = nextStep(sourcePath, target.props.path);
     if (finalStep) {
-      return layout;
+      return source;
     } else if (
-      layout.props.children === undefined ||
-      layout.props.children[idx] === undefined
+      children === undefined ||
+      children[idx] === undefined
     ) {
       return null;
     } else {
-      return containerOf(layout.props.children[idx], target);
+      return containerOf(children[idx], target);
     }
   }
 }

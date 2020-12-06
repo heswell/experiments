@@ -32,7 +32,7 @@
       "name": "Jest Tests",
       "args":[ 
         "${workspaceRoot}/packages/layout/node_modules/.bin/jest",
-        "layout-reducer.spec"
+        "layoutUtils.spec"
       ],
       "cwd": "${workspaceRoot}/packages/layout"
   },

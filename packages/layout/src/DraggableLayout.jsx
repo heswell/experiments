@@ -56,19 +56,19 @@ const DraggableLayout = (inputProps) => {
     [prepareToDrag]
   );
 
-  const [root, dispatchLayoutAction] = useLayout(
+  const [props, dispatchLayoutAction] = useLayout(
     "DraggableLayout",
     inputProps,
     customDispatcher
   );
 
-  const drag = root.props?.drag;
+  const drag = props.drag;
 
-  if (root.props?.dropTarget){
+  if (props.dropTarget){
     console.log(`this container is a draggable root 1)`)
-  } else if (root?.dropTarget){
-    const {path: dragContainerPath} = root.children[0].props; 
-    console.log(`this container is a draggable root 2) ${root.path} register child path $dragContainerPath}`)
+  } else if (props?.dropTarget){
+    const {path: dragContainerPath} = props.children[0].props; 
+    console.log(`this container is a draggable root 2) ${props.path} register child path $dragContainerPath}`)
     DragContainer.register(dragContainerPath);
   }
 
@@ -79,6 +79,7 @@ const DraggableLayout = (inputProps) => {
     (dropTarget, targetRect) => {
       dispatchLayoutAction({
         type: Action.DRAG_DROP,
+        drag,
         dropTarget,
         targetRect,
         targetPosition: dragOperation.current.position
@@ -86,7 +87,7 @@ const DraggableLayout = (inputProps) => {
       dragOperation.current = null;
       setDrag(-1.0);
     },
-    [dispatchLayoutAction]
+    [dispatchLayoutAction, drag]
   );
 
   const dragStart = useCallback(
@@ -94,7 +95,8 @@ const DraggableLayout = (inputProps) => {
       var { top, left } = dragRect;
       // note: by passing null as dragContainer path, we are relying on registered DragContainer. How do we allow an
       // override for this ?
-      const dragTransform = Draggable.initDrag(root, null, dragRect, dragPos, {
+      const {children: [rootLayout]} = props;
+      const dragTransform = Draggable.initDrag(rootLayout, null, dragRect, dragPos, {
         drag: handleDrag,
         drop: handleDrop
       });
@@ -105,7 +107,7 @@ const DraggableLayout = (inputProps) => {
         position: { left, top }
       };
     },
-    [handleDrop, root]
+    [handleDrop, props]
   );
 
   useEffect(() => {
@@ -158,7 +160,7 @@ const DraggableLayout = (inputProps) => {
 
   return (
     <>
-      {root.children || root}
+      {props.children || props}
       {dragComponent}
     </>
   );
