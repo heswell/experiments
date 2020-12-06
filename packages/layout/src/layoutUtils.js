@@ -2,8 +2,6 @@ import React from "react";
 import { uuid } from "@heswell/utils";
 import { expandFlex, typeOf } from "./utils";
 import { ComponentRegistry, isContainer, isView } from "./registry/ComponentRegistry";
-import ViewContext from "./ViewContext";
-
 
 export const getManagedDimension = (style) =>
   style.flexDirection === "column" ? ["height", "width"] : ["width", "height"];
@@ -22,66 +20,44 @@ export const applyLayout = (type, props, dispatch) => {
       return getLayoutChild(props.children, dispatch, "0", type);
     }
   } else {
-    const [extendedProps, children] = getLayoutRootProps(type, props, dispatch);
+    const layoutProps = getLayoutProps(type, props, dispatch, "0");
+    const children = getLayoutChildren(type, props.children, dispatch, "0")
     return {
-      ...extendedProps,
+      ...props,
+      ...layoutProps,
       children
     };
   }
 };
 
-const getLayoutRootProps = (type, { children, ...props }, dispatch) => {
-  const path = "0";
-  return [
-    {
-      layoutId: uuid(),
-      path,
-      dispatch,
-      ...props,
-      style: getStyle(type, props)
-    },
-    getLayoutChildren(type, children, dispatch, path)
-  ];
-};
+function getLayoutProps(type, props, dispatch, path="0", parentType=null){
+
+  const isNativeElement = type[0].match(/[a-z]/);
+  const id = uuid();
+  const key = id;
+  const style = getStyle(type, props, parentType);
+
+  return isNativeElement
+    ? { id, key, style } 
+    : { layoutId: id, key, dispatch, path, style };
+}
 
 function getLayoutChildren(type, children, dispatch, path = "0") {
-  return React.Children.map(children, (child, i) =>
-    getLayoutChild(child, dispatch, `${path}.${i}`, type)
-  );
+  return isContainer(type) || isView(type)
+    ? React.Children.map(children, (child, i) =>
+      getLayoutChild(child, dispatch, `${path}.${i}`, type)
+    )
+    : children;
 }
 
 const getLayoutChild = (child, dispatch, path = "0", parentType = null) => {
-  const { children, title } = child.props;
+  const { children } = child.props;
   const type = typeOf(child);
-  const isNativeElement = type[0].match(/[a-z]/);
-
-  const id = uuid();
-  const key = id;
-  const style = getStyle(type, child.props, parentType);
-
-  const props = isNativeElement
-    ? { id, key, style } 
-    : { layoutId: id, key, dispatch, path, style };
-
-   const layoutChild = React.cloneElement(
-    child, props,
-    isContainer(type) || isView(type)
-      ? React.Children.map(children, (child, i) =>
-        getLayoutChild(child, dispatch, `${path}.${i}`, type)
-      )
-      : children
+   return React.cloneElement(
+    child, getLayoutProps(type, child.props, dispatch, path, parentType),
+    getLayoutChildren(type, children, dispatch, path)
   );
 
-  if (isContainer(type)){
-    return layoutChild;
-  } else {
-    return layoutChild;
-    // return React.createElement(
-    //   ViewContext.Provider,
-    //   { value: {path, title} },
-    //   layoutChild
-    // )
-  }
 };
 
 const getStyle = (type, props, parentType) => {

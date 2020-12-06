@@ -5,12 +5,15 @@ import { Flexbox, Component } from '../index';
 describe('pathUtils', () => {
 
   describe('followPath', () => {
-    console.log('Tests needed for followPath')
+    it('', () => {
+      console.log('Tests needed for followPath')
+    })
   })
 
 })
 
 describe('typeOf', () => {
-  console.log('Tests needed for typeOf')
-
+  it('', () => {
+    console.log('Tests needed for typeOf')
+  })
 })

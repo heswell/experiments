@@ -20,7 +20,7 @@ import './popup.css';
 import './drop-menu.css';
 
 export default {
-  title: 'Layout/Draggable',
+  title: 'Layout/Drag and Drop',
   component: Flexbox
 };
 

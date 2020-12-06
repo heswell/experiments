@@ -8,6 +8,7 @@ const EMPTY_OBJECT = {};
 
 // We need to add props to restrict drag behaviour to, for example, popups only
 const DraggableLayout = (inputProps) => {
+  // React.Children.only(inputProps.children);
   const prepareToDrag = useCallback(
     (
       { component, dragRect, instructions = EMPTY_OBJECT, path },
@@ -63,7 +64,7 @@ const DraggableLayout = (inputProps) => {
 
   const drag = root.props?.drag;
 
-  if (root.props?.fropTarget){
+  if (root.props?.dropTarget){
     console.log(`this container is a draggable root 1)`)
   } else if (root?.dropTarget){
     const {path: dragContainerPath} = root.children[0].props; 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import layoutReducer from "./layout-reducer";
-import { applyLayout, layoutToJSON } from "./layoutUtils"; // TODO allow props to specify layoutRoot
+import { applyLayout } from "./layoutUtils"; // TODO allow props to specify layoutRoot
 /**
  * Root layout node will never receive dispatch. It may receive a layoutModel,
  * in which case UI will be built from model. Only root stores layoutModel in
@@ -10,6 +10,9 @@ import { applyLayout, layoutToJSON } from "./layoutUtils"; // TODO allow props t
  */
 const useLayout = (layoutType, props, customDispatcher) => {
   const isRoot = props.dispatch === undefined;
+  // Only the root layout actually stores state here
+  const state = useRef(undefined);
+  // AKA forceRefresh
   const [, setState] = useState(0);
   const layout = useRef(props.layout);
 
@@ -59,8 +62,6 @@ const useLayout = (layoutType, props, customDispatcher) => {
     }
   }, [layoutType, props]);
 
-  // Only the root layout has state here
-  const state = useRef(undefined);
   if (isRoot && state.current === undefined) {
     state.current = applyLayout(
       layoutType,
