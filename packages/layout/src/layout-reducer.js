@@ -7,12 +7,15 @@ import {
   followPathToParent,
   nextStep,
   resetPath,
-  typeOf
+  typeOf,
 } from "./utils";
 import { getManagedDimension } from "./layoutUtils";
 import { ComponentRegistry, isContainer } from "./registry/ComponentRegistry";
 
 const MISSING_TYPE = undefined;
+
+const getProps = (component) =>
+  React.isValidElement(component) ? component.props : component;
 
 const MISSING_HANDLER = (state, action) => {
   console.warn(
@@ -34,7 +37,7 @@ const handlers = {
   [Action.SPLITTER_RESIZE]: splitterResize,
   [Action.REMOVE]: removeChild,
   [Action.SWITCH_TAB]: switchTab,
-  [MISSING_TYPE]: MISSING_TYPE_HANDLER
+  [MISSING_TYPE]: MISSING_TYPE_HANDLER,
 };
 
 export default (state, action) => {
@@ -49,7 +52,7 @@ function switchTab(state, { path, nextIdx }) {
   } else {
     replacement = {
       ...target,
-      active: nextIdx
+      active: nextIdx,
     };
   }
   return swapChild(state, target, replacement);
@@ -61,16 +64,15 @@ function splitterResize(rootProps, { path, sizes }) {
   const { children, style } = targetIsRoot ? target : target.props;
 
   const replacementChildren = children.map((child, i) => {
-    const dim =
-      style.flexDirection === "column" ? "height" : "width";
+    const dim = style.flexDirection === "column" ? "height" : "width";
     const {
-      style: { [dim]: size, flexBasis }
+      style: { [dim]: size, flexBasis },
     } = child.props;
     if (size === sizes[i] || flexBasis === sizes[i]) {
       return child;
     } else {
       return React.cloneElement(child, {
-        style: applySize(child.props.style, dim, sizes[i])
+        style: applySize(child.props.style, dim, sizes[i]),
       });
     }
   });
@@ -96,7 +98,7 @@ function dragStart(
 
   const newRootProps = {
     drag: { dragRect, dragPos, dragPath: path, draggable },
-    ...rootProps
+    ...rootProps,
   };
 
   if (instructions && instructions.DoNotRemove) {
@@ -113,7 +115,7 @@ function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
   const {
     dropTarget: { component: target, pos },
     targetRect,
-    targetPosition
+    targetPosition,
   } = action;
 
   if (pos.position.Header) {
@@ -122,11 +124,11 @@ function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
       const tabIndex = pos.tab.index;
       if (pos.tab.index === -1 || tabIndex >= target.props.children.length) {
         ({
-          props: { path: after }
+          props: { path: after },
         } = target.props.children[target.props.children.length - 1]);
       } else {
         ({
-          props: { path: before }
+          props: { path: before },
         } = target.props.children[tabIndex]);
       }
       return insert(rootProps, source, null, before, after);
@@ -142,11 +144,10 @@ function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
       source,
       target,
       targetPosition,
-      targetRect,
+      targetRect
     );
   }
 }
-
 
 function applySize(style, dim, newSize) {
   const hasSize = typeof style[dim] === "number";
@@ -156,7 +157,7 @@ function applySize(style, dim, newSize) {
     [dim]: hasSize ? newSize : "auto",
     flexBasis: hasSize ? "auto" : newSize,
     flexShrink,
-    flexGrow
+    flexGrow,
   };
 }
 
@@ -166,8 +167,8 @@ function replaceChild(model, child, replacement) {
     path,
     style: {
       ...style,
-      ...replacement.props.style
-    }
+      ...replacement.props.style,
+    },
   });
 
   return swapChild(model, child, newChild);
@@ -199,6 +200,29 @@ function swapChild(model, child, replacement) {
   }
 }
 
+function isFlexible(model) {
+  return model.props.style.flexGrow > 0;
+}
+
+function canBeMadeFlexible(model) {
+  const { width, height, flexGrow } = model.props.style;
+  return (
+    flexGrow === 0 && typeof width !== "number" && typeof height !== "number"
+  );
+}
+
+function makeFlexible(children) {
+  return children.map((child) =>
+    canBeMadeFlexible(child)
+      ? React.cloneElement(child, {
+          style: {
+            ...child.props.style,
+            flexGrow: 1,
+          },
+        })
+      : child
+  );
+}
 
 function removeChild(rootProps, { path }) {
   var target = followPath(rootProps, path);
@@ -206,50 +230,32 @@ function removeChild(rootProps, { path }) {
 }
 
 function _removeChild(model, child) {
-  if (React.isValidElement(model)) {
-    let { active, path } = model.props;
-    const { idx, finalStep } = nextStep(model.props.path, child.props.path);
-    const type = typeOf(model);
-    let children = model.props.children.slice();
-    if (finalStep) {
-      children.splice(idx, 1);
-      if (active !== undefined && active >= idx) {
-        active = Math.max(0, active - 1);
-      }
-
-      if (children.length === 1 && type.match(/Flexbox|Stack/)) {
-        return unwrap(model, children[0]);
-      }
-    } else {
-      children[idx] = _removeChild(children[idx], child);
+  let { active, children: componentChildren, path } = getProps(model);
+  const { idx, finalStep } = nextStep(path, child.props.path);
+  const type = typeOf(model);
+  let children = componentChildren.slice();
+  if (finalStep) {
+    children.splice(idx, 1);
+    if (active !== undefined && active >= idx) {
+      active = Math.max(0, active - 1);
     }
-    children = children.map((child, i) => resetPath(child, `${path}.${i}`));
-    return React.cloneElement(model, { active }, children);
+
+    if (children.length === 1 && type.match(/Flexbox|Stack/)) {
+      return unwrap(model, children[0]);
+    }
+
+    // Not 100% sure we should do this, unless configured to
+    if (!children.some(isFlexible) && children.some(canBeMadeFlexible)) {
+      children = makeFlexible(children);
+    }
   } else {
-    // TODO see if we can eliminate this branch. It's when we process a root
-    // which is not DraggableLayout
-    const { idx, finalStep } = nextStep(model.path, child.props.path);
-    let children = model.children.slice();
-    let { active, path, type } = model;
-
-    if (finalStep) {
-      children.splice(idx, 1);
-
-      if (active !== undefined && active >= idx) {
-        active = Math.max(0, active - 1);
-      }
-
-      if (children.length === 1 && type.match(/Flexbox|Stack/)) {
-        return unwrap(model, children[0]);
-      }
-    } else {
-      children[idx] = _removeChild(children[idx], child);
-    }
-
-    children = children.map((child, i) => resetPath(child, `${path}.${i}`));
-
-    return { ...model, active, children };
+    children[idx] = _removeChild(children[idx], child);
   }
+
+  children = children.map((child, i) => resetPath(child, `${path}.${i}`));
+  return React.isValidElement(model)
+    ? React.cloneElement(model, { active }, children)
+    : { ...model, active, children };
 }
 
 function unwrap(state, child) {
@@ -257,7 +263,7 @@ function unwrap(state, child) {
   const {
     path,
     drag,
-    style: { flexBasis, flexGrow, flexShrink, width, height }
+    style: { flexBasis, flexGrow, flexShrink, width, height },
   } = state.props;
 
   let unwrappedChild = resetPath(child, path);
@@ -267,14 +273,14 @@ function unwrap(state, child) {
       style: {
         ...child.props.style,
         width,
-        height
-      }
+        height,
+      },
     });
   } else if (type === "Flexbox") {
     const dim =
       state.props.style.flexDirection === "column" ? "height" : "width";
     const {
-      style: { [dim]: size, ...style }
+      style: { [dim]: size, ...style },
     } = unwrappedChild.props;
     // Need to overwrite key
     unwrappedChild = React.cloneElement(unwrappedChild, {
@@ -284,8 +290,8 @@ function unwrap(state, child) {
         ...style,
         flexGrow,
         flexShrink,
-        flexBasis
-      }
+        flexBasis,
+      },
     });
   }
   return unwrappedChild;
@@ -357,9 +363,7 @@ function dropLayoutIntoContainer(
 }
 
 function wrap(model, source, target, pos, targetRect) {
-
-  let isElement = React.isValidElement(model);
-  const { path: modelPath, children: modelChildren } = isElement ? model.props : model;
+  const { path: modelPath, children: modelChildren } = getProps(model);
 
   const { path } = target.props;
   const { idx, finalStep } = nextStep(modelPath, path);
@@ -374,7 +378,7 @@ function wrap(model, source, target, pos, targetRect) {
 
     const style = {
       ...target.props.style,
-      flexDirection
+      flexDirection,
     };
 
     // This assumes flexBox ...
@@ -383,33 +387,32 @@ function wrap(model, source, target, pos, targetRect) {
       flexGrow: 1,
       flexShrink: 1,
       width: "auto",
-      height: "auto"
+      height: "auto",
     };
 
     const sourceStyle = size
       ? {
-        ...flexStyles,
-        flexBasis: size,
-        flexShrink: 0,
-        flexGrow: 0
-      }
-      : flexStyles
-
+          ...flexStyles,
+          flexBasis: size,
+          flexShrink: 0,
+          flexGrow: 0,
+        }
+      : flexStyles;
 
     const targetFirst = pos.position.SouthOrEast || pos.position.Header;
     const nestedSource = React.cloneElement(source, {
       resizeable: true,
       style: {
         ...source.props.style,
-        ...sourceStyle
-      }
+        ...sourceStyle,
+      },
     });
     const nestedTarget = React.cloneElement(target, {
       resizeable: true, // how do we decide this ?
       style: {
         ...target.props.style,
-        ...flexStyles
-      }
+        ...flexStyles,
+      },
     });
 
     const id = uuid();
@@ -427,29 +430,38 @@ function wrap(model, source, target, pos, targetRect) {
             ? model.props.splitterSize
             : undefined,
         style,
-        resizeable: target.props.resizeable
+        resizeable: target.props.resizeable,
       },
       targetFirst
-        ? [resetPath(nestedTarget, `${path}.0`), resetPath(nestedSource, `${path}.1`)]
-        : [resetPath(nestedSource, `${path}.0`), resetPath(nestedTarget, `${path}.1`)]
+        ? [
+            resetPath(nestedTarget, `${path}.0`),
+            resetPath(nestedSource, `${path}.1`),
+          ]
+        : [
+            resetPath(nestedSource, `${path}.0`),
+            resetPath(nestedTarget, `${path}.1`),
+          ]
     );
 
     children.splice(idx, 1, wrapper);
   } else {
     children[idx] = wrap(children[idx], source, target, pos, targetRect);
   }
-  return isElement
+  return React.isValidElement(model)
     ? React.cloneElement(model, null, children)
     : {
-      ...model,
-      children
-    }
+        ...model,
+        children,
+      };
 }
 
 function insert(component, source, into, before, after, size, targetRect) {
-
   let isElement = React.isValidElement(component);
-  const { active: componentActive, path, children: componentChildren } = isElement ? component.props : component;
+  const {
+    active: componentActive,
+    path,
+    children: componentChildren,
+  } = isElement ? component.props : component;
   const type = typeOf(component);
   const target = before || after || into;
 
@@ -496,11 +508,11 @@ function insert(component, source, into, before, after, size, targetRect) {
               transform: _4,
               transformOrigin: _5,
               ...style
-            }
+            },
           } = source.props;
           const dimensions = source.props.resizeable ? {} : { width, height };
           source = React.cloneElement(source, {
-            style: { ...style, ...dimensions }
+            style: { ...style, ...dimensions },
           });
         }
         if (before) {
@@ -516,9 +528,7 @@ function insert(component, source, into, before, after, size, targetRect) {
     }, []);
 
     const insertedIdx = children.indexOf(source);
-    active = type === "Stack"
-      ? insertedIdx
-      : componentActive;
+    active = type === "Stack" ? insertedIdx : componentActive;
 
     children = children.map((child, i) =>
       i < insertedIdx ? child : resetPath(child, `${path}.${i}`)
@@ -539,18 +549,17 @@ function insert(component, source, into, before, after, size, targetRect) {
   return isElement
     ? React.cloneElement(component, { ...component.props, active }, children)
     : {
-      ...component,
-      active,
-      children
-    }
+        ...component,
+        active,
+        children,
+      };
 
-
-  return ;
+  return;
 }
 
 function assignFlexDimension(model, dim, size = 0) {
   const {
-    style: { flex, flexBasis, height, width, ...otherStyles }
+    style: { flex, flexBasis, height, width, ...otherStyles } = {},
   } = model.props;
   const { [dim]: currentSize } = { height, width };
 
@@ -563,11 +572,11 @@ function assignFlexDimension(model, dim, size = 0) {
     [dim]: "auto",
     flexBasis: size,
     flexGrow: 0,
-    flexShrink: 0
+    flexShrink: 0,
   };
 
   return React.cloneElement(model, {
-    style
+    style,
   });
 }
 
@@ -596,8 +605,8 @@ function withTheGrain(pos, container) {
   return pos.position.NorthOrSouth
     ? isTower(container)
     : pos.position.EastOrWest
-      ? isTerrace(container)
-      : false;
+    ? isTerrace(container)
+    : false;
 }
 
 function isTower(model) {

@@ -2,7 +2,7 @@ import {
   BoxModel,
   positionValues,
   pointPositionWithinRect,
-  Position
+  Position,
 } from "./BoxModel";
 import { containerOf, typeOf } from "../utils";
 
@@ -16,7 +16,7 @@ export class DropTarget {
     component,
     pos,
     clientRect /*, closeToTheEdge*/,
-    nextDropTarget
+    nextDropTarget,
   }) {
     this.component = component;
     this.pos = pos;
@@ -28,7 +28,7 @@ export class DropTarget {
   targetTabRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
     const {
       clientRect: { top, left, right, bottom, header },
-      pos: { tab }
+      pos: { tab },
     } = this;
     const inset = 0;
     const gap = Math.round(lineWidth / 2) + inset;
@@ -54,7 +54,7 @@ export class DropTarget {
   targetRect(lineWidth, offsetTop = 0, offsetLeft = 0) {
     const {
       pos: { width, height, position },
-      clientRect: rect
+      clientRect: rect,
     } = this;
     let size = null;
 
@@ -175,7 +175,7 @@ export function identifyDropTarget(x, y, model, measurements) {
       component,
       pos,
       clientRect,
-      nextDropTarget
+      nextDropTarget,
     }).activate();
 
     // console.log('%c'+printDropTarget(dropTarget),'color:green');
@@ -205,6 +205,7 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
 
       while (
         container &&
+        container.path !== "0" &&
         positionedAtOuterContainerEdge(container, pos, component, measurements)
       ) {
         const clientRect = measurements[container.props.path];
@@ -235,7 +236,7 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
             component: container,
             pos: containerPos, // <<<<  a local pos for each container
             clientRect,
-            nextDropTarget: next(containerOf(layout, container))
+            nextDropTarget: next(containerOf(layout, container)),
           });
         }
 
@@ -251,8 +252,7 @@ function positionedAtOuterContainerEdge(
   component,
   measurements
 ) {
-
-  if (containingComponent.type === "DraggableLayout"){
+  if (containingComponent.type === "DraggableLayout") {
     return false;
   }
 

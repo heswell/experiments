@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import DropTargetRenderer from "./DropTargetRenderer";
 import DragState from "./DragState";
 import { followPath, typeOf } from "../utils";
@@ -26,7 +26,7 @@ export class DragContainer {
   }
 
   static register(path) {
-    if (!_dragContainers.includes(path)){
+    if (!_dragContainers.includes(path)) {
       // need to decide how to store these
       _dragContainers.push(path);
     }
@@ -40,7 +40,7 @@ function getDragContainer(rootContainer, dragContainerPath) {
   var maxSteps = 0;
 
   let isElement = React.isValidElement(rootContainer);
-  const {path: rootPath} = isElement ? rootContainer.props : rootContainer;
+  const { path: rootPath } = isElement ? rootContainer.props : rootContainer;
 
   //TODO still to be determined how this will work
   if (rootPath === dragContainerPath) {
@@ -103,7 +103,7 @@ export const Draggable = {
       { top, left, right, bottom },
       dragPos
     );
-  }
+  },
 };
 
 function preDragMousemoveHandler(e) {
@@ -132,11 +132,10 @@ function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
 
   let isElement = React.isValidElement(_dragContainer);
-  const {path} = isElement ? _dragContainer.props : _dragContainer;
-
+  const { path } = isElement ? _dragContainer.props : _dragContainer;
 
   var start = window.performance.now();
-  console.log(`initDrag ${path} ${dragContainerPath}`)
+  console.log(`initDrag ${path} ${dragContainerPath}`);
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
   _measurements = BoxModel.measure(_dragContainer);
   console.log({ measurements: _measurements });
@@ -160,7 +159,7 @@ function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   return {
     // scale factor should be applied in caller, not here
     transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
-    transformOrigin: pctX + "% " + pctY + "%"
+    transformOrigin: pctX + "% " + pctY + "%",
   };
 }
 
@@ -234,13 +233,13 @@ function onDragEnd() {
   } else {
     _dragCallback.drop({
       component: _dragContainer,
-      pos: { position: Position.Absolute }
+      pos: { position: Position.Absolute },
     });
   }
 
   _dragCallback = null;
   _dragContainer = null;
- _dropTargetRenderer.clear();
+  _dropTargetRenderer.clear();
 
   window.removeEventListener("mousemove", dragMousemoveHandler, false);
   window.removeEventListener("mouseup", dragMouseupHandler, false);
