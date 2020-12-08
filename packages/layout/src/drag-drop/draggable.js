@@ -1,3 +1,4 @@
+import React from 'react';
 import DropTargetRenderer from "./DropTargetRenderer";
 import DragState from "./DragState";
 import { followPath, typeOf } from "../utils";
@@ -38,8 +39,11 @@ function getDragContainer(rootContainer, dragContainerPath) {
   var pathToContainer = "";
   var maxSteps = 0;
 
+  let isElement = React.isValidElement(rootContainer);
+  const {path: rootPath} = isElement ? rootContainer.props : rootContainer;
+
   //TODO still to be determined how this will work
-  if (rootContainer.props.path === dragContainerPath) {
+  if (rootPath === dragContainerPath) {
     return rootContainer;
   } else if (!dragContainerPath) {
     // If the model has no path (i.e. it hasn't been dragged out of the existing layout)
@@ -126,16 +130,18 @@ function preDragMouseupHandler() {
 
 function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
+
+  let isElement = React.isValidElement(_dragContainer);
+  const {path} = isElement ? _dragContainer.props : _dragContainer;
+
+
   var start = window.performance.now();
-  console.log(`initDrag ${rootContainer.props.path} ${dragContainerPath}`)
+  console.log(`initDrag ${path} ${dragContainerPath}`)
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
   _measurements = BoxModel.measure(_dragContainer);
   console.log({ measurements: _measurements });
   var end = window.performance.now();
   console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
-
-  const type = typeOf(_dragContainer);
-  var { path } = _dragContainer.props;
 
   var dragZone = _measurements[path];
 
@@ -147,22 +153,15 @@ function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   window.addEventListener("mousemove", dragMousemoveHandler, false);
   window.addEventListener("mouseup", dragMouseupHandler, false);
 
-  if (type === "Surface") {
-    // NO - only if immediate container of dragged component is surface
-    _simpleDrag = true;
+  _simpleDrag = false;
 
-    return {};
-  } else {
-    _simpleDrag = false;
+  _dropTargetRenderer.prepare(dragZone);
 
-    _dropTargetRenderer.prepare(dragZone);
-
-    return {
-      // scale factor should be applied in caller, not here
-      transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
-      transformOrigin: pctX + "% " + pctY + "%"
-    };
-  }
+  return {
+    // scale factor should be applied in caller, not here
+    transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
+    transformOrigin: pctX + "% " + pctY + "%"
+  };
 }
 
 function dragMousemoveHandler(evt) {
@@ -241,7 +240,7 @@ function onDragEnd() {
 
   _dragCallback = null;
   _dragContainer = null;
-  _dropTargetRenderer.clear();
+ _dropTargetRenderer.clear();
 
   window.removeEventListener("mousemove", dragMousemoveHandler, false);
   window.removeEventListener("mouseup", dragMouseupHandler, false);

@@ -300,12 +300,7 @@ export class Popup extends React.Component {
         top = targetTop;
       }
 
-      console.log(
-        "%cPopup.show about to setTimeout",
-        "color:red;font-weight:bold"
-      );
       this.pendingTask = setTimeout(() => {
-        console.log(`%c...timeout fires`, "color:red;font-weight:bold");
         PopupService.showPopup({
           name,
           group,

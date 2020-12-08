@@ -58,7 +58,7 @@ function switchTab(state, { path, nextIdx }) {
 function splitterResize(rootProps, { path, sizes }) {
   const target = followPath(rootProps, path);
   const targetIsRoot = target === rootProps;
-  const {children, style} = targetIsRoot ? target : target.props;
+  const { children, style } = targetIsRoot ? target : target.props;
 
   const replacementChildren = children.map((child, i) => {
     const dim =
@@ -76,7 +76,7 @@ function splitterResize(rootProps, { path, sizes }) {
   });
 
   const replacement = targetIsRoot
-    ? {...target, children: replacementChildren}
+    ? { ...target, children: replacementChildren }
     : React.cloneElement(target, null, replacementChildren);
 
   return swapChild(rootProps, target, replacement);
@@ -92,28 +92,26 @@ function dragStart(
   { component, dragRect, dragPos, instructions, path }
 ) {
   // if (React.isValidElement(state)) {
-    var draggable = component || followPath(rootProps, path);
+  var draggable = component || followPath(rootProps, path);
 
-    const newRootProps = {
-      drag: { dragRect, dragPos, dragPath: path, draggable },
-      ...rootProps
-    };
+  const newRootProps = {
+    drag: { dragRect, dragPos, dragPath: path, draggable },
+    ...rootProps
+  };
 
-    if (instructions && instructions.DoNotRemove) {
-      return newRootProps;
-    } else {
-      return _removeChild(newRootProps, draggable);
-    }
+  if (instructions && instructions.DoNotRemove) {
+    return newRootProps;
+  } else {
+    return _removeChild(newRootProps, draggable);
+  }
   // } else {
   //   console.log(`layout-reducer: dragStart, expected React element`);
   // }
 }
 
-function dragDrop(rootProps, action) {
+function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
   const {
-    drag: {draggable: source},
     dropTarget: { component: target, pos },
-    rootLayout, // this has to go
     targetRect,
     targetPosition
   } = action;
@@ -133,7 +131,7 @@ function dragDrop(rootProps, action) {
       }
       return insert(rootProps, source, null, before, after);
     } else {
-      return wrap(rootProps, source, target, pos, undefined, rootLayout);
+      return wrap(rootProps, source, target, pos);
     }
   } else if (pos.position.Centre) {
     return replaceChild(rootProps, target, source);
@@ -145,7 +143,6 @@ function dragDrop(rootProps, action) {
       target,
       targetPosition,
       targetRect,
-      rootLayout // no
     );
   }
 }
@@ -163,8 +160,8 @@ function applySize(style, dim, newSize) {
   };
 }
 
-function replaceChild(model, child, replacement){
-  const {path, style} = child.props;
+function replaceChild(model, child, replacement) {
+  const { path, style } = child.props;
   const newChild = React.cloneElement(replacement, {
     path,
     style: {
@@ -264,11 +261,11 @@ function unwrap(state, child) {
   } = state.props;
 
   let unwrappedChild = resetPath(child, path);
-  if (path === "0") {
+  if (path === "0.0") {
     unwrappedChild = React.cloneElement(unwrappedChild, {
       drag,
       style: {
-        ...child.style,
+        ...child.props.style,
         width,
         height
       }
@@ -300,11 +297,11 @@ function dropLayoutIntoContainer(
   source,
   target,
   targetPosition,
-  targetRect,
-  rootLayout // no
+  targetRect
 ) {
-  if (target.path === "0" || target.props.path === "0") {
-    return wrap(rootProps, source, target, pos, undefined, rootLayout);
+  // In a Draggable layout, 0.n is the top-level layout
+  if (target.path === "0.0" || target.props.path === "0.0") {
+    return wrap(rootProps, source, target, pos);
   } else {
     var targetContainer = followPathToParent(rootProps, target.props.path);
 
@@ -348,9 +345,9 @@ function dropLayoutIntoContainer(
         );
       }
     } else if (!withTheGrain(pos, targetContainer)) {
-      return wrap(rootProps, source, target, pos, targetRect, rootLayout);
+      return wrap(rootProps, source, target, pos, targetRect);
     } else if (isContainer(targetContainer)) {
-      return wrap(rootProps, source, target, pos, targetRect, rootLayout);
+      return wrap(rootProps, source, target, pos, targetRect);
     } else {
       console.log("no support right now for position = " + pos.position);
     }
@@ -359,83 +356,12 @@ function dropLayoutIntoContainer(
   return rootProps;
 }
 
-// this is replaceChild with extras
-function wrap(rootProps, source, target, pos, targetRect, rootLayout) {
-  const targetPath = target.path || target.props.path;
-  return targetPath === rootProps.path
-    ? _wrapRoot(rootProps, source, pos, rootLayout)
-    : _wrap(rootProps, source, target, pos, targetRect);
-}
-
-function _wrapRoot(rootProps, source, pos, rootLayout) {
-  const { type, flexDirection } = getLayoutSpec(pos);
-  const style = {
-    ...rootProps.style,
-    flexDirection,
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0
-  };
-  // source only has position attributes because of dragging
-  const {
-    style: { left: _1, top: _2, ...sourceStyle }={}
-  } = source.props;
-  const active = type === "Stack" || pos.position.SouthOrEast ? 1 : 0;
-  const [dim] = getManagedDimension(style);
-  const sourceFlex =
-    typeof pos[dim] === "number"
-      ? { flexGrow: 0, flexShrink: 0, flexBasis: pos[dim] }
-      : { flex: 1 };
-
-  const targetFirst = pos.position.SouthOrEast || pos.position.Header;
-
-  const nestedSource = React.cloneElement(source, {
-    style: { ...sourceStyle, ...sourceFlex },
-    resizeable: true
-  });
-
-  const nestedTarget = React.cloneElement(rootLayout, {
-    style: {
-      ...rootProps.style,
-      flexBasis: 0,
-      flexGrow: 1,
-      flexShrink: 1,
-      width: "auto",
-      height: "auto"
-    },
-    resizeable: true
-  });
-
-  const id = uuid();
-  var wrapper = React.createElement(
-    ComponentRegistry[type],
-    {
-      key: id,
-      layoutId: id,
-      path: "0",
-      active,
-      dispatch: rootProps.dispatch,
-      style,
-      resizeable: true
-    },
-    targetFirst
-      ? [resetPath(nestedTarget, "0.0"), resetPath(nestedSource, "0.1")]
-      : [resetPath(nestedSource, "0.0"), resetPath(nestedTarget, "0.1")]
-  );
-
-  return {
-    ...rootProps,
-    wrapper
-  }
-
-}
-
-function _wrap(model, source, target, pos, targetRect) {
+function wrap(model, source, target, pos, targetRect) {
 
   let isElement = React.isValidElement(model);
-  const {path: modelPath, children: modelChildren} = isElement ? model.props : model;
+  const { path: modelPath, children: modelChildren } = isElement ? model.props : model;
 
-  const {path} = target.props;
+  const { path } = target.props;
   const { idx, finalStep } = nextStep(modelPath, path);
   const children = modelChildren.slice();
 
@@ -444,7 +370,8 @@ function _wrap(model, source, target, pos, targetRect) {
     const active = type === "Stack" || pos.position.SouthOrEast ? 1 : 0;
     target = children[idx];
 
-    // TODO handle scenario where items have been resized, so have flexBasis values set
+    const size = pos.width || pos.height;
+
     const style = {
       ...target.props.style,
       flexDirection
@@ -458,14 +385,27 @@ function _wrap(model, source, target, pos, targetRect) {
       width: "auto",
       height: "auto"
     };
+
+    const sourceStyle = size
+      ? {
+        ...flexStyles,
+        flexBasis: size,
+        flexShrink: 0,
+        flexGrow: 0
+      }
+      : flexStyles
+
+
     const targetFirst = pos.position.SouthOrEast || pos.position.Header;
     const nestedSource = React.cloneElement(source, {
+      resizeable: true,
       style: {
         ...source.props.style,
-        ...flexStyles
+        ...sourceStyle
       }
     });
     const nestedTarget = React.cloneElement(target, {
+      resizeable: true, // how do we decide this ?
       style: {
         ...target.props.style,
         ...flexStyles
@@ -490,13 +430,13 @@ function _wrap(model, source, target, pos, targetRect) {
         resizeable: target.props.resizeable
       },
       targetFirst
-      ? [resetPath(nestedTarget, `${path}.0`), resetPath(nestedSource, `${path}.1`)]
-      : [resetPath(nestedSource, `${path}.0`), resetPath(nestedTarget, `${path}.1`)]
+        ? [resetPath(nestedTarget, `${path}.0`), resetPath(nestedSource, `${path}.1`)]
+        : [resetPath(nestedSource, `${path}.0`), resetPath(nestedTarget, `${path}.1`)]
     );
 
     children.splice(idx, 1, wrapper);
   } else {
-    children[idx] = _wrap(children[idx], source, target, pos, targetRect);
+    children[idx] = wrap(children[idx], source, target, pos, targetRect);
   }
   return isElement
     ? React.cloneElement(model, null, children)
@@ -506,87 +446,85 @@ function _wrap(model, source, target, pos, targetRect) {
     }
 }
 
-function insert(model, source, into, before, after, size, targetRect) {
-  const type = typeOf(model);
-  let { active } = model.props;
-  const { path } = model.props;
+function insert(component, source, into, before, after, size, targetRect) {
+
+  let isElement = React.isValidElement(component);
+  const { active: componentActive, path, children: componentChildren } = isElement ? component.props : component;
+  const type = typeOf(component);
   const target = before || after || into;
+
   let { idx, finalStep } = nextStep(path, target);
   let children;
+  let active;
 
   // One more step needed when we're inserting 'into' a container
   var oneMoreStepNeeded = finalStep && into && idx !== -1;
 
   if (finalStep && !oneMoreStepNeeded) {
     const isFlexBox = type === "Flexbox";
-
-    if (type === "Surface" && idx === -1) {
-      children = model.children.concat(source);
-    } else {
-      const [dim] = getManagedDimension(model.props.style);
-      //TODO how do we identify splitter width
-      //TODO checj reiizeable to make sure a splitter will be present
-      function assignSizes(rect, dim, size) {
-        if (typeof size === "number") {
-          return [size, rect[dim] - size - 11];
-        } else {
-          const measurement = (targetRect[dim] - 11) / 2;
-          return [measurement, measurement];
-        }
+    const [dim] = getManagedDimension(component.props.style);
+    //TODO how do we identify splitter width
+    //TODO checj reiizeable to make sure a splitter will be present
+    function assignSizes(rect, dim, size) {
+      if (typeof size === "number") {
+        return [size, rect[dim] - size - 11];
+      } else {
+        const measurement = (targetRect[dim] - 11) / 2;
+        return [measurement, measurement];
       }
-
-      children = model.props.children.reduce((arr, child, i) => {
-        if (idx === i) {
-          if (isFlexBox) {
-            const [sourceMeasurement, childMeasurement] = assignSizes(
-              targetRect,
-              dim,
-              size
-            );
-            // TODO if size is supplied, it must be respected
-            source = assignFlexDimension(source, dim, sourceMeasurement);
-            child = assignFlexDimension(child, dim, childMeasurement);
-          } else {
-            const {
-              style: {
-                left: _1,
-                top: _2,
-                flex: _3,
-                width,
-                height,
-                transform: _4,
-                transformOrigin: _5,
-                ...style
-              }
-            } = source.props;
-            const dimensions = source.props.resizeable ? {} : { width, height };
-            source = React.cloneElement(source, {
-              style: { ...style, ...dimensions }
-            });
-          }
-          if (before) {
-            arr.push(source, child);
-          } else {
-            arr.push(child, source);
-          }
-        } else {
-          // arr.push(assignFlexDimension(child, dim, measurement));
-          arr.push(child);
-        }
-        return arr;
-      }, []);
-
-      const insertedIdx = children.indexOf(source);
-      if (type === "Stack") {
-        active = insertedIdx;
-      }
-
-      children = children.map((child, i) =>
-        i < insertedIdx ? child : resetPath(child, `${path}.${i}`)
-      );
     }
+
+    children = componentChildren.reduce((arr, child, i) => {
+      if (idx === i) {
+        if (isFlexBox) {
+          const [sourceMeasurement, childMeasurement] = assignSizes(
+            targetRect,
+            dim,
+            size
+          );
+          // TODO if size is supplied, it must be respected
+          source = assignFlexDimension(source, dim, sourceMeasurement);
+          child = assignFlexDimension(child, dim, childMeasurement);
+        } else {
+          const {
+            style: {
+              left: _1,
+              top: _2,
+              flex: _3,
+              width,
+              height,
+              transform: _4,
+              transformOrigin: _5,
+              ...style
+            }
+          } = source.props;
+          const dimensions = source.props.resizeable ? {} : { width, height };
+          source = React.cloneElement(source, {
+            style: { ...style, ...dimensions }
+          });
+        }
+        if (before) {
+          arr.push(source, child);
+        } else {
+          arr.push(child, source);
+        }
+      } else {
+        // arr.push(assignFlexDimension(child, dim, measurement));
+        arr.push(child);
+      }
+      return arr;
+    }, []);
+
+    const insertedIdx = children.indexOf(source);
+    active = type === "Stack"
+      ? insertedIdx
+      : componentActive;
+
+    children = children.map((child, i) =>
+      i < insertedIdx ? child : resetPath(child, `${path}.${i}`)
+    );
   } else {
-    children = model.props.children.slice();
+    children = componentChildren.slice();
     children[idx] = insert(
       children[idx],
       source,
@@ -597,7 +535,17 @@ function insert(model, source, into, before, after, size, targetRect) {
       targetRect
     );
   }
-  return React.cloneElement(model, { ...model.props, active }, children);
+
+  return isElement
+    ? React.cloneElement(component, { ...component.props, active }, children)
+    : {
+      ...component,
+      active,
+      children
+    }
+
+
+  return ;
 }
 
 function assignFlexDimension(model, dim, size = 0) {
@@ -648,8 +596,8 @@ function withTheGrain(pos, container) {
   return pos.position.NorthOrSouth
     ? isTower(container)
     : pos.position.EastOrWest
-    ? isTerrace(container)
-    : false;
+      ? isTerrace(container)
+      : false;
 }
 
 function isTower(model) {

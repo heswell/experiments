@@ -4,6 +4,8 @@ import { Draggable, DragContainer } from "./drag-drop/Draggable";
 import useLayout from "./useLayout";
 import { registerComponent } from "./registry/ComponentRegistry";
 
+import './DraggableLayout.css';
+
 const EMPTY_OBJECT = {};
 
 // We need to add props to restrict drag behaviour to, for example, popups only
@@ -62,7 +64,7 @@ const DraggableLayout = (inputProps) => {
     customDispatcher
   );
 
-  const drag = props.drag;
+  const {drag, layoutId, style} = props;
 
   if (props.dropTarget){
     console.log(`this container is a draggable root 1)`)
@@ -79,7 +81,6 @@ const DraggableLayout = (inputProps) => {
     (dropTarget, targetRect) => {
       dispatchLayoutAction({
         type: Action.DRAG_DROP,
-        drag,
         dropTarget,
         targetRect,
         targetPosition: dragOperation.current.position
@@ -95,8 +96,7 @@ const DraggableLayout = (inputProps) => {
       var { top, left } = dragRect;
       // note: by passing null as dragContainer path, we are relying on registered DragContainer. How do we allow an
       // override for this ?
-      const {children: [rootLayout]} = props;
-      const dragTransform = Draggable.initDrag(rootLayout, null, dragRect, dragPos, {
+      const dragTransform = Draggable.initDrag(props, null, dragRect, dragPos, {
         drag: handleDrag,
         drop: handleDrop
       });
@@ -159,10 +159,10 @@ const DraggableLayout = (inputProps) => {
   }
 
   return (
-    <>
+    <div className={`DraggableLayout`} id={layoutId} style={style}>
       {props.children || props}
       {dragComponent}
-    </>
+    </div>
   );
 };
 

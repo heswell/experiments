@@ -28,20 +28,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
           return;
         }
 
-        let nextState;
-        if (layoutType === "DraggableLayout"){
-          const {children: [rootLayout], ...restProps} = state.current;
-          const {props: layoutProps} = rootLayout;
-          const {drag, wrapper, ...nextLayoutProps} = layoutReducer(layoutProps, {...action, rootLayout});
-          if (wrapper || nextLayoutProps !== layoutProps){
-            const nextLayoutRoot = wrapper || React.cloneElement(rootLayout, nextLayoutProps);
-            nextState = {children: [nextLayoutRoot], ...restProps, drag};
-          } else {
-            nextState = state.current;
-          }
-        } else {
-          nextState = layoutReducer(state.current, action);
-        }
+        const nextState = layoutReducer(state.current, action);
         if (nextState !== state) {
           console.log(
             `%cdispatchLayoutAction reset next state`,

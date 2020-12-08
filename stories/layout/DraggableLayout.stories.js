@@ -20,7 +20,7 @@ import './popup.css';
 import './drop-menu.css';
 
 export default {
-  title: 'Layout/Drag and Drop',
+  title: 'Layout/DraggableLayout',
   component: Flexbox
 };
 
@@ -55,8 +55,8 @@ const DraggableBox = (props) => {
 }
 
 export const SimpleNesting = () =>
-  <DraggableLayout>
-    <Flexbox style={{ width: 800, height: 500, flexDirection: 'row' }}>
+  <DraggableLayout style={{ width: 800, height: 500 }}>
+    <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'row' }}>
       <View header resizeable title='Test 1'>
         <Component style={{ flex: 1, backgroundColor: 'yellow' }}/>
       </View>

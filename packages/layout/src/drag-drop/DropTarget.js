@@ -251,6 +251,11 @@ function positionedAtOuterContainerEdge(
   component,
   measurements
 ) {
+
+  if (containingComponent.type === "DraggableLayout"){
+    return false;
+  }
+
   const containingBox = measurements[containingComponent.props.path];
   const box = measurements[component.props.path];
 

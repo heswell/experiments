@@ -161,27 +161,25 @@ export function pointPositionWithinRect(x, y, rect) {
   return { position, x, y, pctX, pctY, closeToTheEdge, tab };
 }
 
-function measureRootComponent(model, measurements) {
-  if (React.isValidElement(model)) {
-    const measuredModel = typeOf(model) === 'DraggableLayout'
-      ? model.props.children[0]
-      : model;
+function measureRootComponent(rootComponent, measurements) {
+  let isElement = React.isValidElement(rootComponent);
+  const {layoutId, path, type} = isElement ? rootComponent.props : rootComponent;
 
-    const type = typeOf(measuredModel);
-    if (measuredModel.props.layoutId && measuredModel.props.path) {
-      const [rect, el] = measureComponentDomElement(measuredModel);
-      measureComponent(measuredModel, rect, el, measurements);
-      if (type !== "Stack" && isContainer(type)) {
-        collectChildMeasurements(measuredModel, measurements);
-      }
+  if (layoutId && path) {
+    const [rect, el] = measureComponentDomElement(rootComponent);
+    measureComponent(rootComponent, rect, el, measurements);
+    if (type !== "Stack" && isContainer(type)) {
+      collectChildMeasurements(rootComponent, measurements);
     }
   }
 }
 
-function measureComponent(model, rect, el, measurements) {
-  const { path, header } = model.props;
+function measureComponent(component, rect, el, measurements) {
+  let isElement = React.isValidElement(component);
+  const { path, header} = isElement ? component.props : component;
+
   measurements[path] = rect;
-  const type = typeOf(model);
+  const type = typeOf(component);
   if (header || type === "Stack") {
     const headerEl = el.querySelector(".Header");
     if (headerEl) {
@@ -200,7 +198,7 @@ function measureComponent(model, rect, el, measurements) {
 }
 
 function collectChildMeasurements(
-  model,
+  component,
   measurements,
   preX = 0,
   posX = 0,
@@ -208,22 +206,20 @@ function collectChildMeasurements(
   posY = 0
 ) {
 
-  const type = typeOf(model);
+  let isElement = React.isValidElement(component);
+  const { children, path, style } = isElement ? component.props : component;
+
+  const type = typeOf(component);
   const isFlexbox = type === "Flexbox";
-  const isTower = isFlexbox && model.props.style.flexDirection === "column";
-  const isTerrace = isFlexbox && model.props.style.flexDirection === "row";
+  const isTower = isFlexbox && style.flexDirection === "column";
+  const isTerrace = isFlexbox && style.flexDirection === "row";
 
   console.log(`collect ChildMeasurements for ${type}`)
 
   // Collect all the measurements in first pass ...
-  const childMeasurements = model.props.children.map((child) => {
-    const measuredChild = typeOf(child) === 'DraggableLayout'
-      ? child.props.children[0]
-      : child;
+  const childMeasurements = children.map((child) => {
 
-    console.log(`measure ${typeOf(measuredChild)}`)  
-
-    const [rect, el] = measureComponentDomElement(measuredChild);
+    const [rect, el] = measureComponentDomElement(child);
 
     return [
       {
@@ -234,7 +230,7 @@ function collectChildMeasurements(
         left: rect.left - preX
       },
       el,
-      measuredChild
+      child
     ];
   });
 
@@ -298,12 +294,13 @@ function collectChildMeasurements(
   );
 
   if (childMeasurements.length) {
-    measurements[model.props.path].children = expandedMeasurements;
+    measurements[path].children = expandedMeasurements;
   }
 }
 
 function measureComponentDomElement(component) {
-  const {id, layoutId=id} = component.props;
+  let isElement = React.isValidElement(component);
+  const {id, layoutId=id} = isElement ? component.props : component;
   const el = document.getElementById(layoutId);
   if (!el) {
     throw Error(`No DOM for ${typeOf(component)} ${layoutId}`);
@@ -315,9 +312,13 @@ function measureComponentDomElement(component) {
 }
 
 function smallestBoxContainingPoint(component, measurements, x, y) {
+
+  let isElement = React.isValidElement(component);
+  const { children, path } = isElement ? component.props : component;
+
   const type = typeOf(component);
 
-  var rect = measurements[component.props.path];
+  var rect = measurements[path];
   if (!containsPoint(rect, x, y)) return null;
 
   if (!isContainer(type)) {
@@ -329,7 +330,6 @@ function smallestBoxContainingPoint(component, measurements, x, y) {
   }
 
   var subLayout;
-  var children = component.props.children;
 
   for (var i = 0; i < children.length; i++) {
     if (type === "Stack" && component.props.active !== i) {

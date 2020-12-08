@@ -13,21 +13,15 @@ export const applyLayoutProps = (component, dispatch) => {
 };
 
 export const applyLayout = (type, props, dispatch) => {
-  if (type === "DraggableLayout") {
-    if (props.layout) {
-      return layoutFromJson(props.layout, dispatch, "0");
-    } else {
-      return {
-          ...props,
-          children: [getLayoutChild(props.children, dispatch, "0", type)]
-        };
-    }
+  if (props.layout) {
+    return layoutFromJson(props.layout, dispatch, "0");
   } else {
     const layoutProps = getLayoutProps(type, props, dispatch, "0");
     const children = getLayoutChildren(type, props.children, dispatch, "0")
     return {
       ...props,
       ...layoutProps,
+      type,
       children
     };
   }
@@ -42,7 +36,7 @@ function getLayoutProps(type, props, dispatch, path="0", parentType=null){
 
   return isNativeElement
     ? { id, key, style } 
-    : { layoutId: id, key, dispatch, path, style };
+    : { layoutId: id, key, dispatch, path, style, type };
 }
 
 function getLayoutChildren(type, children, dispatch, path = "0") {

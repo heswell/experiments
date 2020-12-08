@@ -59,17 +59,19 @@ describe('LayoutReducer', () => {
       /**
        This is our initial structure onto which we are going to drop our draggable
 
+       DraggableLayout is the root "0"
+
         
-      ┌┄┄┄┄─Flexbox 0 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
-      ┊           ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ Flexbox 0.1.0 ┈┈┈┈┈┈┈┈┈┈┈┐
+      ┌┄┄┄┄─Flexbox 0.0┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┐
+      ┊           ┌┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈ Flexbox 0.0.1.0┈┈┈┈┈┈┈┈┈┈┐
       ┊   ┌───────┬────────────────────────┬──────────────────────────┐ ┊    ┐
-      ┊   │  0.0  │        0.1.0.0         │        0.1.0.1           │ ┊    ┊
+      ┊   │ 0.0.0 │        0.0.1.0.0       │        0.0.0.1           │ ┊    ┊
       ┊   │       │                        │                          │ ┊    ┊
-      ┊   │       │                        │                          │ ┊  Flexbox  0.1
+      ┊   │       │                        │                          │ ┊  Flexbox  0.0.1
       ┊   │       │                        │                          │ ┊    ┊
       ┊   │       │                        │                          │ ┊    ┊ 
       ┊   │       ├────────────────────────┴──────────────────────────│ ┘    ┊ 
-      ┊   │       │        0.1.1                                      │      ┊ 
+      ┊   │       │        0.0.1.1                                    │      ┊ 
       ┊   │       │                                                   │      ┊ 
       ┊   │       │                                                   │      ┊ 
       ┊   │       │                                                   │      ┊ 
@@ -110,18 +112,17 @@ describe('LayoutReducer', () => {
 
       const {children: [rootLayout]} = layoutState;
       const {props: layoutProps} = rootLayout;
-      const target = followPath(layoutProps, "0.1.1");
+      const target = followPath(layoutProps, "0.0.1.1");
 
-      const state = LayoutReducer(layoutProps, {
+      const state = LayoutReducer({...layoutProps, drag: {draggable}},{
         type: Action.DRAG_DROP,
-        drag: {draggable},
         dropTarget: {
           pos: {position: {Header: true}}, 
           component: target
         }
       });
   
-      const {props:{children: [flexBox, stack]}} = followPath(state, "0.1");
+      const {props:{children: [flexBox, stack]}} = followPath(state, "0.0.1");
       expect(typeOf(flexBox)).toEqual('Flexbox');
       expect(typeOf(stack)).toEqual('Stack');
       expect(stack.props.children.length).toEqual(2);
@@ -135,9 +136,9 @@ describe('LayoutReducer', () => {
       });
 
       const {props: {children: [view, component]}} = stack;
-      expect(view.props.path).toEqual("0.1.1.0")
+      expect(view.props.path).toEqual("0.0.1.1.0")
       expect(view.props.title).toEqual("Test 5")
-      expect(component.props.path).toEqual("0.1.1.1")
+      expect(component.props.path).toEqual("0.0.1.1.1")
       expect(component.props.title).toEqual("Draggable");
 
       const expectedStyle = {
@@ -154,44 +155,36 @@ describe('LayoutReducer', () => {
 
     it('correctly resets all paths when root re-wrapped', () => {
 
-      // simulate the drag-start, which stores the draggable component as prop
-      const layout = React.cloneElement(layoutState, {
-        drag: {draggable}
-      });
+      const target = followPath(layoutState, "0.0");
 
-      const {children: [rootLayout]} = layoutState;
-      const {props: layoutProps} = rootLayout;
-
-      const target = followPath(layoutProps, "0");
-
-      const {wrapper} = LayoutReducer(layoutProps, {
+      const state = LayoutReducer({...layoutState, drag: {draggable}},{
         type: Action.DRAG_DROP,
-        drag: {draggable},
         dropTarget: {
           pos: {height: 120, position: {North: true}}, 
           component: target
-        },
-        rootLayout
+        }
       });
+
+      const wrapper = state.children[0];
 
       expect(typeOf(wrapper)).toEqual("Flexbox");
       expect(wrapper.props.style.flexDirection).toEqual("column");
-      expect(wrapper.props.path).toEqual("0");
-      expect(wrapper.props.children[0].props.path).toEqual("0.0");
-      expect(wrapper.props.children[1].props.path).toEqual("0.1");
+      expect(wrapper.props.path).toEqual("0.0");
+      expect(wrapper.props.children[0].props.path).toEqual("0.0.0");
+      expect(wrapper.props.children[1].props.path).toEqual("0.0.1");
 
       expect(typeOf(wrapper.props.children[1])).toEqual("Flexbox");
       expect(wrapper.props.children[1].props.style.flexDirection).toEqual("row");
 
       const {props: {children: [child1, child2]}} = wrapper.props.children[1];
-      expect(child1.props.path).toEqual("0.1.0")
-      expect(child2.props.path).toEqual("0.1.1")
+      expect(child1.props.path).toEqual("0.0.1.0")
+      expect(child2.props.path).toEqual("0.0.1.1")
 
       expect(typeOf(child2)).toEqual("Flexbox");
       expect(child2.props.style.flexDirection).toEqual("column");
       const {props: {children: [child3, child4]}} = child2;
-      expect(child3.props.path).toEqual("0.1.1.0")
-      expect(child4.props.path).toEqual("0.1.1.1")
+      expect(child3.props.path).toEqual("0.0.1.1.0")
+      expect(child4.props.path).toEqual("0.0.1.1.1")
 
 
 
