@@ -85,6 +85,9 @@ export default function useLayoutNavigation(
       action.type === Action.BLUR_SPLITTER
     ) {
       if (!layoutRef.current.contains(action.relatedTarget)) {
+        if (withFocus.current.focusVisible) {
+          removeFocusVisible(stateRef.current, withFocus.current.path);
+        }
         withFocus.current = null;
         window.removeEventListener("keyup", navHandler);
       }

@@ -58,31 +58,16 @@ const Flexbox = function Flexbox(inputProps) {
     });
   }, [clearSizes, dispatch, path, sizesRef]);
 
-  const handleSplitterFocus = (index) => {
-    dispatch({
-      type: Action.FOCUS_SPLITTER,
-      path,
-      index
-    })
-  }
-
-  const handleSplitterBlur = (e) => {
-    dispatch({
-      type: Action.BLUR_SPLITTER,
-      relatedTarget: e.relatedTarget
-    })
-  }
-
   const createSplitter = (i) => (
     <Splitter
       column={isColumn}
+      dispatch={dispatch}
       index={i}
       key={`splitter-${i}`}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
-      onBlur={handleSplitterBlur}
-      onFocus={handleSplitterFocus}
+      path={path}
     />
   );
 
