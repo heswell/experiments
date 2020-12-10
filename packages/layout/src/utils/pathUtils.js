@@ -1,10 +1,11 @@
 import React from "react";
+import { isContainer } from "../registry/ComponentRegistry";
+import { typeOf } from "../utils";
 
 // TODO isn't this equivalent to containerOf ?
 export function followPathToParent(source, path) {
   let isElement = React.isValidElement(source);
   const sourcePath = isElement ? source.props.path : source.path;
-
 
   if (path === "0") return null;
   if (path === sourcePath) return null;
@@ -17,15 +18,12 @@ export function containerOf(source, target) {
     return null;
   } else {
     let isElement = React.isValidElement(source);
-    const {path: sourcePath, children} = isElement ? source.props : source;
+    const { path: sourcePath, children } = isElement ? source.props : source;
 
     let { idx, finalStep } = nextStep(sourcePath, target.props.path);
     if (finalStep) {
       return source;
-    } else if (
-      children === undefined ||
-      children[idx] === undefined
-    ) {
+    } else if (children === undefined || children[idx] === undefined) {
       return null;
     } else {
       return containerOf(children[idx], target);
@@ -85,6 +83,78 @@ export function followPath(source, path) {
     }
   }
   return source;
+}
+
+export function nextLeaf(root, path) {
+  const parent = followPathToParent(root, path);
+  let pathIndices = path.split(".").map((idx) => parseInt(idx, 10));
+  const lastIdx = pathIndices.pop();
+  const { children } = parent.props;
+  if (children.length - 1 > lastIdx) {
+    return firstLeaf(children[lastIdx + 1]);
+  } else {
+    const parentIdx = pathIndices.pop();
+    const nextParent = followPathToParent(root, parent.props.path);
+    pathIndices = nextParent.props.path
+      .split(".")
+      .map((idx) => parseInt(idx, 10));
+    if (nextParent.props.children.length - 1 > parentIdx) {
+      const nextStep = nextParent.props.children[parentIdx + 1];
+      if (isContainer(nextStep)) {
+        return firstLeaf(nextStep);
+      } else {
+        return nextStep;
+      }
+    }
+  }
+
+  return firstLeaf(root);
+}
+
+export function previousLeaf(root, path) {
+  let pathIndices = path.split(".").map((idx) => parseInt(idx, 10));
+  let lastIdx = pathIndices.pop();
+  let parent = followPathToParent(root, path);
+  const { children } = parent.props;
+  if (lastIdx > 0) {
+    return lastLeaf(children[lastIdx - 1]);
+  } else {
+    while (pathIndices.length > 1) {
+      lastIdx = pathIndices.pop();
+      parent = followPathToParent(root, parent.props.path);
+      // pathIndices = nextParent.props.path
+      //   .split(".")
+      //   .map((idx) => parseInt(idx, 10));
+      if (lastIdx > 0) {
+        const nextStep = parent.props.children[lastIdx - 1];
+        if (isContainer(nextStep)) {
+          return lastLeaf(nextStep);
+        } else {
+          return nextStep;
+        }
+      }
+    }
+  }
+
+  return lastLeaf(root);
+}
+
+function firstLeaf(root) {
+  if (isContainer(typeOf(root))) {
+    const { children } = root.props || root;
+    return firstLeaf(children[0]);
+  } else {
+    return root;
+  }
+}
+
+function lastLeaf(root) {
+  if (isContainer(typeOf(root))) {
+    const { children } = root.props || root;
+    return lastLeaf(children[children.length - 1]);
+  } else {
+    return root;
+  }
 }
 
 export function nextStep(pathSoFar, targetPath) {

@@ -57,8 +57,11 @@ const DraggableBox = (props) => {
 export const SimpleNesting = () => (
   <DraggableLayout style={{ width: 800, height: 500 }}>
     <Flexbox style={{ width: "100%", height: "100%", flexDirection: "row" }}>
-      <View header resizeable title="Test 1" style={{ width: 150 }}>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+      <View header resizeable title="Test 1" style={{ width: 250 }}>
+        <div style={{ backgroundColor: "yellow", height: "100%" }}>
+          <input defaultValue="just a test 1" />
+          <input defaultValue="just a test 2" />
+        </div>
       </View>
       <Flexbox style={{ flex: 1, flexDirection: "column" }} resizeable>
         <Flexbox

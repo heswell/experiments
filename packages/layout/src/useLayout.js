@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import layoutReducer from "./layout-reducer";
 import { applyLayout } from "./layoutUtils"; // TODO allow props to specify layoutRoot
+import useNavigation from "./layout-hooks/useLayoutNavigation";
+
 /**
  * Root layout node will never receive dispatch. It may receive a layoutModel,
  * in which case UI will be built from model. Only root stores layoutModel in
@@ -10,11 +12,20 @@ import { applyLayout } from "./layoutUtils"; // TODO allow props to specify layo
  */
 const useLayout = (layoutType, props, customDispatcher) => {
   const isRoot = props.dispatch === undefined;
+  const ref = useRef(null);
   // Only the root layout actually stores state here
   const state = useRef(undefined);
   // AKA forceRefresh
   const [, setState] = useState(0);
   const layout = useRef(props.layout);
+
+  customDispatcher = useNavigation(
+    layoutType,
+    props,
+    customDispatcher,
+    ref,
+    state
+  );
 
   const dispatchLayoutAction = useRef(
     props.dispatch ||
@@ -30,15 +41,10 @@ const useLayout = (layoutType, props, customDispatcher) => {
 
         const nextState = layoutReducer(state.current, action);
         if (nextState !== state) {
-          console.log(
-            `%cdispatchLayoutAction reset next state`,
-            "color:green;font-weight:bold;"
-          );
           state.current = nextState;
           setState((c) => c + 1);
           if (props.onLayoutChange) {
             // TODO serialize layout
-            console.log(`serialize Layout`);
             // TODO we have a circular deopendency in tree after a drag-start
             //props.onLayoutChange(layoutToJSON(layoutType, props, nextState));
           }
@@ -49,10 +55,6 @@ const useLayout = (layoutType, props, customDispatcher) => {
   // Detect dynamic layout reset from serialized layout
   useEffect(() => {
     if (props.layout !== layout.current) {
-      console.log(
-        `%cFresh Layout, recreate element tree from JSON`,
-        "color:blue;font-weight:bold;"
-      );
       state.current = applyLayout(
         layoutType,
         props,
@@ -71,7 +73,9 @@ const useLayout = (layoutType, props, customDispatcher) => {
     );
   }
 
-  return [state.current || props, dispatchLayoutAction.current];
+  return isRoot
+    ? [state.current, dispatchLayoutAction.current, ref]
+    : [props, props.dispatch, ref];
 };
 
 export default useLayout;

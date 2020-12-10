@@ -11,8 +11,7 @@ import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./icons";
 import "./Stack.css";
 
 const Stack = (inputProps) => {
-  const root = useRef(null);
-  const [props, dispatch] = useLayout("Stack", inputProps);
+  const [props, dispatch, ref] = useLayout("Stack", inputProps);
   const {
     enableAddTab,
     layoutId: id,
@@ -22,7 +21,7 @@ const Stack = (inputProps) => {
     style
   } = props;
 
-  const dispatchViewAction = useViewActionDispatcher(root, path, dispatch);
+  const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
 
   const handleTabSelection = (e, nextIdx) => {
     dispatch({ type: Action.SWITCH_TAB, path: props.path, nextIdx });
@@ -67,7 +66,7 @@ const Stack = (inputProps) => {
     ));
 
   return (
-    <div className="Tabs" style={style} id={id} ref={root}>
+    <div className="Tabs" style={style} id={id} ref={ref}>
       <ViewContext.Provider value={{ dispatch: dispatchViewAction }}>
         <Toolbar className="Header" draggable height={36} maxRows={1}>
           <Tabstrip

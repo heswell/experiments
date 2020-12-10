@@ -8,6 +8,8 @@ const Splitter = React.memo(function Splitter({
   onDrag,
   onDragEnd,
   onDragStart,
+  onBlur,
+  onFocus,
   style
 }) {
   const lastPos = useRef(null);
@@ -47,12 +49,17 @@ const Splitter = React.memo(function Splitter({
     },
     [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive]
   );
+
   const className = cx("Splitter", { active, column });
   return (
     <div
       className={className}
+      role="separator"
       style={style}
+      onBlur={onBlur}
+      onFocus={() => onFocus(index)}
       onMouseDown={handleMouseDown}
+      tabIndex={0}
     ></div>
   );
 });

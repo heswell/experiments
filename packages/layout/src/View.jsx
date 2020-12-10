@@ -8,14 +8,13 @@ import useLayout from "./useLayout";
 import "./View.css";
 
 const View = React.memo(function View(inputProps) {
-  const [props, dispatch] = useLayout("View", inputProps);
-  const root = useRef(null);
+  const [props, dispatch, ref] = useLayout("View", inputProps);
   const { children, className, layoutId: id, header, path, style, title } = props;
-  const dispatchViewAction = useViewActionDispatcher(root, path, dispatch);
+  const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
 
   const headerProps = typeof header === "object" ? header : {};
   return (
-    <div className={cx("View", className)} id={id} ref={root} style={style}>
+    <div className={cx("View", className)} id={id} ref={ref} style={style} tabIndex={-1}>
       <ViewContext.Provider
         value={{ dispatch: dispatchViewAction, path, title }}
       >

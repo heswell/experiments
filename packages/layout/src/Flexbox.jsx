@@ -22,20 +22,19 @@ const useSizesRef = () => {
 };
 
 const Flexbox = function Flexbox(inputProps) {
-  const [props, dispatch] = useLayout("Flexbox", inputProps);
+  const [props, dispatch, ref] = useLayout("Flexbox", inputProps);
   const { children=[], className, layoutId: id, path, style } = props;
   const isColumn = style.flexDirection === "column";
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";
-  const rootRef = useRef(null);
 
   const handleDragStart = useCallback(() => {
     setSizes(() =>
-      Array.from(rootRef.current.childNodes)
+      Array.from(ref.current.childNodes)
         .filter((el) => !el.classList.contains("Splitter"))
         .map((el) => Math.round(el.getBoundingClientRect()[dimension]))
     );
-  }, [rootRef, dimension, setSizes]);
+  }, [ref, dimension, setSizes]);
 
   const handleDrag = useCallback(
     (idx, distance) => {
@@ -59,6 +58,21 @@ const Flexbox = function Flexbox(inputProps) {
     });
   }, [clearSizes, dispatch, path, sizesRef]);
 
+  const handleSplitterFocus = (index) => {
+    dispatch({
+      type: Action.FOCUS_SPLITTER,
+      path,
+      index
+    })
+  }
+
+  const handleSplitterBlur = (e) => {
+    dispatch({
+      type: Action.BLUR_SPLITTER,
+      relatedTarget: e.relatedTarget
+    })
+  }
+
   const createSplitter = (i) => (
     <Splitter
       column={isColumn}
@@ -67,6 +81,8 @@ const Flexbox = function Flexbox(inputProps) {
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
+      onBlur={handleSplitterBlur}
+      onFocus={handleSplitterFocus}
     />
   );
 
@@ -99,7 +115,7 @@ const Flexbox = function Flexbox(inputProps) {
     <div
       className={cx("Flexbox", className)}
       id={id}
-      ref={rootRef}
+      ref={ref}
       style={style}
     >
       {children.reduce(injectSplitters, [])}

@@ -10,7 +10,6 @@ const EMPTY_OBJECT = {};
 
 // We need to add props to restrict drag behaviour to, for example, popups only
 const DraggableLayout = (inputProps) => {
-  // React.Children.only(inputProps.children);
   const prepareToDrag = useCallback(
     (
       { component, dragRect, instructions = EMPTY_OBJECT, path },
@@ -58,7 +57,7 @@ const DraggableLayout = (inputProps) => {
     [prepareToDrag]
   );
 
-  const [props, dispatchLayoutAction] = useLayout(
+  const [props, dispatchLayoutAction, ref] = useLayout(
     "DraggableLayout",
     inputProps,
     customDispatcher
@@ -159,7 +158,7 @@ const DraggableLayout = (inputProps) => {
   }
 
   return (
-    <div className={`DraggableLayout`} id={layoutId} style={style}>
+    <div className={`DraggableLayout`} id={layoutId} ref={ref} style={style}>
       {props.children || props}
       {dragComponent}
     </div>
