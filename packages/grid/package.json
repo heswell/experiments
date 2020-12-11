@@ -38,6 +38,7 @@
     "rollup-plugin-terser": "^5.1.2"
   },
   "dependencies": {
+    "react-jss": "^10.1.1",
     "stretch-layout": "^0.3.2"
   }
 }
