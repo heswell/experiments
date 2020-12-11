@@ -2,6 +2,9 @@ import React from "react";
 import { isContainer } from "../registry/ComponentRegistry";
 import { typeOf } from "../utils";
 
+export const getProps = (component) =>
+  React.isValidElement(component) ? component.props : component;
+
 // TODO isn't this equivalent to containerOf ?
 export function followPathToParent(source, path) {
   let isElement = React.isValidElement(source);

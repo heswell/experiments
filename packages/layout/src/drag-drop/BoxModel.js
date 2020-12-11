@@ -1,5 +1,5 @@
 import React from "react";
-import { typeOf } from "../utils";
+import { getProps, typeOf } from "../utils";
 import { isContainer } from "../registry/ComponentRegistry";
 
 export var positionValues = {
@@ -9,7 +9,7 @@ export var positionValues = {
   west: 8,
   header: 16,
   centre: 32,
-  absolute: 64
+  absolute: 64,
 };
 
 export var Position = Object.freeze({
@@ -19,7 +19,7 @@ export var Position = Object.freeze({
   West: _position("west"),
   Header: _position("header"),
   Centre: _position("centre"),
-  Absolute: _position("absolute")
+  Absolute: _position("absolute"),
 });
 
 function _position(str) {
@@ -46,7 +46,7 @@ function _position(str) {
     EastOrWest: str === "east" || str === "west",
     NorthOrWest: str === "north" || str === "west",
     SouthOrEast: str === "east" || str === "south",
-    Absolute: str === "absolute"
+    Absolute: str === "absolute",
   });
 }
 
@@ -95,19 +95,19 @@ export function pointPositionWithinRect(x, y, rect) {
       if (targetTab) {
         tab = {
           left: targetTab.left,
-          index: rect.Stack.indexOf(targetTab)
+          index: rect.Stack.indexOf(targetTab),
         };
       } else {
         const lastTab = rect.Stack[tabCount - 1];
         tab = {
           left: lastTab.right,
-          index: tabCount
+          index: tabCount,
         };
       }
     } else {
       tab = {
         left: rect.left,
-        index: -1
+        index: -1,
       };
     }
   } else {
@@ -117,7 +117,7 @@ export function pointPositionWithinRect(x, y, rect) {
       left: rect.left + w,
       top: rect.top + h,
       right: rect.right - w,
-      bottom: rect.bottom - h
+      bottom: rect.bottom - h,
     };
 
     if (containsPoint(centerBox, x, y)) {
@@ -162,8 +162,8 @@ export function pointPositionWithinRect(x, y, rect) {
 }
 
 function measureRootComponent(rootComponent, measurements) {
-  let isElement = React.isValidElement(rootComponent);
-  const {layoutId, path, type} = isElement ? rootComponent.props : rootComponent;
+  const { layoutId, path } = getProps(rootComponent);
+  const type = typeOf(rootComponent);
 
   if (layoutId && path) {
     const [rect, el] = measureComponentDomElement(rootComponent);
@@ -176,7 +176,7 @@ function measureRootComponent(rootComponent, measurements) {
 
 function measureComponent(component, rect, el, measurements) {
   let isElement = React.isValidElement(component);
-  const { path, header} = isElement ? component.props : component;
+  const { path, header } = isElement ? component.props : component;
 
   measurements[path] = rect;
   const type = typeOf(component);
@@ -205,7 +205,6 @@ function collectChildMeasurements(
   preY = 0,
   posY = 0
 ) {
-
   let isElement = React.isValidElement(component);
   const { children, path, style } = isElement ? component.props : component;
 
@@ -214,11 +213,10 @@ function collectChildMeasurements(
   const isTower = isFlexbox && style.flexDirection === "column";
   const isTerrace = isFlexbox && style.flexDirection === "row";
 
-  console.log(`collect ChildMeasurements for ${type}`)
+  console.log(`collect ChildMeasurements for ${type}`);
 
   // Collect all the measurements in first pass ...
   const childMeasurements = children.map((child) => {
-
     const [rect, el] = measureComponentDomElement(child);
 
     return [
@@ -227,10 +225,10 @@ function collectChildMeasurements(
         top: rect.top - preY,
         right: rect.right + posX,
         bottom: rect.bottom + posY,
-        left: rect.left - preX
+        left: rect.left - preX,
       },
       el,
-      child
+      child,
     ];
   });
 
@@ -300,7 +298,7 @@ function collectChildMeasurements(
 
 function measureComponentDomElement(component) {
   let isElement = React.isValidElement(component);
-  const {id, layoutId=id} = isElement ? component.props : component;
+  const { id, layoutId = id } = isElement ? component.props : component;
   const el = document.getElementById(layoutId);
   if (!el) {
     throw Error(`No DOM for ${typeOf(component)} ${layoutId}`);
@@ -312,7 +310,6 @@ function measureComponentDomElement(component) {
 }
 
 function smallestBoxContainingPoint(component, measurements, x, y) {
-
   let isElement = React.isValidElement(component);
   const { children, path } = isElement ? component.props : component;
 

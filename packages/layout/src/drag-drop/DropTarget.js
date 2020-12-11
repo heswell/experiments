@@ -4,7 +4,7 @@ import {
   pointPositionWithinRect,
   Position,
 } from "./BoxModel";
-import { containerOf, typeOf } from "../utils";
+import { containerOf, getProps, typeOf } from "../utils";
 
 export const isTabstrip = (dropTarget) =>
   dropTarget.pos.tab &&
@@ -140,6 +140,8 @@ export class DropTarget {
 // Initial entry to this method is always via the app (may be it should be *on* the app)
 export function identifyDropTarget(x, y, model, measurements) {
   let dropTarget = null;
+  const { path: rootPath } = getProps(model);
+  console.log(`identifyDropTarget root = ${rootPath}`, measurements);
 
   //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
   // this could return all boxes containing point, which would make getNextDropTarget almost free
@@ -208,6 +210,7 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
         container.path !== "0" &&
         positionedAtOuterContainerEdge(container, pos, component, measurements)
       ) {
+        console.log(`next ${getProps(container).path}`);
         const clientRect = measurements[container.props.path];
         let containerPos = pointPositionWithinRect(x, y, clientRect);
 

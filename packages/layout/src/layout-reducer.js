@@ -5,6 +5,7 @@ import {
   containerOf,
   followPath,
   followPathToParent,
+  getProps,
   nextStep,
   resetPath,
   typeOf,
@@ -13,9 +14,6 @@ import { getManagedDimension } from "./layoutUtils";
 import { ComponentRegistry, isContainer } from "./registry/ComponentRegistry";
 
 const MISSING_TYPE = undefined;
-
-const getProps = (component) =>
-  React.isValidElement(component) ? component.props : component;
 
 const MISSING_HANDLER = (state, action) => {
   console.warn(

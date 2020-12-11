@@ -65,11 +65,9 @@ const DraggableLayout = (inputProps) => {
 
   const {drag, layoutId, style} = props;
 
-  if (props.dropTarget){
-    console.log(`this container is a draggable root 1)`)
-  } else if (props?.dropTarget){
+  if (props?.dropTarget){
     const {path: dragContainerPath} = props.children[0].props; 
-    console.log(`this container is a draggable root 2) ${props.path} register child path $dragContainerPath}`)
+    console.log(`this container is a draggable root 2) ${props.path} register child path ${dragContainerPath}`)
     DragContainer.register(dragContainerPath);
   }
 
