@@ -1,15 +1,19 @@
 import React from "react";
 
 import {
-  // registerComponent,
+  registerComponent,
   useViewContext,
   Component,
   Flexbox,
   Stack,
+  Toolbar,
   View,
   DraggableLayout,
 } from "@heswell/layout";
+import { CloseIcon as CloseAction } from "@heswell/layout";
 import Builder from "../components/layout-builder/layout-builder";
+import { Brown, Red } from "./sample-components";
+import Palette from "../components/palette/Palette";
 
 import "@heswell/layout/dist/index.css";
 import "../assets/OpenSans.css";
@@ -22,6 +26,13 @@ export default {
   title: "Layout/DraggableLayout",
   component: Flexbox,
 };
+
+const StandardToolbar = () => (
+  <Toolbar style={{ justifyContent: "flex-end" }} draggable showTitle>
+    <CloseAction action="close" />
+  </Toolbar>
+);
+registerComponent("StandardToolbar", StandardToolbar);
 
 const Box = (props) => (
   <div
@@ -142,133 +153,83 @@ export const CustomDrag = () => (
 
 export const ComplexNestedLayout = () => (
   <DraggableLayout>
-    <Flexbox
-      className="SampleApp1"
-      style={{ flexDirection: "column", width: 1200, height: 1000 }}
-    >
-      <Flexbox className="SampleApp2" style={{ flexDirection: "row", flex: 1 }}>
-        <Component
-          title="test 1"
-          style={{ width: 100, backgroundColor: "red" }}
+    <Flexbox column style={{ height: "90vh", width: "100vw" }}>
+      <Flexbox style={{ flex: 1 }}>
+        <Palette
+          closeable
+          header
           resizeable
+          style={{ minWidth: 50, width: 200 }}
+          title="View Palette"
         />
-        <Flexbox
-          className="SampleApp3"
-          style={{ flexDirection: "column", flex: 1 }}
-        >
-          <Flexbox
-            id="blanco"
-            style={{ flexDirection: "row", flex: 1 }}
-            resizeable
-          >
-            <Component
-              title="Fixed Data Table"
-              style={{ flex: 1, backgroundColor: "brown" }}
-              header
-              resizeable
+        <Flexbox resizeable column style={{ flex: 1 }}>
+          <View header resizeable style={{ flex: 1 }} title="Brown Bear">
+            <Toolbar
+              id="palegoldenrod"
+              tools={[
+                "close",
+                "close",
+                "close",
+                ["PaddingTop", "PaddingRight", "PaddingBottom", "PaddingLeft"],
+                "close",
+                "close",
+                "close",
+                "close",
+                "close",
+              ]}
             />
-            <Component
-              title="A Div"
-              style={{ flex: 1, backgroundColor: "cornflowerblue" }}
-              header
+            <Brown style={{ height: "100%" }} />
+          </View>
+          <View header resizeable style={{ flex: 1 }} title="Red Panda">
+            <Component style={{ backgroundColor: "red", height: "100%" }} />
+          </View>
+
+          <Flexbox resizeable style={{ flex: 1 }}>
+            <Stack
+              enableAddTab
               resizeable
-            />
-            <Component
-              title="Div 2"
-              style={{ flex: 1, backgroundColor: "ivory" }}
-              header
-              resizeable
-            />
-            <Flexbox
-              title="Div 3"
-              style={{ flexDirection: "column", flex: 1 }}
-              header={{ height: 24 }}
-              resizeable
-            >
-              <Component
-                style={{ flex: 1, backgroundColor: "rebeccapurple" }}
-                resizeable
-              />
-              <Component
-                style={{ flex: 1, backgroundColor: "cornflowerblue" }}
-                resizeable
-              />
-            </Flexbox>
-          </Flexbox>
-          <Flexbox
-            id="Flex1"
-            style={{ flexDirection: "row", flex: 1 }}
-            resizeable
-          >
-            <Flexbox style={{ flexDirection: "column", flex: 1 }} resizeable>
-              <Component
-                title="test 0.2"
-                style={{ flex: 1 }}
-                header
-                resizeable
-              />
-              <Flexbox style={{ flexDirection: "row", flex: 1 }} resizeable>
-                <Component
-                  title="test 0.2"
-                  style={{ flex: 1 }}
-                  header
-                  resizeable
-                />
-                <Component
-                  title="A Div"
-                  style={{ flex: 1, backgroundColor: "tomato" }}
-                  header
-                  resizeable
-                />
-              </Flexbox>
-            </Flexbox>
-            <Component
-              title="test 0.4"
-              style={{ width: 200, backgroundColor: "green" }}
-              header
-              resizeable
-            />
-            <Component
-              id="C1"
-              title="test 0.7"
               style={{ flex: 1 }}
-              header
-              resizeable
-            />
+              keyBoardActivation="manual"
+            >
+              <View removable header resizeable title="Home">
+                <Component
+                  style={{ backgroundColor: "white", height: "100%" }}
+                />
+              </View>
+              <View title="Transactions">
+                <Toolbar>
+                  {/* <input type="text" className="tool-text" value="text 1" />
+                  <input type="text" className="tool-text" value="text 2" />
+                  <input type="text" className="tool-text" value="text 3" />
+                  <input type="text" className="tool-text" value="text 4" /> */}
+                  <CloseAction />
+                </Toolbar>
+                <Component style={{ backgroundColor: "yellow", flex: 1 }} />
+              </View>
+              <View removable header resizeable title="Loans">
+                <Component
+                  style={{ backgroundColor: "cream", height: "100%" }}
+                />
+              </View>
+              <View removable header resizeable title="Checks">
+                <Component
+                  style={{ backgroundColor: "ivory", height: "100%" }}
+                />
+              </View>
+              <View removable header resizeable title="Liquidity">
+                <Component
+                  style={{ backgroundColor: "lightgrey", height: "100%" }}
+                />
+              </View>
+            </Stack>
             <Component
-              id="C2"
-              title="A Divvy"
-              style={{ flex: 1, backgroundColor: "cornflowerblue" }}
-              header
               resizeable
+              style={{ backgroundColor: "green", width: 50 }}
             />
           </Flexbox>
-          <Stack active={1} style={{ flex: 1 }} resizeable>
-            <Component
-              title="test 3"
-              style={{ backgroundColor: "ivory" }}
-              header={true}
-            />
-            <Component
-              title="test 7"
-              style={{ backgroundColor: "cornflowerblue" }}
-              header={true}
-            />
-            <Component
-              title="test long title 700"
-              style={{ backgroundColor: "steelblue" }}
-            />
-            <Component
-              title="test 17"
-              style={{ backgroundColor: "cornflowerblue" }}
-            />
-            <Component title="test 27" style={{ backgroundColor: "green" }} />
-            <Component title="test 37" style={{ backgroundColor: "orange" }} />
-            <Component title="test 47" style={{ backgroundColor: "red" }} />
-          </Stack>
         </Flexbox>
       </Flexbox>
-      <div style={{ height: 32, backgroundColor: "green" }} />
+      <Component style={{ backgroundColor: "grey", height: 32 }} />
     </Flexbox>
   </DraggableLayout>
 );

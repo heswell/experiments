@@ -3,8 +3,8 @@ import React, { useRef, useState } from 'react';
 import { Flexbox,  Component as PlaceHolder, DraggableLayout } from '@heswell/layout';
 import { Control, Select } from '@heswell/ui-controls';
 
-import LayoutConfigurator from '../layout-configurator';
-import {  LayoutTreeViewer } from '../layout-tree-viewer';
+// import LayoutConfigurator from '../layout-configurator';
+// import {  LayoutTreeViewer } from '../layout-tree-viewer';
 import Palette from '../palette/Palette';
 
 import './layout-builder.css';

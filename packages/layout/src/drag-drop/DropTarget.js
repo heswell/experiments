@@ -207,7 +207,7 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
 
       while (
         container &&
-        container.path !== "0" &&
+        container.path !== "0" && // TODO this should probably checj container root, not assume o
         positionedAtOuterContainerEdge(container, pos, component, measurements)
       ) {
         console.log(`next ${getProps(container).path}`);
