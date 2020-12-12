@@ -39,4 +39,6 @@ const Tabstrip = (props) => {
   );
 };
 
+Tabstrip.displayName = "Tabstrip"
+
 export default Tabstrip;

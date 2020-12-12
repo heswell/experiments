@@ -7,7 +7,7 @@ var direction = {
   ArrowRight: 1,
   ArrowDown: 1,
   Home: 0,
-  End: 0
+  End: 0,
 };
 
 export default function useTabstrip(
@@ -18,7 +18,7 @@ export default function useTabstrip(
     onChange,
     onDeleteTab,
     orientation,
-    value
+    value,
   },
   ref
 ) {
@@ -47,7 +47,8 @@ export default function useTabstrip(
   }
 
   function activateTab(e, tabIndex) {
-    onChange(e, tabIndex);
+    // TODO should onChange be a required prop - if controlled , yes
+    onChange && onChange(e, tabIndex);
     focusTab(tabIndex);
   }
 
@@ -131,8 +132,8 @@ export default function useTabstrip(
       onClick: handleClick,
       onDelete: handleDeleteTab,
       onKeyDown: handleKeyDown,
-      onKeyUp: handleKeyUp
+      onKeyUp: handleKeyUp,
     },
-    tabRef: tabs
+    tabRef: tabs,
   };
 }

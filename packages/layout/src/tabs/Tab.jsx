@@ -82,6 +82,7 @@ const Tab = forwardRef(
 
     const handleMouseDown = (e) => {
       if (draggable) {
+        // TODO don't bake this into tab
         dispatchViewAction({ type: "mousedown", index }, e);
       }
     };
