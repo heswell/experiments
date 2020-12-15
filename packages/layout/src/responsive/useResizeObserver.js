@@ -23,22 +23,40 @@ const resizeObserver = new ResizeObserver((entries) => {
 });
 
 export default function useResizeObserver(ref, dimensions, onResize) {
+  // Keep this effect separate in case user inadvertently passes different
+  // dimensions or callback instance each time - we only ever want to
+  // initiate new observation when ref changes.
   useEffect(() => {
     const target = ref.current;
-    if (observedMap.has(target)) {
-      throw Error("useResizeObserver attemping to observe same element twice");
-    }
-    if (dimensions.length) {
-      const measurements = dimensions.reduce((map, dimension) => {
-        map[dimension] = 0;
-        return map;
-      }, {});
-      observedMap.set(target, { onResize, measurements });
+    if (target) {
+      if (observedMap.has(target)) {
+        throw Error(
+          "useResizeObserver attemping to observe same element twice"
+        );
+      }
+      observedMap.set(target, { onResize: null, measurements: {} });
       resizeObserver.observe(target);
-      return () => {
+    }
+    return () => {
+      if (target) {
         resizeObserver.unobserve(target);
         observedMap.delete(target);
-      };
+      }
+    };
+  }, [ref]);
+
+  useEffect(() => {
+    const target = ref.current;
+    const record = observedMap.get(target);
+    if (record) {
+      for (let dimension of dimensions) {
+        if (record.measurements[dimension] === undefined) {
+          record.measurements[dimension] = 0;
+        }
+      }
+      record.onResize = onResize;
+    } else {
+      throw Error(`ref is not being observed`);
     }
   }, [dimensions, ref, onResize]);
 }

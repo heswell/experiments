@@ -1,5 +1,7 @@
 import React from "react";
-import { Toolbar } from "@heswell/layout";
+import { Flexbox, Toolbar } from "@heswell/layout";
+import { CloseIcon as CloseAction } from "@heswell/layout";
+
 import "@heswell/layout/dist/index.css";
 import "../assets/OpenSans.css";
 import "../theme.css";
@@ -23,4 +25,46 @@ export const EmptyToolbar = ({ width = 500, height = 32 }) => (
       backgroundColor: "lightGrey",
     }}
   ></Toolbar>
+);
+
+export const SimpleToolbar = ({ width = 500, height = 32 }) => (
+  <Toolbar
+    title="Tye Boss"
+    header
+    value={0}
+    style={{
+      width,
+      height,
+      backgroundColor: "lightGrey",
+    }}
+  >
+    <CloseAction />
+  </Toolbar>
+);
+
+export const ResponsiveToolbar = ({ width = 500, height = 32 }) => (
+  <Flexbox
+    style={{
+      width: 600,
+      height: 300,
+      flexDirection: "row",
+      border: "solid 1px lightgrey",
+    }}
+  >
+    <Toolbar
+      maxRows={1}
+      resizeable
+      value={0}
+      style={{
+        flex: 1,
+        height,
+      }}
+    >
+      <CloseAction />
+      <CloseAction />
+      <CloseAction />
+      <CloseAction />
+    </Toolbar>
+    <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
+  </Flexbox>
 );

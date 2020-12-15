@@ -1,0 +1,18 @@
+.OverflowMenu {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 6px 0px 6px 0;
+  align-self: flex-end;
+  border: none;
+  border-radius: 0;
+  background-color: inherit;
+  padding: 0;
+}
+
+.Toolbar .Toolbar-overflow:hover {
+  background-color: lightgrey;
+}

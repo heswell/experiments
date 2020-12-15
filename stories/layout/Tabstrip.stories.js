@@ -35,7 +35,12 @@ export const EmptyTabstrip = ({ width = 500, height = 32 }) => (
 );
 
 export const Responsive = () => {
-  const [tabs, setTabs] = useState(["Tab 1", "Tab 2", "Tab 3"]);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [tabs, setTabs] = useState([
+    "Tab 1",
+    "Tab 2 has a longer title",
+    "Tab 3 in between",
+  ]);
 
   const handleAddTab = () => {
     setTabs((state) => state.concat([`Tab ${state.length + 1}`]));

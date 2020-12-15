@@ -74,7 +74,7 @@ export default function useTabstrip(
 
   const handleClick = (e, tabIndex) => {
     if (tabIndex !== value) {
-      onChange(e, tabIndex);
+      onChange && onChange(e, tabIndex);
       focusTab(tabIndex);
     }
   };
@@ -110,7 +110,7 @@ export default function useTabstrip(
       case "Enter":
       case "Space":
         if (tabIndex !== value) {
-          onChange(e, tabIndex);
+          onChange && onChange(e, tabIndex);
         }
         break;
       default:

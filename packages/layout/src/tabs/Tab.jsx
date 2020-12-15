@@ -27,13 +27,13 @@ const Tab = forwardRef(
       deletable,
       draggable,
       selected,
-      id,
       index,
       label,
       onClick,
       onDelete,
       onKeyDown,
-      onKeyUp
+      onKeyUp,
+      ...props
     },
     ref
   ) => {
@@ -92,6 +92,7 @@ const Tab = forwardRef(
     // uses side-by-side buttons
     return (
       <button
+        {...props}
         aria-controls={ariaControls}
         aria-selected={selected}
         className={cx("Tab", { selected, closeable: deletable, closeHover })}
@@ -100,11 +101,10 @@ const Tab = forwardRef(
         onKeyUp={handleKeyUp}
         onMouseDown={handleMouseDown}
         ref={setRef}
-        id={id}
         role="tab"
         tabIndex={selected ? undefined : -1}
       >
-        <span className="tab-text" data-test={label} role="button">
+        <span className="tab-text" data-text={label} role="button">
           {label}
         </span>
         {deletable ? (

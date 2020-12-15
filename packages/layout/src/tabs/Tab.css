@@ -1,5 +1,6 @@
 .Tab {
   align-items: center;
+  align-self: stretch;
   background-color: transparent;
   border: none;
   border-radius: 0;
@@ -9,7 +10,6 @@
   font-family: OpenSans-Regular;
   font-weight: 500;
   font-size: 12px;
-  height: 100%;
   /* TODO no margin after last tab*/
   margin-right: 8px;
   padding: 0 8px;

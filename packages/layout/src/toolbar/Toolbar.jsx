@@ -8,7 +8,7 @@ import React, {
 import cx from "classnames";
 import ResponsiveContainer from "../responsive/ResponsiveContainer";
 import { PopupService } from "../popup";
-import { findFirstOverflow } from "./overflowUtils";
+import { findFirstOverflow } from "../responsive/overflowUtils";
 import { useViewContext } from "../ViewContext";
 
 import * as icon from "../icons";
