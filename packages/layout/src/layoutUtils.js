@@ -1,7 +1,11 @@
 import React from "react";
 import { uuid } from "@heswell/utils";
 import { expandFlex, typeOf } from "./utils";
-import { ComponentRegistry, isContainer, isView } from "./registry/ComponentRegistry";
+import {
+  ComponentRegistry,
+  isContainer,
+  isView,
+} from "./registry/ComponentRegistry";
 
 export const getManagedDimension = (style) =>
   style.flexDirection === "column" ? ["height", "width"] : ["width", "height"];
@@ -17,44 +21,42 @@ export const applyLayout = (type, props, dispatch) => {
     return layoutFromJson(props.layout, dispatch, "0");
   } else {
     const layoutProps = getLayoutProps(type, props, dispatch, "0");
-    const children = getLayoutChildren(type, props.children, dispatch, "0")
+    const children = getLayoutChildren(type, props.children, dispatch, "0");
     return {
       ...props,
       ...layoutProps,
       type,
-      children
+      children,
     };
   }
 };
 
-function getLayoutProps(type, props, dispatch, path="0", parentType=null){
-
+function getLayoutProps(type, props, dispatch, path = "0", parentType = null) {
   const isNativeElement = type[0].match(/[a-z]/);
   const id = uuid();
   const key = id;
   const style = getStyle(type, props, parentType);
-
   return isNativeElement
-    ? { id, key, style } 
+    ? { id, key, style }
     : { layoutId: id, key, dispatch, path, style, type };
 }
 
 function getLayoutChildren(type, children, dispatch, path = "0") {
   return isContainer(type) || isView(type)
     ? React.Children.map(children, (child, i) =>
-      getLayoutChild(child, dispatch, `${path}.${i}`, type)
-    )
+        getLayoutChild(child, dispatch, `${path}.${i}`, type)
+      )
     : children;
 }
 
 const getLayoutChild = (child, dispatch, path = "0", parentType = null) => {
   const { children } = child.props;
   const type = typeOf(child);
-   return React.cloneElement(
-    child, getLayoutProps(type, child.props, dispatch, path, parentType),
+  return React.cloneElement(
+    child,
+    getLayoutProps(type, child.props, dispatch, path, parentType),
     getLayoutChildren(type, children, dispatch, path)
   );
-
 };
 
 const getStyle = (type, props, parentType) => {
@@ -63,7 +65,7 @@ const getStyle = (type, props, parentType) => {
     style = {
       flexDirection: props.column ? "column" : "row",
       ...style,
-      display: "flex"
+      display: "flex",
     };
   }
 
@@ -71,12 +73,12 @@ const getStyle = (type, props, parentType) => {
     const { flex, ...otherStyles } = style;
     style = {
       ...otherStyles,
-      ...expandFlex(flex)
+      ...expandFlex(flex),
     };
   } else if (parentType === "Stack") {
     style = {
       ...style,
-      ...expandFlex(1)
+      ...expandFlex(1),
     };
   }
 
@@ -101,7 +103,7 @@ function layoutFromJson({ type, children, props }, dispatch, path) {
       dispatch,
       id,
       key: id,
-      path
+      path,
     },
     children
       ? children.map((child, i) =>
@@ -120,7 +122,7 @@ export function layoutToJSON(type, props, component) {
   if (type === "DraggableLayout") {
     return {
       type,
-      children: [result]
+      children: [result],
     };
   }
 
@@ -130,12 +132,12 @@ export function layoutToJSON(type, props, component) {
 export function componentToJson(component) {
   const {
     type,
-    props: { children, ...props }
+    props: { children, ...props },
   } = component;
   return {
     type: serializeType(type),
     props: serializeProps(props),
-    children: React.Children.map(children, componentToJson)
+    children: React.Children.map(children, componentToJson),
   };
 }
 

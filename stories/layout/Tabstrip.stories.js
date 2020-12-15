@@ -42,6 +42,10 @@ export const Responsive = () => {
     "Tab 3 in between",
   ]);
 
+  const handleChange = (e, tabIndex) => {
+    setTabIndex(tabIndex);
+  };
+
   const handleAddTab = () => {
     setTabs((state) => state.concat([`Tab ${state.length + 1}`]));
   };
@@ -59,7 +63,8 @@ export const Responsive = () => {
         enableAddTab
         resizeable
         onAddTab={handleAddTab}
-        value={0}
+        onChange={handleChange}
+        value={tabIndex}
         style={{
           flex: 1,
           height: 32,
@@ -69,19 +74,29 @@ export const Responsive = () => {
           <Tab label={label} key={i} />
         ))}
       </Tabstrip>
-      <div resizeable style={{ width: 0, backgroundColor: "white" }} />
+      <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
     </Flexbox>
   );
 };
 
 const AddableTabs = (props) => {
   const [tabs, setTabs] = useState(["Tab 1", "Tab 2", "Tab 3"]);
+  const [tabIndex, setTabIndex] = useState(0);
   const handleAddTab = () => {
     setTabs((state) => state.concat([`Tab ${state.length + 1}`]));
   };
+  const handleChange = (e, tabIndex) => {
+    setTabIndex(tabIndex);
+  };
 
   return (
-    <Tabstrip {...props} enableAddTab onAddTab={handleAddTab}>
+    <Tabstrip
+      {...props}
+      enableAddTab
+      onAddTab={handleAddTab}
+      onChange={handleChange}
+      value={tabIndex}
+    >
       {tabs.map((label, i) => (
         <Tab label={label} key={i} />
       ))}
@@ -99,6 +114,6 @@ export const Responsive2 = () => (
     }}
   >
     <AddableTabs resizeable value={0} style={{ flex: 1, height: 32 }} />
-    <div resizeable style={{ width: 0, backgroundColor: "white" }} />
+    <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
   </Flexbox>
 );

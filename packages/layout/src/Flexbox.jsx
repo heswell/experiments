@@ -3,6 +3,7 @@ import cx from "classnames";
 import Splitter from "./Splitter";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
+import {getProp} from './utils';
 import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./Flexbox.css";
@@ -91,7 +92,7 @@ const Flexbox = function Flexbox(inputProps) {
       list.push(child);
     }
     // TODO we have to watch out for runtime changes to resizeable
-    if (child.props.resizeable && arr[i + 1]?.props.resizeable) {
+    if (getProp(child, 'resizeable') && getProp(arr[i + 1], 'resizeable')) {
       list.push(createSplitter(i));
     }
     return list;

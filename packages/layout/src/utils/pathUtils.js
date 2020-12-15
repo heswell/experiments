@@ -1,9 +1,7 @@
 import React from "react";
 import { isContainer } from "../registry/ComponentRegistry";
 import { typeOf } from "../utils";
-
-export const getProps = (component) =>
-  React.isValidElement(component) ? component.props : component;
+import { getProps } from "./propUtils";
 
 // TODO isn't this equivalent to containerOf ?
 export function followPathToParent(source, path) {
@@ -20,8 +18,7 @@ export function containerOf(source, target) {
   if (target === source) {
     return null;
   } else {
-    let isElement = React.isValidElement(source);
-    const { path: sourcePath, children } = isElement ? source.props : source;
+    const { path: sourcePath, children } = getProps(source);
 
     let { idx, finalStep } = nextStep(sourcePath, target.props.path);
     if (finalStep) {
@@ -35,9 +32,7 @@ export function containerOf(source, target) {
 }
 
 export function followPath(source, path) {
-  let isElement = React.isValidElement(source);
-  const sourcePath = isElement ? source.props.path : source.path;
-
+  const { path: sourcePath } = getProps(source);
   if (path.indexOf(sourcePath) !== 0) {
     throw Error(
       `pathUtils.followPath path ${path} is not within model.path ${sourcePath}`
@@ -50,6 +45,7 @@ export function followPath(source, path) {
   }
   var paths = route.split(".");
 
+  let isElement = React.isValidElement(source);
   for (var i = 0; i < paths.length; i++) {
     if (
       (isElement && React.Children.count(source.props.children) === 0) ||
