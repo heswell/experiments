@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useEffectSkipFirst } from "@heswell/utils";
 import layoutReducer from "./layout-reducer";
 import { applyLayout } from "./layoutUtils"; // TODO allow props to specify layoutRoot
 import useNavigation from "./layout-hooks/useLayoutNavigation";
@@ -11,6 +12,7 @@ import useNavigation from "./layout-hooks/useLayoutNavigation";
  * state and subsequently manages layoutModel in state.
  */
 const useLayout = (layoutType, props, customDispatcher) => {
+  const { children } = props;
   const isRoot = props.dispatch === undefined;
   const ref = useRef(null);
   // Only the root layout actually stores state here
@@ -26,6 +28,10 @@ const useLayout = (layoutType, props, customDispatcher) => {
     ref,
     state
   );
+
+  useEffectSkipFirst(() => {
+    console.log("children has changed");
+  }, [children]);
 
   const dispatchLayoutAction = useRef(
     props.dispatch ||

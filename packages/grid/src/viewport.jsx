@@ -9,9 +9,9 @@ import React, {
   useRef,
   useMemo
 } from "react";
+import useEffectSkipFirst from '@heswell/utils';
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
-import useEffectSkipFirst from './use-effect-skip-first';
 import useStyles from './use-styles';
 import useDataSource from './use-data-source';
 import GridContext from "./grid-context";
