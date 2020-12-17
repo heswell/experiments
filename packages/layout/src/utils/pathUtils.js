@@ -99,7 +99,7 @@ export function nextLeaf(root, path) {
       .map((idx) => parseInt(idx, 10));
     if (nextParent.props.children.length - 1 > parentIdx) {
       const nextStep = nextParent.props.children[parentIdx + 1];
-      if (isContainer(nextStep)) {
+      if (isContainer(typeOf(nextStep))) {
         return firstLeaf(nextStep);
       } else {
         return nextStep;
@@ -126,7 +126,7 @@ export function previousLeaf(root, path) {
       //   .map((idx) => parseInt(idx, 10));
       if (lastIdx > 0) {
         const nextStep = parent.props.children[lastIdx - 1];
-        if (isContainer(nextStep)) {
+        if (isContainer(typeOf(nextStep))) {
           return lastLeaf(nextStep);
         } else {
           return nextStep;

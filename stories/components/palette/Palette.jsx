@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { uuid } from "@heswell/utils";
 import { Action, applyLayoutProps, Component, useViewContext, View } from "@heswell/layout";
 
-console.log(applyLayoutProps)
-
 import "./Palette.css";
 
 // const header = true;

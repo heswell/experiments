@@ -141,7 +141,7 @@ export class DropTarget {
 export function identifyDropTarget(x, y, model, measurements) {
   let dropTarget = null;
   const { path: rootPath } = getProps(model);
-  console.log(`identifyDropTarget root = ${rootPath}`, measurements);
+  // console.log(`identifyDropTarget root = ${rootPath}`, measurements);
 
   //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
   // this could return all boxes containing point, which would make getNextDropTarget almost free
@@ -210,7 +210,7 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
         container.path !== "0" && // TODO this should probably checj container root, not assume o
         positionedAtOuterContainerEdge(container, pos, component, measurements)
       ) {
-        console.log(`next ${getProps(container).path}`);
+        // console.log(`next ${getProps(container).path}`);
         const clientRect = measurements[container.props.path];
         let containerPos = pointPositionWithinRect(x, y, clientRect);
 

@@ -14,7 +14,7 @@ export default function useTabstrip(
   {
     activeIndicator = "bottom",
     children,
-    keyBoardActivation,
+    keyBoardActivation = "manual",
     onChange,
     onDeleteTab,
     orientation,
@@ -29,7 +29,6 @@ export default function useTabstrip(
 
   useLayoutEffect(() => {
     if (activeIndicator) {
-      console.log(`useTabstrip useLAuoutEffect ${value}`);
       if (!tabs[value]) {
         debugger;
       }
@@ -38,7 +37,7 @@ export default function useTabstrip(
       const rootRect = ref.current.getBoundingClientRect();
       const left = tabRect.left - rootRect.left;
       const top = tabRect.bottom - rootRect.top;
-      setIndicatorPos({ style: { left, width: tabRect.width } });
+      //      setIndicatorPos({ style: { left, width: tabRect.width } });
     }
   }, [activeIndicator, ref, setIndicatorPos, tabs, value]);
 
@@ -134,6 +133,6 @@ export default function useTabstrip(
       onKeyDown: handleKeyDown,
       onKeyUp: handleKeyUp,
     },
-    tabRef: tabs,
+    tabRefs: tabs,
   };
 }

@@ -11,15 +11,12 @@
 .Tabstrip .Tabstrip-inner {
   align-items: center;
   background-color: yellow;
-  display: flex;
+  display: inline-flex;
   flex-basis: "auto";
   flex-grow: 0;
   flex-shrink: 1;
-  justify-content: flex-start;
-  display: inline-flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: inherit;
+  justify-content: flex-start;
 }
 
 .Tabstrip .ActiveIndicator {

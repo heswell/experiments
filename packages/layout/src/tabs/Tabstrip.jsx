@@ -1,6 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import cx from "classnames";
 import useTabstrip from "./useTabstrip";
+import useActivationIndicator from "./useActivationIndicator";
 import useResizeObserver from "../responsive/useResizeObserver";
 import OverflowMenu from '../responsive/OverflowMenu';
 import {getOverflowedItems} from '../responsive/overflowUtils';
@@ -16,13 +17,14 @@ const AddTabButton = (props) => {
   );
 };
 
-const OBSERVED_DIMENSIONS = ['height']
+const OBSERVED_DIMENSIONS = ['height', 'width']
 
 
 const Tabstrip = (props) => {
   const root = useRef(null);
   const hiddenItems = useRef([]);
-  const { indicatorProps, tabProps, tabRef } = useTabstrip(props, root);
+  const { tabProps, tabRefs } = useTabstrip(props, root);
+  const { indicatorProps } = useActivationIndicator(props, root, tabRefs);
   const { enableAddTab, onAddTab, style, value } = props;
   const children = React.Children.toArray(props.children);
   const [overflowing, setOverflowing] = useState(false);
@@ -41,13 +43,14 @@ const Tabstrip = (props) => {
         React.cloneElement(child, {
           index,
           ...tabProps,
+          "data-index": index,
           "data-priority": 2,
-          ref: tabRef[index],
+          ref: tabRefs[index],
           selected: index === value
         }));
         out.push(<div key={`spacer-${index}`} style={{width: 0, height: 32, backgroundColor: 'red'}}/>)
         if (enableAddTab && index === length-1){
-          out.push(<AddTabButton key="add-tab" data-priority={1} onClick={onAddTab} />);
+          out.push(<AddTabButton key="add-tab" data-index={index+1} data-priority={1} onClick={onAddTab} />);
           out.push(<div key={`spacer-${index+1}`} style={{width: 0, height: 32, backgroundColor: 'red'}}/>)
         } 
         return out;
@@ -56,21 +59,29 @@ const Tabstrip = (props) => {
 
     const heightProp = 32;  
 
-    const handleResize = useCallback(({ height: measuredHeight }) => {
-        if (measuredHeight > heightProp && !overflowing) {
+    const handleResize = useCallback(({ height: measuredHeight }, overflowedIndices) => {
+        if (measuredHeight > heightProp) {
+          // noop if already overflowing, we don't check to avoid shaving a dependency
+          // on overflowing
           setOverflowing(true);
-        } else if (measuredHeight === heightProp && overflowing) {
-          console.log(`set overflowing FALSE`)
+
+          console.log(`overflowedIndices ${JSON.stringify(overflowedIndices)}`)
+
+        } else if (measuredHeight === heightProp) {
+          console.log(`set overflowing FALSE`);
           setOverflowing(false);
         }
 
-    },[heightProp, overflowing])  
+    },[heightProp, setOverflowing])  
 
-    useResizeObserver(
-      innerContainer,
-      OBSERVED_DIMENSIONS,
-      handleResize
-    );
+    // useResizeObserver(
+    //   innerContainer,
+    //   OBSERVED_DIMENSIONS,
+    //   handleResize,
+    //   true
+    // );
+
+  console.log('%cTabstrip render','color:blue;font-weight: bold;')
 
   return (
     <div className={cx("Tabstrip")} ref={root} role="tablist" style={style}>

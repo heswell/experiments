@@ -7,7 +7,6 @@ import "./layout.css";
 import "./popup.css";
 import "./drop-menu.css";
 
-console.log(Tab, Tabstrip);
 export default {
   title: "Layout/Tabstrip",
   component: Tabstrip,
@@ -49,6 +48,8 @@ export const Responsive = () => {
   const handleAddTab = () => {
     setTabs((state) => state.concat([`Tab ${state.length + 1}`]));
   };
+
+  console.log("%cTabstrip Example render", "color:red;font-weight: bold;");
 
   return (
     <Flexbox
