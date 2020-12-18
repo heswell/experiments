@@ -1,7 +1,6 @@
 .Tabstrip {
   align-items: flex-start;
   box-sizing: border-box;
-  color: white;
   height: 36px;
   position: relative;
   overflow: hidden;
@@ -11,12 +10,19 @@
 .Tabstrip .Tabstrip-inner {
   align-items: center;
   background-color: yellow;
-  display: inline-flex;
-  flex-basis: "auto";
+  display: flex;
+  flex-basis: auto;
   flex-grow: 0;
   flex-shrink: 1;
   flex-wrap: wrap;
   justify-content: flex-start;
+}
+
+.Tabstrip .ActiveIndicator-container {
+  bottom: 0;
+  position: absolute;
+  height: 0px;
+  width: 100%;
 }
 
 .Tabstrip .ActiveIndicator {

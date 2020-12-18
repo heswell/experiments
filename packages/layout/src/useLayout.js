@@ -70,7 +70,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
     isRoot &&
     (state.current === undefined || children.current !== props.children)
   ) {
-    console.log("RECREATE _____");
+    console.log("RECREATE _____ (useLayout regenerated layout structure)");
     children.current = props.children;
     state.current = applyLayout(
       layoutType,

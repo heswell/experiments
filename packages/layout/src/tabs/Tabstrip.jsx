@@ -1,8 +1,8 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import cx from "classnames";
 import useTabstrip from "./useTabstrip";
-import useActivationIndicator from "./useActivationIndicator";
-import useResizeObserver from "../responsive/useResizeObserver";
+import useOverflowObserver from "./useOverflowObserver";
+import ActivationIndicator from './ActivationIndicator';
 import OverflowMenu from '../responsive/OverflowMenu';
 import {getOverflowedItems} from '../responsive/overflowUtils';
 import { AddIcon } from "../icons";
@@ -17,15 +17,15 @@ const AddTabButton = (props) => {
   );
 };
 
-const OBSERVED_DIMENSIONS = ['height', 'width']
+const OBSERVED_DIMENSIONS = ['height']
 
 
 const Tabstrip = (props) => {
   const root = useRef(null);
   const hiddenItems = useRef([]);
   const { tabProps, tabRefs } = useTabstrip(props, root);
-  const { indicatorProps } = useActivationIndicator(props, root, tabRefs);
-  const { enableAddTab, onAddTab, style, value } = props;
+  // const { indicatorProps } = useActivationIndicator(props, root, tabRefs);
+  const { enableAddTab, onAddTab, showActivationIndicator=true, style, value } = props;
   const children = React.Children.toArray(props.children);
   const [overflowing, setOverflowing] = useState(false);
   const [showOverflow, setShowOverflow] = useState(false);
@@ -48,10 +48,10 @@ const Tabstrip = (props) => {
           ref: tabRefs[index],
           selected: index === value
         }));
-        out.push(<div key={`spacer-${index}`} style={{width: 0, height: 32, backgroundColor: 'red'}}/>)
+        out.push(<div key={`spacer-${index}`} style={{display: 'inline-block', width: 0, height: 32, backgroundColor: 'red'}}/>)
         if (enableAddTab && index === length-1){
           out.push(<AddTabButton key="add-tab" data-index={index+1} data-priority={1} onClick={onAddTab} />);
-          out.push(<div key={`spacer-${index+1}`} style={{width: 0, height: 32, backgroundColor: 'red'}}/>)
+          out.push(<div key={`spacer-${index+1}`} style={{display: 'inline-block', width: 0, height: 32, backgroundColor: 'red'}}/>)
         } 
         return out;
       },[]
@@ -60,26 +60,25 @@ const Tabstrip = (props) => {
     const heightProp = 32;  
 
     const handleResize = useCallback(({ height: measuredHeight }, overflowedIndices) => {
-        if (measuredHeight > heightProp) {
-          // noop if already overflowing, we don't check to avoid shaving a dependency
-          // on overflowing
-          setOverflowing(true);
+      console.log(`[Tabstrip] handleResize`)
+        // if (measuredHeight > heightProp) {
+        //   // noop if already overflowing, we don't check to avoid shaving a dependency
+        //   // on overflowing
+        //   setOverflowing(true);
 
-          console.log(`overflowedIndices ${JSON.stringify(overflowedIndices)}`)
+        //   console.log(`overflowedIndices ${JSON.stringify(overflowedIndices)}`)
 
-        } else if (measuredHeight === heightProp) {
-          console.log(`set overflowing FALSE`);
-          setOverflowing(false);
-        }
+        // } else if (measuredHeight === heightProp) {
+        //   console.log(`set overflowing FALSE`);
+        //   setOverflowing(false);
+        // }
 
     },[heightProp, setOverflowing])  
 
-    // useResizeObserver(
-    //   innerContainer,
-    //   OBSERVED_DIMENSIONS,
-    //   handleResize,
-    //   true
-    // );
+    useOverflowObserver(
+      innerContainer,
+      handleResize
+    );
 
   console.log('%cTabstrip render','color:blue;font-weight: bold;')
 
@@ -91,8 +90,8 @@ const Tabstrip = (props) => {
       {overflowing ? (
         <OverflowMenu onClick={handleOverflowClick} ref={overflowButton} />
       ) : null}
-      {indicatorProps ? (
-        <div className="ActiveIndicator" {...indicatorProps} />
+      {showActivationIndicator ? (
+        <ActivationIndicator tabRefs={tabRefs} value={value}/>
       ) : null}
     </div>
   );

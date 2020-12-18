@@ -81,7 +81,11 @@ export const Responsive = () => {
 };
 
 const AddableTabs = (props) => {
-  const [tabs, setTabs] = useState(["Tab 1", "Tab 2", "Tab 3"]);
+  const [tabs, setTabs] = useState([
+    "Tab 1",
+    "Tab 2 has a longer title",
+    "Tab 3 in between",
+  ]);
   const [tabIndex, setTabIndex] = useState(0);
   const handleAddTab = () => {
     setTabs((state) => state.concat([`Tab ${state.length + 1}`]));

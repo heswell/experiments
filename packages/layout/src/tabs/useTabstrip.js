@@ -1,4 +1,3 @@
-import { useLayoutEffect, useState } from "react";
 import { useChildRefs } from "../useChildRefs";
 
 var direction = {
@@ -12,7 +11,6 @@ var direction = {
 
 export default function useTabstrip(
   {
-    activeIndicator = "bottom",
     children,
     keyBoardActivation = "manual",
     onChange,
@@ -23,23 +21,8 @@ export default function useTabstrip(
   ref
 ) {
   const tabs = useChildRefs(children);
-  const [indicatorPos, setIndicatorPos] = useState(null);
   const manualActivation = keyBoardActivation === "manual";
   const vertical = orientation === "vertical";
-
-  useLayoutEffect(() => {
-    if (activeIndicator) {
-      if (!tabs[value]) {
-        debugger;
-      }
-      const tabRect = tabs[value].current.measure();
-      // we probably don't need to do this every time if we;re observng this anyway
-      const rootRect = ref.current.getBoundingClientRect();
-      const left = tabRect.left - rootRect.left;
-      const top = tabRect.bottom - rootRect.top;
-      //      setIndicatorPos({ style: { left, width: tabRect.width } });
-    }
-  }, [activeIndicator, ref, setIndicatorPos, tabs, value]);
 
   function focusTab(tabIndex) {
     tabs[tabIndex].current.focus();
@@ -126,7 +109,6 @@ export default function useTabstrip(
   };
 
   return {
-    indicatorProps: activeIndicator ? indicatorPos : undefined,
     tabProps: {
       onClick: handleClick,
       onDelete: handleDeleteTab,
