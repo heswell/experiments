@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import useResizeObserver from "../responsive/useResizeObserver";
 
 const HEIGHT = ["height"];
@@ -6,57 +6,78 @@ const HEIGHT_WIDTH = ["height", "width"];
 
 const addAll = (sum, m) => sum + m.width;
 
+const moveOverflowItem = (fromStack, toStack) => {
+  const item = fromStack.current.pop();
+  toStack.current.push(item);
+  return item;
+};
+
 export default function useOverflowObserver(ref, onOverflow) {
+  const [overflowing, setOverflowing] = useState(false);
   const visibleRef = useRef(null);
   const overflowedRef = useRef([]);
   const width = useRef(null);
 
+  const manageReducedWidth = useCallback(
+    (visibleContentWidth, containerWidth) => {
+      const overflow = overflowedRef.current;
+      while (visibleContentWidth > containerWidth) {
+        const { index, width } = moveOverflowItem(visibleRef, overflowedRef);
+        visibleContentWidth -= width;
+        const target = ref.current.querySelector(`[data-index='${index}']`);
+        target.dataset.hidden = true;
+      }
+
+      if (!overflowing && overflow.length > 0) {
+        setOverflowing(true);
+      }
+    },
+    [overflowing, setOverflowing]
+  );
+
+  const manageIncreasedWidth = useCallback(
+    (visibleContentWidth, containerWidth) => {
+      const diff = containerWidth - visibleContentWidth;
+      const overflow = overflowedRef.current;
+      const { width: nextWidth } = overflow[overflow.length - 1];
+
+      if (diff >= nextWidth) {
+        const { index, width } = moveOverflowItem(overflowedRef, visibleRef);
+        visibleContentWidth += width;
+        const target = ref.current.querySelector(`[data-index='${index}']`);
+        delete target.dataset.hidden;
+      }
+
+      if (overflowing && overflow.length === 0) {
+        setOverflowing(false);
+      }
+    },
+    [overflowing, setOverflowing]
+  );
+
   const resizeHandler = useCallback(
-    ({ width: containerWidth, height: containerHeight }) => {
+    ({ width: containerWidth }) => {
       let renderedWidth = visibleRef.current.reduce(addAll, 0);
-
       if (containerWidth < width.current) {
-        console.log(
-          `%c[useOverflowObserver] size changed ${containerHeight} ${containerWidth},
-          renderedWidth ${renderedWidth}`,
-          "color:green;font-weight:bold;"
-        );
-
-        // Note: we only need to register listener for width once we have overflow
-
-        while (renderedWidth > containerWidth) {
-          const overflow = visibleRef.current.pop();
-          overflowedRef.current.push(overflow);
-          const { index, width } = overflow;
-          renderedWidth -= width;
-          const target = ref.current.querySelector(`[data-index='${index}']`);
-          target.dataset.hidden = true;
-        }
+        manageReducedWidth(renderedWidth, containerWidth);
+        // Note: we only need to register listener for width once we have overflow, which
+        // can be driven by height change
       } else if (overflowedRef.current.length) {
-        const diff = containerWidth - renderedWidth;
-        const { width: nextWidth } = overflowedRef.current[
-          overflowedRef.current.length - 1
-        ];
-
-        if (diff >= nextWidth) {
-          const overflow = overflowedRef.current.pop();
-          visibleRef.current.push(overflow);
-          const { index, width } = overflow;
-          renderedWidth += width;
-          const target = ref.current.querySelector(`[data-index='${index}']`);
-          delete target.dataset.hidden;
-        }
-
-        console.log(
-          `content height ${containerHeight} width ${containerWidth}`
-        );
+        manageIncreasedWidth(renderedWidth, containerWidth);
       }
       width.current = containerWidth;
     },
-    [visibleRef, onOverflow, ref]
+    [
+      overflowing,
+      manageIncreasedWidth,
+      manageReducedWidth,
+      onOverflow,
+      ref,
+      visibleRef,
+    ]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     async function measure() {
       await document.fonts.ready;
       const start = performance.now();
@@ -68,29 +89,17 @@ export default function useOverflowObserver(ref, onOverflow) {
       console.log(`measurements took ${end - start}ms`);
       visibleRef.current = measurements;
       if (containerHeight > 32) {
-        console.log("NEED TO ADJUST OVERFLOW RIGHT FROM THE GET-GO");
+        let renderedWidth = visibleRef.current.reduce(addAll, 0);
+        manageReducedWidth(renderedWidth, containerWidth);
       }
     }
     measure();
   }, [ref]);
 
   useResizeObserver(ref, HEIGHT_WIDTH, resizeHandler);
+
+  return overflowing;
 }
-
-// const overflowedIndices = [];
-// for (let i = 0; i < overflowPoints.length; i++) {
-//   const overflowPoint = overflowPoints[i];
-//   if (width < overflowPoint) {
-//     overflowedIndices.push(overflowIndices[i]);
-//   } else {
-//     break;
-//   }
-// }
-
-let thresholds = undefined;
-// if (trackOverflowItems) {
-//   thresholds = measureChildren(ref);
-// }
 
 const byDescendingPriority = (m1, m2) => {
   const sort1 = m1.priority - m2.priority;
@@ -129,53 +138,3 @@ function measureWidth(node) {
   const marginRight = parseInt(style.getPropertyValue("margin-right"), 10);
   return marginLeft + width + marginRight;
 }
-
-/*
-const measureChildren = (ref) => {
-  const nodes = Array.from(ref.current.childNodes);
-  const { left, width } = ref.current.getBoundingClientRect();
-  console.log(`container left ${left} width ${width}`);
-  const measurements = nodes.reduce((list, node, i) => {
-    const { index, priority = "1" } = node?.dataset ?? NO_DATA;
-    if (index) {
-      const { width, left, right } = node.getBoundingClientRect();
-      console.log(
-        `${node.dataset.index} = ${width}, left ${left} right: ${right}`
-      );
-      list.push({
-        index: parseInt(index, 10),
-        priority: parseInt(priority, 10),
-        width,
-      });
-    }
-    return list;
-  }, []);
-
-  const { overflowPoints, overflowIndices } = computeOverflowPoints(
-    measurements
-  );
-  console.log({ overflowPoints });
-
-  return { measurements, overflowPoints, overflowIndices };
-};
-
-
-const computeOverflowPoints = (measurements) => {
-  measurements.sort(byDescendingPriority);
-  console.log({ measurements });
-  const all = measurements.slice();
-  let measure = all.pop();
-  let overflowPoint = all.reduce(addAll, 0) + measure.width;
-  const overflowPoints = [overflowPoint];
-  const overflowIndices = [];
-
-  while (all.length > 0) {
-    overflowIndices.push(measure.index);
-    overflowPoint -= measure.width;
-    overflowPoints.push(overflowPoint);
-    measure = all.pop();
-  }
-  overflowIndices.push(measure.index);
-  return { overflowPoints, overflowIndices };
-};
-*/

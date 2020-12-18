@@ -119,6 +119,6 @@ export const Responsive2 = () => (
     }}
   >
     <AddableTabs resizeable value={0} style={{ flex: 1, height: 32 }} />
-    <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
+    <div data-resizeable style={{ width: 230, backgroundColor: "white" }} />
   </Flexbox>
 );

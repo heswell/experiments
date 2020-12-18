@@ -4,7 +4,6 @@ import useTabstrip from "./useTabstrip";
 import useOverflowObserver from "./useOverflowObserver";
 import ActivationIndicator from './ActivationIndicator';
 import OverflowMenu from '../responsive/OverflowMenu';
-import {getOverflowedItems} from '../responsive/overflowUtils';
 import { AddIcon } from "../icons";
 
 import "./Tabstrip.css";
@@ -17,17 +16,11 @@ const AddTabButton = (props) => {
   );
 };
 
-const OBSERVED_DIMENSIONS = ['height']
-
-
 const Tabstrip = (props) => {
   const root = useRef(null);
-  const hiddenItems = useRef([]);
   const { tabProps, tabRefs } = useTabstrip(props, root);
-  // const { indicatorProps } = useActivationIndicator(props, root, tabRefs);
   const { enableAddTab, onAddTab, showActivationIndicator=true, style, value } = props;
   const children = React.Children.toArray(props.children);
-  const [overflowing, setOverflowing] = useState(false);
   const [showOverflow, setShowOverflow] = useState(false);
 
   const overflowButton = useRef(null);
@@ -48,39 +41,24 @@ const Tabstrip = (props) => {
           ref: tabRefs[index],
           selected: index === value
         }));
-        out.push(<div key={`spacer-${index}`} style={{display: 'inline-block', width: 0, height: 32, backgroundColor: 'red'}}/>)
         if (enableAddTab && index === length-1){
           out.push(<AddTabButton key="add-tab" data-index={index+1} data-priority={1} onClick={onAddTab} />);
-          out.push(<div key={`spacer-${index+1}`} style={{display: 'inline-block', width: 0, height: 32, backgroundColor: 'red'}}/>)
         } 
         return out;
-      },[]
+      },[<div className="row-pillar" key="spacer" style={{height: 32}}/>]
     );
 
-    const heightProp = 32;  
-
-    const handleResize = useCallback(({ height: measuredHeight }, overflowedIndices) => {
+    const handleResize = useCallback(() => {
       console.log(`[Tabstrip] handleResize`)
-        // if (measuredHeight > heightProp) {
-        //   // noop if already overflowing, we don't check to avoid shaving a dependency
-        //   // on overflowing
-        //   setOverflowing(true);
+    },[])  
 
-        //   console.log(`overflowedIndices ${JSON.stringify(overflowedIndices)}`)
-
-        // } else if (measuredHeight === heightProp) {
-        //   console.log(`set overflowing FALSE`);
-        //   setOverflowing(false);
-        // }
-
-    },[heightProp, setOverflowing])  
-
-    useOverflowObserver(
+    const overflowing = useOverflowObserver(
       innerContainer,
       handleResize
     );
 
-  console.log('%cTabstrip render','color:blue;font-weight: bold;')
+
+  console.log(`%cTabstrip render overflowing ${overflowing}`,'color:blue;font-weight: bold;')
 
   return (
     <div className={cx("Tabstrip")} ref={root} role="tablist" style={style}>
@@ -88,7 +66,7 @@ const Tabstrip = (props) => {
         {renderTabs()}
       </div>
       {overflowing ? (
-        <OverflowMenu onClick={handleOverflowClick} ref={overflowButton} />
+        <OverflowMenu onClick={handleOverflowClick} ref={overflowButton} show={showOverflow}/>
       ) : null}
       {showActivationIndicator ? (
         <ActivationIndicator tabRefs={tabRefs} value={value}/>
