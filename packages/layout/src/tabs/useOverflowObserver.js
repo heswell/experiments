@@ -12,7 +12,7 @@ const moveOverflowItem = (fromStack, toStack) => {
   return item;
 };
 
-export default function useOverflowObserver(ref, onOverflow) {
+export default function useOverflowObserver(ref) {
   const [overflowing, setOverflowing] = useState(false);
   const visibleRef = useRef(null);
   const overflowedRef = useRef([]);
@@ -67,14 +67,7 @@ export default function useOverflowObserver(ref, onOverflow) {
       }
       width.current = containerWidth;
     },
-    [
-      overflowing,
-      manageIncreasedWidth,
-      manageReducedWidth,
-      onOverflow,
-      ref,
-      visibleRef,
-    ]
+    [overflowing, manageIncreasedWidth, manageReducedWidth, ref, visibleRef]
   );
 
   useLayoutEffect(() => {

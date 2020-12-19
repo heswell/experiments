@@ -9,7 +9,6 @@
 
 .Tabstrip .Tabstrip-inner {
   align-items: center;
-  background-color: yellow;
   display: flex;
   flex-basis: auto;
   flex-grow: 0;
@@ -37,29 +36,4 @@
 
 .Tabstrip .row-pillar {
   width: 0;
-}
-
-.Tabstrip .tab-add {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  height: 28px;
-  justify-content: center;
-  width: 28px;
-}
-
-.Tabstrip .tab-add:hover {
-  background-color: var(--grey40);
-}
-
-.Tabstrip .tab-add .icon-path {
-  fill: var(--grey300);
-  stroke: var(--grey300);
-  stroke-width: 1px;
-}
-
-.Tabstrip .tab-add .Icon {
-  border: none;
-  transform: scale(0.66);
-  transform-origin: center center;
 }

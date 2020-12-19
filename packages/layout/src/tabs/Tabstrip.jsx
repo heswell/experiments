@@ -1,28 +1,40 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import cx from "classnames";
 import useTabstrip from "./useTabstrip";
-import useOverflowObserver from "./useOverflowObserver";
-import ActivationIndicator from './ActivationIndicator';
-import OverflowMenu from '../responsive/OverflowMenu';
-import { AddIcon } from "../icons";
+import useOverflowObserver from "../responsive/useOverflowObserver";
+import ActivationIndicator from "./ActivationIndicator";
+import OverflowMenu from "../responsive/OverflowMenu";
+import Button from "../button/Button";
+import Icon from "../icon/Icon";
 
 import "./Tabstrip.css";
 
-const AddTabButton = (props) => {
+const AddTabButton = ({ className, title, ...props }) => {
   return (
-    <div className="tab-add" {...props}>
-      <AddIcon />
-    </div>
+    <Button
+      className={cx("tab-add", className)}
+      {...props}
+      variant="secondary"
+      tabIndex={0}
+    >
+      <Icon name="add" accessibleText={title} />
+    </Button>
   );
 };
 
 const Tabstrip = (props) => {
   const root = useRef(null);
   const { tabProps, tabRefs } = useTabstrip(props, root);
-  const { enableAddTab, onAddTab, showActivationIndicator=true, style, value } = props;
-  const children = React.Children.toArray(props.children);
+  const {
+    children,
+    enableAddTab,
+    onAddTab,
+    showActivationIndicator = true,
+    style,
+    title,
+    value,
+  } = props;
   const [showOverflow, setShowOverflow] = useState(false);
-
   const overflowButton = useRef(null);
   const innerContainer = useRef(null);
 
@@ -30,51 +42,70 @@ const Tabstrip = (props) => {
     setShowOverflow((show) => !show);
   };
 
-  const renderTabs = () => 
-    children.reduce((out, child, index, {length}) => {
-      out.push(
+  const renderContent = () => {
+    const tabs = [
+      <div className="row-pillar" key="spacer" style={{ height: 32 }} />,
+    ];
+
+    React.Children.toArray(children).forEach((child, index) => {
+      tabs.push(
         React.cloneElement(child, {
           index,
           ...tabProps,
           "data-index": index,
           "data-priority": 2,
           ref: tabRefs[index],
-          selected: index === value
-        }));
-        if (enableAddTab && index === length-1){
-          out.push(<AddTabButton key="add-tab" data-index={index+1} data-priority={1} onClick={onAddTab} />);
-        } 
-        return out;
-      },[<div className="row-pillar" key="spacer" style={{height: 32}}/>]
-    );
+          selected: index === value,
+        })
+      );
+    });
 
-    const handleResize = useCallback(() => {
-      console.log(`[Tabstrip] handleResize`)
-    },[])  
+    if (overflowing) {
+      tabs.push(
+        <OverflowMenu
+          data-priority={1}
+          data-index={tabs.length}
+          key="overflow"
+          onClick={handleOverflowClick}
+          ref={overflowButton}
+          show={showOverflow}
+        />
+      );
+    }
 
-    const overflowing = useOverflowObserver(
-      innerContainer,
-      handleResize
-    );
+    if (enableAddTab) {
+      tabs.push(
+        <AddTabButton
+          data-priority={1}
+          data-index={tabs.length}
+          key="add"
+          onClick={onAddTab}
+          title={title}
+        />
+      );
+    }
 
+    return tabs;
+  };
 
-  console.log(`%cTabstrip render overflowing ${overflowing}`,'color:blue;font-weight: bold;')
+  const overflowing = useOverflowObserver(innerContainer, children);
 
   return (
     <div className={cx("Tabstrip")} ref={root} role="tablist" style={style}>
-      <div className="Tabstrip-inner" ref={innerContainer} style={{lineHeight: '32px'}}>
-        {renderTabs()}
+      <div
+        className="Tabstrip-inner"
+        ref={innerContainer}
+        style={{ lineHeight: "32px" }}
+      >
+        {renderContent()}
       </div>
-      {overflowing ? (
-        <OverflowMenu onClick={handleOverflowClick} ref={overflowButton} show={showOverflow}/>
-      ) : null}
       {showActivationIndicator ? (
-        <ActivationIndicator tabRefs={tabRefs} value={value}/>
+        <ActivationIndicator tabRefs={tabRefs} value={value} />
       ) : null}
     </div>
   );
 };
 
-Tabstrip.displayName = "Tabstrip"
+Tabstrip.displayName = "Tabstrip";
 
 export default Tabstrip;

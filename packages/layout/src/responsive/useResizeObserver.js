@@ -16,10 +16,10 @@ const resizeObserver = new ResizeObserver((entries) => {
       }
       if (sizeChanged) {
         // TODO only return measured sizes
-        const { height, width } = contentRect;
-        console.log(
-          `ResizeObserver callback, size changed observed width ${width} height: ${height}`
-        );
+        // const { height, width } = contentRect;
+        // console.log(
+        //   `ResizeObserver callback, size changed observed width ${width} height: ${height}`
+        // );
         onResize && onResize(contentRect);
       } else {
         console.log(`no change from recorded values`);

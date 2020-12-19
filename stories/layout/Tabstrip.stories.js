@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Flexbox, Tab, Tabstrip } from "@heswell/layout";
 import "@heswell/layout/dist/index.css";
 import "../assets/OpenSans.css";
+import "../assets/ToolkitIcons.css";
 import "../theme.css";
 import "./layout.css";
 import "./popup.css";
