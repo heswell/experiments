@@ -27,7 +27,7 @@
   "peerDependencies": {
     "@finos/perspective": "^0.5.5",
     "@heswell/data-store": "^1.2.0",
-    "@heswell/utils": "^1.0.9",
+    "@heswell/utils": "^2.0.0",
     "@heswell/worker": "^1.0.0"
   },
   "devDependencies": {

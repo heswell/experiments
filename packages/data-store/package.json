@@ -25,7 +25,7 @@
     "d3-array": "^2.2.0"
   },
   "peerDependencies": {
-    "@heswell/utils": "^1.0.9"
+    "@heswell/utils": "^2.0.0"
   },
   "devDependencies": {
     "jest": "^24.9.0",

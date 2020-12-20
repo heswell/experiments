@@ -7,30 +7,30 @@ import React, {
   useEffect,
   useLayoutEffect,
   useRef,
-  useMemo
+  useMemo,
 } from "react";
-import useEffectSkipFirst from '@heswell/utils';
+import { useEffectSkipFirst } from "@heswell/utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
-import useStyles from './use-styles';
-import useDataSource from './use-data-source';
+import useStyles from "./use-styles";
+import useDataSource from "./use-data-source";
 import GridContext from "./grid-context";
-import { getColumnGroupColumnIdx } from './grid-model-utils.js';
+import { getColumnGroupColumnIdx } from "./grid-model-utils.js";
 
 import Canvas from "./canvas";
-import ColumnBearer from './column-bearer';
-import InsertIndicator from './insert-indicator';
+import ColumnBearer from "./column-bearer";
+import InsertIndicator from "./insert-indicator";
 
 const DEFAULT_TOGGLE_STRATEGY = {};
 
-const getToggleStrategy = dataSource => {
+const getToggleStrategy = (dataSource) => {
   const { features = {} } = dataSource;
   if (features.expand_level_1 === false) {
-    return { expand_level_1: false }
+    return { expand_level_1: false };
   } else {
     return DEFAULT_TOGGLE_STRATEGY;
   }
-}
+};
 
 /** @type {ViewportComponent} */
 const Viewport = forwardRef(function Viewport(
@@ -41,7 +41,7 @@ const Viewport = forwardRef(function Viewport(
   const scrollingEl = useRef(null);
   /** @type {React.MutableRefObject<any>} */
   const canvasRefs = useRef([]);
-  const columnBearer = useRef(null)
+  const columnBearer = useRef(null);
   const contentHeight = useRef(0);
   const horizontalScrollbarHeight = useRef(gridModel.horizontalScrollbarHeight);
   const verticalScrollbarWidth = useRef(0);
@@ -50,7 +50,7 @@ const Viewport = forwardRef(function Viewport(
 
   useEffect(() => {
     horizontalScrollbarHeight.current = gridModel.horizontalScrollbarHeight;
-  }, [gridModel.horizontalScrollbarHeight])
+  }, [gridModel.horizontalScrollbarHeight]);
 
   // TODO we could get gridModel here as well. Or would it be better to split gridModel into it's own context ?
   const { dataSource, dispatchGridModelAction } = useContext(GridContext);
@@ -65,102 +65,159 @@ const Viewport = forwardRef(function Viewport(
   const showColumnBearer = useRef(columnDragData !== null);
   showColumnBearer.current = columnDragData !== null;
 
-  const canvasCount = gridModel.columnGroups ? gridModel.columnGroups.length : 0;
+  const canvasCount = gridModel.columnGroups
+    ? gridModel.columnGroups.length
+    : 0;
   if (canvasRefs.current.length !== canvasCount) {
     // add or remove refs
-    canvasRefs.current = Array(canvasCount).fill(null).map((_, i) => canvasRefs.current[i] || createRef());
+    canvasRefs.current = Array(canvasCount)
+      .fill(null)
+      .map((_, i) => canvasRefs.current[i] || createRef());
   }
-  const scrollableCanvasIdx = gridModel.columnGroups ? gridModel.columnGroups.findIndex(group => !group.locked) : -1;
+  const scrollableCanvasIdx = gridModel.columnGroups
+    ? gridModel.columnGroups.findIndex((group) => !group.locked)
+    : -1;
 
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: () => {
       if (!showColumnBearer.current) {
-        const header = gridModel.headerHeight * gridModel.headingDepth + gridModel.customInlineHeaderHeight;
-        scrollingEl.current.style.height = `${header + Math.max(contentHeight.current +
-          horizontalScrollbarHeight.current, gridModel.viewportHeight)}px`;
-        canvasRefs.current.forEach(({ current }) => current.beginHorizontalScroll());
+        const header =
+          gridModel.headerHeight * gridModel.headingDepth +
+          gridModel.customInlineHeaderHeight;
+        scrollingEl.current.style.height = `${
+          header +
+          Math.max(
+            contentHeight.current + horizontalScrollbarHeight.current,
+            gridModel.viewportHeight
+          )
+        }px`;
+        canvasRefs.current.forEach(({ current }) =>
+          current.beginHorizontalScroll()
+        );
       }
     },
     endHorizontalScroll: () => {
       if (!showColumnBearer.current) {
-        canvasRefs.current.forEach(({ current }) => current.endHorizontalScroll());
-        scrollingEl.current.style.height = `${Math.max(contentHeight.current + horizontalScrollbarHeight.current, gridModel.viewportHeight)}px`;
+        canvasRefs.current.forEach(({ current }) =>
+          current.endHorizontalScroll()
+        );
+        scrollingEl.current.style.height = `${Math.max(
+          contentHeight.current + horizontalScrollbarHeight.current,
+          gridModel.viewportHeight
+        )}px`;
         return canvasRefs.current[scrollableCanvasIdx].current.scrollLeft;
       }
-    }
+    },
   }));
 
-  const handleColumnBearerScroll = scrollDistance =>
+  const handleColumnBearerScroll = (scrollDistance) =>
     canvasRefs.current[scrollableCanvasIdx].current.scrollBy(scrollDistance);
 
-  const handleColumnDrag = useCallback(async (dragPhase, draggedColumn, insertIdx, insertPos, columnLeft) => {
-    const { columnGroupIdx, columnIdx } = columnDragData;
-    const { current: canvas } = canvasRefs.current[columnGroupIdx];
-    if (dragPhase === 'drag') { // only called when we cross onto next targetColumn
-      insertIndicator.current.style.left = insertPos + 'px';
-    } else if (dragPhase === 'drag-end') {
-      insertIndicator.current.style.transition = 'left ease .3s';
-      if (canvas.isWithinScrollWindow(draggedColumn)) {
-        if (insertIdx > columnIdx) {
-          insertIndicator.current.style.left = (insertPos - draggedColumn.width) + 'px';
-          columnBearer.current.setFinalPosition(insertPos - draggedColumn.width);
-        } else {
-          insertIndicator.current.style.left = (insertPos) + 'px';
-          columnBearer.current.setFinalPosition(insertPos);
+  const handleColumnDrag = useCallback(
+    async (dragPhase, draggedColumn, insertIdx, insertPos, columnLeft) => {
+      const { columnGroupIdx, columnIdx } = columnDragData;
+      const { current: canvas } = canvasRefs.current[columnGroupIdx];
+      if (dragPhase === "drag") {
+        // only called when we cross onto next targetColumn
+        insertIndicator.current.style.left = insertPos + "px";
+      } else if (dragPhase === "drag-end") {
+        insertIndicator.current.style.transition = "left ease .3s";
+        if (canvas.isWithinScrollWindow(draggedColumn)) {
+          if (insertIdx > columnIdx) {
+            insertIndicator.current.style.left =
+              insertPos - draggedColumn.width + "px";
+            columnBearer.current.setFinalPosition(
+              insertPos - draggedColumn.width
+            );
+          } else {
+            insertIndicator.current.style.left = insertPos + "px";
+            columnBearer.current.setFinalPosition(insertPos);
+          }
         }
+        const groupInsertIdx = getColumnGroupColumnIdx(gridModel, insertIdx);
+        await canvas.endDrag(columnDragData, groupInsertIdx, columnLeft);
+        onColumnDrop(dragPhase, draggedColumn, insertIdx);
       }
-      const groupInsertIdx = getColumnGroupColumnIdx(gridModel, insertIdx);
-      await canvas.endDrag(columnDragData, groupInsertIdx, columnLeft);
-      onColumnDrop(dragPhase, draggedColumn, insertIdx);
-    }
-  }, [gridModel, onColumnDrop, columnDragData]);
+    },
+    [gridModel, onColumnDrop, columnDragData]
+  );
 
-  // we should not take columnNames from gridModel - thye will not yet have been recomputed if 
+  // we should not take columnNames from gridModel - thye will not yet have been recomputed if
   // dataSource has changed
   const { columnNames, viewportRowCount } = gridModelRef.current;
-  const subscriptionDetails = { columnNames, range: { lo: 0, hi: viewportRowCount } };
+  const subscriptionDetails = {
+    columnNames,
+    range: { lo: 0, hi: viewportRowCount },
+  };
 
-  const dataSourceCallback = useCallback((type, options) => {
-    switch (type) {
-      case 'subscribed':
-        dispatchGridModelAction({ type: 'set-available-columns', columns: options })
-        break;
-      case 'pivot':
-        dispatchGridModelAction({ type: 'set-pivot-columns', columns: options })
-        break;
-      case 'size':
-        // How do we handle this withoput having this dependency on gridModel ?
-        // THis is the important one, it comes with every rowSet
-        contentHeight.current = options * gridModel.rowHeight;
-        if (options >= gridModel.viewportRowCount && verticalScrollbarWidth.current === 0) {
-          verticalScrollbarWidth.current = 15;
-        } else if (options < gridModel.viewportRowCount && verticalScrollbarWidth.current === 15) {
-          verticalScrollbarWidth.current = 0;
-        }
-        break;
+  const dataSourceCallback = useCallback(
+    (type, options) => {
+      switch (type) {
+        case "subscribed":
+          dispatchGridModelAction({
+            type: "set-available-columns",
+            columns: options,
+          });
+          break;
+        case "pivot":
+          dispatchGridModelAction({
+            type: "set-pivot-columns",
+            columns: options,
+          });
+          break;
+        case "size":
+          // How do we handle this withoput having this dependency on gridModel ?
+          // THis is the important one, it comes with every rowSet
+          contentHeight.current = options * gridModel.rowHeight;
+          if (
+            options >= gridModel.viewportRowCount &&
+            verticalScrollbarWidth.current === 0
+          ) {
+            verticalScrollbarWidth.current = 15;
+          } else if (
+            options < gridModel.viewportRowCount &&
+            verticalScrollbarWidth.current === 15
+          ) {
+            verticalScrollbarWidth.current = 0;
+          }
+          break;
 
-      default:
-    }
-  }, [dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight])
+        default:
+      }
+    },
+    [dispatchGridModelAction, gridModel.viewportRowCount, gridModel.rowHeight]
+  );
 
-  const [data, setRange] = useDataSource(dataSource, subscriptionDetails, gridModel.renderBufferSize, dataSourceCallback);
+  const [data, setRange] = useDataSource(
+    dataSource,
+    subscriptionDetails,
+    gridModel.renderBufferSize,
+    dataSourceCallback
+  );
 
   useUpdate(() => {
-    setRange(firstVisibleRow.current, firstVisibleRow.current + gridModel.viewportRowCount + gridModel.renderBufferSize);
+    setRange(
+      firstVisibleRow.current,
+      firstVisibleRow.current +
+        gridModel.viewportRowCount +
+        gridModel.renderBufferSize
+    );
   }, [gridModel.renderBufferSize, gridModel.viewportRowCount]);
 
   useEffectSkipFirst(() => {
     viewportEl.current.scrollTop = 0;
-  },[dataSource])
+  }, [dataSource]);
 
   useLayoutEffect(() => {
     if (columnDragData) {
       const { column, columnGroupIdx } = columnDragData;
-      const columnOffset = canvasRefs.current[columnGroupIdx].current.beginDrag(column);
+      const columnOffset = canvasRefs.current[columnGroupIdx].current.beginDrag(
+        column
+      );
       const { left } = viewportEl.current.getBoundingClientRect();
-      insertIndicator.current.style.left = (columnOffset - left) + 'px';
+      insertIndicator.current.style.left = columnOffset - left + "px";
     }
-  }, [columnDragData])
+  }, [columnDragData]);
 
   const scrollCallback = useCallback(
     (scrollEvent, scrollTop) => {
@@ -171,9 +228,13 @@ const Viewport = forwardRef(function Viewport(
           setRange(firstRow, firstRow + gridModel.viewportRowCount);
         }
       } else if (scrollEvent === "scroll-start") {
-        canvasRefs.current.forEach(({ current }) => current.beginVerticalScroll());
+        canvasRefs.current.forEach(({ current }) =>
+          current.beginVerticalScroll()
+        );
       } else {
-        canvasRefs.current.forEach(({ current }) => current.endVerticalScroll(scrollTop));
+        canvasRefs.current.forEach(({ current }) =>
+          current.endVerticalScroll(scrollTop)
+        );
       }
     },
     [gridModel.rowHeight, gridModel.viewportRowCount, setRange]
@@ -183,7 +244,9 @@ const Viewport = forwardRef(function Viewport(
 
   const classes = useStyles();
 
-  const toggleStrategy = useMemo(() => getToggleStrategy(dataSource), [dataSource]);
+  const toggleStrategy = useMemo(() => getToggleStrategy(dataSource), [
+    dataSource,
+  ]);
 
   return (
     <>
@@ -196,40 +259,50 @@ const Viewport = forwardRef(function Viewport(
         <div
           className={classes.scrollingCanvasContainer}
           ref={scrollingEl}
-          style={{ height: Math.max(contentHeight.current + horizontalScrollbarHeight.current, gridModel.viewportHeight) }}
+          style={{
+            height: Math.max(
+              contentHeight.current + horizontalScrollbarHeight.current,
+              gridModel.viewportHeight
+            ),
+          }}
         >
-          {gridModel.columnGroups ? gridModel.columnGroups.map((columnGroup, idx) => (
-            <Canvas
-              columnGroupIdx={idx}
-              contentHeight={contentHeight.current}
-              firstVisibleRow={firstVisibleRow.current}
-              gridModel={gridModel}
-              height={gridModel.viewportHeight}
-              horizontalScrollbarHeight={horizontalScrollbarHeight.current}
-              key={idx}
-              onColumnDragStart={onColumnDragStart}
-              ref={canvasRefs.current[idx]}
-              rowHeight={gridModel.rowHeight}
-              data={data}
-              toggleStrategy={toggleStrategy} // brand new, not well thought out yet
-            />
-          )) : null}
+          {gridModel.columnGroups
+            ? gridModel.columnGroups.map((columnGroup, idx) => (
+                <Canvas
+                  columnGroupIdx={idx}
+                  contentHeight={contentHeight.current}
+                  firstVisibleRow={firstVisibleRow.current}
+                  gridModel={gridModel}
+                  height={gridModel.viewportHeight}
+                  horizontalScrollbarHeight={horizontalScrollbarHeight.current}
+                  key={idx}
+                  onColumnDragStart={onColumnDragStart}
+                  ref={canvasRefs.current[idx]}
+                  rowHeight={gridModel.rowHeight}
+                  data={data}
+                  toggleStrategy={toggleStrategy} // brand new, not well thought out yet
+                />
+              ))
+            : null}
         </div>
       </div>
-      {columnDragData && <>
-        <InsertIndicator ref={insertIndicator} />
-        <ColumnBearer
-          columnDragData={columnDragData}
-          gridModel={gridModel}
-          initialScrollPosition={canvasRefs.current[scrollableCanvasIdx].current.scrollLeft}
-          onDrag={handleColumnDrag}
-          onScroll={handleColumnBearerScroll}
-          ref={columnBearer}
-          rows={data.rows}
-        />
-      </>}
+      {columnDragData && (
+        <>
+          <InsertIndicator ref={insertIndicator} />
+          <ColumnBearer
+            columnDragData={columnDragData}
+            gridModel={gridModel}
+            initialScrollPosition={
+              canvasRefs.current[scrollableCanvasIdx].current.scrollLeft
+            }
+            onDrag={handleColumnDrag}
+            onScroll={handleColumnBearerScroll}
+            ref={columnBearer}
+            rows={data.rows}
+          />
+        </>
+      )}
     </>
-
   );
 });
 

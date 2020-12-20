@@ -1,50 +1,54 @@
-import babel from 'rollup-plugin-babel'
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
-import filesize from 'rollup-plugin-filesize';
-import {terser} from 'rollup-plugin-terser';
+import babel from "rollup-plugin-babel";
+import resolve from "rollup-plugin-node-resolve";
+import commonjs from "rollup-plugin-commonjs";
+import filesize from "rollup-plugin-filesize";
+import { terser } from "rollup-plugin-terser";
+import { commonJsConfig } from "../../rollup/config";
 
-const isProd = process.env.BUILD === 'production';
+const isProd = process.env.BUILD === "production";
 
-export default [{
-    input: 'index.js',
+export default [
+  {
+    input: "index.js",
     output: {
-        dir: 'dist',
-        format: 'cjs',
-        sourcemap: true
+      dir: "dist",
+      format: "cjs",
+      sourcemap: true,
     },
     perf: false,
     preserveSymlinks: true,
     plugins: [
-        resolve({
-            extensions: ['.js', '.jsx']
-        }),
-        commonjs(),
-        babel({
-            babelrc: false,
-            exclude: 'node_modules/**',
-            "presets": [["@babel/react", {modules: false}]],
-            "plugins": ["@babel/plugin-proposal-optional-chaining","@babel/plugin-proposal-nullish-coalescing-operator"]
-        }),
-        //   ...(isProd ? [terser()] : []),
-          filesize()
+      resolve({
+        extensions: [".js", ".jsx"],
+      }),
+      commonjs(commonJsConfig),
+      babel({
+        babelrc: false,
+        exclude: "node_modules/**",
+        presets: [["@babel/react", { modules: false }]],
+        plugins: [
+          "@babel/plugin-proposal-optional-chaining",
+          "@babel/plugin-proposal-nullish-coalescing-operator",
+        ],
+      }),
+      //   ...(isProd ? [terser()] : []),
+      filesize(),
     ],
-    "external": [
-        "@heswell/data-source",
-        "@heswell/utils",
-        "classnames",
-        "react",
-        "react-dom",
-        "react-jss"
-    ]
-}, /* Just for Jest */{
-    input: 'index.jest.js',
+    external: [
+      "@heswell/data-source",
+      "@heswell/utils",
+      "classnames",
+      "react",
+      "react-dom",
+      "react-jss",
+    ],
+  },
+  /* Just for Jest */ {
+    input: "index.jest.js",
     output: {
-        file: 'tests/dist/index.js',
-        format: 'cjs'
+      file: "tests/dist/index.js",
+      format: "cjs",
     },
-    plugins: [
-        resolve(),
-        commonjs()
-    ]
-}];
+    plugins: [resolve(), commonjs(commonJsConfig)],
+  },
+];

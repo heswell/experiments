@@ -34,7 +34,7 @@ const Tabstrip = (props) => {
     title,
     value,
   } = props;
-  const [showOverflow, setShowOverflow] = useState(false);
+  const [showOverflow, setShowOverflow] = useState(true);
   const overflowButton = useRef(null);
   const innerContainer = useRef(null);
 
@@ -69,6 +69,7 @@ const Tabstrip = (props) => {
           onClick={handleOverflowClick}
           ref={overflowButton}
           show={showOverflow}
+          source={["Tab 1"]}
         />
       );
     }

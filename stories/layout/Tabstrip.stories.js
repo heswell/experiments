@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Flexbox, Tab, Tabstrip } from "@heswell/layout";
+import { ThemeProvider, theme } from "@heswell/toolkit-1.0";
 import "@heswell/layout/dist/index.css";
 import "../assets/OpenSans.css";
 import "../assets/ToolkitIcons.css";
@@ -7,6 +8,8 @@ import "../theme.css";
 import "./layout.css";
 import "./popup.css";
 import "./drop-menu.css";
+
+console.log({ ThemeProvider });
 
 export default {
   title: "Layout/Tabstrip",
@@ -53,31 +56,33 @@ export const Responsive = () => {
   console.log("%cTabstrip Example render", "color:red;font-weight: bold;");
 
   return (
-    <Flexbox
-      style={{
-        width: 600,
-        height: 300,
-        flexDirection: "row",
-        border: "solid 1px lightgrey",
-      }}
-    >
-      <Tabstrip
-        enableAddTab
-        resizeable
-        onAddTab={handleAddTab}
-        onChange={handleChange}
-        value={tabIndex}
+    <ThemeProvider theme={theme}>
+      <Flexbox
         style={{
-          flex: 1,
-          height: 32,
+          width: 600,
+          height: 300,
+          flexDirection: "row",
+          border: "solid 1px lightgrey",
         }}
       >
-        {tabs.map((label, i) => (
-          <Tab label={label} key={i} />
-        ))}
-      </Tabstrip>
-      <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
-    </Flexbox>
+        <Tabstrip
+          enableAddTab
+          resizeable
+          onAddTab={handleAddTab}
+          onChange={handleChange}
+          value={tabIndex}
+          style={{
+            flex: 1,
+            height: 32,
+          }}
+        >
+          {tabs.map((label, i) => (
+            <Tab label={label} key={i} />
+          ))}
+        </Tabstrip>
+        <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
+      </Flexbox>
+    </ThemeProvider>
   );
 };
 
@@ -111,15 +116,17 @@ const AddableTabs = (props) => {
 };
 
 export const Responsive2 = () => (
-  <Flexbox
-    style={{
-      width: 600,
-      height: 300,
-      flexDirection: "row",
-      border: "solid 1px lightgrey",
-    }}
-  >
-    <AddableTabs resizeable value={0} style={{ flex: 1, height: 32 }} />
-    <div data-resizeable style={{ width: 230, backgroundColor: "white" }} />
-  </Flexbox>
+  <ThemeProvider theme={theme}>
+    <Flexbox
+      style={{
+        width: 600,
+        height: 300,
+        flexDirection: "row",
+        border: "solid 1px lightgrey",
+      }}
+    >
+      <AddableTabs resizeable value={0} style={{ flex: 1, height: 32 }} />
+      <div data-resizeable style={{ width: 230, backgroundColor: "white" }} />
+    </Flexbox>
+  </ThemeProvider>
 );

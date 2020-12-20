@@ -1,30 +1,30 @@
 Arguments: 
-  /usr/local/bin/node /Users/steve/.yarn/bin/yarn.js add --dev -W @vbabel/core
+  /usr/local/Homebrew/Cellar/node@10/10.19.0/bin/node /usr/local/Homebrew/Cellar/yarn/1.22.4/libexec/bin/yarn.js
 
 PATH: 
-  /Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/Users/steve/.sdkman/candidates/java/current/bin:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build
+  /usr/local/Homebrew/opt/node@10/bin:/Users/R674775/bin:/usr/local/Homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 Yarn version: 
   1.22.4
 
 Node version: 
-  14.8.0
+  10.19.0
 
 Platform: 
   darwin x64
 
 Trace: 
-  Error: https://registry.npmjs.org/@vbabel%2fcore: Not found
-      at Request.params.callback [as _callback] (/Users/steve/.yarn/lib/cli.js:66987:18)
-      at Request.self.callback (/Users/steve/.yarn/lib/cli.js:140748:22)
-      at Request.emit (events.js:314:20)
-      at Request.<anonymous> (/Users/steve/.yarn/lib/cli.js:141720:10)
-      at Request.emit (events.js:314:20)
-      at IncomingMessage.<anonymous> (/Users/steve/.yarn/lib/cli.js:141642:12)
-      at Object.onceWrapper (events.js:420:28)
-      at IncomingMessage.emit (events.js:326:22)
-      at endReadableNT (_stream_readable.js:1244:12)
-      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+  Error: https://artifacts.jpmchase.net:443/artifactory/api/npm/npm/dygraphs: not_found
+      at Request.params.callback [as _callback] (/usr/local/Homebrew/Cellar/yarn/1.22.4/libexec/lib/cli.js:66987:18)
+      at Request.self.callback (/usr/local/Homebrew/Cellar/yarn/1.22.4/libexec/lib/cli.js:140748:22)
+      at Request.emit (events.js:198:13)
+      at Request.<anonymous> (/usr/local/Homebrew/Cellar/yarn/1.22.4/libexec/lib/cli.js:141720:10)
+      at Request.emit (events.js:198:13)
+      at IncomingMessage.<anonymous> (/usr/local/Homebrew/Cellar/yarn/1.22.4/libexec/lib/cli.js:141642:12)
+      at Object.onceWrapper (events.js:286:20)
+      at IncomingMessage.emit (events.js:203:15)
+      at endReadableNT (_stream_readable.js:1145:12)
+      at process._tickCallback (internal/process/next_tick.js:63:19)
 
 npm manifest: 
   {
@@ -33,24 +33,44 @@ npm manifest:
     "scripts": {
       "clean": "lerna run --parallel clean",
       "viewserver": "node --experimental-modules scripts/run-viewserver.mjs",
-      "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs"
+      "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs",
+      "storybook": "start-storybook -p 6006 -s ./stories/public",
+      "build-storybook": "build-storybook",
+      "docgen": "node ./scripts/docgen"
     },
     "workspaces": [
       "packages/*"
     ],
     "devDependencies": {
+      "@babel/core": "^7.11.4",
+      "@babel/plugin-proposal-nullish-coalescing-operator": "^7.10.4",
+      "@babel/plugin-proposal-optional-chaining": "^7.11.0",
+      "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+      "@babel/preset-react": "^7.10.4",
+      "@rollup/plugin-babel": "^5.2.1",
       "@rollup/plugin-wasm": "^3.0.0",
+      "@storybook/addon-actions": "^6.0.21",
+      "@storybook/addon-essentials": "^6.0.21",
+      "@storybook/addon-links": "^6.0.21",
+      "@storybook/react": "^6.0.21",
+      "babel-loader": "^8.1.0",
+      "prop-types": "^15.7.2",
+      "react-docgen": "^5.3.0",
+      "react-is": "^16.13.1",
+      "rollup": "1.29.0",
       "rollup-plugin-copy": "^3.3.0",
+      "rollup-plugin-visualizer": "^3.3.0",
+      "rollup-plugin-commonjs": "^10.1.0",
       "rollup-plugin-filesize": "^6.2.1",
-      "rollup-plugin-visualizer": "^3.3.1",
+      "rollup-plugin-terser": "^5.1.2",
       "source-map-loader": "^0.2.4"
     },
     "dependencies": {
+      "@finos/perspective": "^0.5.3",
       "classnames": "^2.2.6",
       "dygraphs": "^2.1.0",
       "global": "^4.4.0",
-      "material-design-icons": "^3.0.1",
-      "react-motion": "^0.5.2"
+      "material-design-icons": "^3.0.1"
     },
     "babel": {
       "presets": [

@@ -1,0 +1,45 @@
+{
+  "name": "@heswell/toolkit-1.0",
+  "version": "0.0.1",
+  "description": "Heswell Toolkit",
+  "main": "dist/index.js",
+  "module": "index.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "build": "rollup -c --environment BUILD:production"
+  },
+  "author": "heswell",
+  "license": "MIT",
+  "devDependencies": {
+    "postcss-import": "^12.0.1",
+    "prop-types": "^15.7.2",
+    "rollup": "1.29.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-postcss": "^2.0.3",
+    "rollup-plugin-terser": "^5.1.2"
+  },
+  "dependencies": {
+    "@material-ui/core": "4.10.2",
+    "compute-scroll-into-view": "1.0.16",
+    "react-jss": "10.1",
+    "react-popper": "2.2.3",
+    "react-window": "1.8.5",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "peerDependencies": {
+    "classnames": "^2.2.6",
+    "jss-plugin-cache": "^10.1.1",
+    "jss-plugin-camel-case": "^10.1.1",
+    "jss-plugin-default-unit": "^10.1.1",
+    "jss-plugin-nested": "^10.1.1",
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
+  },
+  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
+}

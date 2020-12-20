@@ -4,6 +4,17 @@ import commonjs from "rollup-plugin-commonjs";
 import filesize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
 
+import react from "react";
+import reactDom from "react-dom";
+
+const commonConfig = {
+  include: "node_modules/**",
+  namedExports: {
+    react: Object.keys(react),
+    "react-dom": Object.keys(reactDom),
+  },
+};
+
 const isProd = process.env.BUILD === "production";
 
 export default [
@@ -19,7 +30,7 @@ export default [
       resolve({
         extensions: [".js", ".jsx"],
       }),
-      commonjs(),
+      commonjs(commonConfig),
       babel({
         babelrc: false,
         exclude: "node_modules/**",
@@ -34,13 +45,5 @@ export default [
       ...(isProd ? [terser()] : []),
     ],
     external: ["react", "react-dom"],
-  },
-  /* Just for Jest */ {
-    input: "index.jest.js",
-    output: {
-      file: "tests/dist/index.js",
-      format: "cjs",
-    },
-    plugins: [resolve(), commonjs()],
   },
 ];
