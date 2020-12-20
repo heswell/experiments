@@ -1,9 +1,9 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import Splitter from "./Splitter";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
-import {getProp} from './utils';
+import { getProp } from "./utils";
 import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./Flexbox.css";
@@ -24,10 +24,17 @@ const useSizesRef = () => {
 
 const Flexbox = function Flexbox(inputProps) {
   const [props, dispatch, ref] = useLayout("Flexbox", inputProps);
-  const { children=[], className, layoutId: id, path, style } = props;
+  const { children = [], className, layoutId: id, path, style } = props;
   const isColumn = style.flexDirection === "column";
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";
+
+  useEffect(() => {
+    console.log("%c[Flexbox] mounted", "color:blue;font-weight: bold");
+    return () => {
+      console.log("%c[Flexbox] unmounted", "color:blue;font-weight: bold");
+    };
+  }, []);
 
   const handleDragStart = useCallback(() => {
     setSizes(() =>
@@ -55,7 +62,7 @@ const Flexbox = function Flexbox(inputProps) {
     dispatch({
       type: Action.SPLITTER_RESIZE,
       path,
-      sizes
+      sizes,
     });
   }, [clearSizes, dispatch, path, sizesRef]);
 
@@ -84,26 +91,21 @@ const Flexbox = function Flexbox(inputProps) {
       const dolly = React.cloneElement(child, {
         style: {
           ...child.props.style,
-          flexBasis: draggedSize
-        }
+          flexBasis: draggedSize,
+        },
       });
       list.push(dolly);
     } else {
       list.push(child);
     }
     // TODO we have to watch out for runtime changes to resizeable
-    if (getProp(child, 'resizeable') && getProp(arr[i + 1], 'resizeable')) {
+    if (getProp(child, "resizeable") && getProp(arr[i + 1], "resizeable")) {
       list.push(createSplitter(i));
     }
     return list;
   };
   return (
-    <div
-      className={cx("Flexbox", className)}
-      id={id}
-      ref={ref}
-      style={style}
-    >
+    <div className={cx("Flexbox", className)} id={id} ref={ref} style={style}>
       {children.reduce(injectSplitters, [])}
     </div>
   );
@@ -112,4 +114,4 @@ Flexbox.displayName = "Flexbox";
 
 export default Flexbox;
 
-registerComponent("Flexbox", Flexbox, 'container');
+registerComponent("Flexbox", Flexbox, "container");

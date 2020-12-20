@@ -1,0 +1,18 @@
+.AppHeader {
+  border-bottom: solid 1px var(--grey60);
+  box-shadow: var(--elevation2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.AppHeader .Logo {
+  position: absolute;
+  left: 12px;
+}
+
+.AppHeader .Tabstrip {
+  align-self: flex-end;
+  margin: 0 auto;
+}

@@ -1,9 +1,3 @@
-html,
-body {
-  margin: 0;
-  padding:0 !important;
-}
-
 :root {
   --background: white;
   --blue500: #2670a9;
@@ -18,6 +12,8 @@ body {
   --grey900: #161616;
 
   --orange700: #d65513;
+
+  --elevation2: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .root {

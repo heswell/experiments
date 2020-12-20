@@ -72,10 +72,12 @@ const useLayout = (layoutType, props, customDispatcher) => {
   ) {
     console.log("RECREATE _____ (useLayout regenerated layout structure)");
     children.current = props.children;
+    // TODO should be a call to the reducer
     state.current = applyLayout(
       layoutType,
       props,
-      dispatchLayoutAction.current
+      dispatchLayoutAction.current,
+      state.current
     );
   }
 

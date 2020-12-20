@@ -18,7 +18,8 @@ const Stack = (inputProps) => {
     keyBoardActivation = "automatic",
     onTabSelectionChanged,
     path,
-    style
+    showTabs,
+    style,
   } = props;
 
   const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
@@ -34,21 +35,21 @@ const Stack = (inputProps) => {
     const doomedChild = props.children[tabIndex];
     dispatch({
       type: Action.REMOVE,
-      path: doomedChild.props.path
+      path: doomedChild.props.path,
     });
   };
 
   const handleAddTab = (e, tabIndex) => {
     dispatch({
       type: Action.ADD,
-      component: <Component style={{ backgroundColor: "pink" }} />
+      component: <Component style={{ backgroundColor: "pink" }} />,
     });
   };
 
   function renderContent() {
     const {
       active = 0,
-      children: { [active]: child }
+      children: { [active]: child },
     } = props;
     return child;
   }
@@ -68,23 +69,25 @@ const Stack = (inputProps) => {
   return (
     <div className="Tabs" style={style} id={id} ref={ref}>
       <ViewContext.Provider value={{ dispatch: dispatchViewAction }}>
-        <Toolbar className="Header" draggable height={36} maxRows={1}>
-          <Tabstrip
-            enableAddTab={enableAddTab}
-            keyBoardActivation={keyBoardActivation}
-            onChange={handleTabSelection}
-            onAddTab={handleAddTab}
-            onDeleteTab={handleDeleteTab}
-            value={props.active || 0}
-          >
-            {renderTabs()}
-          </Tabstrip>
-          <Tooltray align="right">
-            <MinimizeIcon />
-            <MaximizeIcon />
-            <CloseIcon />
-          </Tooltray>
-        </Toolbar>
+        {showTabs ? (
+          <Toolbar className="Header" draggable height={36} maxRows={1}>
+            <Tabstrip
+              enableAddTab={enableAddTab}
+              keyBoardActivation={keyBoardActivation}
+              onChange={handleTabSelection}
+              onAddTab={handleAddTab}
+              onDeleteTab={handleDeleteTab}
+              value={props.active || 0}
+            >
+              {renderTabs()}
+            </Tabstrip>
+            <Tooltray align="right">
+              <MinimizeIcon />
+              <MaximizeIcon />
+              <CloseIcon />
+            </Tooltray>
+          </Toolbar>
+        ) : null}
         <TabPanel
           id={`${id}-${props.active || 0}-tab`}
           ariaLabelledBy={`${id}-${props.active || 0}`}
@@ -100,4 +103,4 @@ Stack.displayName = "Stack";
 
 export default Stack;
 
-registerComponent("Stack", Stack, 'container');
+registerComponent("Stack", Stack, "container");

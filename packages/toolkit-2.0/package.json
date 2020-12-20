@@ -1,0 +1,34 @@
+{
+  "name": "@heswell/toolkit-2.0",
+  "version": "0.0.1",
+  "description": "UI Toolkit 2.0",
+  "main": "dist/index.js",
+  "module": "index.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "build": "rollup -c --environment BUILD:production"
+  },
+  "author": "heswell",
+  "license": "MIT",
+  "devDependencies": {
+    "postcss-import": "^12.0.1",
+    "prop-types": "^15.7.2",
+    "rollup": "1.29.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-postcss": "^2.0.3",
+    "rollup-plugin-terser": "^5.1.2"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "classnames": "^2.2.6",
+    "react": "16.13.1",
+    "react-dom": "16.13.1"
+  },
+  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
+}

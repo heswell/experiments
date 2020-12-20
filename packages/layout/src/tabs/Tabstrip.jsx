@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import useTabstrip from "./useTabstrip";
 import useOverflowObserver from "../responsive/useOverflowObserver";
@@ -42,9 +42,18 @@ const Tabstrip = (props) => {
     setShowOverflow((show) => !show);
   };
 
+  console.log("%c[Tabstrip] render", "color:green;font-weight: bold");
+
+  useEffect(() => {
+    console.log("%c[Tabstrip] mounted", "color:blue;font-weight: bold");
+    return () => {
+      console.log("%c[Tabstrip] unmounted", "color:blue;font-weight: bold");
+    };
+  }, []);
+
   const renderContent = () => {
     const tabs = [
-      <div className="row-pillar" key="spacer" style={{ height: 32 }} />,
+      <div className="row-pillar" key="spacer" style={{ height: 36 }} />,
     ];
 
     React.Children.toArray(children).forEach((child, index) => {
@@ -96,7 +105,7 @@ const Tabstrip = (props) => {
       <div
         className="Tabstrip-inner"
         ref={innerContainer}
-        style={{ lineHeight: "32px" }}
+        style={{ lineHeight: "36px" }}
       >
         {renderContent()}
       </div>

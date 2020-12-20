@@ -1,6 +1,6 @@
 import React from "react";
 import { uuid } from "@heswell/utils";
-import { expandFlex, typeOf } from "./utils";
+import { expandFlex, getProps, typeOf } from "./utils";
 import {
   ComponentRegistry,
   isContainer,
@@ -13,15 +13,27 @@ export const getManagedDimension = (style) =>
 const theKidHasNoStyle = {};
 
 export const applyLayoutProps = (component, dispatch) => {
-  return getLayoutChild(component, dispatch, "0");
+  const [layoutProps, children] = getChildLayoutProps(
+    typeOf(component),
+    component.props,
+    dispatch,
+    `0`
+  );
+  return React.cloneElement(component, layoutProps, children);
 };
 
-export const applyLayout = (type, props, dispatch) => {
+export const applyLayout = (type, props, dispatch, previousLayout) => {
   if (props.layout) {
     return layoutFromJson(props.layout, dispatch, "0");
   } else {
-    const layoutProps = getLayoutProps(type, props, dispatch, "0");
-    const children = getLayoutChildren(type, props.children, dispatch, "0");
+    const [layoutProps, children] = getChildLayoutProps(
+      type,
+      props,
+      dispatch,
+      "0",
+      undefined,
+      previousLayout
+    );
     return {
       ...props,
       ...layoutProps,
@@ -31,9 +43,26 @@ export const applyLayout = (type, props, dispatch) => {
   }
 };
 
-function getLayoutProps(type, props, dispatch, path = "0", parentType = null) {
+function getLayoutProps(
+  type,
+  props,
+  dispatch,
+  path = "0",
+  parentType = null,
+  previousLayout
+) {
   const isNativeElement = type[0].match(/[a-z]/);
-  const id = uuid();
+  const { layoutId, path: prevPath, id: prevId = layoutId } = getProps(
+    previousLayout
+  );
+  // console.log(
+  //   `getLayoutProps "${path}" ${type} ["${prevPath}" ${typeOf(
+  //     previousLayout
+  //   )} ${prevId}]`
+  // );
+  const prevMatch = typeOf(previousLayout) === type && path === prevPath;
+  // TODO is there anything else we can re-use from previousType ?
+  const id = prevMatch ? prevId : uuid();
   const key = id;
   const style = getStyle(type, props, parentType);
   return isNativeElement
@@ -41,23 +70,53 @@ function getLayoutProps(type, props, dispatch, path = "0", parentType = null) {
     : { layoutId: id, key, dispatch, path, style, type };
 }
 
-function getLayoutChildren(type, children, dispatch, path = "0") {
-  return isContainer(type) || isView(type)
-    ? React.Children.map(children, (child, i) =>
-        getLayoutChild(child, dispatch, `${path}.${i}`, type)
-      )
-    : children;
+function getChildLayoutProps(
+  type,
+  props,
+  dispatch,
+  path,
+  parentType,
+  previousLayout
+) {
+  const layoutProps = getLayoutProps(
+    type,
+    props,
+    dispatch,
+    path,
+    parentType,
+    previousLayout
+  );
+  const children = getLayoutChildren(
+    type,
+    props.children,
+    dispatch,
+    path,
+    previousLayout?.children ?? previousLayout?.props?.children
+  );
+  return [layoutProps, children];
 }
 
-const getLayoutChild = (child, dispatch, path = "0", parentType = null) => {
-  const { children } = child.props;
-  const type = typeOf(child);
-  return React.cloneElement(
-    child,
-    getLayoutProps(type, child.props, dispatch, path, parentType),
-    getLayoutChildren(type, children, dispatch, path)
-  );
-};
+function getLayoutChildren(
+  type,
+  children,
+  dispatch,
+  path = "0",
+  previousChildren
+) {
+  return isContainer(type) || isView(type)
+    ? React.Children.map(children, (child, i) => {
+        const [layoutProps, children] = getChildLayoutProps(
+          typeOf(child),
+          child.props,
+          dispatch,
+          `${path}.${i}`,
+          type,
+          previousChildren?.[i]
+        );
+        return React.cloneElement(child, layoutProps, children);
+      })
+    : children;
+}
 
 const getStyle = (type, props, parentType) => {
   let { style = theKidHasNoStyle } = props;
