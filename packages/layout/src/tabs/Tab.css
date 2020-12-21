@@ -16,6 +16,15 @@
   position: relative;
 }
 
+/* override a Storybook sttle */
+.Tab.button + .Tab.button {
+  margin-left: 0;
+}
+
+.Tabstrip .Tab {
+  margin: 0 8px 0 0;
+}
+
 .Tab[data-hidden] {
   order: 99;
 }

@@ -13,10 +13,10 @@ import useStyles from "./style";
  * Renders a basic dropdown with selectable item
  */
 const Dropdown = forwardRef(function Dropdown(props, ref) {
-  const { className, children, PopperProps } = props;
+  const { className, PopperProps, ...restProps } = props;
   const classes = useStyles();
   const { rootProps, buttonProps, listContext, listProps } = useDropdown(
-    props,
+    restProps,
     classes
   );
 
@@ -51,8 +51,8 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
       ref={useForkRef(rootRef, ref)}
       {...restRootProps}
     >
-      {children ? (
-        children({
+      {props.children ? (
+        props.children({
           DropdownButtonProps: buttonProps,
           isOpen,
           itemToString: listProps.itemToString,

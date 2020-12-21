@@ -4,12 +4,11 @@ import { ThemeProvider, theme } from "@heswell/toolkit-1.0";
 import "@heswell/layout/dist/index.css";
 import "../assets/OpenSans.css";
 import "../assets/ToolkitIcons.css";
+import "../characteristics.css";
 import "../theme.css";
 import "./layout.css";
 import "./popup.css";
 import "./drop-menu.css";
-
-console.log({ ThemeProvider });
 
 export default {
   title: "Layout/Tabstrip",
@@ -73,7 +72,6 @@ export const Responsive = () => {
           value={tabIndex}
           style={{
             flex: 1,
-            height: 32,
           }}
         >
           {tabs.map((label, i) => (
@@ -125,7 +123,7 @@ export const Responsive2 = () => (
         border: "solid 1px lightgrey",
       }}
     >
-      <AddableTabs resizeable value={0} style={{ flex: 1, height: 32 }} />
+      <AddableTabs resizeable value={0} style={{ flex: 1 }} />
       <div data-resizeable style={{ width: 230, backgroundColor: "white" }} />
     </Flexbox>
   </ThemeProvider>

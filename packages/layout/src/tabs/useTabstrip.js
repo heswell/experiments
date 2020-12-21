@@ -109,6 +109,7 @@ export default function useTabstrip(
   };
 
   return {
+    activateTab,
     tabProps: {
       onClick: handleClick,
       onDelete: handleDeleteTab,

@@ -39,9 +39,11 @@ export default {
   ],
   external: [
     "@heswell/toolkit-1.0",
+    "@heswell/toolkit-2.0",
     "@heswell/utils",
     "classnames",
     "react",
     "react-dom",
+    "react-jss",
   ],
 };

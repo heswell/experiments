@@ -134,7 +134,7 @@ export default createUseStyles(
       root: {
         borderRadius: 0,
         appearance: "none",
-        minWidth: 0,
+        minWidth: "0 !important",
         minHeight: 0,
         display: "inline-block",
         position: "relative",
@@ -157,5 +157,5 @@ export default createUseStyles(
       },
     };
   },
-  { name: "Button", index: 4 }
+  { name: "Button", index: 5 }
 );

@@ -3,7 +3,7 @@
   box-sizing: border-box;
   height: 36px;
   position: relative;
-  /* overflow: hidden; */
+  overflow: hidden;
   display: flex;
 }
 

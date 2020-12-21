@@ -1,10 +1,5 @@
 // TODO close button needs to be a butotn. Hence tab needs to include 2 buttons
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  useState
-} from "react";
+import React, { forwardRef, useRef, useState } from "react";
 import cx from "classnames";
 import { useForkRef } from "../utils";
 import { CloseIcon } from "../icons";
@@ -41,11 +36,6 @@ const Tab = forwardRef(
     const setRef = useForkRef(ref, root);
     const [closeHover, setCloseHover] = useState(false);
     const dispatchViewAction = useViewAction();
-
-    useImperativeHandle(ref, () => ({
-      focus: () => root.current.focus(),
-      measure: () => root.current.getBoundingClientRect()
-    }));
 
     const handleClick = (e) => {
       e.preventDefault();

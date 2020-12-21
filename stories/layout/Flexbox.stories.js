@@ -329,6 +329,7 @@ export const ComplexNestedLayout = () => (
           <Stack
             enableAddTab
             resizeable
+            showTabs
             style={{ flex: 1 }}
             keyBoardActivation="manual"
           >

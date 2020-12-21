@@ -1,0 +1,7 @@
+:root {
+  --size-stackable-base: 12px;
+  --size-stackable-touch: calc(var(--size-stackable-base) * 5);
+  --size-stackable-low: calc(var(--size-stackable-base) * 4);
+  --size-stackable-medium: calc (var(--size-stackable-base) * 3);
+  --size-stackable-high: calc(var(--size-stackable-base) * 2);
+}

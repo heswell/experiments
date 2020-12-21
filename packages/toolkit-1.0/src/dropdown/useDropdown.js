@@ -303,9 +303,9 @@ export function useDropdown(props = {}, classes, isMultiSelect = false) {
     ...restButtonProps,
     ...a11yProps,
   };
-
   return {
     rootProps: {
+      ...rest,
       "aria-expanded": undefined,
       "aria-haspopup": undefined,
       "aria-labelledby": undefined,

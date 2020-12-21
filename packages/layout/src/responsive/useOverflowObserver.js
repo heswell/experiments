@@ -5,32 +5,35 @@ const HEIGHT_WIDTH = ["height", "width"];
 
 const addAll = (sum, m) => sum + m.width;
 
+const lastItem = (arr) => arr[arr.length - 1];
+
 const moveOverflowItem = (fromStack, toStack) => {
-  const item = fromStack.current.pop();
-  toStack.current.push(item);
+  const item = lastItem(fromStack.current);
+  fromStack.current = fromStack.current.slice(0, -1);
+  toStack.current = toStack.current.concat(item);
   return item;
 };
 
-// User should pass children if items can be added and removed
-// after initial render. If the items list is static, there is
-// no need.
-export default function useOverflowObserver(ref, children = []) {
+// value could be anything which might require a re-evaluation. In the case of tabs
+// we might have selected an overflowed tab. Can we make this more efficient, only
+// needs action if an overflowed item re-enters the visible section
+export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
   const [overflowing, setOverflowing] = useState(false);
-  const visibleRef = useRef(null);
-  const overflowedRef = useRef(null);
+  const [, forceUpdate] = useState();
+  const visibleRef = useRef([]);
+  const overflowedRef = useRef([]);
   const width = useRef(null);
+  const count = ref.current?.childNodes.length ?? 0;
 
   const manageReducedWidth = useCallback(
     (visibleContentWidth, containerWidth) => {
-      const overflow = overflowedRef.current;
       while (visibleContentWidth > containerWidth) {
         const { index, width } = moveOverflowItem(visibleRef, overflowedRef);
         visibleContentWidth -= width;
         const target = ref.current.querySelector(`[data-index='${index}']`);
         target.dataset.hidden = true;
       }
-
-      if (!overflowing && overflow.length > 0) {
+      if (!overflowing && overflowedRef.current.length > 0) {
         setOverflowing(true);
       }
     },
@@ -50,7 +53,7 @@ export default function useOverflowObserver(ref, children = []) {
         delete target.dataset.hidden;
       }
 
-      if (overflowing && overflow.length === 0) {
+      if (overflowing && overflowedRef.current.length === 0) {
         setOverflowing(false);
       }
     },
@@ -60,7 +63,7 @@ export default function useOverflowObserver(ref, children = []) {
   const resizeHandler = useCallback(
     ({ width: containerWidth }) => {
       let renderedWidth = visibleRef.current.reduce(addAll, 0);
-      if (containerWidth < width.current) {
+      if (containerWidth < renderedWidth) {
         manageReducedWidth(renderedWidth, containerWidth);
         // Note: we only need to register listener for width once we have overflow, which
         // can be driven by height change
@@ -73,32 +76,38 @@ export default function useOverflowObserver(ref, children = []) {
   );
 
   const resetMeasurements = useCallback(() => {
-    const start = performance.now();
     const [measurements, containerHeight, containerWidth] = measureChildren(
       ref
     );
     width.current = containerWidth;
-    const end = performance.now();
-    console.log(`measurements took ${end - start}ms`);
     visibleRef.current = measurements;
     overflowedRef.current = [];
-    if (containerHeight > 32) {
+    if (containerHeight > rootHeight) {
       let renderedWidth = visibleRef.current.reduce(addAll, 0);
       manageReducedWidth(renderedWidth, containerWidth);
     }
-  }, [ref]);
+  }, [ref, manageReducedWidth]);
 
+  // Measurement occurs post-render, by necessity, need to trigger a render
   useLayoutEffect(() => {
     async function measure() {
       await document.fonts.ready;
       resetMeasurements();
     }
     measure();
-  }, [ref, children.length]);
+  }, [ref, count, resetMeasurements]);
+
+  useLayoutEffect(() => {
+    // if the value is currently overflowed,we need to reset
+    if (overflowedRef.current.find((item) => item.index === selectedIndex)) {
+      resetMeasurements();
+      forceUpdate({});
+    }
+  }, [selectedIndex, resetMeasurements]);
 
   useResizeObserver(ref, HEIGHT_WIDTH, resizeHandler);
 
-  return overflowing;
+  return overflowedRef.current;
 }
 
 const byDescendingPriority = (m1, m2) => {
@@ -117,9 +126,13 @@ const measureChildren = (ref) => {
     const { index, priority = "1" } = node?.dataset ?? NO_DATA;
     if (index) {
       const width = measureWidth(node);
+      if (node.dataset?.hidden) {
+        delete node.dataset.hidden;
+      }
       list.push({
         index: parseInt(index, 10),
         priority: parseInt(priority, 10),
+        label: node.innerText,
         width,
       });
     }

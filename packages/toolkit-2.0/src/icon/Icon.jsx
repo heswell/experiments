@@ -1,15 +1,15 @@
-import React, { forwardRef, useContext } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import React, { forwardRef } from "react";
+import PropTypes from "prop-types";
+import classnames from "classnames";
 
 import "./Icon.css";
 
-const sizes = ['small', 'medium', 'large'];
+const sizes = ["small", "medium", "large"];
 
 // get the string passed as either the new accessibleText prop or
 // as human readable name of the icon
 const getAccessibleString = (accessibleText, name) => {
-  if (typeof accessibleText === 'boolean') {
+  if (typeof accessibleText === "boolean") {
     if (accessibleText) {
       return name;
     }
@@ -32,62 +32,34 @@ const getAccessibleText = (accessibleText, brand, name) => {
 getAccessibleText.propTypes = {
   accessibleText: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   brand: PropTypes.string,
-  name: PropTypes.string
+  name: PropTypes.string,
 };
-
-// returns the style tag for character code
-const getIconCharStyle = (brand, name, iconStyleName) => {
-  if (icon[iconStyleName]) {
-    return (
-      <style>
-        {`.${brand}-icon-${name}:before { content: ${icon[iconStyleName]['&:before'].content}}`}
-      </style>
-    );
-  }
-};
-
-getIconCharStyle.propTypes = {
-  brand: PropTypes.string,
-  name: PropTypes.string
-};
-
-function capitalize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 const Icon = forwardRef(function Icon(
   {
     accessibleText,
-    brand = 'jpmuitk',
+    brand = "jpmuitk",
     className,
     classes,
     name,
-    onClick,
-    size: sizeProp = 'small',
+    size: sizeProp = "small",
     ...rest
   },
   ref
 ) {
   const isSize = sizes.indexOf(sizeProp) !== -1;
 
-  // this looks strange but seemed to be the easiest way to achieve the firstUpper
-//   const iconStyleName = `Icon${name
-//     .split('-')
-//     .map(part => capitalize(part))
-//     .join('')}`;
   return (
     <span
       className={classnames(
-        "Icon",  
+        "Icon",
         `${brand}-wrap-icon`,
         className,
-        isSize && sizeProp,
+        isSize && sizeProp
       )}
-      onClick={onClick}
       {...rest}
       ref={ref}
     >
-      {/* {getIconCharStyle(brand, name, iconStyleName)} */}
       <span
         aria-hidden="true"
         className={classnames(`${brand}-icon-${name}`, "Icon-content")}
@@ -130,7 +102,7 @@ Icon.propTypes = {
   /**
    * Size of the icon, explicit size or small/medium/large
    */
-  size: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf(sizes)])
+  size: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf(sizes)]),
 };
 
 export default Icon;

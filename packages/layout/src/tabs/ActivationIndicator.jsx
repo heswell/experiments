@@ -1,14 +1,15 @@
-import React, {useRef} from 'react';
+import React, { useRef } from "react";
 import useActivationIndicator from "./useActivationIndicator";
 
-const ActivationIndicator = ({tabRefs, value}) => {
-    const rootRef = useRef(null);
-    const style = useActivationIndicator(value, rootRef, tabRefs);
-    return (
-      <div className="ActiveIndicator-container" ref={rootRef}>
-        <div className="ActiveIndicator"  style={style} />
-      </div>
-    )
-  }
+const ActivationIndicator = ({ tabRef }) => {
+  const rootRef = useRef(null);
+  const style = useActivationIndicator(rootRef, tabRef);
 
-  export default ActivationIndicator;
+  return (
+    <div className="ActiveIndicator-container" ref={rootRef}>
+      <div className="ActiveIndicator" style={style} />
+    </div>
+  );
+};
+
+export default ActivationIndicator;

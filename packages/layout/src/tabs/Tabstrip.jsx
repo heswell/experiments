@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import cx from "classnames";
+import { Icon } from "@heswell/toolkit-2.0";
 import useTabstrip from "./useTabstrip";
 import useOverflowObserver from "../responsive/useOverflowObserver";
 import ActivationIndicator from "./ActivationIndicator";
 import OverflowMenu from "../responsive/OverflowMenu";
 import Button from "../button/Button";
-import Icon from "../icon/Icon";
 
 import "./Tabstrip.css";
 
@@ -24,7 +24,7 @@ const AddTabButton = ({ className, title, ...props }) => {
 
 const Tabstrip = (props) => {
   const root = useRef(null);
-  const { tabProps, tabRefs } = useTabstrip(props, root);
+  const { tabProps, tabRefs, activateTab } = useTabstrip(props, root);
   const {
     children,
     enableAddTab,
@@ -34,22 +34,21 @@ const Tabstrip = (props) => {
     title,
     value,
   } = props;
-  const [showOverflow, setShowOverflow] = useState(true);
+
   const overflowButton = useRef(null);
   const innerContainer = useRef(null);
 
-  const handleOverflowClick = () => {
-    setShowOverflow((show) => !show);
+  const rootHeight = 36;
+  const overflowedItems = useOverflowObserver(
+    innerContainer,
+    rootHeight,
+    value
+  );
+
+  const handleOverflowChange = (e, tab) => {
+    console.log("activate Tab ${tab.index}");
+    activateTab(e, tab.index);
   };
-
-  console.log("%c[Tabstrip] render", "color:green;font-weight: bold");
-
-  useEffect(() => {
-    console.log("%c[Tabstrip] mounted", "color:blue;font-weight: bold");
-    return () => {
-      console.log("%c[Tabstrip] unmounted", "color:blue;font-weight: bold");
-    };
-  }, []);
 
   const renderContent = () => {
     const tabs = [
@@ -57,37 +56,35 @@ const Tabstrip = (props) => {
     ];
 
     React.Children.toArray(children).forEach((child, index) => {
+      const selected = index === value;
       tabs.push(
         React.cloneElement(child, {
           index,
           ...tabProps,
           "data-index": index,
-          "data-priority": 2,
+          "data-priority": selected ? 0 : 2,
           ref: tabRefs[index],
-          selected: index === value,
+          selected,
         })
       );
     });
 
-    if (overflowing) {
-      tabs.push(
-        <OverflowMenu
-          data-priority={1}
-          data-index={tabs.length}
-          key="overflow"
-          onClick={handleOverflowClick}
-          ref={overflowButton}
-          show={showOverflow}
-          source={["Tab 1"]}
-        />
-      );
-    }
+    tabs.push(
+      <OverflowMenu
+        data-priority={1}
+        data-index={tabs.length - 1}
+        key="overflow"
+        onChange={handleOverflowChange}
+        ref={overflowButton}
+        source={overflowedItems}
+      />
+    );
 
     if (enableAddTab) {
       tabs.push(
         <AddTabButton
           data-priority={1}
-          data-index={tabs.length}
+          data-index={tabs.length - 1}
           key="add"
           onClick={onAddTab}
           title={title}
@@ -97,8 +94,6 @@ const Tabstrip = (props) => {
 
     return tabs;
   };
-
-  const overflowing = useOverflowObserver(innerContainer, children);
 
   return (
     <div className={cx("Tabstrip")} ref={root} role="tablist" style={style}>
@@ -110,7 +105,7 @@ const Tabstrip = (props) => {
         {renderContent()}
       </div>
       {showActivationIndicator ? (
-        <ActivationIndicator tabRefs={tabRefs} value={value} />
+        <ActivationIndicator tabRef={tabRefs[value]} />
       ) : null}
     </div>
   );
