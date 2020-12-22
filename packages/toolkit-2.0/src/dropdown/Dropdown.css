@@ -1,0 +1,21 @@
+.Dropdown {
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  line-height: 0;
+}
+
+.Dropdown-disabled {
+}
+
+.Dropdown-fullwidth {
+}
+
+.Dropdown-touchDensity {
+}
+.Dropdown-lowDensity {
+}
+.Dropdown-mediumDensity {
+}
+.Dropdown-highDensity {
+}

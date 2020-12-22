@@ -1,6 +1,8 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useContext } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
+
+import IconClassNameContext from "./IconClassNameContext";
 
 import "./Icon.css";
 
@@ -48,6 +50,7 @@ const Icon = forwardRef(function Icon(
   ref
 ) {
   const isSize = sizes.indexOf(sizeProp) !== -1;
+  const classNameFromContext = useContext(IconClassNameContext);
 
   return (
     <span
@@ -55,7 +58,8 @@ const Icon = forwardRef(function Icon(
         "Icon",
         `${brand}-wrap-icon`,
         className,
-        isSize && sizeProp
+        isSize && sizeProp,
+        classNameFromContext
       )}
       {...rest}
       ref={ref}

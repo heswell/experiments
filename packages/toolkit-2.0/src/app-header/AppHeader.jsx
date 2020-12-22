@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import cx from "classnames";
-import { Logo } from "@heswell/toolkit-1.0";
+import { Logo } from "../logo";
 
 import "./AppHeader.css";
 

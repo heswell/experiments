@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
 import cx from "classnames";
-import { Button, Dropdown, Icon } from "@heswell/toolkit-1.0";
+import { Dropdown } from "@heswell/toolkit-1.0";
+import { Button, Icon } from "@heswell/toolkit-2.0";
 // Just until we get rid of toolkit 1.0
 import useStyles from "./TabsStyle";
 

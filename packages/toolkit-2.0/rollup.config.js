@@ -5,6 +5,8 @@ import commonjs from "rollup-plugin-commonjs";
 import filesize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
 import atImport from "postcss-import";
+import visualizer from "rollup-plugin-visualizer";
+
 import { commonJsConfig } from "../../rollup/config";
 
 const isProd = process.env.BUILD === "production";
@@ -34,6 +36,7 @@ export default {
     }),
     filesize(),
     ...(isProd ? [terser()] : []),
+    visualizer(),
   ],
   external: ["classnames", "react", "react-dom"],
 };

@@ -2,3 +2,4 @@
 lerna-debug.log
 dist
 storybook-static
+stats.html

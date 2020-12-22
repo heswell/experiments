@@ -1,16 +1,9 @@
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-}
-
 .App {
   position: absolute;
-  top:0;
-  left:0;
+  top: 0;
+  left: 0;
   right: 32px;
-  bottom:0;
+  bottom: 0;
   background-color: cornsilk;
   padding: 12px;
   display: flex;
@@ -46,9 +39,9 @@ body {
 }
 
 .leggy-form .control {
-  background-color: inherit;;
+  background-color: inherit;
 }
 
 .field-label ~ .field div.empty {
-  background-color: rgba(0,0,0,.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }

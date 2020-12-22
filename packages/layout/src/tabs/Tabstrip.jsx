@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import cx from "classnames";
-import { Icon } from "@heswell/toolkit-2.0";
+import { Button, Icon } from "@heswell/toolkit-2.0";
 import useTabstrip from "./useTabstrip";
 import useOverflowObserver from "../responsive/useOverflowObserver";
 import ActivationIndicator from "./ActivationIndicator";
 import OverflowMenu from "../responsive/OverflowMenu";
-import Button from "../button/Button";
 
 import "./Tabstrip.css";
 

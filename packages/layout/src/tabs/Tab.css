@@ -7,8 +7,8 @@
   color: var(--grey400);
   cursor: pointer;
   display: inline-flex;
-  font-family: OpenSans-Regular;
-  font-weight: 500;
+  font-family: jpmuitk-sans;
+  font-weight: 400;
   font-size: 12px;
   /* TODO no margin after last tab*/
   margin-right: 8px;
@@ -47,7 +47,8 @@
 
 .Tab.selected {
   color: var(--grey900);
-  font-family: OpenSans-SemiBold;
+  font-family: jpmuitk-sans;
+  font-weight: 700;
 }
 
 .Tab:focus {

@@ -1,0 +1,24 @@
+.List {
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.List:not(.List-borderless) {
+  background: #ffffff;
+  border-color: #c5c9d0;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0;
+}
+.List:focus {
+  outline: none;
+}
+.List-wrapper {
+  position: relative;
+}
+.List-borderless {
+  border: none;
+}
+.List-disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
