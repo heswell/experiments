@@ -38,7 +38,6 @@ export default {
     visualizer(),
   ],
   external: [
-    "@heswell/toolkit-1.0",
     "@heswell/toolkit-2.0",
     "@heswell/utils",
     "classnames",

@@ -25,7 +25,7 @@
   margin: 0 8px 0 0;
 }
 
-.Tab[data-hidden] {
+.Tab[data-overflowed] {
   order: 99;
 }
 
@@ -104,5 +104,5 @@
   content: attr(data-text);
   display: block;
   visibility: hidden;
-  font-family: OpenSans-SemiBold;
+  font-weight: 700;
 }

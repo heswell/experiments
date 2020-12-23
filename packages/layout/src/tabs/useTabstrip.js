@@ -25,7 +25,13 @@ export default function useTabstrip(
   const vertical = orientation === "vertical";
 
   function focusTab(tabIndex) {
-    tabs[tabIndex].current.focus();
+    const tab = tabs[tabIndex].current;
+    // The timeout is very important in one scenario: where tab has overflowed
+    // and is being selected from overflow menu. We must not focus it until the
+    // overflow mechanism + render has restored it to the main display.
+    setTimeout(() => {
+      tab.focus();
+    }, 70);
   }
 
   function activateTab(e, tabIndex) {
@@ -39,10 +45,16 @@ export default function useTabstrip(
     if (direction[key] !== undefined) {
       e.preventDefault();
       let newTabIndex;
-      if (tabs[tabIndex + direction[key]]) {
+      const tab = tabs[tabIndex + direction[key]];
+      if (tab && !tab.current.dataset.overflowed) {
         newTabIndex = tabIndex + direction[key];
       } else if (key === "ArrowLeft" || key === "ArrowUp") {
         newTabIndex = tabs.length - 1;
+        let tab = tabs[newTabIndex].current;
+        while (tab.dataset.overflowed && newTabIndex !== tabIndex) {
+          newTabIndex -= 1;
+          tab = tabs[newTabIndex].current;
+        }
       } else if (key === "ArrowRight" || key === "ArrowDown") {
         newTabIndex = 0;
       }

@@ -36,13 +36,16 @@ export default function useResizeObserver(ref, dimensions, onResize) {
   useEffect(() => {
     async function registerObserver() {
       const target = ref.current;
+      // Create the map entry immediately. useEffect may fire below
+      // before fonts are ready and attempt to update entry
+      observedMap.set(target, { onResize, measurements: [] });
       await document.fonts.ready;
       const rect = target.getBoundingClientRect();
       const measurements = dimensionsRef.current.reduce(
         (map, dim) => ((map[dim] = rect[dim]), map),
         {}
       );
-      observedMap.set(target, { onResize, measurements });
+      observedMap.get(target).measurements = measurements;
       resizeObserver.observe(target);
     }
 
@@ -70,9 +73,6 @@ export default function useResizeObserver(ref, dimensions, onResize) {
     if (record) {
       //TODO check for pending entry
       //TODO 'unregister' dimensions thta have disapeared from prop
-      console.log(
-        "initialize the measurements that we are interested in, if we haven't already registered them"
-      );
       for (let dimension of dimensions) {
         if (record.measurements[dimension] === undefined) {
           record.measurements[dimension] = 0;

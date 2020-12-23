@@ -25,7 +25,7 @@ export default function useOverflowObserver(ref) {
         const { index, width } = moveOverflowItem(visibleRef, overflowedRef);
         visibleContentWidth -= width;
         const target = ref.current.querySelector(`[data-index='${index}']`);
-        target.dataset.hidden = true;
+        target.dataset.overflowed = true;
       }
 
       if (!overflowing && overflow.length > 0) {
@@ -45,7 +45,7 @@ export default function useOverflowObserver(ref) {
         const { index, width } = moveOverflowItem(overflowedRef, visibleRef);
         visibleContentWidth += width;
         const target = ref.current.querySelector(`[data-index='${index}']`);
-        delete target.dataset.hidden;
+        delete target.dataset.overflowed;
       }
 
       if (overflowing && overflow.length === 0) {

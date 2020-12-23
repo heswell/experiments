@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useRef } from "react";
 import cx from "classnames";
 import { Button, Icon } from "@heswell/toolkit-2.0";
 import useTabstrip from "./useTabstrip";
@@ -23,6 +23,18 @@ const AddTabButton = ({ className, title, ...props }) => {
 
 const Tabstrip = (props) => {
   const root = useRef(null);
+  const overflowButton = useRef(null);
+  const innerContainer = useRef(null);
+  //TODO useTabs should have no knkwledge of overflowing. useOverflowObserver
+  // should return  alist of visible tabs and these should be managed by
+  // useTabstrip
+  const rootHeight = 36; // TODO read from Theme
+  const overflowedItems = useOverflowObserver(
+    innerContainer,
+    rootHeight,
+    value
+  );
+
   const { tabProps, tabRefs, activateTab } = useTabstrip(props, root);
   const {
     children,
@@ -34,18 +46,7 @@ const Tabstrip = (props) => {
     value,
   } = props;
 
-  const overflowButton = useRef(null);
-  const innerContainer = useRef(null);
-
-  const rootHeight = 36;
-  const overflowedItems = useOverflowObserver(
-    innerContainer,
-    rootHeight,
-    value
-  );
-
   const handleOverflowChange = (e, tab) => {
-    console.log("activate Tab ${tab.index}");
     activateTab(e, tab.index);
   };
 
@@ -72,6 +73,7 @@ const Tabstrip = (props) => {
       <OverflowMenu
         data-priority={1}
         data-index={tabs.length - 1}
+        data-overflow-indicator
         key="overflow"
         onChange={handleOverflowChange}
         ref={overflowButton}
