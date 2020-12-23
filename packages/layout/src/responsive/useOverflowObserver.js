@@ -5,7 +5,7 @@ const HEIGHT_WIDTH = ["height", "width"];
 
 const addAll = (sum, m) => sum + m.width;
 const addAllExceptOverflowIndicator = (sum, m) =>
-  sum + m.isOverflowIndicator ? 0 : m.width;
+  sum + (m.isOverflowIndicator ? 0 : m.width);
 
 const lastItem = (arr) => arr[arr.length - 1];
 
@@ -20,17 +20,12 @@ const moveOverflowItem = (fromStack, toStack) => {
 // we might have selected an overflowed tab. Can we make this more efficient, only
 // needs action if an overflowed item re-enters the visible section
 export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
-  const [overflowing, _setOverflowing] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
   const [, forceUpdate] = useState();
   const visibleRef = useRef([]);
   const overflowedRef = useRef([]);
   const width = useRef(null);
   const count = ref.current?.childNodes.length ?? 0;
-
-  const { current: setOverflowing } = useRef((value) => {
-    console.log(`%csetOverflowing = ${value}`, "color:red");
-    _setOverflowing(value);
-  });
 
   const markOverflowingItems = useCallback(
     (visibleContentWidth, containerWidth) => {
@@ -41,9 +36,6 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
         target.dataset.overflowed = true;
       }
       if (!overflowing && overflowedRef.current.length > 0) {
-        console.log(
-          `managed reduced width already overflowing = ${overflowing}`
-        );
         setOverflowing(true);
       }
     },
@@ -60,13 +52,27 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
       const overflow = overflowedRef.current;
       const { width: nextWidth } = overflow[overflow.length - 1];
 
+      console.log(
+        ` ... removeOverflowIfSpaceAllows, diff = ${diff}, next Width = ${nextWidth}`
+      );
+
       if (diff >= nextWidth) {
-        const { index, width } = moveOverflowItem(overflowedRef, visibleRef);
-        visibleContentWidth += width;
-        const target = ref.current.querySelector(`[data-index='${index}']`);
-        delete target.dataset.overflowed;
+        const { width: overflowWidth } = visibleRef.current.find(
+          (item) => item.isOverflowIndicator
+        );
+        // we can only ignore the width of overflow Indicator if either there is only one remaining
+        // overflow item (so overflowIndicator will be removed) or diff is big enough to accommodate
+        // the overflow Ind.
+        if (overflow.length === 1 || diff > nextWidth + overflowWidth) {
+          const { index, width: restoredWidth } = moveOverflowItem(
+            overflowedRef,
+            visibleRef
+          );
+          visibleContentWidth += restoredWidth;
+          const target = ref.current.querySelector(`[data-index='${index}']`);
+          delete target.dataset.overflowed;
+        }
       }
-      console.log(`manageIncreasedWidth already overflowing ${overflowing}`);
       if (overflowing && overflowedRef.current.length === 0) {
         setOverflowing(false);
       }
@@ -76,11 +82,9 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
 
   const resizeHandler = useCallback(
     ({ width: containerWidth }) => {
+      console.log(`resize ${containerWidth}...`);
       //TODO don't need to calculate this every time
       let renderedWidth = visibleRef.current.reduce(addAll, 0);
-      console.log(
-        `resizeHandler renderedWidth ${renderedWidth} containerWidth ${containerWidth}`
-      );
       if (containerWidth < renderedWidth) {
         markOverflowingItems(renderedWidth, containerWidth);
         // Note: we only need to register listener for width once we have overflow, which
