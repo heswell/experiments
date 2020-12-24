@@ -7,13 +7,14 @@
 }
 
 .List-wrapper:not(.List-borderless) {
-  background: #ffffff;
-  box-shadow: 0 6px 10px 0 rgba(0, 40, 88, 0.5);
+  /* container1 */
+  background: var(--container1-background);
+  border-color: var(--container1-border-color);
+  border-style: var(--container1-border-style);
+  border-width: var(--container1-border-width);
+  border-radius: var(--container1-border-radius);
+
   box-sizing: border-box;
-  border-color: #2670a9;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 0;
 }
 .List-wrapper {
   position: relative;

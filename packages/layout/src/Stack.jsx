@@ -1,8 +1,9 @@
 import React, { useRef } from "react";
+import { Tab, Tabstrip } from "@heswell/toolkit-2.0";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
 import Component from "./Component";
-import { Tab, TabPanel, Tabstrip } from "./tabs";
+import { TabPanel } from "./tabs";
 import ViewContext, { useViewActionDispatcher } from "./ViewContext";
 import { Toolbar, Tooltray } from "./toolbar";
 import { registerComponent } from "./registry/ComponentRegistry";

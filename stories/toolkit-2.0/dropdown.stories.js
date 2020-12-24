@@ -1,6 +1,6 @@
 import React from "react";
 import Center from "../components/Center";
-import { Dropdown, ThemeProvider, theme } from "@heswell/toolkit-2.0";
+import { Dropdown } from "@heswell/toolkit-2.0";
 
 const listExampleData = [
   "Alabama",
@@ -64,13 +64,11 @@ export const DefaultDropdown = () => {
     console.log("selection changed", selectedItem);
   };
   return (
-    <ThemeProvider theme={theme}>
-      <Center>
-        <Dropdown
-          initialSelectedItem={listExampleData[0]}
-          source={listExampleData}
-        />
-      </Center>
-    </ThemeProvider>
+    <Center>
+      <Dropdown
+        initialSelectedItem={listExampleData[0]}
+        source={listExampleData}
+      />
+    </Center>
   );
 };

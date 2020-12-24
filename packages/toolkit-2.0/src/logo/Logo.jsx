@@ -106,7 +106,6 @@ Title.propTypes = {
 
 const Logo = forwardRef(function Logo(props, ref) {
   const contextDensity = useDensity();
-  const classes = useStyles();
   const {
     appTitle,
     className,

@@ -5,7 +5,7 @@ import { ThemeProvider, theme } from "@heswell/toolkit-1.0";
 import { AppHeader } from "@heswell/toolkit-2.0";
 
 import "../story.css";
-import "../theme.css";
+import "@heswell/toolkit-2.0/dist/theme.css";
 
 export default {
   title: "Layout/ApplicationLayout",

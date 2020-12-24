@@ -2,10 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import { usePopper } from "react-popper";
-console.log({ usePopper });
 const Popper = ({
   anchorEl,
   children,
+  className,
   offsetY = 0,
   open,
   placement = "bottom-start",
@@ -26,6 +26,7 @@ const Popper = ({
   }
   return ReactDOM.createPortal(
     <div
+      className={className}
       ref={setPopperElement}
       style={{ ...styles.popper }}
       {...attributes.popper}

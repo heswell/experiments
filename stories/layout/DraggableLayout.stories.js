@@ -16,8 +16,8 @@ import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
 
 import "@heswell/layout/dist/index.css";
-import "../assets/OpenSans.css";
-import "../theme.css";
+import "@heswell/toolkit-2.0/dist/OpenSans.css";
+import "@heswell/toolkit-2.0/dist/theme.css";
 import "./layout.css";
 import "./popup.css";
 import "./drop-menu.css";

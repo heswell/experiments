@@ -12,9 +12,9 @@ import {
 import { Brown, Red } from "./sample-components";
 import { CloseIcon as CloseAction } from "@heswell/layout";
 import "@heswell/layout/dist/index.css";
-import "../assets/OpenSans.css";
+import "@heswell/toolkit-2.0/dist/OpenSans.css";
 import "../story.css";
-import "../theme.css";
+import "@heswell/toolkit-2.0/dist/theme.css";
 import "./layout.css";
 import "./popup.css";
 import "./drop-menu.css";

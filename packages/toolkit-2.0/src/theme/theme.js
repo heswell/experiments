@@ -1,25 +1,3 @@
-const blue30 = "#A4D5F4";
-const blue400 = "#2D81BD";
-const blue500 = "#2670A9";
-const blue700 = "#00477B";
-const grey20 = "#EAEDEF";
-const grey40 = "#D9DDE3";
-const grey60 = "#C5C9D0";
-const grey70 = "#B4B7BE";
-const grey80 = "#9FA3AA";
-const grey90 = "#84878E";
-const grey200 = "#61656E";
-const grey300 = "#4C505B";
-const grey500 = "#3B3F46";
-const grey900 = "#161616";
-const red10 = "#FFE3E0";
-const red500 = "#E32B16";
-const green500 = "#24874B";
-const orange10 = "#FFE8BF";
-const orange700 = "#D65513";
-
-const white = "#ffffff";
-
 const lineHeight = 1.3;
 
 const FONT_SIZE = {

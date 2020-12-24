@@ -1,5 +1,6 @@
 import React from "react";
-import { List, ThemeProvider, theme } from "@heswell/toolkit-2.0";
+import Center from "../components/Center";
+import { List } from "@heswell/toolkit-2.0";
 
 const listExampleData = [
   "Alabama",
@@ -63,14 +64,9 @@ export const DefaultList = () => {
     console.log("selection changed", selectedItem);
   };
   return (
-    <ThemeProvider theme={theme}>
-      <List
-        maxWidth={292}
-        onChange={handleChange}
-        source={listExampleData}
-        style={{ margin: 10 }}
-      />
-    </ThemeProvider>
+    <Center>
+      <List maxWidth={292} onChange={handleChange} source={listExampleData} />
+    </Center>
   );
 };
 
@@ -79,13 +75,8 @@ export const SingleItemList = () => {
     console.log("selection changed", selectedItem);
   };
   return (
-    <ThemeProvider theme={theme}>
-      <List
-        maxWidth={292}
-        onChange={handleChange}
-        source={["Tab 1"]}
-        style={{ margin: 10 }}
-      />
-    </ThemeProvider>
+    <Center>
+      <List maxWidth={292} onChange={handleChange} source={["Tab 1"]} />
+    </Center>
   );
 };

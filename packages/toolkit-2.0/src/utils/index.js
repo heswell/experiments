@@ -14,4 +14,5 @@ export { default as useOverflowDetection } from "./useOverflowDetection";
 export { escapeRegExp } from "./escapeRegExp";
 export { default as useEventCallback } from "./useEventCallback";
 export { default as useForkRef } from "./useForkRef";
+export { default as useChildRefs } from "./useChildRefs";
 export { default as useControlled } from "./useControlled";

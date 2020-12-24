@@ -1,4 +1,4 @@
-import { useChildRefs } from "../useChildRefs";
+import { useChildRefs } from "../utils";
 
 var direction = {
   ArrowLeft: -1,

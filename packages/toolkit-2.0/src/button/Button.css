@@ -1,98 +1,23 @@
 .Button {
   align-items: center;
+  appearance: none;
   border: 0;
+  border-radius: 0;
   cursor: pointer;
   display: inline-block;
+  justify-content: center;
   line-height: 1.3;
-  position: relative;
   margin: 0;
   min-width: 0;
   min-height: 0;
+  position: relative;
   text-align: center;
+  text-decoration: none;
   transition: none;
   user-select: none;
-  border-radius: 0;
   vertical-align: middle;
-  justify-content: center;
-  text-decoration: none;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-.Button:focus-visible {
-  outline-color: #2670a9;
-  outline-style: dotted;
-  outline-width: 2px;
-  outline-offset: 0;
-}
-
-.Button:not(:focus-visible) {
-  outline: 1px solid transparent;
-}
-.Button-mediumDensity {
-  height: 28px;
-  padding: 0 8px;
-  font-size: 12px;
-}
-
-.Button-regular {
-  color: #161616;
-  font-size: 12px;
-  background: #c5c9d0;
-  font-family: jpmuitk-sans;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.Button-regular:hover {
-  color: #161616;
-  background: #d9dde3;
-}
-
-.Button-regular:active {
-  color: #ffffff;
-  background: #61656e;
-}
-
-.Button-cta {
-  color: #ffffff;
-  font-size: 12px;
-  background: #155c93;
-  font-family: jpmuitk-sans;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.Button-cta:hover {
-  color: #ffffff;
-  background: #2670a9;
-}
-
-.Button-cta:active {
-  color: #ffffff;
-  background: #00477b;
-}
-
-.Button-secondary {
-  color: var(--grey900);
-  font-size: 12px;
-  background: none;
-  font-family: jpmuitk-sans;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.Button-secondary:hover {
-  color: var(--grey900);
-  background: var(--grey40);
-}
-
-.Button-secondary.active {
-  color: white;
-  background: var(--grey200);
 }
 
 .Button-label {
@@ -109,6 +34,144 @@
   letter-spacing: 0;
 }
 
+.Button:not(:focus-visible) {
+  outline: 1px solid transparent;
+}
+
+.Button:focus-visible {
+  outline-color: #2670a9;
+  outline-style: dotted;
+  outline-width: 2px;
+  outline-offset: 0;
+}
+
+.Button-regular {
+  background: var(--actionable-regular-default-background);
+  color: var(--actionable-regular-default-color);
+  font-family: var(--actionable-regular-font-family);
+  font-size: var(--actionable-regular-font-size);
+  font-weight: var(--actionable-regular-font-weight);
+  letter-spacing: var(--actionable-regular-letter-spacing);
+  text-transform: var(--actionable-regular-text-transform);
+}
+
+.Button-regular .Button-icon {
+  color: var(--actionable-regular-default-icon);
+}
+
+.Button-regular:hover {
+  background: var(--actionable-regular-hover-background);
+  color: var(--actionable-regular-hover-color);
+}
+
+.Button-regular:hover .Button-icon {
+  color: var(--actionable-regular-hover-icon);
+}
+
+.Button-regular:active {
+  background: var(--actionable-regular-active-background);
+  color: var(--actionable-regular-active-color);
+}
+
+.Button-regular:active .Button-icon {
+  color: var(--actionable-regular-active-icon);
+}
+
+.Button-cta {
+  background: var(--actionable-cta-default-background);
+  color: var(--actionable-cta-default-color);
+  font-family: var(--actionable-cta-font-family);
+  font-size: var(--actionable-cta-font-size);
+  font-weight: var(--actionable-cta-font-weight);
+  letter-spacing: var(--actionable-cta-letter-spacing);
+  text-transform: var(--actionable-cta-text-transform);
+}
+
 .Button-cta .Button-icon {
-  color: white;
+  color: var(--actionable-cta-default-icon);
+}
+
+.Button-cta:hover {
+  background: var(--actionable-cta-hover-background);
+  color: var(--actionable-cta-hover-color);
+}
+
+.Button-cta:hover .Button-icon {
+  color: var(--actionable-cta-hover-icon);
+}
+
+.Button-cta:active {
+  background: var(--actionable-cta-active-background);
+  color: var(--actionable-cta-active-color);
+}
+
+.Button-cta:active .Button-icon {
+  color: var(--actionable-cta-active-icon);
+}
+
+.Button-secondary {
+  background: var(--actionable-secondary-default-background);
+  color: var(--actionable-secondary-default-color);
+  font-family: var(--actionable-secondary-font-family);
+  font-size: var(--actionable-secondary-font-size);
+  font-weight: var(--actionable-secondary-font-weight);
+  letter-spacing: var(--actionable-secondary-letter-spacing);
+  text-transform: var(--actionable-secondary-text-transform);
+}
+
+.Button-secondary .Button-icon {
+  color: var(--actionable-secondary-default-icon);
+}
+
+.Button-secondary:hover {
+  background: var(--actionable-secondary-hover-background);
+  color: var(--actionable-secondary-hover-color);
+}
+
+.Button-secondary:hover .Button-icon {
+  color: var(--actionable-secondary-hover-icon);
+}
+
+.Button-secondary:active {
+  background: var(--actionable-secondary-active-background);
+  color: var(--actionable-secondary-active-color);
+}
+
+.Button-secondary:active .Button-icon {
+  color: var(--actionable-secondary-active-icon);
+}
+
+.Button-disabled {
+  cursor: not-allowed;
+}
+
+/** TODO the sizing, including font-size, is identical to ListItem */
+.Button-touchDensity {
+  font-size: var(--typography-size-70);
+  height: var(--size-regular-touch);
+  padding: 0 var(--spacing-touch);
+}
+.Button-lowDensity {
+  font-size: var(--typography-size-60);
+  height: var(--size-regular-low);
+  padding: 0 var(--spacing-low);
+}
+.Button-mediumDensity {
+  font-size: var(--typography-size-50);
+  height: var(--size-regular-medium);
+  padding: 0 var(--spacing-medium);
+}
+.Button-highDensity {
+  font-size: var(--typography-size-40);
+  height: var(--size-regular-high);
+  padding: 0 var(--spacing-high);
+}
+
+.Button[href] {
+  display: inline-flex;
+}
+
+.Button::-moz-focus-inner {
+  padding: 0;
+  border: 0;
 }

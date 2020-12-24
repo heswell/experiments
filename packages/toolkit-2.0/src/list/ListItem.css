@@ -1,14 +1,18 @@
 .ListItem {
+  color: var(--selectable-default-color);
+  background: var(--selectable-default-background);
+  text-align: var(--selectable-default-text-align);
+  line-height: var(--typography-line-height);
   left: 0;
-  color: #161616;
   right: 0;
   display: flex;
   position: relative;
-  background: #ffffff;
   box-sizing: border-box;
-  text-align: left;
   align-items: center;
-  border-bottom: 1px solid #ffffff;
+}
+
+.ListItem:not(:last-of-type) {
+  border-bottom: 1px solid var(--selectable-default-background);
 }
 
 .ListItem:last-child {
@@ -16,7 +20,8 @@
 }
 
 .ListItem.ListItem-highlighted:not(.ListItem-selected) {
-  background: #a4d5f4;
+  background: var(--selectable-active-background);
+  cursor: pointer;
 }
 .ListItem-textWrapper {
   flex: 1;
@@ -25,8 +30,8 @@
   text-overflow: ellipsis;
 }
 .ListItem-selected {
-  color: #ffffff;
-  background: #2670a9;
+  color: var(--selectable-selected-color);
+  background: var(--selectable-selected-background);
 }
 .ListItem-disabled {
   cursor: not-allowed;
@@ -44,21 +49,21 @@
   outline-offset: 0;
 }
 .ListItem-focusVisible.ListItem-selected:after {
-  outline-color: #ffffff;
+  outline-color: var(--white);
 }
 .ListItem-touchDensity {
-  padding: 0 16px 0 16px;
-  font-size: 16px;
+  padding: 0 var(--spacing-touch);
+  font-size: var(--typography-size-70);
 }
 .ListItem-lowDensity {
-  padding: 0 12px 0 12px;
-  font-size: 14px;
+  padding: 0 var(--spacing-low);
+  font-size: var(--typography-size-60);
 }
 .ListItem-mediumDensity {
-  padding: 0 8px 0 8px;
-  font-size: 12px;
+  padding: 0 var(--spacing-medium);
+  font-size: var(--typography-size-50);
 }
 .ListItem-highDensity {
-  padding: 0 4px 0 4px;
-  font-size: 11px;
+  padding: 0 var(--spacing-high);
+  font-size: var(--typography-size-40);
 }

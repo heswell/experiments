@@ -1,6 +1,8 @@
 import React, { useRef } from "react";
 import cx from "classnames";
-import { Button, Icon } from "@heswell/toolkit-2.0";
+import { useDensity } from "../theme";
+import { Button } from "../button";
+import { Icon } from "../icon";
 import useTabstrip from "./useTabstrip";
 import useOverflowObserver from "../responsive/useOverflowObserver";
 import ActivationIndicator from "./ActivationIndicator";
@@ -40,20 +42,21 @@ const Tabstrip = (props) => {
     children,
     enableAddTab,
     onAddTab,
+    density: densityProp,
     showActivationIndicator = true,
     style,
     title,
     value,
   } = props;
 
+  const density = useDensity(densityProp);
+
   const handleOverflowChange = (e, tab) => {
     activateTab(e, tab.index);
   };
 
   const renderContent = () => {
-    const tabs = [
-      <div className="row-pillar" key="spacer" style={{ height: 36 }} />,
-    ];
+    const tabs = [];
 
     React.Children.toArray(children).forEach((child, index) => {
       const selected = index === value;
@@ -71,6 +74,7 @@ const Tabstrip = (props) => {
 
     tabs.push(
       <OverflowMenu
+        className="Tabstrip-overflowMenu"
         data-priority={1}
         data-index={tabs.length - 1}
         data-overflow-indicator
@@ -86,7 +90,7 @@ const Tabstrip = (props) => {
         <AddTabButton
           data-priority={1}
           data-index={tabs.length - 1}
-          key="add"
+          key="Tabstrip-addButton"
           onClick={onAddTab}
           title={title}
         />
@@ -97,7 +101,12 @@ const Tabstrip = (props) => {
   };
 
   return (
-    <div className={cx("Tabstrip")} ref={root} role="tablist" style={style}>
+    <div
+      className={cx("Tabstrip", `Tabstrip-${density}Density`)}
+      ref={root}
+      role="tablist"
+      style={style}
+    >
       <div
         className="Tabstrip-inner"
         ref={innerContainer}

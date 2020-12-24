@@ -29,15 +29,15 @@
 }
 
 .small.Icon .Icon-content {
-  font-size: 12px;
+  font-size: var(--size-icon-small);
 }
 
 .medium.Icon .Icon-content {
-  font-size: 24px;
+  font-size: var(--size-icon-medium);
 }
 
 .large.Icon .Icon-content {
-  font-size: 36px;
+  font-size: var(--size-icon-large);
 }
 
 .jpmuitk-icon-notification-solid:before {

@@ -4,4 +4,5 @@ export * from "./src/dropdown";
 export * from "./src/icon";
 export * from "./src/list";
 export * from "./src/popper";
+export * from "./src/tabs";
 export * from "./src/theme";

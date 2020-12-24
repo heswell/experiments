@@ -1,25 +1,36 @@
 // TODO close button needs to be a butotn. Hence tab needs to include 2 buttons
 import React, { forwardRef, useRef, useState } from "react";
 import cx from "classnames";
+import { useDensity } from "../theme";
 import { useForkRef } from "../utils";
-import { CloseIcon } from "../icons";
-import { useViewAction } from "../ViewContext";
+import { useViewAction } from "@heswell/layout";
+import { Button } from "../button";
+import { Icon } from "../icon";
 
 import "./Tab.css";
 
-const CloseButton = (props) => {
-  return (
-    <div className="tab-close" {...props}>
-      <CloseIcon />
-    </div>
-  );
-};
+const CloseTabButton = ({ small = false, tabIndex, title, ...rest }) => (
+  <Button
+    className="Tab-closeButton"
+    component="div"
+    tabIndex={tabIndex}
+    title={title}
+    variant="secondary"
+    {...rest}
+  >
+    <Icon
+      accessibleText="Close Tab (Delete or Backspace)"
+      name={small ? "close-small" : "close"}
+    />
+  </Button>
+);
 
 const Tab = forwardRef(
   (
     {
       ariaControls,
       deletable,
+      density: densityProp,
       draggable,
       selected,
       index,
@@ -36,6 +47,7 @@ const Tab = forwardRef(
     const setRef = useForkRef(ref, root);
     const [closeHover, setCloseHover] = useState(false);
     const dispatchViewAction = useViewAction();
+    const density = useDensity(densityProp);
 
     const handleClick = (e) => {
       e.preventDefault();
@@ -85,7 +97,11 @@ const Tab = forwardRef(
         {...props}
         aria-controls={ariaControls}
         aria-selected={selected}
-        className={cx("Tab", { selected, closeable: deletable, closeHover })}
+        className={cx("Tab", `Tab-${density}Density`, {
+          "Tab-selected": selected,
+          "Tab-closeable": deletable,
+          "Tab-closeHover": closeHover,
+        })}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
@@ -98,10 +114,11 @@ const Tab = forwardRef(
           {label}
         </span>
         {deletable ? (
-          <CloseButton
+          <CloseTabButton
             onClick={handleCloseButtonClick}
             onMouseEnter={handleCloseButtonEnter}
             onMouseLeave={handleCloseButtonLeave}
+            small={density === "medium" || density === "high"}
           />
         ) : null}
       </button>

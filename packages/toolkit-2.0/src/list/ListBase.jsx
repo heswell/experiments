@@ -338,6 +338,8 @@ const ListBase = forwardRef(function ListBase(props, ref) {
     );
   };
 
+  // TODO It's weird that List itself isn't the root element, ListWrapper is
+  // THat means if client passes style, with margin, for example, it will break;
   return (
     <div
       className="List-wrapper"

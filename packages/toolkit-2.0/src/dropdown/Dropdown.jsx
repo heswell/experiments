@@ -1,6 +1,7 @@
 import React, { forwardRef, useRef } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
+import { useTheme } from "../theme";
 import { refType, useForkRef } from "../utils";
 import { Popper, usePopperPositioning } from "../popper";
 
@@ -23,6 +24,7 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
   } = useDropdown(restProps);
 
   const listRef = useRef(null);
+  const { id: themeId } = useTheme();
 
   const {
     density,
@@ -38,7 +40,6 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
     listRef,
     isOpen
   );
-
   return (
     <div
       className={classnames(
@@ -66,7 +67,7 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
       {rootRef.current && (
         <Popper
           anchorEl={rootRef.current}
-          className="Dropdown-popper"
+          className={classnames("Dropdown-popper", themeId)}
           open={isOpen}
           placement={popperPosition}
           role={null}

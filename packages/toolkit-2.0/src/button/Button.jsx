@@ -1,22 +1,27 @@
 import React, { forwardRef } from "react";
 import cx from "classnames";
+import { useDensity } from "../theme";
 import { IconClassNameProvider } from "../icon/IconClassNameContext";
 
 import "./Button.css";
 
 const Button = forwardRef(function Button(
   {
+    component: Component = "button",
     children,
     className,
-    density = "medium",
+    component = "button",
+    density: densityProp,
     type = "button",
     variant = "regular",
     ...props
   },
   ref
 ) {
+  const density = useDensity(densityProp);
+
   return (
-    <button
+    <Component
       className={cx(
         "Button",
         className,
@@ -31,7 +36,7 @@ const Button = forwardRef(function Button(
       <IconClassNameProvider value="Button-icon">
         <span className="Button-label">{children}</span>
       </IconClassNameProvider>
-    </button>
+    </Component>
   );
 });
 
