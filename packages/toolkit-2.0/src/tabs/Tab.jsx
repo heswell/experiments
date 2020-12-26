@@ -41,6 +41,7 @@ const Tab = forwardRef(function Tab(
     onKeyDown,
     onKeyUp,
     onLabelEdited,
+    orientation,
     ...props
   },
   ref
@@ -132,6 +133,7 @@ const Tab = forwardRef(function Tab(
         "Tab-closeable": deletable,
         "Tab-closeHover": closeHover,
         "Tab-editing": editMode,
+        "Tab-vertical": orientation === "vertical",
       })}
       onClick={handleClick}
       onKeyDown={handleKeyDown}

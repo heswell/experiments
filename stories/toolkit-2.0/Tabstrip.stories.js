@@ -78,7 +78,7 @@ export const Responsive = () => {
   );
 };
 
-const AddableTabs = ({ deletable, editable, ...props }) => {
+const AddableTabs = ({ deletable, editable, vertical, ...props }) => {
   const [tabs, setTabs] = useState([
     "Tab 1",
     "Tab 2 has a longer title",
@@ -102,6 +102,7 @@ const AddableTabs = ({ deletable, editable, ...props }) => {
       onAddTab={handleAddTab}
       onChange={handleChange}
       onDeleteTab={handleDeleteTab}
+      orientation={vertical ? "vertical" : "horizontal"}
       value={tabIndex}
     >
       {tabs.map((label, i) => (
@@ -150,5 +151,19 @@ export const EditableTabs = () => (
   >
     <AddableTabs resizeable value={0} style={{ flex: 1 }} editable />
     <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
+  </Flexbox>
+);
+
+export const VerticalTabs = () => (
+  <Flexbox
+    style={{
+      width: 600,
+      height: 500,
+      flexDirection: "column",
+      border: "solid 1px lightgrey",
+    }}
+  >
+    <AddableTabs resizeable value={0} style={{ flex: 1 }} editable vertical />
+    <div data-resizeable style={{ height: 0, backgroundColor: "white" }} />
   </Flexbox>
 );

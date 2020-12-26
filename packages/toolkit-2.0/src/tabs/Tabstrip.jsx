@@ -30,24 +30,27 @@ const Tabstrip = (props) => {
   //TODO useTabs should have no knkwledge of overflowing. useOverflowObserver
   // should return  alist of visible tabs and these should be managed by
   // useTabstrip
-  const rootHeight = 36; // TODO read from Theme
-  const overflowedItems = useOverflowObserver(
-    innerContainer,
-    rootHeight,
-    value
-  );
-
-  const { tabProps, tabRefs, activateTab } = useTabstrip(props, root);
   const {
     children,
     enableAddTab,
     onAddTab,
+    orientation = "horizontal",
     density: densityProp,
     showActivationIndicator = true,
     style,
     title,
     value,
   } = props;
+
+  const rootHeight = 36; // TODO read from Theme
+  const overflowedItems = useOverflowObserver(
+    innerContainer,
+    rootHeight,
+    value,
+    orientation
+  );
+
+  const { tabProps, tabRefs, activateTab } = useTabstrip(props, root);
 
   const density = useDensity(densityProp);
 
@@ -75,6 +78,7 @@ const Tabstrip = (props) => {
           "data-index": index,
           "data-priority": selected ? 0 : 2,
           onLabelEdited,
+          orientation,
           ref: tabRefs[index],
           selected,
         })
@@ -111,7 +115,11 @@ const Tabstrip = (props) => {
 
   return (
     <div
-      className={cx("Tabstrip", `Tabstrip-${density}Density`)}
+      className={cx(
+        "Tabstrip",
+        `Tabstrip-${density}Density`,
+        `Tabstrip-${orientation}`
+      )}
       ref={root}
       role="tablist"
       style={style}
@@ -124,7 +132,10 @@ const Tabstrip = (props) => {
         {renderContent()}
       </div>
       {showActivationIndicator ? (
-        <ActivationIndicator tabRef={tabRefs[value]} />
+        <ActivationIndicator
+          orientation={orientation}
+          tabRef={tabRefs[value]}
+        />
       ) : null}
     </div>
   );

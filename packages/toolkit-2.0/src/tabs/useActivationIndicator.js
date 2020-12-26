@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useState } from "react";
 
 // Overflow can affect tab positions, so we recalculate when it changes
-export default function useActivationIndicator(rootRef, tabRef) {
+export default function useActivationIndicator(rootRef, tabRef, orientation) {
   const [initialStyle, setInitialStyle] = useState(null);
   //   const vertical = orientation === "vertical";
   const createIndicatorStyle = useCallback(() => {
@@ -9,10 +9,15 @@ export default function useActivationIndicator(rootRef, tabRef) {
       const tabRect = tabRef.current.getBoundingClientRect();
       // TODO we could cache this one at least ...
       const rootRect = rootRef.current.getBoundingClientRect();
-      const left = tabRect.left - rootRect.left;
-      return { left, width: tabRect.width };
+      if (orientation === "horizontal") {
+        const left = tabRect.left - rootRect.left;
+        return { left, width: tabRect.width };
+      } else {
+        const top = tabRect.top - rootRect.top;
+        return { top, height: tabRect.height };
+      }
     }
-  }, [rootRef, tabRef]);
+  }, [orientation, rootRef, tabRef]);
 
   // We use useLayoutEffect and useMemo in combination here. The useLayoutEffect
   // computes the initial style. This has to fire after the initial render, when

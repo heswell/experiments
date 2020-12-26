@@ -52,3 +52,29 @@
   flex-wrap: wrap;
   justify-content: flex-start;
 }
+
+/* Vertical Tabstrip */
+.Tabstrip-vertical {
+  align-self: flex-start;
+  display: inline-flex;
+}
+
+.Tabstrip-vertical .Tabstrip-inner {
+  flex-direction: column;
+}
+
+.Tabstrip-vertical.Tabstrip-touchDensity {
+  height: auto;
+}
+
+.Tabstrip-vertical.Tabstrip-lowDensity {
+  height: auto;
+}
+
+.Tabstrip-vertical.Tabstrip-mediumDensity {
+  height: auto;
+}
+
+.Tabstrip-vertical.Tabstrip-highDensity {
+  height: auto;
+}

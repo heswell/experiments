@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import useResizeObserver from "../responsive/useResizeObserver";
+import { measureNode } from "../utils";
 
 const HEIGHT_WIDTH = ["height", "width"];
 
@@ -16,10 +17,49 @@ const moveOverflowItem = (fromStack, toStack) => {
   return item;
 };
 
+const byDescendingPriority = (m1, m2) => {
+  const sort1 = m1.priority - m2.priority;
+  let result;
+  if (result === 0) {
+    sort = m1.index - m2.index;
+  }
+  return sort1;
+};
+
+const measureChildNodes = (parentRef) => {
+  const nodes = Array.from(parentRef.current.childNodes);
+  const { width, height } = parentRef.current.getBoundingClientRect();
+  const measurements = nodes.reduce((list, node, i) => {
+    const { index, priority = "1", overflowIndicator } =
+      node?.dataset ?? NO_DATA;
+    if (index) {
+      const width = measureNode(node);
+      if (node.dataset?.overflowed) {
+        delete node.dataset.overflowed;
+      }
+      list.push({
+        index: parseInt(index, 10),
+        isOverflowIndicator: overflowIndicator,
+        priority: parseInt(priority, 10),
+        label: node.innerText,
+        width,
+      });
+    }
+    return list;
+  }, []);
+
+  return [measurements.sort(byDescendingPriority), height, width];
+};
+
 // value could be anything which might require a re-evaluation. In the case of tabs
 // we might have selected an overflowed tab. Can we make this more efficient, only
 // needs action if an overflowed item re-enters the visible section
-export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
+export default function useOverflowObserver(
+  ref,
+  rootHeight,
+  selectedIndex,
+  orientation = "horizontal"
+) {
   const [overflowing, setOverflowing] = useState(false);
   const [, forceUpdate] = useState();
   const visibleRef = useRef([]);
@@ -96,7 +136,7 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
   );
 
   const resetMeasurements = useCallback(() => {
-    const [measurements, containerHeight, containerWidth] = measureChildren(
+    const [measurements, containerHeight, containerWidth] = measureChildNodes(
       ref
     );
     width.current = containerWidth;
@@ -114,11 +154,13 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
       await document.fonts.ready;
       resetMeasurements();
     }
-    measure();
+    if (orientation === "horizontal") {
+      measure();
+    }
   }, [ref, count, resetMeasurements]);
 
   useLayoutEffect(() => {
-    // if the value is currently overflowed,we need to reset
+    // if user selects an item from the overflow list,we need to reset
     if (overflowedRef.current.find((item) => item.index === selectedIndex)) {
       resetMeasurements();
       forceUpdate({});
@@ -128,46 +170,4 @@ export default function useOverflowObserver(ref, rootHeight, selectedIndex) {
   useResizeObserver(ref, HEIGHT_WIDTH, resizeHandler);
 
   return overflowedRef.current;
-}
-
-const byDescendingPriority = (m1, m2) => {
-  const sort1 = m1.priority - m2.priority;
-  let result;
-  if (result === 0) {
-    sort = m1.index - m2.index;
-  }
-  return sort1;
-};
-
-const measureChildren = (ref) => {
-  const nodes = Array.from(ref.current.childNodes);
-  const { width, height } = ref.current.getBoundingClientRect();
-  const measurements = nodes.reduce((list, node, i) => {
-    const { index, priority = "1", overflowIndicator } =
-      node?.dataset ?? NO_DATA;
-    if (index) {
-      const width = measureWidth(node);
-      if (node.dataset?.overflowed) {
-        delete node.dataset.overflowed;
-      }
-      list.push({
-        index: parseInt(index, 10),
-        isOverflowIndicator: overflowIndicator,
-        priority: parseInt(priority, 10),
-        label: node.innerText,
-        width,
-      });
-    }
-    return list;
-  }, []);
-
-  return [measurements.sort(byDescendingPriority), height, width];
-};
-
-function measureWidth(node) {
-  const { width } = node.getBoundingClientRect();
-  const style = getComputedStyle(node);
-  const marginLeft = parseInt(style.getPropertyValue("margin-left"), 10);
-  const marginRight = parseInt(style.getPropertyValue("margin-right"), 10);
-  return marginLeft + width + marginRight;
 }

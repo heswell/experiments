@@ -5,6 +5,7 @@ export { default as getWithDefault } from "./getWithDefault";
 export { mergeStyles } from "./mergeStyles";
 export { default as ownerDocument } from "./ownerDocument";
 export { default as refType } from "./refType";
+export { default as measureNode } from "./measureNode";
 export { default as ownerWindow } from "./ownerWindow";
 export { default as useId } from "./useId";
 export { default as useA11yProps } from "./useA11yProps";
