@@ -63,6 +63,8 @@
   --blue10: #cbe7f9;
   --blue20: #b7def6;
   --blue30: #a4d5f4;
+  /* For selection bg = prevents browser defaulting transparency */
+  --blue30Fade: #a4d5f4fc;
   --blue40: #90ccf2;
   --blue50: #7dc3f0;
   --blue100: #64b1e4;
@@ -184,6 +186,8 @@
   --blue500: #2670a9;
   --blue600: #155c93;
   --blue700: #00477b;
+  /* For selection bg = prevents browser defaulting transparency */
+  --blue700Fade: #00477bfc;
   --blue800: #0c3566;
   --blue900: #002858;
   --purple10: #3a2d3e;
@@ -242,6 +246,17 @@
   --typography-size-240: 64px;
 
   --typography-line-height: 1.3;
+
+  --typography-weight-light: 200;
+  --typography-weight-regular: 400;
+  --typography-weight-semiBold: 600;
+  --typography-weight-bold: 700;
+  --typography-weight-extraBold: 800;
+
+  --typography-size-regular-touch: var(--typography-size-70);
+  --typography-size-regular-low: var(--typography-size-60);
+  --typography-size-regular-medium: var(--typography-size-50);
+  --typography-size-regular-high: var(--typography-size-40);
 }
 
 /** Size */
@@ -287,6 +302,15 @@
 .jpmuitk-dark {
   --container1-background: var(--grey800);
   --container1-border-color: var(--grey200);
+}
+
+/** focusable */
+.jpmuitk-light,
+.jpmuitk-dark {
+  --focusable-outline-color: var(--blue500);
+  --focusable-outline-style: dotted;
+  --focusable-outline-offset: 0;
+  --focusable-outline-width: 2px;
 }
 
 /** Selectable */

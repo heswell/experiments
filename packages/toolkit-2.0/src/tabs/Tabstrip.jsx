@@ -55,17 +55,26 @@ const Tabstrip = (props) => {
     activateTab(e, tab.index);
   };
 
+  const handleLabelEdited = (evt, index, label) => {
+    // TODO need to redraw activation indicatr
+    console.log(`Label Edited [${index}] = ${label}`);
+  };
+
   const renderContent = () => {
     const tabs = [];
 
     React.Children.toArray(children).forEach((child, index) => {
       const selected = index === value;
+      const onLabelEdited = child.props.editable
+        ? handleLabelEdited
+        : undefined;
       tabs.push(
         React.cloneElement(child, {
           index,
           ...tabProps,
           "data-index": index,
           "data-priority": selected ? 0 : 2,
+          onLabelEdited,
           ref: tabRefs[index],
           selected,
         })
