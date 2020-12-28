@@ -6,10 +6,11 @@ import {
   Component,
   Flexbox,
   Stack,
-  Toolbar,
   View,
   DraggableLayout,
 } from "@heswell/layout";
+import { Toolbar } from "@heswell/toolkit-2.0";
+
 import { CloseIcon as CloseAction } from "@heswell/layout";
 import Builder from "../components/layout-builder/layout-builder";
 import { Brown, Red } from "./sample-components";
@@ -18,9 +19,6 @@ import Palette from "../components/palette/Palette";
 import "@heswell/layout/dist/index.css";
 import "@heswell/toolkit-2.0/dist/OpenSans.css";
 import "@heswell/toolkit-2.0/dist/theme.css";
-import "./layout.css";
-import "./popup.css";
-import "./drop-menu.css";
 
 export default {
   title: "Layout/DraggableLayout",

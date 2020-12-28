@@ -61,7 +61,7 @@ export const Responsive = () => {
     >
       <Tabstrip
         enableAddTab
-        resizeable
+        data-resizeable
         onAddTab={handleAddTab}
         onChange={handleChange}
         value={tabIndex}
@@ -101,7 +101,7 @@ const AddableTabs = ({ deletable, editable, vertical, ...props }) => {
       enableAddTab
       onAddTab={handleAddTab}
       onChange={handleChange}
-      onDeleteTab={handleDeleteTab}
+      // onDeleteTab={handleDeleteTab}
       orientation={vertical ? "vertical" : "horizontal"}
       value={tabIndex}
     >
@@ -121,8 +121,8 @@ export const ResponsiveComponent = () => (
       border: "solid 1px lightgrey",
     }}
   >
-    <AddableTabs resizeable value={0} style={{ flex: 1 }} />
-    <div data-resizeable style={{ width: 230, backgroundColor: "white" }} />
+    <AddableTabs data-resizeable value={0} style={{ flex: 1 }} />
+    <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
   </Flexbox>
 );
 

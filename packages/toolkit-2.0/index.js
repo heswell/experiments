@@ -4,6 +4,8 @@ export * from "./src/dropdown";
 export * from "./src/icon";
 export * from "./src/input";
 export * from "./src/list";
+export * from "./src/logo";
 export * from "./src/popper";
 export * from "./src/tabs";
 export * from "./src/theme";
+export * from "./src/toolbar";

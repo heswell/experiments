@@ -47,5 +47,5 @@ export default {
     ...(isProd ? [terser()] : []),
     visualizer(),
   ],
-  external: ["classnames", "react", "react-dom"],
+  external: ["@heswell/toolkit-2.0", "classnames", "react", "react-dom"],
 };

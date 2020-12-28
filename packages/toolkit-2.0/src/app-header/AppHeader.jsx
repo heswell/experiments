@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import cx from "classnames";
-import { Logo } from "../logo";
+import { useDensity } from "../theme";
+import { OverflowMenu, useOverflowObserver } from "../responsive";
 
 import "./AppHeader.css";
 
-const AppHeader = ({ appTitle, children, className, style }) => {
+const AppHeader = ({ children, className, density: densityProp, style }) => {
   console.log("%c[AppHeader] render", "color:green;font-weight: bold");
+  const density = useDensity(densityProp);
 
   useEffect(() => {
     console.log("%c[AppHeader] mounted", "color:blue;font-weight: bold");
@@ -14,16 +16,20 @@ const AppHeader = ({ appTitle, children, className, style }) => {
     };
   }, []);
 
-  return (
-    <div className={cx("AppHeader", className)} style={style}>
-      <Logo
-        appTitle={appTitle}
-        className={cx("Logo", className)}
-        data-jpmui-test="app-header-logo"
-        variant="jpm"
-      />
+  const [innerContainerRef, overflowedItems] = useOverflowObserver(
+    "horizontal",
+    "AppHeader"
+  );
 
-      {children}
+  return (
+    <div
+      className={cx("AppHeader", `AppHeader-${density}Density`, className)}
+      style={style}
+    >
+      <div className="AppHeader-innerContainer" ref={innerContainerRef}>
+        <div className="responsive-pillar" />
+        {children}
+      </div>
     </div>
   );
 };

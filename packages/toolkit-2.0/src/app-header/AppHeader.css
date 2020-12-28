@@ -1,18 +1,59 @@
+.AppHeader-touchDensity {
+  --appheader-height: 76px;
+}
+
+.AppHeader-lowDensity {
+  --appheader-height: 60px;
+}
+
+.AppHeader-mediumDensity {
+  --appheader-height: 44px;
+}
+
+.AppHeader-highDensity {
+  --appheader-height: 32px;
+}
+
 .AppHeader {
   border-bottom: solid 1px var(--grey60);
   box-shadow: var(--elevation2);
+  box-sizing: border-box;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  height: var(--appheader-height);
+  padding: 0 12px;
   width: 100%;
 }
 
-.AppHeader .Logo {
-  position: absolute;
-  left: 12px;
+.AppHeader-innerContainer {
+  width: 100%;
+  /* overflow: hidden; */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: inherit;
+  flex: 1;
+  min-height: var(--appheader-height);
 }
 
-.AppHeader .Tabstrip {
+.AppHeader-innerContainer > .responsive-pillar {
+  width: 0;
+  height: var(--appheader-height);
+}
+
+.AppHeader-innerContainer > *:not(:last-child) {
+  /* margin-right: 48px; */
+}
+
+.AppHeader .Logo {
+  flex: 0 0 auto;
+}
+
+.AppHeader-innerContainer > .Tabstrip {
   align-self: flex-end;
-  margin: 0 auto;
+  flex: 0 0 auto;
+}
+
+.AppHeader-innerContainer > .Toolbar {
+  flex: 1 1 28px;
+  justify-content: flex-end;
 }

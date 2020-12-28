@@ -2,13 +2,13 @@
   align-items: flex-start;
   box-sizing: border-box;
   display: flex;
-  flex-shrink: 0;
-  height: 32px;
+  height: var(--size-stackable-medium);
   justify-content: flex-start;
   overflow: hidden;
   position: relative;
-  font-family: OpenSans-Regular;
-  font-size: 12px;
+  font-family: var(--typography-font-family);
+  min-width: 28px;
+  background-color: yellow;
 }
 
 .Toolbar.sm {
@@ -38,7 +38,7 @@
   margin: 6px 3px;
 } */
 
-.Toolbar-inner .Icon {
+.Toolbar-inner > .Icon {
   border: solid 1px lightgrey;
   box-sizing: border-box;
   height: 22px;
@@ -59,7 +59,7 @@
   display: inline-block;
 }
 
-.Toolbar .ToolTray .Icon {
+.Toolbar .ToolTray > .Icon {
   margin: 5px 0;
   padding: 1px 3px;
   width: 26px;

@@ -88,7 +88,6 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
 });
 
 Dropdown.defaultProps = {
-  width: "180px",
   iconName: "down-arrow",
 };
 

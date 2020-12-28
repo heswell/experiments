@@ -1,13 +1,45 @@
 import React, { useRef } from "react";
-import { Tab, Tabstrip } from "@heswell/toolkit-2.0";
+import {
+  Button,
+  Icon,
+  Tab,
+  Tabstrip,
+  Toolbar,
+  Tooltray,
+} from "@heswell/toolkit-2.0";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
 import Component from "./Component";
 import { TabPanel } from "./tabs";
 import ViewContext, { useViewActionDispatcher } from "./ViewContext";
-import { Toolbar, Tooltray } from "./toolbar";
 import { registerComponent } from "./registry/ComponentRegistry";
-import { CloseIcon, MaximizeIcon, MinimizeIcon } from "./icons";
+import { maximize, minimize } from "./icons";
+
+const CloseIcon = () => (
+  <Button className="Tab-closeButton" title="Close View" variant="secondary">
+    <Icon accessibleText="Close View" name="close" />
+  </Button>
+);
+
+const MinimizeIcon = () => (
+  <Button
+    className="Layout-svg-button"
+    title="Minimize View"
+    variant="secondary"
+  >
+    <Icon accessibleText="Minimize View" svg={minimize} />
+  </Button>
+);
+
+const MaximizeIcon = () => (
+  <Button
+    className="Layout-svg-button"
+    title="Maximize View"
+    variant="secondary"
+  >
+    <Icon accessibleText="Maximize View" svg={maximize} />
+  </Button>
+);
 
 import "./Stack.css";
 
@@ -71,7 +103,7 @@ const Stack = (inputProps) => {
     <div className="Tabs" style={style} id={id} ref={ref}>
       <ViewContext.Provider value={{ dispatch: dispatchViewAction }}>
         {showTabs ? (
-          <Toolbar className="Header" draggable height={36} maxRows={1}>
+          <Toolbar className="Header" draggable maxRows={1}>
             <Tabstrip
               enableAddTab={enableAddTab}
               keyBoardActivation={keyBoardActivation}
@@ -82,7 +114,7 @@ const Stack = (inputProps) => {
             >
               {renderTabs()}
             </Tabstrip>
-            <Tooltray align="right">
+            <Tooltray align="right" className="layout-buttons">
               <MinimizeIcon />
               <MaximizeIcon />
               <CloseIcon />

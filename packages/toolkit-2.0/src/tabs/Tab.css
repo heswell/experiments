@@ -88,10 +88,6 @@ button.Tab + button.Tab {
   margin-left: 0;
 }
 
-.Tab[data-overflowed] {
-  order: 99;
-}
-
 .Tab:not(.Tab-selected):hover {
   z-index: 1;
 }

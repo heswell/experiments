@@ -232,6 +232,8 @@
 
 /** Typogpaphy */
 :root {
+  --typography-font-family: jpmuitk-sans;
+
   --typography-size-30: 10px;
   --typography-size-30: 10px;
   --typography-size-40: 11px;

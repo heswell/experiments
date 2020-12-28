@@ -32,6 +32,11 @@
   font-size: var(--size-icon-small);
 }
 
+.small.Icon .Svg-content {
+  width: 18px;
+  height: 18px;
+}
+
 .medium.Icon .Icon-content {
   font-size: var(--size-icon-medium);
 }

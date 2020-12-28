@@ -3,6 +3,7 @@ import { uuid } from "@heswell/utils";
 import { expandFlex, getProps, typeOf } from "./utils";
 import {
   ComponentRegistry,
+  isLayoutComponent,
   isContainer,
   isView,
 } from "./registry/ComponentRegistry";
@@ -51,7 +52,6 @@ function getLayoutProps(
   parentType = null,
   previousLayout
 ) {
-  const isNativeElement = type[0].match(/[a-z]/);
   const { layoutId, path: prevPath, id: prevId = layoutId } = getProps(
     previousLayout
   );
@@ -65,9 +65,9 @@ function getLayoutProps(
   const id = prevMatch ? prevId : uuid();
   const key = id;
   const style = getStyle(type, props, parentType);
-  return isNativeElement
-    ? { id, key, style }
-    : { layoutId: id, key, dispatch, path, style, type };
+  return isLayoutComponent(type)
+    ? { layoutId: id, key, dispatch, path, style, type }
+    : { id, key, style };
 }
 
 function getChildLayoutProps(

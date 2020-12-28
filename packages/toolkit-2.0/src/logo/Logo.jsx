@@ -150,7 +150,7 @@ const Logo = forwardRef(function Logo(props, ref) {
         defaultClassName="Logo-app-title"
         height={height}
         label={appTitle}
-        separatorClassname={classnames("Logo-title-pipe", {
+        separatorClassname={classnames("Logo-titlePipe", {
           "Logo-compact": isCompactVariant(variant),
         })}
         {...TitleProps}

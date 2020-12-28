@@ -1,4 +1,4 @@
-import React, { forwardRef, useContext } from "react";
+import React, { forwardRef, useContext, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
 
@@ -37,6 +37,7 @@ getAccessibleText.propTypes = {
   name: PropTypes.string,
 };
 
+//TODO memoize
 const Icon = forwardRef(function Icon(
   {
     accessibleText,
@@ -45,12 +46,22 @@ const Icon = forwardRef(function Icon(
     classes,
     name,
     size: sizeProp = "small",
+    svg = null,
     ...rest
   },
   ref
 ) {
+  const contentRef = useRef(null);
   const isSize = sizes.indexOf(sizeProp) !== -1;
   const classNameFromContext = useContext(IconClassNameContext);
+
+  useEffect(() => {
+    if (svg) {
+      contentRef.current.innerHTML = svg;
+    }
+  }, [contentRef, svg]);
+
+  // TODO confirm svg is indeed an SVG if children passed
 
   return (
     <span
@@ -66,7 +77,11 @@ const Icon = forwardRef(function Icon(
     >
       <span
         aria-hidden="true"
-        className={classnames(`${brand}-icon-${name}`, "Icon-content")}
+        className={classnames("Icon-content", {
+          [`${brand}-icon-${name}`]: name,
+          "Svg-content": svg !== null,
+        })}
+        ref={contentRef}
         style={!isSize ? { fontSize: `${sizeProp}px` } : undefined}
       />
       {getAccessibleText(accessibleText, brand, name)}
@@ -90,15 +105,10 @@ Icon.propTypes = {
    */
   className: PropTypes.string,
   /**
-   * material-ui
-   * Useful to extend the style applied to components.
-   */
-  classes: PropTypes.objectOf(PropTypes.string),
-  /**
    * Name of the icon.
    * See go/uitoolkit -> Documentation -> Iconography
    */
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   /**
    * On click event handler
    */
@@ -107,6 +117,10 @@ Icon.propTypes = {
    * Size of the icon, explicit size or small/medium/large
    */
   size: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf(sizes)]),
+  /**
+   * As an alternative to a jpmuitk icon name, pass a custom svg
+   */
+  svg: PropTypes.string,
 };
 
 export default Icon;

@@ -6,18 +6,16 @@ import {
   Stack,
   View,
   Component,
-  Toolbar,
   registerComponent,
 } from "@heswell/layout";
+import { Toolbar } from "@heswell/toolkit-2.0";
 import { Brown, Red } from "./sample-components";
 import { CloseIcon as CloseAction } from "@heswell/layout";
-import "@heswell/layout/dist/index.css";
 import "@heswell/toolkit-2.0/dist/OpenSans.css";
-import "../story.css";
+import "@heswell/toolkit-2.0/dist/ToolkitIcons.css";
 import "@heswell/toolkit-2.0/dist/theme.css";
-import "./layout.css";
-import "./popup.css";
-import "./drop-menu.css";
+import "@heswell/layout/dist/index.css";
+import "../story.css";
 
 export default {
   title: "Layout/Flexbox",

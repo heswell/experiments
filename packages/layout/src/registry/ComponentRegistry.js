@@ -11,14 +11,20 @@ export function isView(componentType) {
   return _views[componentType] === true;
 }
 
+export const isLayoutComponent = (type) => isContainer(type) || isView(type);
+
 export const isRegistered = (className) => !!ComponentRegistry[className];
 
-export function registerComponent(componentName, component, type='component') {
+export function registerComponent(
+  componentName,
+  component,
+  type = "component"
+) {
   ComponentRegistry[componentName] = component;
 
-  if (type === 'container') {
+  if (type === "container") {
     _containers[componentName] = true;
-  } else if (type === 'view'){
+  } else if (type === "view") {
     _views[componentName] = true;
   }
 }

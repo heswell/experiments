@@ -1,4 +1,4 @@
 .Header {
-  height: 32px;
+  height: var(--size-stackable-medium);
   border-bottom: solid 1px var(--grey40);
 }

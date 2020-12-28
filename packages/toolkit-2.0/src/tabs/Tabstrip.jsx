@@ -1,12 +1,11 @@
-import React, { useRef } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import cx from "classnames";
 import { useDensity } from "../theme";
 import { Button } from "../button";
 import { Icon } from "../icon";
 import useTabstrip from "./useTabstrip";
-import useOverflowObserver from "../responsive/useOverflowObserver";
+import { OverflowMenu, useOverflowObserver } from "../responsive";
 import ActivationIndicator from "./ActivationIndicator";
-import OverflowMenu from "../responsive/OverflowMenu";
 
 import "./Tabstrip.css";
 
@@ -26,7 +25,6 @@ const AddTabButton = ({ className, title, ...props }) => {
 const Tabstrip = (props) => {
   const root = useRef(null);
   const overflowButton = useRef(null);
-  const innerContainer = useRef(null);
   //TODO useTabs should have no knkwledge of overflowing. useOverflowObserver
   // should return  alist of visible tabs and these should be managed by
   // useTabstrip
@@ -40,15 +38,14 @@ const Tabstrip = (props) => {
     style,
     title,
     value,
+    ...rootProps
   } = props;
 
-  const rootHeight = 36; // TODO read from Theme
-  const overflowedItems = useOverflowObserver(
-    innerContainer,
-    rootHeight,
-    value,
-    orientation
-  );
+  const [
+    innerContainerRef,
+    overflowedItems,
+    resetOverflow,
+  ] = useOverflowObserver(orientation, "Tabstrip");
 
   const { tabProps, tabRefs, activateTab } = useTabstrip(props, root);
 
@@ -63,6 +60,13 @@ const Tabstrip = (props) => {
     console.log(`Label Edited [${index}] = ${label}`);
   };
 
+  // shouldn't we use ref for this ?
+  useLayoutEffect(() => {
+    if (overflowedItems.find((item) => item.index === value)) {
+      resetOverflow();
+    }
+  }, [overflowedItems, value]);
+
   const renderContent = () => {
     const tabs = [];
 
@@ -71,12 +75,15 @@ const Tabstrip = (props) => {
       const onLabelEdited = child.props.editable
         ? handleLabelEdited
         : undefined;
+      const overflowed =
+        overflowedItems.findIndex((item) => item.index === index) !== -1;
       tabs.push(
         React.cloneElement(child, {
           index,
           ...tabProps,
           "data-index": index,
           "data-priority": selected ? 0 : 2,
+          "data-overflowed": overflowed ? true : undefined,
           onLabelEdited,
           orientation,
           ref: tabRefs[index],
@@ -89,7 +96,7 @@ const Tabstrip = (props) => {
       <OverflowMenu
         className="Tabstrip-overflowMenu"
         data-priority={1}
-        data-index={tabs.length - 1}
+        data-index={tabs.length}
         data-overflow-indicator
         key="overflow"
         onChange={handleOverflowChange}
@@ -102,7 +109,7 @@ const Tabstrip = (props) => {
       tabs.push(
         <AddTabButton
           data-priority={1}
-          data-index={tabs.length - 1}
+          data-index={tabs.length}
           key="Tabstrip-addButton"
           onClick={onAddTab}
           title={title}
@@ -115,6 +122,7 @@ const Tabstrip = (props) => {
 
   return (
     <div
+      {...rootProps}
       className={cx(
         "Tabstrip",
         `Tabstrip-${density}Density`,
@@ -126,7 +134,7 @@ const Tabstrip = (props) => {
     >
       <div
         className="Tabstrip-inner"
-        ref={innerContainer}
+        ref={innerContainerRef}
         style={{ lineHeight: "36px" }}
       >
         {renderContent()}
@@ -134,7 +142,7 @@ const Tabstrip = (props) => {
       {showActivationIndicator ? (
         <ActivationIndicator
           orientation={orientation}
-          tabRef={tabRefs[value]}
+          tabRef={tabRefs[value ?? 0]}
         />
       ) : null}
     </div>

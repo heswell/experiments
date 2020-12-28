@@ -11,7 +11,9 @@ export default function useBreakPoints(
   const breakPoints = breakPointsProp
     ? Object.entries(breakPointsProp).sort(byDescendingStopSize)
     : null;
-  const minWidth = breakPoints ? breakPoints[breakPoints.length - 1][1] : 0;
+  const minWidth = breakPoints
+    ? breakPoints[breakPoints.length - 1][1]
+    : undefined;
   // TODO how do we identify the default
   const size = useRef("lg");
 

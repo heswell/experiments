@@ -1,5 +1,5 @@
 import React from "react";
-import { Toolbar } from "./toolbar";
+import { Toolbar } from "@heswell/toolkit-2.0";
 import { CloseIcon } from "./icons";
 import { useViewAction } from "./ViewContext";
 
