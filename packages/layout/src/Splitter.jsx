@@ -13,13 +13,16 @@ const Splitter = React.memo(function Splitter({
   onDragStart,
   // We only need the layout path, so it can be reported with the focus events
   path,
-  style
+  style,
 }) {
+  const ignoreClick = useRef(null);
+  const rootRef = useRef(null);
   const lastPos = useRef(null);
   const [active, setActive] = useState(false);
 
   const handleMouseMove = useCallback(
     (e) => {
+      ignoreClick.current = true;
       const pos = e[column ? "clientY" : "clientX"];
       const diff = pos - lastPos.current;
       // we seem to get a final value of zero
@@ -53,44 +56,55 @@ const Splitter = React.memo(function Splitter({
     [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive]
   );
 
-  const handleKeyDown = ({key, shiftKey}) => {
+  const handleKeyDown = ({ key, shiftKey }) => {
     // TODO calc max distance
     const distance = shiftKey ? 10 : 1;
-    if (column && key === 'ArrowDown'){
+    if (column && key === "ArrowDown") {
       onDrag(index, distance);
-    } else if (column && key === 'ArrowUp'){
+    } else if (column && key === "ArrowUp") {
       onDrag(index, -distance);
-    } else if (!column && key === 'ArrowLeft'){
+    } else if (!column && key === "ArrowLeft") {
       onDrag(index, -distance);
-    } else if (!column && key === 'ArrowRight'){
+    } else if (!column && key === "ArrowRight") {
       onDrag(index, distance);
     }
-  }
+  };
 
   const handleFocus = (e) => {
+    console.log("Splitter handleFocus");
     // THis might be overkill - maybe wait until drag actually starts
     onDragStart(index);
     dispatch({
       type: Action.FOCUS_SPLITTER,
       path,
-      index
+      index,
     });
-  }
+  };
+
+  const handleClick = () => {
+    if (ignoreClick.current) {
+      ignoreClick.current = false;
+    } else {
+      rootRef.current.focus();
+    }
+  };
 
   const handleBlur = (e) => {
     dispatch({
       type: Action.BLUR_SPLITTER,
-      relatedTarget: e.relatedTarget
+      relatedTarget: e.relatedTarget,
     });
-  }
+  };
 
   const className = cx("Splitter", { active, column });
   return (
     <div
       className={className}
+      ref={rootRef}
       role="separator"
       style={style}
       onBlur={handleBlur}
+      onClick={handleClick}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}

@@ -48,8 +48,13 @@ export const SimpleToolbar = () => (
       <ToolbarButton iconName="filter" />
       <ToolbarButton iconName="user" />
       <ToolbarButton iconName="group" />
+      <ToolbarButton iconName="tear-out" />
+      <ToolbarButton iconName="double-chevron-down" />
+      <ToolbarButton iconName="pin" />
+      <ToolbarButton iconName="settings" />
+      <ToolbarButton iconName="settings-solid" />
     </Toolbar>
-    <div data-resizeable style={{ width: 0, backgroundColor: "white" }} />
+    <div data-resizeable style={{ width: 350, backgroundColor: "white" }} />
   </Flexbox>
 );
 

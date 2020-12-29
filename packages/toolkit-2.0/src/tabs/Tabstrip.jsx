@@ -62,9 +62,10 @@ const Tabstrip = (props) => {
 
   // shouldn't we use ref for this ?
   useLayoutEffect(() => {
-    if (overflowedItems.find((item) => item.index === value)) {
-      resetOverflow();
-    }
+    //TODO only do this if there is space to display the slectedItem
+    // if (overflowedItems.find((item) => item.index === value)) {
+    //   resetOverflow();
+    // }
   }, [overflowedItems, value]);
 
   const renderContent = () => {
@@ -82,7 +83,7 @@ const Tabstrip = (props) => {
           index,
           ...tabProps,
           "data-index": index,
-          "data-priority": selected ? 0 : 2,
+          "data-priority": selected ? 1 : 3,
           "data-overflowed": overflowed ? true : undefined,
           onLabelEdited,
           orientation,
@@ -95,7 +96,7 @@ const Tabstrip = (props) => {
     tabs.push(
       <OverflowMenu
         className="Tabstrip-overflowMenu"
-        data-priority={1}
+        data-priority={0}
         data-index={tabs.length}
         data-overflow-indicator
         key="overflow"
@@ -108,7 +109,7 @@ const Tabstrip = (props) => {
     if (enableAddTab) {
       tabs.push(
         <AddTabButton
-          data-priority={1}
+          data-priority={2}
           data-index={tabs.length}
           key="Tabstrip-addButton"
           onClick={onAddTab}

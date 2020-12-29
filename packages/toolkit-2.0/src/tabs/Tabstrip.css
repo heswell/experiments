@@ -5,6 +5,7 @@
   position: relative;
   overflow: hidden;
   display: flex;
+  min-width: 28px;
 }
 
 .Tabstrip-touchDensity {

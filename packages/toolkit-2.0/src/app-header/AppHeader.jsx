@@ -27,7 +27,8 @@ const AppHeader = ({ children, className, density: densityProp, style }) => {
       style={style}
     >
       <div className="AppHeader-innerContainer" ref={innerContainerRef}>
-        <div className="responsive-pillar" />
+        {/* <div className="responsive-pillar" /> */}
+        <OverflowMenu source={overflowedItems} />
         {children}
       </div>
     </div>
