@@ -5,7 +5,7 @@ import { Button, Dropdown, Icon } from "@heswell/toolkit-2.0";
 import "./OverflowMenu.css";
 
 const OverflowMenu = forwardRef(function OverflowMenu(
-  { className, overflowOffsetLeft: left, source = [], ...rest },
+  { iconName = "more", overflowOffsetLeft: left, source = [], ...rest },
   ref
 ) {
   console.log(`OverFlowMenu source.length = ${source.length}`);
@@ -50,7 +50,7 @@ const OverflowMenu = forwardRef(function OverflowMenu(
             <Icon
               accessibleText="overflow menu"
               className="OverflowMenu-icon"
-              name="more"
+              name={iconName}
             />
           </Button>
         );

@@ -27,4 +27,5 @@
 
 [data-overflowed] {
   order: 99;
+  visibility: hidden;
 }

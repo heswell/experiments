@@ -49,7 +49,6 @@ const measureChildNodes = ({ current: innerEl }) => {
       if (index) {
         const width = measureNode(node);
         if (overflowed) {
-          console.log(`remove overflowed flag from ${index}`);
           delete node.dataset.overflowed;
         }
         list.push({
@@ -92,15 +91,15 @@ export default function useOverflowObserver(
 
   const markOverflowingItems = useCallback(
     (visibleContentWidth, containerWidth) => {
+      let result = false;
       while (visibleContentWidth > containerWidth) {
         const { index, width } = moveOverflowItem(visibleRef, overflowedRef);
         visibleContentWidth -= width;
         const target = ref.current.querySelector(`[data-index='${index}']`);
         target.dataset.overflowed = true;
+        result = true;
       }
-      if (!overflowingRef.current && overflowedRef.current.length > 0) {
-        setOverflowing(true);
-      }
+      return result;
     },
     [overflowingRef, setOverflowing]
   );
@@ -113,8 +112,6 @@ export default function useOverflowObserver(
         0
       );
       let diff = containerWidth - visibleContentWidth;
-
-      console.log(`removeOverflowIfSpaceAllows diff=${diff}`);
 
       while (overflowedRef.current.length > 0) {
         const { width: nextWidth } = overflowedRef.current[
@@ -158,32 +155,38 @@ export default function useOverflowObserver(
       const wasOverflowing = overflowingRef.current;
       const isOverflowing = containerHeight > rootDepth.current;
       const containerHasGrown = containerWidth > rootSize.current;
-      console.log(`resizeHandler<${label}>. containerWidth=${containerWidth}`);
+      // console.log(
+      //   `%cresizeHandler<${label}> containerHasGrown ${containerHasGrown}, wasOverflowing=${wasOverflowing} isOverflowing=${isOverflowing} containerWidth=${containerWidth} containerHeight=${containerHeight}`,
+      //   "color:brown;font-weight: bold;"
+      // );
       if (!wasOverflowing && !isOverflowing) {
-        console.log(
-          `we were not overflowing and we're still not, nothing to do`
-        );
+        // nothing to do
       } else if (!wasOverflowing && isOverflowing) {
         // TODO if there is no overflow indicator, there is nothing to do here
-        console.log(`enter OVERFLOW, measurements needed`);
         // This is when we need to add width to measurements we are tracking
-        resetMeasurements(true);
+        resetMeasurements();
+        setOverflowing(true);
       } else if (wasOverflowing && isOverflowing) {
         let renderedWidth = visibleRef.current.reduce(addAll, 0);
-        console.log(
-          `still overflowing, might only be caised by overflow indicator, though, rendered width ${renderedWidth}`
-        );
         if (containerWidth < renderedWidth) {
-          markOverflowingItems(renderedWidth, containerWidth);
-          // Note: we only need to register listener for width once we have overflow, which
-          // can be driven by height change
-        } else if (wasOverflowing && containerHasGrown) {
+          if (markOverflowingItems(renderedWidth, containerWidth)) {
+            forceUpdate({});
+          }
+        } else if (containerHasGrown) {
           if (removeOverflowIfSpaceAllows(containerWidth)) {
-            console.log("ITEM REMOVED FROM OVERFLOW, RENDER REQUIRED");
             if (overflowingRef.current && overflowedRef.current.length === 0) {
-              console.log("NO LONGER OVERFLOWING");
               setOverflowing(false);
+            } else {
+              forceUpdate({});
             }
+          }
+        }
+      } else if (wasOverflowing && containerHasGrown) {
+        if (removeOverflowIfSpaceAllows(containerWidth)) {
+          if (overflowingRef.current && overflowedRef.current.length === 0) {
+            setOverflowing(false);
+          } else {
+            forceUpdate({});
           }
         }
       }
@@ -214,9 +217,6 @@ export default function useOverflowObserver(
 
       if (isOverflowing) {
         const measurements = measureChildNodes(ref);
-
-        console.log(`Reset Measurements for ${label}`);
-
         visibleRef.current = measurements;
         overflowedRef.current = [];
         //TODO how do we determine what this will be. We could first estimate, then track it,
@@ -228,13 +228,15 @@ export default function useOverflowObserver(
           containerSize - overflowIndicatorSize
         );
 
+        setOverflowing(true);
+
         if (withForce) {
           forceUpdate({});
         }
       } else {
         // TODO first-time in this is fine, but what if markOverflowingItems has changed ?
+        //TODO don't do this here
         overflowingRef.current = false;
-        console.log("No overflow, nothing to do yet");
       }
     },
     [ref, markOverflowingItems]
@@ -269,10 +271,9 @@ export default function useOverflowObserver(
   useLayoutEffect(() => {
     async function measure() {
       await document.fonts.ready;
-      resetMeasurements(false);
+      resetMeasurements();
     }
     if (orientation === "horizontal") {
-      console.log("ref change, measure");
       measure();
     }
   }, [ref, resetMeasurements]);

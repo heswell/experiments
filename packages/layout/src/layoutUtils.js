@@ -52,9 +52,13 @@ function getLayoutProps(
   parentType = null,
   previousLayout
 ) {
-  const { layoutId, path: prevPath, id: prevId = layoutId } = getProps(
-    previousLayout
-  );
+  const {
+    layoutId,
+    "data-path": dataPath,
+    path: prevPath = dataPath,
+    id: prevId = layoutId,
+    style: prevStyle,
+  } = getProps(previousLayout);
   // console.log(
   //   `getLayoutProps "${path}" ${type} ["${prevPath}" ${typeOf(
   //     previousLayout
@@ -64,10 +68,11 @@ function getLayoutProps(
   // TODO is there anything else we can re-use from previousType ?
   const id = prevMatch ? prevId : uuid();
   const key = id;
-  const style = getStyle(type, props, parentType);
+  //TODO this might be wrong if client has updated style ?
+  const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
   return isLayoutComponent(type)
     ? { layoutId: id, key, dispatch, path, style, type }
-    : { id, key, style };
+    : { id, key, style, "data-path": path };
 }
 
 function getChildLayoutProps(

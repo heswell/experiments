@@ -4,11 +4,10 @@
   display: flex;
   height: var(--size-stackable-medium);
   justify-content: flex-start;
-  /* overflow: hidden; */
+  overflow: hidden;
   position: relative;
   font-family: var(--typography-font-family);
   min-width: 28px;
-  background-color: yellow;
 }
 
 .Toolbar.sm {
@@ -27,7 +26,6 @@
   align-items: center;
   justify-content: inherit;
   flex: 1;
-  background-color: rgba(255, 0, 0, 0.3);
 }
 
 /* .Toolbar .Tool {

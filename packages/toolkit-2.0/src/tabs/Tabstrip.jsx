@@ -41,6 +41,9 @@ const Tabstrip = (props) => {
     ...rootProps
   } = props;
 
+  const selectedIndex = useRef(value);
+  const childCount = useRef(React.Children.count(children));
+
   const [
     innerContainerRef,
     overflowedItems,
@@ -62,11 +65,20 @@ const Tabstrip = (props) => {
 
   // shouldn't we use ref for this ?
   useLayoutEffect(() => {
-    //TODO only do this if there is space to display the slectedItem
-    // if (overflowedItems.find((item) => item.index === value)) {
-    //   resetOverflow();
-    // }
+    // We don't care about changes to overflowedItems here, the overflowObserver
+    // always does the right thing. We only care about changes to selected tab
+    if (selectedIndex.current !== value) {
+      resetOverflow();
+      selectedIndex.current = value;
+    }
   }, [overflowedItems, value]);
+
+  useLayoutEffect(() => {
+    if (React.Children.count(children) !== childCount.current) {
+      childCount.current = React.Children.count(children);
+      resetOverflow();
+    }
+  }, [children]);
 
   const renderContent = () => {
     const tabs = [];
@@ -120,6 +132,8 @@ const Tabstrip = (props) => {
 
     return tabs;
   };
+
+  console.log(`Tabstrip Render`);
 
   return (
     <div
