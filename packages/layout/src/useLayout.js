@@ -85,8 +85,8 @@ const useLayout = (layoutType, props, customDispatcher) => {
   }
 
   return isRoot
-    ? [state.current, dispatchLayoutAction.current, ref]
-    : [props, props.dispatch, ref];
+    ? [state.current, ref, dispatchLayoutAction.current, isRoot]
+    : [props, ref];
 };
 
 export default useLayout;

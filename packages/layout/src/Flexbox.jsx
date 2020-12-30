@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import cx from "classnames";
 import Splitter from "./Splitter";
 import useLayout from "./useLayout";
+import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
 import { Action } from "./layout-action";
 import { getProp } from "./utils";
 import { registerComponent } from "./registry/ComponentRegistry";
@@ -23,11 +24,13 @@ const useSizesRef = () => {
 };
 
 const Flexbox = function Flexbox(inputProps) {
-  const [props, dispatch, ref] = useLayout("Flexbox", inputProps);
+  const [props, ref, dispatch, isRoot] = useLayout("Flexbox", inputProps);
   const { children = [], className, layoutId: id, path, style } = props;
   const isColumn = style.flexDirection === "column";
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";
+
+  const layoutDispatch = useLayoutDispatch(dispatch);
 
   const handleDragStart = useCallback(() => {
     setSizes(() =>
@@ -52,17 +55,17 @@ const Flexbox = function Flexbox(inputProps) {
   const handleDragEnd = useCallback(() => {
     const sizes = sizesRef.current;
     clearSizes();
-    dispatch({
+    layoutDispatch({
       type: Action.SPLITTER_RESIZE,
       path,
       sizes,
     });
-  }, [clearSizes, dispatch, path, sizesRef]);
+  }, [clearSizes, layoutDispatch, path, sizesRef]);
 
   const createSplitter = (i) => (
     <Splitter
       column={isColumn}
-      dispatch={dispatch}
+      dispatch={layoutDispatch}
       index={i}
       key={`splitter-${i}`}
       onDrag={handleDrag}
@@ -99,10 +102,17 @@ const Flexbox = function Flexbox(inputProps) {
     }
     return list;
   };
-  return (
+
+  const container = (
     <div className={cx("Flexbox", className)} id={id} ref={ref} style={style}>
       {children.reduce(injectSplitters, [])}
     </div>
+  );
+
+  return isRoot ? (
+    <LayoutProvider dispatch={dispatch}>{container}</LayoutProvider>
+  ) : (
+    container
   );
 };
 Flexbox.displayName = "Flexbox";

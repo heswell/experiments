@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   Button,
   Icon,
@@ -8,6 +8,7 @@ import {
   Tooltray,
 } from "@heswell/toolkit-2.0";
 import useLayout from "./useLayout";
+import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
 import { Action } from "./layout-action";
 import View from "./View";
 import { typeOf } from "./utils";
@@ -15,7 +16,6 @@ import Component from "./Component";
 // import { TabPanel } from "./tabs";
 import ViewContext, { useViewActionDispatcher } from "./ViewContext";
 import {
-  isContainer,
   isLayoutComponent,
   registerComponent,
 } from "./registry/ComponentRegistry";
@@ -50,7 +50,7 @@ const MaximizeIcon = () => (
 import "./Stack.css";
 
 const Stack = (inputProps) => {
-  const [props, dispatch, ref] = useLayout("Stack", inputProps);
+  const [props, ref, dispatch, isRoot] = useLayout("Stack", inputProps);
   const {
     enableAddTab,
     layoutId: id,
@@ -61,10 +61,12 @@ const Stack = (inputProps) => {
     style,
   } = props;
 
-  const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
+  const layoutDispatch = useLayoutDispatch(dispatch);
+
+  const dispatchViewAction = useViewActionDispatcher(ref, path, layoutDispatch);
 
   const handleTabSelection = (e, nextIdx) => {
-    dispatch({ type: Action.SWITCH_TAB, path: props.path, nextIdx });
+    layoutDispatch({ type: Action.SWITCH_TAB, path: props.path, nextIdx });
     if (onTabSelectionChanged) {
       onTabSelectionChanged(nextIdx);
     }
@@ -72,14 +74,14 @@ const Stack = (inputProps) => {
 
   const handleDeleteTab = (e, tabIndex) => {
     const doomedChild = props.children[tabIndex];
-    dispatch({
+    layoutDispatch({
       type: Action.REMOVE,
       path: doomedChild.props.path,
     });
   };
 
   const handleAddTab = (e, tabIndex) => {
-    dispatch({
+    layoutDispatch({
       type: Action.ADD,
       component: <Component style={{ backgroundColor: "pink" }} />,
     });
@@ -107,7 +109,9 @@ const Stack = (inputProps) => {
 
   const child = activeChild();
 
-  return (
+  //TODO roll ViewContext into LayoutContext
+
+  const container = (
     <div className="Tabs" style={style} id={id} ref={ref}>
       <ViewContext.Provider value={{ dispatch: dispatchViewAction }}>
         {showTabs ? (
@@ -134,7 +138,8 @@ const Stack = (inputProps) => {
         ) : (
           <View
             className="TabPanel"
-            dispatch={dispatch}
+            // don't think we need this
+            dispatch={layoutDispatch}
             id={`${id}-${props.active || 0}-tab`}
             ariaLabelledBy={`${id}-${props.active || 0}`}
             rootId={id}
@@ -144,6 +149,12 @@ const Stack = (inputProps) => {
         )}
       </ViewContext.Provider>
     </div>
+  );
+
+  return isRoot ? (
+    <LayoutProvider dispatch={layoutDispatch}>{container}</LayoutProvider>
+  ) : (
+    container
   );
 };
 Stack.displayName = "Stack";

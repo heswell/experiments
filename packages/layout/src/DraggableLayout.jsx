@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { Action } from "./layout-action";
 import { Draggable, DragContainer } from "./drag-drop/Draggable";
 import useLayout from "./useLayout";
+import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
 import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./DraggableLayout.css";
@@ -58,11 +59,13 @@ const DraggableLayout = (inputProps) => {
     [prepareToDrag]
   );
 
-  const [props, dispatchLayoutAction, ref] = useLayout(
+  const [props, ref, dispatchLayoutAction, isRoot] = useLayout(
     "DraggableLayout",
     inputProps,
     customDispatcher
   );
+
+  const layoutDispatch = useLayoutDispatch(dispatchLayoutAction);
 
   const { className: classNameProp, drag, layoutId, style } = props;
 
@@ -79,7 +82,7 @@ const DraggableLayout = (inputProps) => {
 
   const handleDrop = useCallback(
     (dropTarget, targetRect) => {
-      dispatchLayoutAction({
+      layoutDispatch({
         type: Action.DRAG_DROP,
         dropTarget,
         targetRect,
@@ -88,7 +91,7 @@ const DraggableLayout = (inputProps) => {
       dragOperation.current = null;
       setDrag(-1.0);
     },
-    [dispatchLayoutAction, drag]
+    [layoutDispatch, drag]
   );
 
   const dragStart = useCallback(
@@ -154,11 +157,17 @@ const DraggableLayout = (inputProps) => {
 
   const className = classnames("DraggableLayout", classNameProp);
 
-  return (
+  const container = (
     <div className={className} id={layoutId} ref={ref} style={style}>
       {props.children || props}
       {dragComponent}
     </div>
+  );
+
+  return isRoot ? (
+    <LayoutProvider dispatch={layoutDispatch}>{container}</LayoutProvider>
+  ) : (
+    container
   );
 };
 

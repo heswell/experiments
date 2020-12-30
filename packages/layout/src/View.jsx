@@ -4,11 +4,13 @@ import Header from "./Header";
 import { registerComponent } from "./registry/ComponentRegistry";
 import ViewContext, { useViewActionDispatcher } from "./ViewContext";
 import useLayout from "./useLayout";
+import { useLayoutDispatch } from "./LayoutContext";
 
 import "./View.css";
 
 const View = React.memo(function View(inputProps) {
-  const [props, dispatch, ref] = useLayout("View", inputProps);
+  const [props, ref] = useLayout("View", inputProps);
+  const layoutDispatch = useLayoutDispatch();
   const {
     children,
     className,
@@ -18,7 +20,7 @@ const View = React.memo(function View(inputProps) {
     style,
     title,
   } = props;
-  const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
+  const dispatchViewAction = useViewActionDispatcher(ref, path, layoutDispatch);
 
   const headerProps = typeof header === "object" ? header : {};
   return (

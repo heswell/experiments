@@ -5,6 +5,8 @@ export { default as Stack } from "./src/Stack";
 export { default as View } from "./src/View";
 export { default as ViewContext } from "./src/ViewContext";
 export { useViewContext, useViewAction } from "./src/ViewContext";
+export { default as LayoutContext } from "./src/LayoutContext";
+export { LayoutProvider, useLayoutDispatch } from "./src/LayoutContext";
 export { default as Component } from "./src/Component";
 export { registerComponent } from "./src/registry/ComponentRegistry";
 export { applyLayoutProps } from "./src/layoutUtils";

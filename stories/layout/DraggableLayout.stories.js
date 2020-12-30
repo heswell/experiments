@@ -186,6 +186,7 @@ export const ComplexNestedLayout = () => (
 
           <Flexbox resizeable style={{ flex: 1 }}>
             <Stack
+              showTabs
               enableAddTab
               resizeable
               style={{ flex: 1 }}
