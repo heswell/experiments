@@ -3,6 +3,7 @@ import cx from "classnames";
 
 import { useViewContext } from "@heswell/layout";
 import { OverflowMenu, useOverflowObserver } from "../responsive";
+import { useDensity } from "../theme";
 
 import * as icon from "@heswell/layout/src/icons";
 import { registerComponent } from "@heswell/layout/src/registry/ComponentRegistry";
@@ -18,8 +19,10 @@ export const Tooltray = ({ align = "left", children, className }) => {
 const Toolbar = ({
   children,
   className,
+  density: densityProp,
   draggable,
   id,
+  maxRows: _1,
   orientation = "horizontal",
   showTitle,
   style,
@@ -31,15 +34,11 @@ const Toolbar = ({
   const root = useRef(null);
   const overflowButton = useRef(null);
   const { path, title, dispatch: dispatchViewAction } = useViewContext();
+  const density = useDensity(densityProp);
 
   const [innerContainerRef, overflowedItems] = useOverflowObserver(
     orientation,
     "Toolbar"
-  );
-
-  console.log(
-    `%cToolbar render ${overflowedItems.length} overflowed items`,
-    "color:green;font-weight: bold;"
   );
 
   const handleOverflowChange = (e, tab) => {
@@ -104,7 +103,12 @@ const Toolbar = ({
       {...rootProps}
       id={id}
       // breakPoints={stops}
-      className={cx("Toolbar", className)}
+      className={cx(
+        "Toolbar",
+        `Toolbar-${density}Density`,
+        `Toolbar-${orientation}`,
+        className
+      )}
       ref={root}
       onMouseDown={handleMouseDown}
       // onResize={setSize}

@@ -18,8 +18,6 @@ const resizeObserver = new ResizeObserver((entries) => {
         // TODO only return measured sizes
         // const { height, width } = contentRect;
         onResize && onResize(contentRect);
-      } else {
-        console.log(`no change from recorded values`);
       }
     }
   }

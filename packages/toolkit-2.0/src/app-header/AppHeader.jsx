@@ -5,16 +5,14 @@ import { OverflowMenu, useOverflowObserver } from "../responsive";
 
 import "./AppHeader.css";
 
-const AppHeader = ({ children, className, density: densityProp, style }) => {
-  console.log("%c[AppHeader] render", "color:green;font-weight: bold");
+const AppHeader = ({
+  children,
+  className,
+  density: densityProp,
+  id,
+  style,
+}) => {
   const density = useDensity(densityProp);
-
-  useEffect(() => {
-    console.log("%c[AppHeader] mounted", "color:blue;font-weight: bold");
-    return () => {
-      console.log("%c[AppHeader] unmounted", "color:blue;font-weight: bold");
-    };
-  }, []);
 
   const [innerContainerRef, overflowedItems] = useOverflowObserver(
     "horizontal",
@@ -24,6 +22,7 @@ const AppHeader = ({ children, className, density: densityProp, style }) => {
   return (
     <div
       className={cx("AppHeader", `AppHeader-${density}Density`, className)}
+      id={id}
       style={style}
     >
       <div className="AppHeader-innerContainer" ref={innerContainerRef}>

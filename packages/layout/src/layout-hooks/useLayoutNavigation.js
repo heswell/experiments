@@ -28,14 +28,14 @@ function getPrevTarget(root, { type, path, focusVisible, index }) {
 
 function focusElement(root, path) {
   const {
-    props: { layoutId },
+    props: { id, layoutId = id },
   } = followPath(root, path);
   const el = document.getElementById(layoutId);
   el.focus();
 }
 function addFocusVisible(root, path) {
   const {
-    props: { layoutId },
+    props: { id, layoutId = id },
   } = followPath(root, path);
   const el = document.getElementById(layoutId);
   el.classList.add("focus-visible");
@@ -43,7 +43,7 @@ function addFocusVisible(root, path) {
 
 function removeFocusVisible(root, path) {
   const {
-    props: { layoutId },
+    props: { id, layoutId = id },
   } = followPath(root, path);
   const el = document.getElementById(layoutId);
   el.classList.remove("focus-visible");
@@ -119,7 +119,7 @@ export default function useLayoutNavigation(
         removeFocusVisible(stateRef.current, withFocus.current.path);
       }
       if (target) {
-        const { path } = target.props;
+        const { "data-path": dataPath, path = dataPath } = target.props;
         if (path === withFocus.current.path) {
           withFocus.current.focusVisible = true;
           addFocusVisible(stateRef.current, withFocus.current.path);

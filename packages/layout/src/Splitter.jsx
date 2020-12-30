@@ -18,7 +18,42 @@ const Splitter = React.memo(function Splitter({
   const ignoreClick = useRef(null);
   const rootRef = useRef(null);
   const lastPos = useRef(null);
+
   const [active, setActive] = useState(false);
+
+  const handleKeyDownInitDrag = useCallback(
+    (evt) => {
+      const { key } = evt;
+      const horizontalMove = key === "ArrowLeft" || key === "ArrowRIght";
+      const verticalMove = key === "ArrowUp" || key === "ArrowDown";
+      if ((column && verticalMove) || (!column && horizontalMove)) {
+        onDragStart(index);
+        handleKeyDownDrag(evt);
+        keyDownHandlerRef.current = handleKeyDownDrag;
+      }
+    },
+    [column, handleKeyDownDrag, onDrag]
+  );
+
+  const handleKeyDownDrag = useCallback(
+    ({ key, shiftKey }) => {
+      // TODO calc max distance
+      const distance = shiftKey ? 10 : 1;
+      if (column && key === "ArrowDown") {
+        onDrag(index, distance);
+      } else if (column && key === "ArrowUp") {
+        onDrag(index, -distance);
+      } else if (!column && key === "ArrowLeft") {
+        onDrag(index, -distance);
+      } else if (!column && key === "ArrowRight") {
+        onDrag(index, distance);
+      }
+    },
+    [column, onDrag]
+  );
+
+  const keyDownHandlerRef = useRef(handleKeyDownInitDrag);
+  const handleKeyDown = (evt) => keyDownHandlerRef.current(evt);
 
   const handleMouseMove = useCallback(
     (e) => {
@@ -40,6 +75,7 @@ const Splitter = React.memo(function Splitter({
       window.removeEventListener("mouseup", handleMouseUp, false);
       onDragEnd();
       setActive(false);
+      rootRef.current.focus();
     },
     [handleMouseMove, onDragEnd, setActive]
   );
@@ -56,24 +92,7 @@ const Splitter = React.memo(function Splitter({
     [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive]
   );
 
-  const handleKeyDown = ({ key, shiftKey }) => {
-    // TODO calc max distance
-    const distance = shiftKey ? 10 : 1;
-    if (column && key === "ArrowDown") {
-      onDrag(index, distance);
-    } else if (column && key === "ArrowUp") {
-      onDrag(index, -distance);
-    } else if (!column && key === "ArrowLeft") {
-      onDrag(index, -distance);
-    } else if (!column && key === "ArrowRight") {
-      onDrag(index, distance);
-    }
-  };
-
   const handleFocus = (e) => {
-    console.log("Splitter handleFocus");
-    // THis might be overkill - maybe wait until drag actually starts
-    onDragStart(index);
     dispatch({
       type: Action.FOCUS_SPLITTER,
       path,
@@ -94,9 +113,10 @@ const Splitter = React.memo(function Splitter({
       type: Action.BLUR_SPLITTER,
       relatedTarget: e.relatedTarget,
     });
+    keyDownHandlerRef.current = handleKeyDownInitDrag;
   };
 
-  const className = cx("Splitter", { active, column });
+  const className = cx("Splitter", "focusable", { active, column });
   return (
     <div
       className={className}

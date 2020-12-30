@@ -10,18 +10,6 @@
   outline: none;
 }
 
-.Splitter:focus-visible:after {
-  top: -1px;
-  left: 0px;
-  right: 0px;
-  bottom: -1px;
-  content: "";
-  position: absolute;
-  outline-style: dotted;
-  outline-width: 2px;
-  outline-offset: 0;
-}
-
 .Splitter:hover {
   background-color: var(--grey40);
 }

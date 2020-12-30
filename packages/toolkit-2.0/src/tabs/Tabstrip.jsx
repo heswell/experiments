@@ -28,10 +28,13 @@ const Tabstrip = (props) => {
   //TODO useTabs should have no knkwledge of overflowing. useOverflowObserver
   // should return  alist of visible tabs and these should be managed by
   // useTabstrip
+
   const {
     children,
     enableAddTab,
+    keyBoardActivation: _1,
     onAddTab,
+    onDeleteTab: _2,
     orientation = "horizontal",
     density: densityProp,
     showActivationIndicator = true,
@@ -132,8 +135,6 @@ const Tabstrip = (props) => {
 
     return tabs;
   };
-
-  console.log(`Tabstrip Render`);
 
   return (
     <div

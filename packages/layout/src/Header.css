@@ -1,4 +1,16 @@
 .Header {
-  height: var(--size-stackable-medium);
   border-bottom: solid 1px var(--grey40);
+}
+
+.Header-touchDensity {
+  height: var(--size-stackable-touch);
+}
+.Header-lowDensity {
+  height: var(--size-stackable-low);
+}
+.Header-mediumDensity {
+  height: var(--size-stackable-medium);
+}
+.Header-highDensity {
+  height: var(--size-stackable-high);
 }

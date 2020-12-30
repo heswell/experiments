@@ -9,12 +9,26 @@ import "./View.css";
 
 const View = React.memo(function View(inputProps) {
   const [props, dispatch, ref] = useLayout("View", inputProps);
-  const { children, className, layoutId: id, header, path, style, title } = props;
+  const {
+    children,
+    className,
+    layoutId: id,
+    header,
+    path,
+    style,
+    title,
+  } = props;
   const dispatchViewAction = useViewActionDispatcher(ref, path, dispatch);
 
   const headerProps = typeof header === "object" ? header : {};
   return (
-    <div className={cx("View", className)} id={id} ref={ref} style={style} tabIndex={-1}>
+    <div
+      className={cx("View", className)}
+      id={id}
+      ref={ref}
+      style={style}
+      tabIndex={-1}
+    >
       <ViewContext.Provider
         value={{ dispatch: dispatchViewAction, path, title }}
       >
@@ -28,4 +42,4 @@ View.displayName = "View";
 
 export default View;
 
-registerComponent("View", View);
+registerComponent("View", View, "view");

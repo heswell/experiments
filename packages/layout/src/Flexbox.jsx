@@ -29,13 +29,6 @@ const Flexbox = function Flexbox(inputProps) {
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";
 
-  useEffect(() => {
-    console.log("%c[Flexbox] mounted", "color:blue;font-weight: bold");
-    return () => {
-      console.log("%c[Flexbox] unmounted", "color:blue;font-weight: bold");
-    };
-  }, []);
-
   const handleDragStart = useCallback(() => {
     setSizes(() =>
       Array.from(ref.current.childNodes)
@@ -82,6 +75,7 @@ const Flexbox = function Flexbox(inputProps) {
   const injectSplitters = (list, child, i, arr) => {
     const { flexBasis, [dimension]: layoutSize } = child.props.style;
     const draggedSize = sizesRef.current[i];
+
     const cloneChild =
       draggedSize !== undefined &&
       draggedSize !== flexBasis &&
@@ -92,6 +86,7 @@ const Flexbox = function Flexbox(inputProps) {
         style: {
           ...child.props.style,
           flexBasis: draggedSize,
+          [dimension]: "auto",
         },
       });
       list.push(dolly);

@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import { usePopper } from "react-popper";
-console.log({ usePopper });
 const Popper = ({
   anchorEl,
   children,

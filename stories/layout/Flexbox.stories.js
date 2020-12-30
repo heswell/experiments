@@ -63,7 +63,20 @@ export const SingleChild = () => (
   </Flexbox>
 );
 
-export const TerraceTwoChildren = () => (
+export const SimpleTerrace = () => (
+  <Flexbox
+    style={{
+      width: 600,
+      height: 600,
+      flexDirection: "column",
+      border: "solid 1px lightgrey",
+    }}
+  >
+    <Component resizeable style={{ height: 150 }} />
+    <Component resizeable style={{ flex: 1 }} />
+  </Flexbox>
+);
+export const TerraceWithBorderPaddingMargin = () => (
   <Flexbox
     style={{
       width: 600,
@@ -151,23 +164,18 @@ export const TerraceWithHeader = () => (
 );
 
 export const TowerWithinTerrace = () => (
-  <Flexbox style={{ width: 600, height: 300, flexDirection: "row" }}>
-    <Component
-      title="Y Component"
-      style={{ flex: 1, backgroundColor: "yellow" }}
-      resizeable
-    />
+  <Flexbox
+    style={{
+      width: 600,
+      height: 300,
+      flexDirection: "row",
+      border: "solid 1px grey",
+    }}
+  >
+    <Component title="Y Component" style={{ flex: 1 }} resizeable />
     <Flexbox style={{ flex: 1, flexDirection: "column" }} resizeable>
-      <Component
-        title="B Component"
-        style={{ flex: 1, backgroundColor: "blue" }}
-        resizeable
-      />
-      <Component
-        title="R Component"
-        style={{ flex: 1, backgroundColor: "red" }}
-        resizeable
-      />
+      <Component title="B Component" style={{ flex: 1 }} resizeable />
+      <Component title="R Component" style={{ height: 100 }} resizeable />
     </Flexbox>
   </Flexbox>
 );

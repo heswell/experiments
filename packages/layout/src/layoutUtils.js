@@ -53,6 +53,7 @@ function getLayoutProps(
   previousLayout
 ) {
   const {
+    active: prevActive = 0,
     layoutId,
     "data-path": dataPath,
     path: prevPath = dataPath,
@@ -67,11 +68,13 @@ function getLayoutProps(
   const prevMatch = typeOf(previousLayout) === type && path === prevPath;
   // TODO is there anything else we can re-use from previousType ?
   const id = prevMatch ? prevId : uuid();
+  const active = type === "Stack" ? props.active ?? prevActive : undefined;
+
   const key = id;
   //TODO this might be wrong if client has updated style ?
   const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
   return isLayoutComponent(type)
-    ? { layoutId: id, key, dispatch, path, style, type }
+    ? { layoutId: id, key, dispatch, path, style, type, active }
     : { id, key, style, "data-path": path };
 }
 

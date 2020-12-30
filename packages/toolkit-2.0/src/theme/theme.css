@@ -424,3 +424,17 @@
   --actionable-secondary-hover-background: var(--grey200);
   --actionable-secondary-hover-icon: var(--white);
 }
+
+.focusable:focus:after,
+.focusable:focus-visible:after {
+  top: -1px;
+  left: 0px;
+  right: 0px;
+  bottom: -1px;
+  content: "";
+  position: absolute;
+  outline-style: var(--focusable-outline-style);
+  outline-width: var(--focusable-outline-width);
+  outline-offset: var(-focusable-outline-offset);
+  outline-color: var(--focusable-outline-color);
+}

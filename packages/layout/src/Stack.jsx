@@ -9,10 +9,16 @@ import {
 } from "@heswell/toolkit-2.0";
 import useLayout from "./useLayout";
 import { Action } from "./layout-action";
+import View from "./View";
+import { typeOf } from "./utils";
 import Component from "./Component";
-import { TabPanel } from "./tabs";
+// import { TabPanel } from "./tabs";
 import ViewContext, { useViewActionDispatcher } from "./ViewContext";
-import { registerComponent } from "./registry/ComponentRegistry";
+import {
+  isContainer,
+  isLayoutComponent,
+  registerComponent,
+} from "./registry/ComponentRegistry";
 import { maximize, minimize } from "./icons";
 
 const CloseIcon = () => (
@@ -79,7 +85,7 @@ const Stack = (inputProps) => {
     });
   };
 
-  function renderContent() {
+  function activeChild() {
     const {
       active = 0,
       children: { [active]: child },
@@ -98,6 +104,8 @@ const Stack = (inputProps) => {
         deletable={child.props.removable}
       />
     ));
+
+  const child = activeChild();
 
   return (
     <div className="Tabs" style={style} id={id} ref={ref}>
@@ -121,13 +129,19 @@ const Stack = (inputProps) => {
             </Tooltray>
           </Toolbar>
         ) : null}
-        <TabPanel
-          id={`${id}-${props.active || 0}-tab`}
-          ariaLabelledBy={`${id}-${props.active || 0}`}
-          rootId={id}
-        >
-          {renderContent()}
-        </TabPanel>
+        {isLayoutComponent(typeOf(child)) ? (
+          child
+        ) : (
+          <View
+            className="TabPanel"
+            dispatch={dispatch}
+            id={`${id}-${props.active || 0}-tab`}
+            ariaLabelledBy={`${id}-${props.active || 0}`}
+            rootId={id}
+          >
+            {child}
+          </View>
+        )}
       </ViewContext.Provider>
     </div>
   );

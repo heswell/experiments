@@ -8,8 +8,6 @@ const OverflowMenu = forwardRef(function OverflowMenu(
   { iconName = "more", overflowOffsetLeft: left, source = [], ...rest },
   ref
 ) {
-  console.log(`OverFlowMenu source.length = ${source.length}`);
-
   return source.length > 0 ? (
     <Dropdown
       ListProps={{
