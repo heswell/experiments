@@ -16,9 +16,11 @@ import Builder from "../components/layout-builder/layout-builder";
 import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
 
-import "@heswell/layout/dist/index.css";
+import "../story.css";
 import "@heswell/toolkit-2.0/dist/OpenSans.css";
+import "@heswell/toolkit-2.0/dist/ToolkitIcons.css";
 import "@heswell/toolkit-2.0/dist/theme.css";
+import "./DraggableLayout.stories.css";
 
 export default {
   title: "Layout/DraggableLayout",
@@ -35,7 +37,6 @@ registerComponent("StandardToolbar", StandardToolbar);
 const Box = (props) => (
   <div
     style={{
-      backgroundColor: "lightgrey",
       cursor: "pointer",
       height: "100%",
       display: "flex",
@@ -62,6 +63,7 @@ const DraggableBox = (props) => {
     </View>
   );
 };
+registerComponent("DraggableBox", DraggableBox, "view");
 
 export const SimpleNesting = () => (
   <DraggableLayout style={{ width: 800, height: 500 }}>
@@ -99,7 +101,7 @@ export const SimpleNesting = () => (
 
 export const CustomDrag = () => (
   // <SelectionProvider>
-  <DraggableLayout>
+  <DraggableLayout className="custom1" style={{ border: "solid 1px grey" }}>
     <Flexbox
       style={{ width: 800, height: 500, flexDirection: "row" }}
       splitterSize={1}

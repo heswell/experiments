@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import classnames from "classnames";
 import { Action } from "./layout-action";
 import { Draggable, DragContainer } from "./drag-drop/Draggable";
 import useLayout from "./useLayout";
 import { registerComponent } from "./registry/ComponentRegistry";
 
-import './DraggableLayout.css';
+import "./DraggableLayout.css";
 
 const EMPTY_OBJECT = {};
 
@@ -25,7 +26,7 @@ const DraggableLayout = (inputProps) => {
         dragRect,
         dragPos,
         component,
-        instructions
+        instructions,
       });
     },
     [dispatchLayoutAction]
@@ -63,11 +64,13 @@ const DraggableLayout = (inputProps) => {
     customDispatcher
   );
 
-  const {drag, layoutId, style} = props;
+  const { className: classNameProp, drag, layoutId, style } = props;
 
-  if (props?.dropTarget){
-    const {path: dragContainerPath} = props.children[0].props; 
-    console.log(`this container is a draggable root 2) ${props.path} register child path ${dragContainerPath}`)
+  if (props?.dropTarget) {
+    const { path: dragContainerPath } = props.children[0].props;
+    console.log(
+      `this container is a draggable root 2) ${props.path} register child path ${dragContainerPath}`
+    );
     DragContainer.register(dragContainerPath);
   }
 
@@ -80,7 +83,7 @@ const DraggableLayout = (inputProps) => {
         type: Action.DRAG_DROP,
         dropTarget,
         targetRect,
-        targetPosition: dragOperation.current.position
+        targetPosition: dragOperation.current.position,
       });
       dragOperation.current = null;
       setDrag(-1.0);
@@ -95,13 +98,13 @@ const DraggableLayout = (inputProps) => {
       // override for this ?
       const dragTransform = Draggable.initDrag(props, null, dragRect, dragPos, {
         drag: handleDrag,
-        drop: handleDrop
+        drop: handleDrop,
       });
       dragOperation.current = {
         draggable,
         dragRect,
         dragTransform,
-        position: { left, top }
+        position: { left, top },
       };
     },
     [handleDrop, props]
@@ -109,13 +112,7 @@ const DraggableLayout = (inputProps) => {
 
   useEffect(() => {
     if (drag) {
-      const {
-        dragRect,
-        dragPos,
-        dragPath,
-        instructions,
-        draggable
-      } = drag;
+      const { dragRect, dragPos, dragPath, instructions, draggable } = drag;
       dragStart(draggable, dragRect, dragPos, dragPath, instructions);
       setDrag(0.0);
     }
@@ -139,24 +136,26 @@ const DraggableLayout = (inputProps) => {
       draggable,
       dragRect,
       dragTransform,
-      position
+      position,
     } = dragOperation.current;
 
     dragComponent = React.cloneElement(draggable, {
-      className: 'dragging',
+      className: "dragging",
       style: {
         backgroundColor: "white",
         position: "absolute",
         width: dragRect.width,
         height: dragRect.height,
         ...position,
-        ...dragTransform
-      }
+        ...dragTransform,
+      },
     });
   }
 
+  const className = classnames("DraggableLayout", classNameProp);
+
   return (
-    <div className={`DraggableLayout`} id={layoutId} ref={ref} style={style}>
+    <div className={className} id={layoutId} ref={ref} style={style}>
       {props.children || props}
       {dragComponent}
     </div>
@@ -165,4 +164,4 @@ const DraggableLayout = (inputProps) => {
 
 export default DraggableLayout;
 
-registerComponent("DraggableLayout", DraggableLayout, 'container');
+registerComponent("DraggableLayout", DraggableLayout, "container");

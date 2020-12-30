@@ -129,7 +129,9 @@ const Splitter = React.memo(function Splitter({
       onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}
       tabIndex={0}
-    ></div>
+    >
+      <div className="grab-zone" />
+    </div>
   );
 });
 

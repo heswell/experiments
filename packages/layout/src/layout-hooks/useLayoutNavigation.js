@@ -59,54 +59,6 @@ export default function useLayoutNavigation(
   const isRoot = props.dispatch === undefined;
   const withFocus = useRef(null);
 
-  const dispatcher = (action) => {
-    if (action.type === Action.FOCUS) {
-      if (withFocus.current?.path !== action.path) {
-        if (withFocus.current === null) {
-          window.addEventListener("keyup", navHandler);
-        } else if (withFocus.current.focusVisible) {
-          removeFocusVisible(stateRef.current, withFocus.current.path);
-        }
-
-        withFocus.current = {
-          type: "View",
-          path: action.path,
-        };
-      } else if (withFocus.current.focusVisible) {
-        removeFocusVisible(stateRef.current, withFocus.current.path);
-        withFocus.current.focusVisible = false;
-      } else if (withFocus.current.focusing) {
-        withFocus.current.focusVisible = true;
-        addFocusVisible(stateRef.current, withFocus.current.path);
-      }
-      return true;
-    } else if (
-      action.type === Action.BLUR ||
-      action.type === Action.BLUR_SPLITTER
-    ) {
-      if (!layoutRef.current.contains(action.relatedTarget)) {
-        if (withFocus.current.focusVisible) {
-          removeFocusVisible(stateRef.current, withFocus.current.path);
-        }
-        withFocus.current = null;
-        window.removeEventListener("keyup", navHandler);
-      }
-      return true;
-    } else if (action.type === Action.FOCUS_SPLITTER) {
-      if (withFocus.current?.type === "View") {
-        removeFocusVisible(stateRef.current, withFocus.current.path);
-      }
-      withFocus.current = {
-        type: "Splitter",
-        path: action.path,
-        index: action.index,
-      };
-      return true;
-    } else {
-      return customDispatcher && customDispatcher(action);
-    }
-  };
-
   const navHandler = useCallback((e) => {
     if (e.key === "F6") {
       const target = e.shiftKey
@@ -161,5 +113,56 @@ export default function useLayoutNavigation(
     };
   }, [layoutType, props]);
 
+  const dispatcher = isRoot
+    ? (action) => {
+        if (action.type === Action.FOCUS) {
+          if (withFocus.current?.path !== action.path) {
+            if (withFocus.current === null) {
+              window.addEventListener("keyup", navHandler);
+            } else if (withFocus.current.focusVisible) {
+              removeFocusVisible(stateRef.current, withFocus.current.path);
+            }
+
+            withFocus.current = {
+              type: "View",
+              path: action.path,
+            };
+          } else if (withFocus.current.focusVisible) {
+            removeFocusVisible(stateRef.current, withFocus.current.path);
+            withFocus.current.focusVisible = false;
+          } else if (withFocus.current.focusing) {
+            withFocus.current.focusVisible = true;
+            addFocusVisible(stateRef.current, withFocus.current.path);
+          }
+          return true;
+        } else if (
+          action.type === Action.BLUR ||
+          action.type === Action.BLUR_SPLITTER
+        ) {
+          if (!layoutRef.current.contains(action.relatedTarget)) {
+            if (withFocus.current.focusVisible) {
+              removeFocusVisible(stateRef.current, withFocus.current.path);
+            }
+            withFocus.current = null;
+            window.removeEventListener("keyup", navHandler);
+          }
+          return true;
+        } else if (action.type === Action.FOCUS_SPLITTER) {
+          if (withFocus.current?.type === "View") {
+            removeFocusVisible(stateRef.current, withFocus.current.path);
+          }
+          withFocus.current = {
+            type: "Splitter",
+            path: action.path,
+            index: action.index,
+          };
+          return true;
+        } else {
+          return customDispatcher && customDispatcher(action);
+        }
+      }
+    : customDispatcher;
+
+  // Navigation is only handled at root layout
   return dispatcher;
 }

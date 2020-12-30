@@ -3,7 +3,7 @@ import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./Component.css";
 
-const Component = function Component({ layoutId: id, isChanged, style }, ref) {
+const Component = function Component({ id, isChanged, style }, ref) {
   return <div className="Component" id={id} style={style} />;
 };
 Component.displayName = "Component";

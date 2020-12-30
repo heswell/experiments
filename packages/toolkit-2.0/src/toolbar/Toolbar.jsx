@@ -33,6 +33,7 @@ const Toolbar = ({
 }) => {
   const root = useRef(null);
   const overflowButton = useRef(null);
+  //TODO path is purely  alayout concern
   const { path, title, dispatch: dispatchViewAction } = useViewContext();
   const density = useDensity(densityProp);
 
@@ -62,7 +63,7 @@ const Toolbar = ({
               ? () => {
                   dispatchViewAction(tool.props.action);
                 }
-              : undefined,
+              : tool.props.onClick,
           });
         } else {
           const Icon = icon[`${capitalize(tool)}Icon`];
@@ -87,7 +88,7 @@ const Toolbar = ({
   );
 
   const renderTitle = () => {
-    return <span className="toolbar-title">{`${title} ${path}`}</span>;
+    return <span className="toolbar-title">{title}</span>;
   };
 
   // useDraggable

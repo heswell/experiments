@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { uuid } from "@heswell/utils";
-import { Action, applyLayoutProps, Component, useViewContext, View } from "@heswell/layout";
+import {
+  Action,
+  applyLayoutProps,
+  Component,
+  registerComponent,
+  useViewContext,
+  View,
+} from "@heswell/layout";
 
 import "./Palette.css";
 
@@ -16,11 +23,11 @@ const getDefaultComponents = (dispatchViewAction) =>
           <Component
             style={{
               backgroundColor: "rgba(0,0,255,0.2)",
-              height: "100%"
+              height: "100%",
             }}
           />
         </View>
-      )
+      ),
     },
     {
       caption: "Transmission",
@@ -29,11 +36,11 @@ const getDefaultComponents = (dispatchViewAction) =>
           <Component
             style={{
               backgroundColor: "rgba(0,255,255,0.2)",
-              height: "100%"
+              height: "100%",
             }}
           />
         </View>
-      )
+      ),
     },
     {
       caption: "Shot by both sides",
@@ -42,15 +49,15 @@ const getDefaultComponents = (dispatchViewAction) =>
           <Component
             style={{
               backgroundColor: "rgba(255,255,0,0.2)",
-              height: "100%"
+              height: "100%",
             }}
           />
         </View>
-      )
-    }
+      ),
+    },
   ].map((item) => ({
     ...item,
-    component: applyLayoutProps(item.component, dispatchViewAction)
+    component: applyLayoutProps(item.component, dispatchViewAction),
   }));
 
 const ComponentIcon = ({
@@ -59,7 +66,7 @@ const ComponentIcon = ({
   backgroundColor,
   idx,
   text,
-  onMouseDown
+  onMouseDown,
 }) => {
   const handleMouseDown = (evt) => onMouseDown(evt, idx);
   return (
@@ -88,7 +95,7 @@ const PaletteList = ({ items }) => {
       instructions: {
         DoNotRemove: true,
         DoNotTransform: true,
-        dragThreshold: 0
+        dragThreshold: 0,
       },
       dragRect: {
         left,
@@ -96,8 +103,8 @@ const PaletteList = ({ items }) => {
         right: left + width,
         bottom: top + 150,
         width,
-        height: 100
-      }
+        height: 100,
+      },
     });
   }
 
@@ -125,3 +132,5 @@ export default function Palette({ components, ...props }) {
     </View>
   );
 }
+
+registerComponent("Palette", Palette, "view");

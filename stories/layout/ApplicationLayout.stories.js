@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Flexbox, Stack, View } from "@heswell/layout";
+import { DraggableLayout, Flexbox, Stack, View } from "@heswell/layout";
 import {
   AppHeader,
   Button,
@@ -69,36 +69,46 @@ export const DefaultAppHeader = () => {
         <Stack active={tabIndex} style={{ flex: 1 }}>
           <Flexbox style={{ flexDirection: "column" }}>
             <div style={{ height: 90, borderBottom: "solid 1px grey" }} />
-            <Flexbox style={{ flex: 1 }}>
-              <View header resizeable title="Page 1" style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    height: "100%",
-                    justifyContent: "center",
-                  }}
+            <DraggableLayout style={{ flex: 1 }}>
+              <Flexbox style={{ height: "100%" }}>
+                <View
+                  header
+                  resizeable
+                  title="Section 1"
+                  style={{ width: 200 }}
                 >
-                  <span>Page 1</span>
-                </div>
-              </View>
-              <Flexbox resizeable style={{ flex: 1, flexDirection: "column" }}>
-                <View header resizeable title="Section 2" style={{ flex: 1 }}>
-                  <div style={{ height: "100%" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      height: "100%",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span>Page 1</span>
+                  </div>
                 </View>
-                <Stack resizeable showTabs style={{ height: 150 }}>
-                  <View title="Section 3">
+                <Flexbox
+                  resizeable
+                  style={{ flex: 1, flexDirection: "column" }}
+                >
+                  <View header resizeable title="Section 2" style={{ flex: 1 }}>
                     <div style={{ height: "100%" }} />
                   </View>
-                  <View title="Section 4">
-                    <div style={{ height: "100%" }} />
-                  </View>
-                  <View title="Section 5">
-                    <div style={{ height: "100%" }} />
-                  </View>
-                </Stack>
+                  <Stack resizeable showTabs style={{ height: 150 }}>
+                    <View title="Section 3">
+                      <div style={{ height: "100%" }} />
+                    </View>
+                    <View title="Section 4">
+                      <div style={{ height: "100%" }} />
+                    </View>
+                    <View title="Section 5">
+                      <div style={{ height: "100%" }} />
+                    </View>
+                  </Stack>
+                </Flexbox>
               </Flexbox>
-            </Flexbox>
+            </DraggableLayout>
           </Flexbox>
           <div
             title="Page 2"

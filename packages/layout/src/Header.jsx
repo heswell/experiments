@@ -19,6 +19,10 @@ const Header = ({
     dispatchViewAction("close");
   };
 
+  const handleMouseDown = (evt) => {
+    evt.stopPropagation();
+  };
+
   const className = classnames(
     "Header",
     `Header-${density}Density`,
@@ -32,7 +36,11 @@ const Header = ({
       draggable
       showTitle
     >
-      <Button onClick={handleClose} variant="secondary">
+      <Button
+        onClick={handleClose}
+        onMouseDown={handleMouseDown}
+        variant="secondary"
+      >
         <Icon name="close" />
       </Button>
     </Toolbar>

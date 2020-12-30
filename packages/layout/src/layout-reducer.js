@@ -368,7 +368,7 @@ function wrap(model, source, target, pos, targetRect) {
   const children = modelChildren.slice();
 
   if (finalStep) {
-    const { type, flexDirection } = getLayoutSpec(pos);
+    const { type, flexDirection, showTabs } = getLayoutSpec(pos);
     const active = type === "Stack" || pos.position.SouthOrEast ? 1 : 0;
     target = children[idx];
 
@@ -427,6 +427,7 @@ function wrap(model, source, target, pos, targetRect) {
           type === "Flexbox" && typeOf(model) === "Flexbox"
             ? model.props.splitterSize
             : undefined,
+        showTabs,
         style,
         resizeable: target.props.resizeable,
       },
@@ -621,11 +622,12 @@ function isTerrace(model) {
 
 // maybe in layout-json ?
 function getLayoutSpec(pos) {
-  var type, flexDirection;
+  let type, flexDirection, showTabs;
 
   if (pos.position.Header) {
     type = "Stack";
     flexDirection = "column";
+    showTabs = true;
   } else {
     type = "Flexbox";
     if (pos.position.EastOrWest) {
@@ -635,5 +637,5 @@ function getLayoutSpec(pos) {
     }
   }
 
-  return { type, flexDirection };
+  return { type, flexDirection, showTabs };
 }
