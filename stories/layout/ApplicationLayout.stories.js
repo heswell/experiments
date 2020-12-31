@@ -69,7 +69,7 @@ export const DefaultAppHeader = () => {
         <Stack active={tabIndex} style={{ flex: 1 }}>
           <Flexbox style={{ flexDirection: "column" }}>
             <div style={{ height: 90, borderBottom: "solid 1px grey" }} />
-            <DraggableLayout style={{ flex: 1 }}>
+            <DraggableLayout style={{ flex: 1 }} dropTarget>
               <Flexbox style={{ height: "100%" }}>
                 <View
                   header

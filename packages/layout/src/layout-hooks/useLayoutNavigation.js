@@ -54,7 +54,6 @@ function removeFocusVisible(root, path) {
 export default function useLayoutNavigation(
   layoutType,
   props,
-  customDispatcher,
   layoutRef,
   stateRef
 ) {
@@ -161,10 +160,11 @@ export default function useLayoutNavigation(
           };
           return true;
         } else {
-          return customDispatcher && customDispatcher(action);
+          // return customDispatcher && customDispatcher(action);
+          return false;
         }
       }
-    : customDispatcher;
+    : undefined;
 
   // Navigation is only handled at root layout
   return dispatcher;

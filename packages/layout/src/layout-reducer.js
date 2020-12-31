@@ -89,33 +89,58 @@ function splitterResize(rootProps, { path, sizes }) {
  * is to be extracted and dragged to a new position.
  */
 function dragStart(
-  rootProps,
-  { component, dragRect, dragPos, instructions, path }
+  model,
+  { component, dragContainerPath, dragRect, dragPos, instructions, path }
 ) {
-  // if (React.isValidElement(state)) {
-  var draggable = component || followPath(rootProps, path);
-
-  const newRootProps = {
-    drag: { dragRect, dragPos, dragPath: path, draggable },
-    ...rootProps,
-  };
+  const dragContainer = followPath(model, dragContainerPath);
+  const draggable = component || followPath(model, path);
+  const dragContainerWithDrag = React.isValidElement(dragContainer)
+    ? React.cloneElement(dragContainer, {
+        drag: { dragRect, dragPos, dragPath: path, draggable },
+      })
+    : {
+        ...dragContainer,
+        drag: { dragRect, dragPos, dragPath: path, draggable },
+      };
+  const newRootProps = replaceChild(
+    model,
+    dragContainer,
+    dragContainerWithDrag
+  );
+  // const newRootProps = {
+  //   drag: { dragRect, dragPos, dragPath: path, draggable },
+  //   ...model,
+  // };
 
   if (instructions && instructions.DoNotRemove) {
     return newRootProps;
   } else {
     return _removeChild(newRootProps, draggable);
   }
-  // } else {
-  //   console.log(`layout-reducer: dragStart, expected React element`);
-  // }
 }
 
-function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
+function dragDrop(model, action) {
   const {
+    dragContainerPath,
     dropTarget: { component: target, pos },
     targetRect,
     targetPosition,
   } = action;
+
+  const dragContainer = followPath(model, dragContainerPath);
+  const {
+    drag: { draggable: source },
+  } = getProps(dragContainer);
+  const dragContainerWithoutDrag = React.isValidElement(dragContainer)
+    ? React.cloneElement(dragContainer, {
+        drag: undefined,
+      })
+    : {
+        ...dragContainer,
+        drag: undefined,
+      };
+
+  const newModel = replaceChild(model, dragContainer, dragContainerWithoutDrag);
 
   if (pos.position.Header) {
     if (typeOf(target) === "Stack") {
@@ -130,15 +155,15 @@ function dragDrop({ drag: { draggable: source }, ...rootProps }, action) {
           props: { path: before },
         } = target.props.children[tabIndex]);
       }
-      return insert(rootProps, source, null, before, after);
+      return insert(newModel, source, null, before, after);
     } else {
-      return wrap(rootProps, source, target, pos);
+      return wrap(newModel, source, target, pos);
     }
   } else if (pos.position.Centre) {
-    return replaceChild(rootProps, target, source);
+    return replaceChild(newModel, target, source);
   } else {
     return dropLayoutIntoContainer(
-      rootProps,
+      newModel,
       pos,
       source,
       target,
@@ -161,14 +186,23 @@ function applySize(style, dim, newSize) {
 }
 
 function replaceChild(model, child, replacement) {
-  const { path, style } = child.props;
-  const newChild = React.cloneElement(replacement, {
-    path,
-    style: {
-      ...style,
-      ...replacement.props.style,
-    },
-  });
+  const { path, style } = getProps(child);
+  const newChild = React.isValidElement(replacement)
+    ? React.cloneElement(replacement, {
+        path,
+        style: {
+          ...style,
+          ...replacement.props.style,
+        },
+      })
+    : {
+        ...replacement,
+        path,
+        style: {
+          ...style,
+          ...replacement.style,
+        },
+      };
 
   return swapChild(model, child, newChild);
 }

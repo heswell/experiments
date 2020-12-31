@@ -11,7 +11,7 @@ import { useLayoutDispatch } from "./LayoutContext";
  * layoutModel from props. Root node, if seeded with layoutModel stores this in
  * state and subsequently manages layoutModel in state.
  */
-const useLayout = (layoutType, props, customDispatcher) => {
+const useLayout = (layoutType, props) => {
   const dispatch = useLayoutDispatch();
   const isRoot = dispatch === null;
   const ref = useRef(null);
@@ -22,13 +22,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
   const [, setState] = useState(0);
   const layout = useRef(props.layout);
 
-  customDispatcher = useNavigation(
-    layoutType,
-    props,
-    customDispatcher,
-    ref,
-    state
-  );
+  const navigationDispatcher = useNavigation(layoutType, props, ref, state);
 
   const dispatchLayoutAction = useRef(
     dispatch ||
@@ -38,7 +32,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
         // dispatch a  layout action that will be handled below.It can be used to defer an action
         // that has async pre-requisites or initiate an operation that may or may not progress
         // to actual layour re-render e.g layout drag drop.
-        if (customDispatcher && customDispatcher(action)) {
+        if (navigationDispatcher && navigationDispatcher(action)) {
           return;
         }
 

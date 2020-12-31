@@ -12,6 +12,8 @@ const EMPTY_OBJECT = {};
 
 // We need to add props to restrict drag behaviour to, for example, popups only
 const DraggableLayout = (inputProps) => {
+  const [props, ref, layoutDispatch] = useLayout("DraggableLayout", inputProps);
+
   const prepareToDrag = useCallback(
     (
       { component, dragRect, instructions = EMPTY_OBJECT, path },
@@ -21,9 +23,11 @@ const DraggableLayout = (inputProps) => {
     ) => {
       const dragPos = { x: evt.clientX, y: evt.clientY };
       // we need to wait for this to take effect before we continue with the drag
+      console.log(`dispatch drag started`);
       layoutDispatch({
         type: Action.DRAG_STARTED,
         path,
+        dragContainerPath: props.path,
         dragRect,
         dragPos,
         component,
@@ -51,18 +55,11 @@ const DraggableLayout = (inputProps) => {
           prepareToDrag.bind(null, options),
           options.instructions
         );
-        return true;
       } else {
-        return false;
+        layoutDispatch(action);
       }
     },
     [prepareToDrag]
-  );
-
-  const [props, ref, layoutDispatch, isRoot] = useLayout(
-    "DraggableLayout",
-    inputProps,
-    customDispatcher
   );
 
   const { className: classNameProp, drag, layoutId, style } = props;
@@ -85,6 +82,7 @@ const DraggableLayout = (inputProps) => {
     (dropTarget, targetRect) => {
       layoutDispatch({
         type: Action.DRAG_DROP,
+        dragContainerPath: props.path,
         dropTarget,
         targetRect,
         targetPosition: dragOperation.current.position,
@@ -158,19 +156,13 @@ const DraggableLayout = (inputProps) => {
 
   const className = classnames("DraggableLayout", classNameProp);
 
-  const container = (
-    <div className={className} id={layoutId} ref={ref} style={style}>
-      {props.children || props}
-      {dragComponent}
-    </div>
-  );
-
-  return isRoot ? (
-    <LayoutContext.Provider value={{ dispatch: layoutDispatch }}>
-      {container}
+  return (
+    <LayoutContext.Provider value={{ dispatch: customDispatcher }}>
+      <div className={className} id={layoutId} ref={ref} style={style}>
+        {props.children || props}
+        {dragComponent}
+      </div>
     </LayoutContext.Provider>
-  ) : (
-    container
   );
 };
 
