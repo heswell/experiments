@@ -1,19 +1,5 @@
-import React, { useCallback, useContext } from "react";
+import { useCallback } from "react";
 import { Action } from "./layout-action";
-
-const ViewContext = React.createContext({});
-
-export default ViewContext;
-
-export const useViewContext = () => {
-  const context = useContext(ViewContext);
-  return context;
-};
-
-export const useViewAction = () => {
-  const { dispatch } = useContext(ViewContext);
-  return dispatch;
-};
 
 export const useViewActionDispatcher = (root, path, dispatch) => {
   // TODO should be event, action, then this method can bea assigned directly to a html element
@@ -42,7 +28,7 @@ export const useViewActionDispatcher = (root, path, dispatch) => {
         type: Action.DRAG_START,
         evt,
         path: index === undefined ? path : `${path}.${index}`,
-        dragRect
+        dragRect,
       });
     },
     [dispatch, path, root]

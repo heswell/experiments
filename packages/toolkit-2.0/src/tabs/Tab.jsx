@@ -3,7 +3,7 @@ import React, { forwardRef, useRef, useState } from "react";
 import cx from "classnames";
 import { useDensity } from "../theme";
 import { useForkRef } from "../utils";
-import { useViewAction } from "@heswell/layout";
+import { useLayoutDispatch } from "@heswell/layout";
 import { Button } from "../button";
 import { EditableLabel } from "../editable-label";
 import { Icon } from "../icon";
@@ -52,7 +52,7 @@ const Tab = forwardRef(function Tab(
   const [editMode, setEditMode] = useState(false);
   const [label, setLabel] = useState(labelProp);
 
-  const dispatchViewAction = useViewAction();
+  const dispatchViewAction = useLayoutDispatch();
   const density = useDensity(densityProp);
 
   const handleClick = (e) => {

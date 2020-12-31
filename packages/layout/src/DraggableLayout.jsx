@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { Action } from "./layout-action";
 import { Draggable, DragContainer } from "./drag-drop/Draggable";
 import useLayout from "./useLayout";
-import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
+import LayoutContext from "./LayoutContext";
 import { registerComponent } from "./registry/ComponentRegistry";
 
 import "./DraggableLayout.css";
@@ -21,7 +21,7 @@ const DraggableLayout = (inputProps) => {
     ) => {
       const dragPos = { x: evt.clientX, y: evt.clientY };
       // we need to wait for this to take effect before we continue with the drag
-      dispatchLayoutAction({
+      layoutDispatch({
         type: Action.DRAG_STARTED,
         path,
         dragRect,
@@ -30,7 +30,7 @@ const DraggableLayout = (inputProps) => {
         instructions,
       });
     },
-    [dispatchLayoutAction]
+    [layoutDispatch]
   );
 
   const customDispatcher = useCallback(
@@ -59,13 +59,11 @@ const DraggableLayout = (inputProps) => {
     [prepareToDrag]
   );
 
-  const [props, ref, dispatchLayoutAction, isRoot] = useLayout(
+  const [props, ref, layoutDispatch, isRoot] = useLayout(
     "DraggableLayout",
     inputProps,
     customDispatcher
   );
-
-  const layoutDispatch = useLayoutDispatch(dispatchLayoutAction);
 
   const { className: classNameProp, drag, layoutId, style } = props;
 
@@ -165,7 +163,9 @@ const DraggableLayout = (inputProps) => {
   );
 
   return isRoot ? (
-    <LayoutProvider dispatch={layoutDispatch}>{container}</LayoutProvider>
+    <LayoutContext.Provider value={{ dispatch: layoutDispatch }}>
+      {container}
+    </LayoutContext.Provider>
   ) : (
     container
   );

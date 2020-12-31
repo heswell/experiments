@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 import cx from "classnames";
 import Splitter from "./Splitter";
 import useLayout from "./useLayout";
-import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
+import LayoutContext from "./LayoutContext";
 import { Action } from "./layout-action";
 import { getProp } from "./utils";
 import { registerComponent } from "./registry/ComponentRegistry";
@@ -24,13 +24,11 @@ const useSizesRef = () => {
 };
 
 const Flexbox = function Flexbox(inputProps) {
-  const [props, ref, dispatch, isRoot] = useLayout("Flexbox", inputProps);
+  const [props, ref, layoutDispatch, isRoot] = useLayout("Flexbox", inputProps);
   const { children = [], className, layoutId: id, path, style } = props;
   const isColumn = style.flexDirection === "column";
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";
-
-  const layoutDispatch = useLayoutDispatch(dispatch);
 
   const handleDragStart = useCallback(() => {
     setSizes(() =>
@@ -110,7 +108,9 @@ const Flexbox = function Flexbox(inputProps) {
   );
 
   return isRoot ? (
-    <LayoutProvider dispatch={dispatch}>{container}</LayoutProvider>
+    <LayoutContext.Provider value={{ dispatch: layoutDispatch }}>
+      {container}
+    </LayoutContext.Provider>
   ) : (
     container
   );

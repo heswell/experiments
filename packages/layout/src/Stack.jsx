@@ -8,13 +8,13 @@ import {
   Tooltray,
 } from "@heswell/toolkit-2.0";
 import useLayout from "./useLayout";
-import { LayoutProvider, useLayoutDispatch } from "./LayoutContext";
+import LayoutContext from "./LayoutContext";
 import { Action } from "./layout-action";
 import View from "./View";
 import { typeOf } from "./utils";
 import Component from "./Component";
 // import { TabPanel } from "./tabs";
-import ViewContext, { useViewActionDispatcher } from "./ViewContext";
+import { useViewActionDispatcher } from "./ViewContext";
 import {
   isLayoutComponent,
   registerComponent,
@@ -50,7 +50,7 @@ const MaximizeIcon = () => (
 import "./Stack.css";
 
 const Stack = (inputProps) => {
-  const [props, ref, dispatch, isRoot] = useLayout("Stack", inputProps);
+  const [props, ref, layoutDispatch] = useLayout("Stack", inputProps);
   const {
     enableAddTab,
     layoutId: id,
@@ -60,8 +60,6 @@ const Stack = (inputProps) => {
     showTabs,
     style,
   } = props;
-
-  const layoutDispatch = useLayoutDispatch(dispatch);
 
   const dispatchViewAction = useViewActionDispatcher(ref, path, layoutDispatch);
 
@@ -111,9 +109,10 @@ const Stack = (inputProps) => {
 
   //TODO roll ViewContext into LayoutContext
 
-  const container = (
+  // Stack always provides context, so Tabs have access to view commands
+  return (
     <div className="Tabs" style={style} id={id} ref={ref}>
-      <ViewContext.Provider value={{ dispatch: dispatchViewAction }}>
+      <LayoutContext.Provider value={{ dispatch: dispatchViewAction }}>
         {showTabs ? (
           <Toolbar className="Header" draggable maxRows={1}>
             <Tabstrip
@@ -147,14 +146,8 @@ const Stack = (inputProps) => {
             {child}
           </View>
         )}
-      </ViewContext.Provider>
+      </LayoutContext.Provider>
     </div>
-  );
-
-  return isRoot ? (
-    <LayoutProvider dispatch={layoutDispatch}>{container}</LayoutProvider>
-  ) : (
-    container
   );
 };
 Stack.displayName = "Stack";

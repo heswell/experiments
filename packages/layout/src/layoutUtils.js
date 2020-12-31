@@ -13,24 +13,22 @@ export const getManagedDimension = (style) =>
 
 const theKidHasNoStyle = {};
 
-export const applyLayoutProps = (component, dispatch) => {
+export const applyLayoutProps = (component) => {
   const [layoutProps, children] = getChildLayoutProps(
     typeOf(component),
     component.props,
-    dispatch,
     `0`
   );
   return React.cloneElement(component, layoutProps, children);
 };
 
-export const applyLayout = (type, props, dispatch, previousLayout) => {
+export const applyLayout = (type, props, previousLayout) => {
   if (props.layout) {
-    return layoutFromJson(props.layout, dispatch, "0");
+    return layoutFromJson(props.layout, "0");
   } else {
     const [layoutProps, children] = getChildLayoutProps(
       type,
       props,
-      dispatch,
       "0",
       undefined,
       previousLayout
@@ -47,7 +45,6 @@ export const applyLayout = (type, props, dispatch, previousLayout) => {
 function getLayoutProps(
   type,
   props,
-  dispatch,
   path = "0",
   parentType = null,
   previousLayout
@@ -74,22 +71,14 @@ function getLayoutProps(
   //TODO this might be wrong if client has updated style ?
   const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
   return isLayoutComponent(type)
-    ? { layoutId: id, key, dispatch, path, style, type, active }
+    ? { layoutId: id, key, path, style, type, active }
     : { id, key, style, "data-path": path };
 }
 
-function getChildLayoutProps(
-  type,
-  props,
-  dispatch,
-  path,
-  parentType,
-  previousLayout
-) {
+function getChildLayoutProps(type, props, path, parentType, previousLayout) {
   const layoutProps = getLayoutProps(
     type,
     props,
-    dispatch,
     path,
     parentType,
     previousLayout
@@ -97,26 +86,18 @@ function getChildLayoutProps(
   const children = getLayoutChildren(
     type,
     props.children,
-    dispatch,
     path,
     previousLayout?.children ?? previousLayout?.props?.children
   );
   return [layoutProps, children];
 }
 
-function getLayoutChildren(
-  type,
-  children,
-  dispatch,
-  path = "0",
-  previousChildren
-) {
+function getLayoutChildren(type, children, path = "0", previousChildren) {
   return isContainer(type) || isView(type)
     ? React.Children.map(children, (child, i) => {
         const [layoutProps, children] = getChildLayoutProps(
           typeOf(child),
           child.props,
-          dispatch,
           `${path}.${i}`,
           type,
           previousChildren?.[i]
@@ -152,9 +133,9 @@ const getStyle = (type, props, parentType) => {
   return style;
 };
 
-function layoutFromJson({ type, children, props }, dispatch, path) {
+function layoutFromJson({ type, children, props }, path) {
   if (type === "DraggableLayout") {
-    return layoutFromJson(children[0], dispatch, "0");
+    return layoutFromJson(children[0], "0");
   }
 
   const componentType = type.match(/^[a-z]/) ? type : ComponentRegistry[type];
@@ -167,15 +148,12 @@ function layoutFromJson({ type, children, props }, dispatch, path) {
     componentType,
     {
       ...props,
-      dispatch,
       id,
       key: id,
       path,
     },
     children
-      ? children.map((child, i) =>
-          layoutFromJson(child, dispatch, `${path}.${i}`)
-        )
+      ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
       : undefined
   );
 }

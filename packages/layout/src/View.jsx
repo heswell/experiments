@@ -2,8 +2,10 @@ import React, { useRef } from "react";
 import cx from "classnames";
 import Header from "./Header";
 import { registerComponent } from "./registry/ComponentRegistry";
-import ViewContext, { useViewActionDispatcher } from "./ViewContext";
+import { useViewActionDispatcher } from "./ViewContext";
 import useLayout from "./useLayout";
+import LayoutContext from "./LayoutContext";
+
 import { useLayoutDispatch } from "./LayoutContext";
 
 import "./View.css";
@@ -31,12 +33,12 @@ const View = React.memo(function View(inputProps) {
       style={style}
       tabIndex={-1}
     >
-      <ViewContext.Provider
+      <LayoutContext.Provider
         value={{ dispatch: dispatchViewAction, path, title }}
       >
         {header ? <Header {...headerProps} /> : null}
         <div className="view-main">{children}</div>
-      </ViewContext.Provider>
+      </LayoutContext.Provider>
     </div>
   );
 });

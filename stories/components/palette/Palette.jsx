@@ -5,7 +5,7 @@ import {
   applyLayoutProps,
   Component,
   registerComponent,
-  useViewContext,
+  useLayoutContext,
   View,
 } from "@heswell/layout";
 
@@ -78,7 +78,7 @@ const ComponentIcon = ({
 };
 
 const PaletteList = ({ items }) => {
-  const { dispatch } = useViewContext();
+  const { dispatch } = useLayoutContext();
   const [paletteItems] = useState(items || getDefaultComponents(dispatch));
 
   function handleMouseDown(evt, idx) {

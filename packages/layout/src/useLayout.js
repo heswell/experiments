@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import layoutReducer from "./layout-reducer";
 import { applyLayout } from "./layoutUtils"; // TODO allow props to specify layoutRoot
 import useNavigation from "./layout-hooks/useLayoutNavigation";
+import { useLayoutDispatch } from "./LayoutContext";
 
 /**
  * Root layout node will never receive dispatch. It may receive a layoutModel,
@@ -11,7 +12,8 @@ import useNavigation from "./layout-hooks/useLayoutNavigation";
  * state and subsequently manages layoutModel in state.
  */
 const useLayout = (layoutType, props, customDispatcher) => {
-  const isRoot = props.dispatch === undefined;
+  const dispatch = useLayoutDispatch();
+  const isRoot = dispatch === null;
   const ref = useRef(null);
   // Only the root layout actually stores state here
   const state = useRef(undefined);
@@ -29,7 +31,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
   );
 
   const dispatchLayoutAction = useRef(
-    props.dispatch ||
+    dispatch ||
       ((action) => {
         // A custom dispatcher should return true to indicate that it has handled this action.
         // A custom dispatcher alone will not refresh the layout state, it must ultimately
@@ -56,11 +58,7 @@ const useLayout = (layoutType, props, customDispatcher) => {
   // Detect dynamic layout reset from serialized layout
   useEffect(() => {
     if (props.layout !== layout.current) {
-      state.current = applyLayout(
-        layoutType,
-        props,
-        dispatchLayoutAction.current
-      );
+      state.current = applyLayout(layoutType, props);
       setState((c) => c + 1);
       layout.current = props.layout;
     }
@@ -75,18 +73,12 @@ const useLayout = (layoutType, props, customDispatcher) => {
     );
     children.current = props.children;
     // TODO should be a call to the reducer
-    state.current = applyLayout(
-      layoutType,
-      props,
-      dispatchLayoutAction.current,
-      state.current
-    );
-    console.log(state.current);
+    state.current = applyLayout(layoutType, props, state.current);
+    //console.log(state.current);
   }
 
-  return isRoot
-    ? [state.current, ref, dispatchLayoutAction.current, isRoot]
-    : [props, ref];
+  const layoutProps = isRoot ? state.current : props;
+  return [layoutProps, ref, dispatchLayoutAction.current, isRoot];
 };
 
 export default useLayout;

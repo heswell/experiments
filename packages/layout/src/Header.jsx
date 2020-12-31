@@ -1,7 +1,7 @@
 import React from "react";
 import classnames from "classnames";
 import { Button, Icon, Toolbar, useDensity } from "@heswell/toolkit-2.0";
-import { useViewAction } from "./ViewContext";
+import { useLayoutDispatch } from "./LayoutContext";
 
 import "./Header.css";
 
@@ -12,11 +12,11 @@ const Header = ({
   title,
   closeButton,
 }) => {
-  const dispatchViewAction = useViewAction();
+  const layoutDispatch = useLayoutDispatch();
   const density = useDensity(densityProp);
 
   const handleClose = () => {
-    dispatchViewAction("close");
+    layoutDispatch("close");
   };
 
   const handleMouseDown = (evt) => {

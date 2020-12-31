@@ -1,19 +1,13 @@
 import React, { useContext } from "react";
 
-const LayoutContext = React.createContext(null);
+const NO_CONTEXT = { dispatch: null };
+const LayoutContext = React.createContext(NO_CONTEXT);
 
-export const useLayoutDispatch = (dispatch) => {
-  const layoutDispatch = useContext(LayoutContext);
-  return dispatch ?? layoutDispatch;
+export const useLayoutDispatch = () => {
+  const context = useContext(LayoutContext);
+  return context?.dispatch ?? null;
 };
 
-export const LayoutProvider = ({ children, dispatch }) => {
-  const parentDispatch = useLayoutDispatch();
-  return (
-    <LayoutContext.Provider value={dispatch ?? parentDispatch}>
-      {children}
-    </LayoutContext.Provider>
-  );
-};
+export const useLayoutContext = () => useContext(LayoutContext);
 
 export default LayoutContext;

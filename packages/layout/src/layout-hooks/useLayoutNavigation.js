@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { Action } from "../layout-action";
 import { followPath, nextLeaf, previousLeaf } from "../utils";
+import { useLayoutDispatch } from "../LayoutContext";
+
 // TODO need to be able to disable navigation if not required
 function getNextTarget(root, { type, path, focusVisible, index }) {
   if (type === "View") {
@@ -56,7 +58,8 @@ export default function useLayoutNavigation(
   layoutRef,
   stateRef
 ) {
-  const isRoot = props.dispatch === undefined;
+  const dispatch = useLayoutDispatch();
+  const isRoot = dispatch === null;
   const withFocus = useRef(null);
 
   const navHandler = useCallback((e) => {
@@ -89,13 +92,13 @@ export default function useLayoutNavigation(
 
   useEffect(() => {
     function onFocus(e) {
-      props.dispatch({
+      dispatch({
         type: Action.FOCUS,
         path: props.path,
       });
     }
     function onBlur(e) {
-      props.dispatch({
+      dispatch({
         type: Action.BLUR,
         path: props.path,
         relatedTarget: e.relatedTarget,

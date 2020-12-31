@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import cx from "classnames";
 
-import { useViewContext } from "@heswell/layout";
+import { useLayoutContext } from "@heswell/layout";
 import { OverflowMenu, useOverflowObserver } from "../responsive";
 import { useDensity } from "../theme";
 
@@ -34,7 +34,7 @@ const Toolbar = ({
   const root = useRef(null);
   const overflowButton = useRef(null);
   //TODO path is purely  alayout concern
-  const { path, title, dispatch: dispatchViewAction } = useViewContext();
+  const { title, dispatch: dispatchViewAction } = useLayoutContext();
   const density = useDensity(densityProp);
 
   const [innerContainerRef, overflowedItems] = useOverflowObserver(

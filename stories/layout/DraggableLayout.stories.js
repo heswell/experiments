@@ -2,7 +2,7 @@ import React from "react";
 
 import {
   registerComponent,
-  useViewContext,
+  useLayoutContext,
   Component,
   Flexbox,
   Stack,
@@ -49,7 +49,7 @@ const Box = (props) => (
 
 const DraggableBox = (props) => {
   const DraggableBoxBase = () => {
-    const { dispatch, title } = useViewContext();
+    const { dispatch, title } = useLayoutContext();
     const handleMouseDown = (e) => {
       // TODO should be able to just dispatch the event
       dispatch({ type: "mousedown" }, e);
