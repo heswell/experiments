@@ -235,4 +235,4 @@ export const ComplexNestedLayout = () => (
   </DraggableLayout>
 );
 
-export const NestadDragContainerWithPalette = () => <Builder />;
+export const NestedDragContainerWithPalette = () => <Builder />;

@@ -140,8 +140,6 @@ export class DropTarget {
 // Initial entry to this method is always via the app (may be it should be *on* the app)
 export function identifyDropTarget(x, y, model, measurements) {
   let dropTarget = null;
-  const { path: rootPath } = getProps(model);
-  // console.log(`identifyDropTarget root = ${rootPath}`, measurements);
 
   //onsole.log('Draggable.identifyDropTarget for component  ' + box.name + ' (' + box.nestedBoxes.length + ' children)') ;
   // this could return all boxes containing point, which would make getNextDropTarget almost free
@@ -154,13 +152,14 @@ export function identifyDropTarget(x, y, model, measurements) {
   );
 
   if (component) {
-    const clientRect = measurements[component.props.path];
+    const { "data-path": dataPath, path = dataPath } = component.props;
+    const clientRect = measurements[path];
     const pos = pointPositionWithinRect(x, y, clientRect);
 
     // console.log(
-    //   `%c[DropTarget] identifyDropTarget target path ${component.props.path}
+    //   `%c[DropTarget] identifyDropTarget target path ${path}
     //     position: ${JSON.stringify(pos)}
-    //     measurements : ${JSON.stringify(measurements[component.props.path])}
+    //     measurements : ${JSON.stringify(measurements[path])}
     //     `,
     //   "color:cornflowerblue;font-weight:bold;"
     // );
@@ -211,7 +210,8 @@ export function getNextDropTarget(layout, component, pos, measurements, x, y) {
         positionedAtOuterContainerEdge(container, pos, component, measurements)
       ) {
         // console.log(`next ${getProps(container).path}`);
-        const clientRect = measurements[container.props.path];
+        const { "data-path": dataPath, path = dataPath } = container.props;
+        const clientRect = measurements[path];
         let containerPos = pointPositionWithinRect(x, y, clientRect);
 
         // if its a VBox and we're close to left or right ...
@@ -259,8 +259,12 @@ function positionedAtOuterContainerEdge(
     return false;
   }
 
+  const {
+    "data-path": dataPath,
+    path: componentPath = dataPath,
+  } = component.props;
   const containingBox = measurements[containingComponent.props.path];
-  const box = measurements[component.props.path];
+  const box = measurements[componentPath];
 
   const closeToTop = closeToTheEdge & positionValues.north;
   const closeToRight = closeToTheEdge & positionValues.east;

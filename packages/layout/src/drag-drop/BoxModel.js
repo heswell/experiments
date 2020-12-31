@@ -162,7 +162,12 @@ export function pointPositionWithinRect(x, y, rect) {
 }
 
 function measureRootComponent(rootComponent, measurements) {
-  const { layoutId, path } = getProps(rootComponent);
+  const {
+    id,
+    layoutId = id,
+    "data-path": dataPath,
+    path = dataPath,
+  } = getProps(rootComponent);
   const type = typeOf(rootComponent);
 
   if (layoutId && path) {
@@ -175,8 +180,9 @@ function measureRootComponent(rootComponent, measurements) {
 }
 
 function measureComponent(component, rect, el, measurements) {
-  let isElement = React.isValidElement(component);
-  const { path, header } = isElement ? component.props : component;
+  const { "data-path": dataPath, path = dataPath, header } = getProps(
+    component
+  );
 
   measurements[path] = rect;
   const type = typeOf(component);
@@ -205,8 +211,9 @@ function collectChildMeasurements(
   preY = 0,
   posY = 0
 ) {
-  let isElement = React.isValidElement(component);
-  const { children, path, style } = isElement ? component.props : component;
+  const { children, "data-path": dataPath, path = dataPath, style } = getProps(
+    component
+  );
 
   const type = typeOf(component);
   const isFlexbox = type === "Flexbox";
@@ -297,8 +304,7 @@ function collectChildMeasurements(
 }
 
 function measureComponentDomElement(component) {
-  let isElement = React.isValidElement(component);
-  const { id, layoutId = id } = isElement ? component.props : component;
+  const { id, layoutId = id } = getProps(component);
   const el = document.getElementById(layoutId);
   if (!el) {
     throw Error(`No DOM for ${typeOf(component)} ${layoutId}`);
@@ -310,8 +316,9 @@ function measureComponentDomElement(component) {
 }
 
 function smallestBoxContainingPoint(component, measurements, x, y) {
-  let isElement = React.isValidElement(component);
-  const { children, path } = isElement ? component.props : component;
+  const { children, "data-path": dataPath, path = dataPath } = getProps(
+    component
+  );
 
   const type = typeOf(component);
 

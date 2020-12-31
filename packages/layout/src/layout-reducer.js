@@ -5,6 +5,7 @@ import {
   containerOf,
   followPath,
   followPathToParent,
+  getProp,
   getProps,
   nextStep,
   resetPath,
@@ -177,7 +178,10 @@ function swapChild(model, child, replacement) {
     return replacement;
   } else {
     if (React.isValidElement(model)) {
-      const { idx, finalStep } = nextStep(model.props.path, child.props.path);
+      const { idx, finalStep } = nextStep(
+        getProp(model, "path"),
+        getProp(child, "path")
+      );
       const children = model.props.children.slice();
       if (finalStep) {
         children[idx] = replacement;
@@ -186,7 +190,8 @@ function swapChild(model, child, replacement) {
       }
       return React.cloneElement(model, null, children);
     } else {
-      const { idx, finalStep } = nextStep(model.path, child.props.path);
+      const { path: modelPath } = getProps(model);
+      const { idx, finalStep } = nextStep(modelPath, getProp(child, "path"));
       const children = model.children.slice();
       if (finalStep) {
         children[idx] = replacement;
@@ -229,7 +234,7 @@ function removeChild(rootProps, { path }) {
 
 function _removeChild(model, child) {
   let { active, children: componentChildren, path } = getProps(model);
-  const { idx, finalStep } = nextStep(path, child.props.path);
+  const { idx, finalStep } = nextStep(path, getProp(child, "path"));
   const type = typeOf(model);
   let children = componentChildren.slice();
   if (finalStep) {
@@ -303,17 +308,18 @@ function dropLayoutIntoContainer(
   targetPosition,
   targetRect
 ) {
+  const targetPath = getProp(target, "path");
   // In a Draggable layout, 0.n is the top-level layout
-  if (target.path === "0.0" || target.props.path === "0.0") {
+  if (target.path === "0.0" || targetPath === "0.0") {
     return wrap(rootProps, source, target, pos);
   } else {
-    var targetContainer = followPathToParent(rootProps, target.props.path);
+    var targetContainer = followPathToParent(rootProps, targetPath);
 
     if (absoluteDrop(target, pos.position)) {
       return insert(
         rootProps,
         source,
-        target.props.path,
+        targetPath,
         null,
         null,
         pos.width || pos.height
@@ -333,7 +339,7 @@ function dropLayoutIntoContainer(
           source,
           null,
           null,
-          target.props.path,
+          targetPath,
           pos.width || pos.height,
           targetRect
         );
@@ -342,7 +348,7 @@ function dropLayoutIntoContainer(
           rootProps,
           source,
           null,
-          target.props.path,
+          targetPath,
           null,
           pos.width || pos.height,
           targetRect
@@ -363,7 +369,7 @@ function dropLayoutIntoContainer(
 function wrap(model, source, target, pos, targetRect) {
   const { path: modelPath, children: modelChildren } = getProps(model);
 
-  const { path } = target.props;
+  const path = getProp(target, "path");
   const { idx, finalStep } = nextStep(modelPath, path);
   const children = modelChildren.slice();
 
@@ -421,7 +427,7 @@ function wrap(model, source, target, pos, targetRect) {
         dispatch: target.props.dispatch,
         layoutId: id,
         key: id,
-        path: target.props.path,
+        path: getProp(target, "path"),
         // TODO we should be able to configure this in setDefaultLayoutProps
         splitterSize:
           type === "Flexbox" && typeOf(model) === "Flexbox"
@@ -586,7 +592,7 @@ function absoluteDrop(target, position) {
 
 //TODO how are we going to allow dgar containers to be defined ?
 function isDraggableRoot(layout, component) {
-  if (component.props.path === "0") {
+  if (getProp(component, "path") === "0") {
     return true;
   }
 

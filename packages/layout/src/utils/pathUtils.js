@@ -1,12 +1,13 @@
 import React from "react";
 import { isContainer } from "../registry/ComponentRegistry";
 import { typeOf } from "../utils";
-import { getProps } from "./propUtils";
+import { getProp, getProps } from "./propUtils";
 
 // TODO isn't this equivalent to containerOf ?
 export function followPathToParent(source, path) {
-  let isElement = React.isValidElement(source);
-  const sourcePath = isElement ? source.props.path : source.path;
+  const { "data-path": dataPath, path: sourcePath = dataPath } = getProps(
+    source
+  );
 
   if (path === "0") return null;
   if (path === sourcePath) return null;
@@ -20,7 +21,7 @@ export function containerOf(source, target) {
   } else {
     const { path: sourcePath, children } = getProps(source);
 
-    let { idx, finalStep } = nextStep(sourcePath, target.props.path);
+    let { idx, finalStep } = nextStep(sourcePath, getProp(target, "path"));
     if (finalStep) {
       return source;
     } else if (children === undefined || children[idx] === undefined) {
@@ -32,7 +33,9 @@ export function containerOf(source, target) {
 }
 
 export function followPath(source, path) {
-  const { path: sourcePath } = getProps(source);
+  const { "data-path": dataPath, path: sourcePath = dataPath } = getProps(
+    source
+  );
   if (path.indexOf(sourcePath) !== 0) {
     throw Error(
       `pathUtils.followPath path ${path} is not within model.path ${sourcePath}`
@@ -93,7 +96,7 @@ export function nextLeaf(root, path) {
     return firstLeaf(children[lastIdx + 1]);
   } else {
     const parentIdx = pathIndices.pop();
-    const nextParent = followPathToParent(root, parent.props.path);
+    const nextParent = followPathToParent(root, getProp(parent, "path"));
     pathIndices = nextParent.props.path
       .split(".")
       .map((idx) => parseInt(idx, 10));
@@ -120,7 +123,7 @@ export function previousLeaf(root, path) {
   } else {
     while (pathIndices.length > 1) {
       lastIdx = pathIndices.pop();
-      parent = followPathToParent(root, parent.props.path);
+      parent = followPathToParent(root, getProp(parent, "path"));
       // pathIndices = nextParent.props.path
       //   .split(".")
       //   .map((idx) => parseInt(idx, 10));
@@ -170,13 +173,13 @@ export function nextStep(pathSoFar, targetPath) {
 }
 
 export function resetPath(model, path) {
-  if (model.props.path === path) {
+  if (getProp(model, "path") === path) {
     return model;
   }
   const children = [];
   // React.Children.map rewrites keys, forEach does not
   React.Children.forEach(model.props.children, (child, i) => {
-    if (!child.props.path) {
+    if (!getProp(child, "path")) {
       children.push(child);
     } else {
       children.push(resetPath(child, `${path}.${i}`));

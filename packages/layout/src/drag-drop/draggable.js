@@ -1,7 +1,7 @@
 import React from "react";
 import DropTargetRenderer from "./DropTargetRenderer";
 import DragState from "./DragState";
-import { followPath, typeOf } from "../utils";
+import { followPath, getProps, typeOf } from "../utils";
 import { BoxModel, Position } from "./BoxModel";
 import { DropTarget, identifyDropTarget } from "./DropTarget";
 
@@ -38,9 +38,7 @@ export class DragContainer {
 function getDragContainer(rootContainer, dragContainerPath) {
   var pathToContainer = "";
   var maxSteps = 0;
-
-  let isElement = React.isValidElement(rootContainer);
-  const { path: rootPath } = isElement ? rootContainer.props : rootContainer;
+  const { path: rootPath } = getProps(rootContainer);
 
   //TODO still to be determined how this will work
   if (rootPath === dragContainerPath) {
@@ -131,8 +129,7 @@ function preDragMouseupHandler() {
 function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
 
-  let isElement = React.isValidElement(_dragContainer);
-  const { path } = isElement ? _dragContainer.props : _dragContainer;
+  const { "data-path": dataPath, path = dataPath } = getProps(_dragContainer);
 
   var start = window.performance.now();
   console.log(`initDrag ${path} ${dragContainerPath}`);
