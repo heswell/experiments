@@ -1,5 +1,6 @@
 import React from "react";
 import classnames from "classnames";
+import { Close, Minimize, Maximize, TearOut } from "./icons";
 import { Button, Icon, Toolbar, useDensity } from "@heswell/toolkit-2.0";
 import { useLayoutDispatch } from "./LayoutContext";
 
@@ -8,7 +9,11 @@ import "./Header.css";
 const Header = ({
   className: classNameProp,
   density: densityProp,
+  collapsed,
+  expanded,
+  closeable,
   style,
+  tearOut,
   title,
   closeButton,
 }) => {
@@ -36,13 +41,12 @@ const Header = ({
       draggable
       showTitle
     >
-      <Button
-        onClick={handleClose}
-        onMouseDown={handleMouseDown}
-        variant="secondary"
-      >
-        <Icon name="close" />
-      </Button>
+      {collapsed === false ? <Minimize /> : null}
+      {expanded === false ? <Maximize /> : null}
+      {tearOut ? <TearOut /> : null}
+      {closeable ? (
+        <Close onClick={handleClose} onMouseDown={handleMouseDown} />
+      ) : null}
     </Toolbar>
   );
 };

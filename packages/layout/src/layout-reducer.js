@@ -328,6 +328,8 @@ function unwrap(state, child) {
         flexGrow,
         flexShrink,
         flexBasis,
+        width,
+        height,
       },
     });
   }

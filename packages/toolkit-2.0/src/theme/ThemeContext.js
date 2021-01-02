@@ -49,13 +49,13 @@ const availableThemes = {
   dark: darkTheme,
 };
 
-export function ThemeProvider({ children, name = "light" }) {
-  const currentTheme = useRef(theme);
-  if (theme !== currentTheme.current) {
+export function ThemeProvider({ children, theme: themeId = "light" }) {
+  const currentTheme = useRef(themeId);
+  if (themeId !== currentTheme.current) {
     console.log(`Theme Change`);
-    currentTheme.current = theme;
+    currentTheme.current = themeId;
   }
-  const theme = availableThemes[name];
+  const theme = availableThemes[themeId];
   return (
     <ThemeContext.Provider value={theme}>
       <jpmuitk-theme class={theme.id}>{children}</jpmuitk-theme>

@@ -11,6 +11,7 @@
     "access": "public"
   },
   "scripts": {
+    "test": "jest",
     "clean": "rm -rf dist/*",
     "build": "rollup -c --environment BUILD:production"
   },

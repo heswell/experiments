@@ -1,12 +1,16 @@
 .Tab {
-  --bar-color: var(--grey90);
+  --tab-bar-color: var(--grey90);
 }
 .jpmuitk-light .Tab {
   --tab-color: var(--grey400);
+  --tab-selected-color: var(--grey900);
+  --tab-hover-background: var(--grey20);
 }
 
 .jpmuitk-dark .Tab {
   --tab-color: var(--grey40);
+  --tab-selected-color: var(--white);
+  --tab-hover-background: var(--grey600);
 }
 
 .Tab-touchDensity {
@@ -67,19 +71,19 @@
   padding-right: 0;
 }
 
-.Tab-touchDensity .Tab-closeButton {
+.Tab-touchDensity .CloseButton {
   margin-left: var(--spacing-touch);
 }
 
-.Tab-lowDensity .Tab-closeButton {
+.Tab-lowDensity .CloseButton {
   margin-left: var(--spacing-low);
 }
 
-.Tab-mediumDensity .Tab-closeButton {
+.Tab-mediumDensity .CloseButton {
   margin-left: var(--spacing-medium);
 }
 
-.Tab-mediumDensity .Tab-closeButton {
+.Tab-mediumDensity .CloseButton {
   margin-left: var(--spacing-high);
 }
 
@@ -93,12 +97,12 @@ button.Tab + button.Tab {
 }
 
 .Tab:hover:not(.Tab-closeHover) {
-  background-color: var(--grey20);
+  background-color: var(--tab-hover-background);
 }
 
 .Tab:not(.Tab-selected):hover:after,
 .Tab:not(.Tab-selected):focus-visible:after {
-  background: var(--bar-color);
+  background: var(--tab-bar-color);
   bottom: 0;
   content: "";
   opacity: 1;
@@ -119,7 +123,7 @@ button.Tab + button.Tab {
 }
 
 .Tab-selected {
-  color: var(--grey900);
+  color: var(--tab-selected-color);
   font-family: jpmuitk-sans;
   font-weight: var(--typography-weight-bold);
 }

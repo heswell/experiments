@@ -1,4 +1,5 @@
 .Flexbox {
+  background-color: var(--container1-background);
   display: flex;
   box-sizing: border-box;
   min-height: 0;

@@ -1,3 +1,11 @@
+.jpmuitk-light .Toolbar {
+  --toolbar-color: var(--grey400);
+}
+
+.jpmuitk-dark .Toolbar {
+  --toolbar-color: var(--grey40);
+}
+
 .Toolbar-touchDensity {
   --toolbar-height: 52px;
   --toolbar-spacing: var(--spacing-touch);
@@ -22,6 +30,7 @@
 .Toolbar {
   align-items: flex-start;
   box-sizing: border-box;
+  color: var(--toolbar-color);
   display: flex;
   height: var(--toolbar-height, 36px);
   justify-content: flex-start;

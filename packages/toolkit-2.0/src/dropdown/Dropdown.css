@@ -1,8 +1,44 @@
+.Dropdown-touchDensity {
+  --dropdown-font-size: var(--typography-size-touch);
+  --dropdown-spacing: var(--spacing-touch);
+}
+.Dropdown-lowDensity {
+  --dropdown-font-size: var(--typography-size-low);
+  --dropdown-spacing: var(--spacing-low);
+}
+.Dropdown-mediumDensity {
+  --dropdown-font-size: var(--typography-size-medium);
+  --dropdown-spacing: var(--spacing-medium);
+}
+.Dropdown-highDensity {
+  --dropdown-font-size: var(--typography-size-high);
+  --dropdown-spacing: var(--spacing-high);
+}
+
 .Dropdown {
-  display: inline-block;
-  position: relative;
   box-sizing: border-box;
+  display: inline-block;
+  font-size: var(--dropdown-font-size);
   line-height: 0;
+  position: relative;
+}
+
+.Dropdown .DropdownButton-icon {
+  padding-left: var(--dropdown-spacing);
+}
+
+.Dropdown .DropdownButton-icon {
+  box-sizing: content-box;
+  margin-top: 2px;
+}
+
+.Dropdown-touchDensity .DropdownButton-icon {
+  margin-top: 3px;
+}
+
+.Dropdown .DropdownButton:active {
+  color: var(--actionable-secondary-default-color);
+  background-color: var(--actionable-secondary-default-background);
 }
 
 .Dropdown-disabled {
@@ -11,11 +47,6 @@
 .Dropdown-fullwidth {
 }
 
-.Dropdown-touchDensity {
-}
-.Dropdown-lowDensity {
-}
-.Dropdown-mediumDensity {
-}
-.Dropdown-highDensity {
+.Dropdown .Button-label {
+  font-weight: var(--typography-weight-regular);
 }

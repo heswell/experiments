@@ -352,7 +352,7 @@
 
   --actionable-secondary-font-family: var(--actionable-regular-font-family);
   --actionable-secondary-font-size: var(--actionable-regular-font-size);
-  --actionable-secondary-font-weight: var(--actionable-regular-font-weight);
+  --actionable-secondary-font-weight: 600;
   --actionable-secondary-letter-spacing: var(
     --actionable-regular-letter-spacing
   );

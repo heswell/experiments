@@ -147,7 +147,7 @@ const Logo = forwardRef(function Logo(props, ref) {
         />
       </span>
       <Title
-        defaultClassName="Logo-app-title"
+        defaultClassName="Logo-appTitle"
         height={height}
         label={appTitle}
         separatorClassname={classnames("Logo-titlePipe", {

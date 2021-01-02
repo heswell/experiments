@@ -1,3 +1,13 @@
+.jpmuitk-light .Logo {
+  --logo-color: var(--grey300);
+  --logo-pipe-color: var(--grey60);
+}
+
+.jpmuitk-dark .Logo {
+  --logo-color: var(--grey70);
+  --logo-pipe-color: var(--grey400);
+}
+
 .Logo {
   display: inline-flex;
   position: relative;
@@ -7,6 +17,19 @@
 
 .Logo-wrapper {
   display: inline-flex;
+}
+
+.Logo-logo {
+  fill: var(--logo-color);
+  margin: auto;
+  stroke: none !important;
+  text-align: center;
+}
+
+.Logo-appTitle {
+  align-self: center;
+  color: var(--logo-color);
+  position: relative;
 }
 
 .Logo-touchDensity {
@@ -24,7 +47,7 @@
 
 .Logo-titlePipe {
   height: 100%;
-  border-right: 1px solid #c5c9d0;
+  border-right: 1px solid var(--logo-pipe-color);
 }
 
 .Logo-touchDensity .Logo-titlePipe {

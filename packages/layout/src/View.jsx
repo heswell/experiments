@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import cx from "classnames";
 import Header from "./Header";
 import { registerComponent } from "./registry/ComponentRegistry";
@@ -16,9 +16,13 @@ const View = React.memo(function View(inputProps) {
   const {
     children,
     className,
+    collapsed,
+    closeable,
+    expanded,
     layoutId: id,
     header,
     path,
+    tearOut,
     style,
     title,
   } = props;
@@ -36,7 +40,15 @@ const View = React.memo(function View(inputProps) {
       <LayoutContext.Provider
         value={{ dispatch: dispatchViewAction, path, title }}
       >
-        {header ? <Header {...headerProps} /> : null}
+        {header ? (
+          <Header
+            {...headerProps}
+            collapsed={collapsed}
+            expanded={expanded}
+            closeable={closeable}
+            tearOut={tearOut}
+          />
+        ) : null}
         <div className="view-main">{children}</div>
       </LayoutContext.Provider>
     </div>

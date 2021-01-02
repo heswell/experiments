@@ -1,12 +1,6 @@
 import React from "react";
-import {
-  Button,
-  Icon,
-  Tab,
-  Tabstrip,
-  Toolbar,
-  Tooltray,
-} from "@heswell/toolkit-2.0";
+import { Tab, Tabstrip, Toolbar, Tooltray } from "@heswell/toolkit-2.0";
+import { Close, Minimize, Maximize } from "./icons";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";
 import { Action } from "./layout-action";
@@ -19,33 +13,6 @@ import {
   isLayoutComponent,
   registerComponent,
 } from "./registry/ComponentRegistry";
-import { maximize, minimize } from "./icons";
-
-const CloseIcon = () => (
-  <Button className="Tab-closeButton" title="Close View" variant="secondary">
-    <Icon accessibleText="Close View" name="close" />
-  </Button>
-);
-
-const MinimizeIcon = () => (
-  <Button
-    className="Layout-svg-button"
-    title="Minimize View"
-    variant="secondary"
-  >
-    <Icon accessibleText="Minimize View" svg={minimize} />
-  </Button>
-);
-
-const MaximizeIcon = () => (
-  <Button
-    className="Layout-svg-button"
-    title="Maximize View"
-    variant="secondary"
-  >
-    <Icon accessibleText="Maximize View" svg={maximize} />
-  </Button>
-);
 
 import "./Stack.css";
 
@@ -126,9 +93,9 @@ const Stack = (inputProps) => {
               {renderTabs()}
             </Tabstrip>
             <Tooltray align="right" className="layout-buttons">
-              <MinimizeIcon />
-              <MaximizeIcon />
-              <CloseIcon />
+              <Minimize />
+              <Maximize />
+              <Close />
             </Tooltray>
           </Toolbar>
         ) : null}
