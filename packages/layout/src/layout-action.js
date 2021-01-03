@@ -1,4 +1,5 @@
 export const Action = {
+  ADD: "add",
   BLUR: "blur",
   BLUR_SPLITTER: "blur-splitter",
   DRAG_START: "drag-start",
@@ -7,9 +8,12 @@ export const Action = {
   FOCUS: "focus",
   FOCUS_SPLITTER: "focus-splitter",
   INITIALIZE: "initialize",
-  ADD: "add",
+  MAXIMIZE: "maximize",
+  MINIMIZE: "minimize",
   REMOVE: "remove",
   REPLACE: "replace",
+  RESTORE: "restore",
   SPLITTER_RESIZE: "splitter-resize",
   SWITCH_TAB: "switch-tab",
+  TEAR_OUT: "tear-out",
 };

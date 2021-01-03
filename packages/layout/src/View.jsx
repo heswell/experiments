@@ -2,36 +2,40 @@ import React from "react";
 import cx from "classnames";
 import Header from "./Header";
 import { registerComponent } from "./registry/ComponentRegistry";
-import { useViewActionDispatcher } from "./ViewContext";
+import { useViewActionDispatcher } from "./useViewActionDispatcher";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";
-
 import { useLayoutDispatch } from "./LayoutContext";
 
 import "./View.css";
 
 const View = React.memo(function View(inputProps) {
   const [props, ref] = useLayout("View", inputProps);
-  const layoutDispatch = useLayoutDispatch();
   const {
     children,
     className,
-    collapsed,
+    collapsed, // "vertical" | "horizontal" | false | undefined
     closeable,
     expanded,
     layoutId: id,
     header,
+    orientation = "horizontal",
     path,
     tearOut,
     style,
     title,
   } = props;
+
+  const layoutDispatch = useLayoutDispatch();
   const dispatchViewAction = useViewActionDispatcher(ref, path, layoutDispatch);
 
   const headerProps = typeof header === "object" ? header : {};
   return (
     <div
-      className={cx("View", className)}
+      className={cx("View", className, {
+        "View-collapsed": collapsed,
+        "View-expanded": expanded,
+      })}
       id={id}
       ref={ref}
       style={style}
@@ -46,6 +50,7 @@ const View = React.memo(function View(inputProps) {
             collapsed={collapsed}
             expanded={expanded}
             closeable={closeable}
+            orientation={collapsed || orientation}
             tearOut={tearOut}
           />
         ) : null}

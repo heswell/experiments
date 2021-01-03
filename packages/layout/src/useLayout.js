@@ -36,6 +36,9 @@ const useLayout = (layoutType, props) => {
           return;
         }
 
+        console.log(
+          `useLayout (${layoutType}) about to reduce ${action.type} ${action.path}`
+        );
         const nextState = layoutReducer(state.current, action);
         if (nextState !== state) {
           state.current = nextState;

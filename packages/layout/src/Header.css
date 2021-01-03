@@ -2,7 +2,7 @@
   border-bottom: solid 1px var(--grey40);
 }
 
-.Header-touchDensity {
+/* .Header-touchDensity {
   height: var(--size-stackable-touch);
 }
 .Header-lowDensity {
@@ -13,4 +13,4 @@
 }
 .Header-highDensity {
   height: var(--size-stackable-high);
-}
+} */

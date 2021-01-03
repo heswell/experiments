@@ -7,22 +7,22 @@
 }
 
 .Toolbar-touchDensity {
-  --toolbar-height: 52px;
+  --toolbar-depth: 52px;
   --toolbar-spacing: var(--spacing-touch);
   font-size: var(--typography-size-regular-touch);
 }
 .Toolbar-lowDensity {
-  --toolbar-height: 44px;
+  --toolbar-depth: 44px;
   --toolbar-spacing: var(--spacing-low);
   font-size: var(--typography-size-regular-low);
 }
 .Toolbar-mediumDensity {
-  --toolbar-height: 36px;
+  --toolbar-depth: 36px;
   --toolbar-spacing: var(--spacing-medium);
   font-size: var(--typography-size-regular-medium);
 }
 .Toolbar-highDensity {
-  --toolbar-height: 28px;
+  --toolbar-depth: 28px;
   --toolbar-spacing: var(--spacing-high);
   font-size: var(--typography-size-regular-high);
 }
@@ -32,12 +32,17 @@
   box-sizing: border-box;
   color: var(--toolbar-color);
   display: flex;
-  height: var(--toolbar-height, 36px);
+  height: var(--toolbar-depth, 36px);
   justify-content: flex-start;
   overflow: hidden;
   position: relative;
   font-family: var(--typography-font-family);
   min-width: 28px;
+}
+
+.Toolbar-vertical {
+  height: 100%;
+  width: var(--toolbar-depth);
 }
 
 .Toolbar-horizontal {
@@ -65,6 +70,10 @@
   justify-content: inherit;
   overflow: hidden;
   width: 100%;
+}
+
+.Toolbar-vertical .Toolbar-inner {
+  flex-direction: column;
 }
 
 /* .Toolbar .Tool {

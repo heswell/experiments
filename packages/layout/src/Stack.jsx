@@ -8,7 +8,7 @@ import View from "./View";
 import { typeOf } from "./utils";
 import Component from "./Component";
 // import { TabPanel } from "./tabs";
-import { useViewActionDispatcher } from "./ViewContext";
+import { useViewActionDispatcher } from "./useViewActionDispatcher";
 import {
   isLayoutComponent,
   registerComponent,

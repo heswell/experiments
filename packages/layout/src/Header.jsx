@@ -1,7 +1,8 @@
 import React from "react";
 import classnames from "classnames";
-import { Close, Minimize, Maximize, TearOut } from "./icons";
-import { Button, Icon, Toolbar, useDensity } from "@heswell/toolkit-2.0";
+import { Action } from "./layout-action";
+import ActionButton from "./ActionButton";
+import { Toolbar, useDensity } from "@heswell/toolkit-2.0";
 import { useLayoutDispatch } from "./LayoutContext";
 
 import "./Header.css";
@@ -12,40 +13,92 @@ const Header = ({
   collapsed,
   expanded,
   closeable,
+  orientation: orientationProp,
   style,
   tearOut,
   title,
-  closeButton,
 }) => {
   const layoutDispatch = useLayoutDispatch();
   const density = useDensity(densityProp);
 
-  const handleClose = () => {
-    layoutDispatch("close");
-  };
+  const handleAction = (evt, actionId) => layoutDispatch({ type: actionId });
 
   const handleMouseDown = (evt) => {
+    // do not allow drag to be initiated
     evt.stopPropagation();
   };
 
   const className = classnames(
     "Header",
-    `Header-${density}Density`,
+    // `Header-${density}Density`,
     classNameProp
   );
+
+  const orientation = collapsed || orientationProp;
 
   return (
     <Toolbar
       className={className}
-      style={{ justifyContent: "flex-end" }}
+      style={{
+        justifyContent: orientation === "vertical" ? "flex-start" : "flex-end",
+      }}
+      orientation={orientation}
       draggable
       showTitle
     >
-      {collapsed === false ? <Minimize /> : null}
-      {expanded === false ? <Maximize /> : null}
-      {tearOut ? <TearOut /> : null}
+      {collapsed === false ? (
+        <ActionButton
+          accessibleText="Minimize View"
+          actionId={Action.MINIMIZE}
+          iconName="minimize"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
+      ) : null}
+      {collapsed ? (
+        <ActionButton
+          accessibleText="Restore View"
+          actionId={Action.RESTORE}
+          iconName="double-chevron-right"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
+      ) : null}
+      {expanded === false ? (
+        <ActionButton
+          accessibleText="Maximize View"
+          actionId={Action.MAXIMIZE}
+          iconName="maximize"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
+      ) : null}
+      {expanded ? (
+        <ActionButton
+          accessibleText="Restore View"
+          actionId={Action.RESTORE}
+          iconName="restore"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
+      ) : null}
+      {tearOut ? (
+        <ActionButton
+          accessibleText="Tear out View"
+          actionId={Action.TEAR_OUT}
+          iconName="tear-out"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
+      ) : null}
       {closeable ? (
-        <Close onClick={handleClose} onMouseDown={handleMouseDown} />
+        <ActionButton
+          accessibleText="Close View"
+          actionId={Action.REMOVE}
+          iconName="close"
+          onClick={handleAction}
+          onMouseDown={handleMouseDown}
+        />
       ) : null}
     </Toolbar>
   );

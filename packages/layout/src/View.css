@@ -24,3 +24,19 @@
   flex-direction: column;
   flex: 1;
 }
+
+.View-collapsed .view-main {
+  display: none;
+}
+
+.View-collapsed + .Splitter {
+  display: none;
+}
+
+.View-collapsed .Toolbar-vertical {
+  border-right: solid 1px var(--grey40);
+}
+
+.View-collapsed .Toolbar-vertical .toolbar-title {
+  display: none;
+}

@@ -13,6 +13,7 @@ import {
 } from "./utils";
 import { getManagedDimension } from "./layoutUtils";
 import { ComponentRegistry, isContainer } from "./registry/ComponentRegistry";
+import { Minimize } from "./icons";
 
 const MISSING_TYPE = undefined;
 
@@ -35,6 +36,9 @@ const handlers = {
   [Action.DRAG_DROP]: dragDrop,
   [Action.SPLITTER_RESIZE]: splitterResize,
   [Action.REMOVE]: removeChild,
+  [Action.MAXIMIZE]: setChildProps,
+  [Action.MINIMIZE]: setChildProps,
+  [Action.RESTORE]: setChildProps,
   [Action.SWITCH_TAB]: switchTab,
   [MISSING_TYPE]: MISSING_TYPE_HANDLER,
 };
@@ -47,7 +51,7 @@ function switchTab(state, { path, nextIdx }) {
   var target = followPath(state, path);
   let replacement;
   if (React.isValidElement(target)) {
-    replacement = React.cloneElement(target, { active: nextIdx });
+    replacement = React.cloneElement(target, props);
   } else {
     replacement = {
       ...target,
@@ -55,6 +59,11 @@ function switchTab(state, { path, nextIdx }) {
     };
   }
   return swapChild(state, target, replacement);
+}
+
+function setChildProps(state, { path, type }) {
+  var target = followPath(state, path);
+  return swapChild(state, target, target, type);
 }
 
 function splitterResize(rootProps, { path, sizes }) {
@@ -207,7 +216,7 @@ function replaceChild(model, child, replacement) {
   return swapChild(model, child, newChild);
 }
 
-function swapChild(model, child, replacement) {
+function swapChild(model, child, replacement, op) {
   if (model === child) {
     return replacement;
   } else {
@@ -218,9 +227,15 @@ function swapChild(model, child, replacement) {
       );
       const children = model.props.children.slice();
       if (finalStep) {
-        children[idx] = replacement;
+        if (!op) {
+          children[idx] = replacement;
+        } else if (op === Action.MINIMIZE) {
+          children[idx] = minimize(model, children[idx]);
+        } else if (op === Action.RESTORE) {
+          children[idx] = restore(children[idx]);
+        }
       } else {
-        children[idx] = swapChild(children[idx], child, replacement);
+        children[idx] = swapChild(children[idx], child, replacement, op);
       }
       return React.cloneElement(model, null, children);
     } else {
@@ -230,11 +245,75 @@ function swapChild(model, child, replacement) {
       if (finalStep) {
         children[idx] = replacement;
       } else {
-        children[idx] = swapChild(children[idx], child, replacement);
+        children[idx] = swapChild(children[idx], child, replacement, op);
       }
       return { ...model, children };
     }
   }
+}
+
+function minimize(parent, child) {
+  // Right now, parent is always going to be a FLexbox, but might not always be the case
+  const { style: parentStyle } = getProps(parent);
+  const { style: childStyle } = getProps(child);
+
+  const {
+    width,
+    height,
+    flexBasis,
+    flexShrink,
+    flexGrow,
+    ...rest
+  } = childStyle;
+
+  const restoreStyle = {
+    width,
+    height,
+    flexBasis,
+    flexShrink,
+    flexGrow,
+  };
+
+  const style = {
+    ...rest,
+    flexBasis: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+  };
+  const collapsed =
+    parentStyle.flexDirection === "row"
+      ? "vertical"
+      : parentStyle.flexDirection === "column"
+      ? "horizontal"
+      : false;
+
+  if (collapsed) {
+    return React.cloneElement(child, {
+      collapsed,
+      restoreStyle,
+      style,
+    });
+  } else {
+    return child;
+  }
+}
+
+function restore(child) {
+  // Right now, parent is always going to be a FLexbox, but might not always be the case
+  const { style: childStyle, restoreStyle } = getProps(child);
+
+  const { flexBasis, flexShrink, flexGrow, ...rest } = childStyle;
+
+  const style = {
+    ...rest,
+    ...restoreStyle,
+  };
+
+  return React.cloneElement(child, {
+    collapsed: false,
+    style,
+    restoreStyle: undefined,
+  });
 }
 
 function isFlexible(model) {
