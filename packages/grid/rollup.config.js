@@ -1,7 +1,9 @@
+import atImport from "postcss-import";
 import babel from "rollup-plugin-babel";
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
 import filesize from "rollup-plugin-filesize";
+import postcss from "rollup-plugin-postcss";
 import { terser } from "rollup-plugin-terser";
 import { commonJsConfig } from "../../rollup/config";
 
@@ -30,6 +32,12 @@ export default [
           "@babel/plugin-proposal-optional-chaining",
           "@babel/plugin-proposal-nullish-coalescing-operator",
         ],
+      }),
+      postcss({
+        plugins: [atImport()],
+        minimize: false,
+        extract: true,
+        sourceMap: true,
       }),
       //   ...(isProd ? [terser()] : []),
       filesize(),

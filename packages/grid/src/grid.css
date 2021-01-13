@@ -1,0 +1,29 @@
+.Grid {
+  --grid-background: var(--grid-background, white);
+  --grid-text-color: var(--grid-text-color, black);
+  --grid-font-size: var(--grid-font-size, 0.75em);
+  --grid-heading-border-color: var(--grid-heading-border-color);
+  --grid-cell-border-color: var(--grid-cell-border-color);
+  --header-cell-highlight-bg: var(--header-cell-highlight-bg);
+  --grid-cell-highlight-bg: var(--grid-cell-highlight-bg);
+  --grid-header-background: var(
+    --grid-header-background,
+    var(--grid-background, white)
+  );
+
+  background-color: var(--grid-background);
+  box-sizing: border-box;
+  position: relative;
+  font-family: Roboto;
+  font-size: var(--grid-font-size);
+  overflow: hidden;
+}
+
+.Grid.scrolling-x .Viewport {
+  overflow-y: hidden !important;
+  height: 100% !important;
+}
+
+.Grid .Canvas .ColumnGroupHeader {
+  position: relative;
+}

@@ -51,6 +51,8 @@ export declare const STARTS_WITH: 'SW';
 export declare const getFullRange: any;
 export declare const resetRange: any;
 
+export declare const useEffectSkipFirst: any;
+
 // rows
 export declare const addRowsToIndex: any;
 export declare const indexRows: any;

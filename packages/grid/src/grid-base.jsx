@@ -13,12 +13,13 @@ import GridContext from "./grid-context";
 import { MenuProvider } from "./context-menu/menu-context";
 import { ComponentProvider } from "./component-context";
 import modelReducer, { initModel } from "./grid-model-reducer";
-import useStyles from "./use-styles";
 import useAdornments from "./use-adornments";
 import useDataSourceModelBindings from "./use-datasource-model-bindings";
 import Viewport from "./viewport";
 import { measureColumns } from "./grid-model-utils";
 import components from "./standard-renderers";
+
+import "./grid.css";
 
 /** @type {GridComponent} */
 const GridBase = (props) => {
@@ -179,7 +180,6 @@ const GridBase = (props) => {
     }
   }, [props.height, props.width]);
 
-  const classes = useStyles();
   const { height, width, headerHeight, headingDepth } = gridModel;
   const totalHeaderHeight =
     custom.header.height +
@@ -199,7 +199,7 @@ const GridBase = (props) => {
       <MenuProvider>
         <ComponentProvider components={components}>
           <div
-            className={cx(classes.Grid, props.className)}
+            className={cx("Grid", props.className)}
             ref={gridEl}
             style={{ width, height, paddingTop: totalHeaderHeight }}
           >

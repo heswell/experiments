@@ -12,7 +12,6 @@ import React, {
 import { useEffectSkipFirst } from "@heswell/utils";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
-import useStyles from "./use-styles";
 import useDataSource from "./use-data-source";
 import GridContext from "./grid-context";
 import { getColumnGroupColumnIdx } from "./grid-model-utils.js";
@@ -20,6 +19,8 @@ import { getColumnGroupColumnIdx } from "./grid-model-utils.js";
 import Canvas from "./canvas";
 import ColumnBearer from "./column-bearer";
 import InsertIndicator from "./insert-indicator";
+
+import "./viewport.css";
 
 const DEFAULT_TOGGLE_STRATEGY = {};
 
@@ -242,8 +243,6 @@ const Viewport = forwardRef(function Viewport(
 
   const handleVerticalScroll = useScroll("scrollTop", scrollCallback);
 
-  const classes = useStyles();
-
   const toggleStrategy = useMemo(() => getToggleStrategy(dataSource), [
     dataSource,
   ]);
@@ -251,13 +250,13 @@ const Viewport = forwardRef(function Viewport(
   return (
     <>
       <div
-        className={classes.Viewport}
+        className="Viewport"
         ref={viewportEl}
         style={{ height: gridModel.viewportHeight }}
         onScroll={handleVerticalScroll}
       >
         <div
-          className={classes.scrollingCanvasContainer}
+          className="scrollingCanvasContainer"
           ref={scrollingEl}
           style={{
             height: Math.max(
