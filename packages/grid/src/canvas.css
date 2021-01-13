@@ -26,3 +26,16 @@
   position: absolute;
   top: 0;
 }
+
+.DraggedColumn {
+  background-color: ivory;
+  opacity: 0.4;
+}
+
+.Vanishing {
+  border-style: none;
+  color: transparent;
+  padding: 0;
+  transition: width ease 0.3s;
+  width: 0 !important;
+}

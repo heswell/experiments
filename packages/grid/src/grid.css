@@ -1,9 +1,9 @@
 .Grid {
   --grid-background: var(--grid-background, white);
   --grid-text-color: var(--grid-text-color, black);
-  --grid-font-size: var(--grid-font-size, 0.75em);
-  --grid-heading-border-color: var(--grid-heading-border-color);
-  --grid-cell-border-color: var(--grid-cell-border-color, "#d4d4d4");
+  --grid-font-size: var(--grid-font-size, 12px);
+  --heading-border-color: var(--grid-heading-border-color, #d4d4d4);
+  --cell-border-color: var(--grid-cell-border-color, #d4d4d4);
   --header-cell-highlight-bg: var(--header-cell-highlight-bg);
   --grid-cell-highlight-bg: var(--grid-cell-highlight-bg);
   --grid-header-background: var(
@@ -15,7 +15,7 @@
   box-sizing: border-box;
   position: relative;
   font-family: Roboto;
-  font-size: var(--grid-font-size);
+  font-size: 12px;
   overflow: hidden;
 }
 
@@ -24,6 +24,6 @@
   height: 100% !important;
 }
 
-.Grid .Canvas .ColumnGroupHeader {
+.Grid.scrolling-x .Canvas .ColumnGroupHeader {
   position: relative;
 }

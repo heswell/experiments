@@ -1,6 +1,6 @@
 import React from "react";
 import { Flexbox } from "@heswell/layout";
-import { CloseIcon as CloseAction } from "@heswell/layout";
+import { Close as CloseAction } from "@heswell/layout";
 import { Button, Icon, Toolbar } from "@heswell/toolkit-2.0";
 {
 }

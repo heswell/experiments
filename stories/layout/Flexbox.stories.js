@@ -10,7 +10,7 @@ import {
 } from "@heswell/layout";
 import { Toolbar } from "@heswell/toolkit-2.0";
 import { Brown, Red } from "./sample-components";
-import { CloseIcon as CloseAction } from "@heswell/layout";
+import { Close as CloseAction } from "@heswell/layout";
 import "@heswell/toolkit-2.0/dist/OpenSans.css";
 import "@heswell/toolkit-2.0/dist/ToolkitIcons.css";
 import "@heswell/toolkit-2.0/dist/theme.css";

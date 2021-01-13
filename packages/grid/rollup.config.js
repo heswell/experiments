@@ -48,7 +48,6 @@ export default [
       "classnames",
       "react",
       "react-dom",
-      "react-jss",
     ],
   },
   /* Just for Jest */ {

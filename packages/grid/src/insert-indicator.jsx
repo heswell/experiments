@@ -1,11 +1,9 @@
-import React, {forwardRef} from 'react';
-import useStyles from './use-styles';
+import React, { forwardRef } from "react";
 
-const InsertIndicator = forwardRef(function InsertIndicator(props, ref){
-  const classes = useStyles();
-  return (
-    <div className={classes.InsertIndicator} ref={ref}/>
-  )
+import "./insert-indicator.css";
+
+const InsertIndicator = forwardRef(function InsertIndicator(props, ref) {
+  return <div className={"InsertIndicator"} ref={ref} />;
 });
 
 export default InsertIndicator;

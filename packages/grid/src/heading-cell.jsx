@@ -1,11 +1,14 @@
-import React, {useCallback, useRef} from "react";
-import cx from 'classnames';
-import useStyles from './use-styles';
-import Draggable from './draggable';
+import React, { useCallback, useRef } from "react";
+import cx from "classnames";
+import Draggable from "./draggable";
 
 /** @type {HeaderCellComponent} */
-const HeadingCell = function HeaderCell({ className, column, onDrag, onResize }){
-
+const HeadingCell = function HeaderCell({
+  className,
+  column,
+  onDrag,
+  onResize,
+}) {
   const el = useRef(null);
   const col = useRef(column);
 
@@ -14,42 +17,47 @@ const HeadingCell = function HeaderCell({ className, column, onDrag, onResize })
   // so we don't rely on current width in column
   col.current = column;
 
-  const handleResizeStart = () => onResize('begin', column);
+  const handleResizeStart = () => onResize("begin", column);
 
-  const handleResize = useCallback((e) => {
+  const handleResize = useCallback(
+    (e) => {
       const width = getWidthFromMouseEvent(e);
       if (width > 0 && width !== col.current.width) {
-          onResize('resize', col.current, width);
+        onResize("resize", col.current, width);
       }
-  },[onResize]);
+    },
+    [onResize]
+  );
 
   const handleResizeEnd = (e) => {
-      onResize('end', col.current, getWidthFromMouseEvent(e));
-  }
+    onResize("end", col.current, getWidthFromMouseEvent(e));
+  };
 
-  const getWidthFromMouseEvent = e => {
-      const right = e.pageX;
-      const left = el.current.getBoundingClientRect().left;
-      return right - left;
-  }
+  const getWidthFromMouseEvent = (e) => {
+    const right = e.pageX;
+    const left = el.current.getBoundingClientRect().left;
+    return right - left;
+  };
 
   // TODO could we just wrap the whole header in a draggable ?
-  const { name, label=name, resizing, width } = column;
-  const classes = useStyles();
+  const { name, label = name, resizing, width } = column;
   return (
     <div
-      className={cx(classes.HeaderCell, className, {resizing})}
+      className={cx("HeaderCell", className, { resizing })}
       ref={el}
-      style={{ width }}>
-      <div className={classes.innerHeaderCell}>
-        <div className={classes.cellWrapper}>{label}</div>
+      style={{ width }}
+    >
+      <div className={"innerHeaderCell"}>
+        <div className={"cellWrapper"}>{label}</div>
       </div>
-      {column.resizeable !== false &&
-          <Draggable className={classes.resizeHandle}
-              onDrag={handleResize}
-              onDragStart={handleResizeStart}
-              onDragEnd={handleResizeEnd} />
-          }
+      {column.resizeable !== false && (
+        <Draggable
+          className={"resizeHandle"}
+          onDrag={handleResize}
+          onDragStart={handleResizeStart}
+          onDragEnd={handleResizeEnd}
+        />
+      )}
     </div>
   );
 };

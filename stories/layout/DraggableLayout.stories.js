@@ -11,7 +11,7 @@ import {
 } from "@heswell/layout";
 import { Toolbar } from "@heswell/toolkit-2.0";
 
-import { CloseIcon as CloseAction } from "@heswell/layout";
+import { Close as CloseAction } from "@heswell/layout";
 import Builder from "../components/layout-builder/layout-builder";
 import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
