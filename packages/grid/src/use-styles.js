@@ -7,70 +7,9 @@ export default createUseStyles((theme) => ({
     backgroundColor: "var(--grid-header-background)",
   },
 
-  Canvas: {
-    display: "inline-block",
-    // position: 'absolute',
-    top: 0,
-    verticalAlign: "top",
-    "& $ColumnGroupHeader": {
-      position: "absolute",
-      top: 0,
-    },
-  },
-
-  fixed: {
-    overflow: "hidden",
-    "& $GridCell": {
-      backgroundColor: "#efeded",
-    },
-  },
-
-  scrollable: {
-    overflowX: "auto",
-    overscrollBehaviorX: "contain",
-    overflowY: "hidden",
-  },
-
-  canvasContent: {
-    position: "relative",
-  },
-
-  GridRow: {
-    boxSizing: "border-box",
-    left: 0,
-    outline: 0,
-    position: "absolute",
-    top: 0,
-    whiteSpace: "nowrap",
-    width: "100%",
-    "&.group $GridCell:first-child": {
-      padding: "0 6px 0 3px",
-    },
-  },
-
   virtualPadding: {
     display: "inline-block",
     height: "100%",
-  },
-
-  HeaderCell: {
-    alignItems: "stretch",
-    background: "var(--grid-header-cell-background)",
-    borderBottom: "solid 1px var(--grid-heading-border-color)",
-    borderRight: "1px solid var(--grid-heading-border-color)",
-    boxSizing: "border-box",
-    color: "var(--grid-text-color)",
-    display: "inline-flex",
-    fontWeight: "bold",
-    height: "100%",
-    position: "relative",
-    verticalAlign: "top",
-    "&$noBottomBorder": {
-      borderBottom: "solid 1px transparent",
-    },
-    "&.resizing": {
-      backgroundColor: "var(--header-cell-highlight-bg)",
-    },
   },
 
   GroupHeaderCell: {
@@ -131,35 +70,6 @@ export default createUseStyles((theme) => ({
     "& .ColHeader:hover .remove-icon": {
       visibility: "visible",
     },
-  },
-
-  noBottomBorder: {},
-
-  innerHeaderCell: {
-    flex: "1 1 auto",
-    fontWeight: "bold",
-    overflow: "hidden",
-    padding: "0 12px 0 14px",
-    position: "relative",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-
-  cellWrapper: {
-    alignItems: "center",
-    display: "flex",
-    height: "100%",
-    verticalAlign: "top",
-    whiteSpace: "nowrap",
-  },
-
-  resizeHandle: {
-    backgroundColor: "rgba(180, 180, 180, 0.05)",
-    cursor: "col-resize",
-    flex: "0 0 8px",
-    position: "relative",
-    right: -5,
-    zIndex: 1,
   },
 
   GridCell: {
@@ -256,23 +166,5 @@ export default createUseStyles((theme) => ({
     top: 0,
     transition: "left ease-in-out .2s",
     width: 4,
-  },
-
-  SortIndicator: {
-    position: "absolute",
-    top: 2,
-    left: -5,
-    bottom: 0,
-    width: 18,
-
-    "&.single-col": {},
-    "&.multi-col": {},
-  },
-
-  SortPosition: {
-    fontSize: "10px",
-    position: "absolute",
-    left: 9,
-    top: 15,
   },
 }));
