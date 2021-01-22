@@ -36,7 +36,7 @@ export default [
       postcss({
         plugins: [atImport()],
         minimize: false,
-        extract: true,
+        extract: false,
         sourceMap: true,
       }),
       //   ...(isProd ? [terser()] : []),
