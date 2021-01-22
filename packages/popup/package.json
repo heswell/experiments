@@ -1,6 +1,6 @@
 {
   "name": "@heswell/popup",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Popup",
   "main": "dist/index.js",
   "module": "index.js",

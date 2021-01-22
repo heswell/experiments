@@ -1,6 +1,6 @@
 {
   "name": "@heswell/ui-controls",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "UI Controls",
   "main": "dist/index.js",
   "module": "index.js",
