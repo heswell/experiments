@@ -1,0 +1,33 @@
+.FilterCounts {
+  align-items: center;
+  border-top: solid 1px #999;
+  color: #666;
+  display: flex;
+  font-size: 0.75em;
+  line-height: 16px;
+}
+
+.FilterCounts .filter-row-counts {
+  flex: 1 1 0;
+  padding-left: 6px;
+}
+
+.FilterCounts .filter-row-table {
+  display: table;
+  width: 100%;
+}
+
+.FilterCounts .filter-row-table > div {
+  display: table-row;
+}
+
+.FilterCounts .filter-row-table > div > span {
+  display: table-cell;
+}
+
+.FilterCounts .data-row-counts {
+  flex: 1 1 0;
+  margin-left: auto;
+  text-align: right;
+  padding-right: 27px;
+}

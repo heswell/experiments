@@ -3,6 +3,8 @@ import React, { useMemo, useState } from "react";
 import { Grid } from "@heswell/grid";
 import { LocalDataSource } from "@heswell/data-source";
 
+import "../layout/material-design.css";
+
 import "@heswell/grid/dist/index.css";
 
 export default {

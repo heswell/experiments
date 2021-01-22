@@ -69,6 +69,7 @@
 .GroupHeaderCell .remove-icon {
   visibility: hidden;
   font-size: 16px;
+  line-height: var(--header-cell-height);
   padding-left: 3px;
 }
 .GroupHeaderCell .ColHeader:hover .remove-icon {

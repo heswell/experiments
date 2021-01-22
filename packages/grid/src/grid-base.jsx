@@ -19,7 +19,7 @@ import Viewport from "./viewport";
 import { measureColumns } from "./grid-model-utils";
 import components from "./standard-renderers";
 
-import "./grid.css";
+import "./grid-base.css";
 
 /** @type {GridComponent} */
 const GridBase = (props) => {

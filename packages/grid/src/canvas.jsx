@@ -13,7 +13,7 @@ import ColumnGroupHeader from "./column-group-header";
 import useScroll from "./use-scroll";
 import useUpdate from "./use-update";
 import canvasReducer, { initCanvasReducer } from "./canvas-reducer";
-import Row from "./row";
+import Row from "./grid-row";
 import { getColumnOffset } from "./grid-model-utils";
 
 import "./canvas.css";

@@ -1,0 +1,32 @@
+.ColumnFilter {
+  align-items: center;
+}
+
+.ColumnFilter.active .filterButton {
+  color: black;
+}
+
+.filterInputContainer {
+  flex: 1 1 auto;
+  padding: 0 6px;
+}
+
+.filterInput {
+  border: none;
+  height: 100%;
+  outline: none;
+  padding: 0;
+  width: 100%;
+}
+
+.filterClearButton {
+  cursor: pointer;
+  font-size: 12px;
+  height: 1em;
+  margin-right: 3px;
+  width: 1em;
+}
+
+.filterClearButton .material-icons {
+  font-size: inherit;
+}

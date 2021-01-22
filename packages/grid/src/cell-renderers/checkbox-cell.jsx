@@ -6,9 +6,7 @@ import { metadataKeys } from "@heswell/utils";
 import "./checkbox-cell.css";
 
 const CheckboxCell = function CheckboxCell({ column, row }) {
-  const { GridCell } = useGridStyles();
-
-  const className = cx(GridCell, "Checkbox", {
+  const className = cx("GridCell", "Checkbox", {
     checked: row[metadataKeys.SELECTED] === 1,
     emptyRow: row[metadataKeys.KEY] === undefined,
   });

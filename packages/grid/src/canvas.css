@@ -28,7 +28,7 @@
 }
 
 .DraggedColumn {
-  background-color: ivory;
+  background-color: var(--drag-column-bg);
   opacity: 0.4;
 }
 

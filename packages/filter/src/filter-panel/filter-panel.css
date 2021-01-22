@@ -1,17 +1,23 @@
 /* belongs in FilterPanel when we have such a thing */
 .FilterPanel {
-  font-family: 'Roboto', sans-serif;
-  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  font-family: Roboto;
+  font-size: 12px;
+  width: 200px;
+  height: 400px;
 }
 
 .FilterPanel .filter-inner {
   background-color: white;
-  box-shadow: 2px 2px 5px -1px rgba(0,0,0,0.52);
+  box-shadow: 2px 2px 5px -1px rgba(0, 0, 0, 0.52);
+  display: flex;
 }
 
 .FilterPanel .footer {
-  display: flex;
   align-items: center;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .FilterPanel .footer {
@@ -39,9 +45,9 @@
 
 .FilterPanel .buttons {
   position: absolute;
-  bottom:3px;
-  left:3px;
-  right:3px;
+  bottom: 3px;
+  left: 3px;
+  right: 3px;
   height: 24px;
   display: flex;
   flex-direction: row;
@@ -53,21 +59,8 @@
 }
 
 .FilterPanel .filter-toolbar .mass-select {
-  flex: 0 1 100px;  
-  text-align: center;  
+  flex: 0 1 100px;
+  text-align: center;
   line-height: 25px;
   border-left: solid 1px #ccc;
-}
-
-.FilterPanelHeader .col-header-inner {
-  height: 100%;
-  line-height: 24px;
-  padding-left: 12px;
-  box-sizing: border-box;
-  border-bottom: solid 1px black;
-  position: relative;
-  background-color: var(--header-cell-highlight-bg);
-  top:1px;
-  z-index: 1;
-  color: rgb(51,51,51);
 }
