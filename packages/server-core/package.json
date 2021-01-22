@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "publishConfig": {
@@ -30,5 +30,5 @@
     "utf-8-validate": "^5.0.2",
     "ws": "6.2.1"
   },
-  "gitHead": "fe0931a17f09cd63557bf9fd4bc71d6c775ed13d"
+  "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
 }

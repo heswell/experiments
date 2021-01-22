@@ -1,6 +1,6 @@
 {
   "name": "@heswell/grid",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -35,5 +35,6 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-terser": "^5.1.2"
-  }
+  },
+  "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
 }

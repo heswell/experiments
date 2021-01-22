@@ -34,5 +34,6 @@
     "@heswell/layout": "^1.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1"
-  }
+  },
+  "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
 }
