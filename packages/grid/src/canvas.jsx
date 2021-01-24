@@ -21,7 +21,7 @@ import "./canvas.css";
 const { IDX, RENDER_IDX } = metadataKeys;
 const byKey = (row1, row2) => row1[RENDER_IDX] - row2[RENDER_IDX];
 
-/** @type {CanvasType} */
+/** @type {Canvas} */
 const Canvas = forwardRef(function Canvas(
   {
     columnGroupIdx,
@@ -31,7 +31,6 @@ const Canvas = forwardRef(function Canvas(
     height,
     horizontalScrollbarHeight,
     onColumnDragStart,
-    rowHeight,
     data: { rows, offset },
     toggleStrategy,
   },
@@ -305,7 +304,7 @@ const Canvas = forwardRef(function Canvas(
           <Row
             key={row[RENDER_IDX]}
             columns={columns}
-            height={rowHeight}
+            height={gridModel.rowHeight}
             idx={row[IDX] - offset}
             keys={cellKeys}
             onClick={handleRowClick}

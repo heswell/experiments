@@ -1,5 +1,6 @@
 .GridRow {
   box-sizing: border-box;
+  height: var(--hw-grid-row-height);
   left: 0;
   outline: 0;
   position: absolute;

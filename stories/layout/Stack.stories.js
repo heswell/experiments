@@ -1,8 +1,7 @@
 import React from "react";
 
-import { Component, Flexbox, Stack } from "@heswell/layout";
+import { Component, Flexbox, Stack } from "@uitk/layout";
 import "../story.css";
-import "@heswell/toolkit-2.0/dist/theme.css";
 
 export default {
   title: "Layout/Stack",

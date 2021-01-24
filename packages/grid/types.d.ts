@@ -12,66 +12,15 @@ interface ColumnDescriptor {
   width?: number;
 }
 
-interface Column {
-  flex?: number;
-  key?: number;
-  heading?: string[];
-  initialFlex?: number;
-  label?:string;
-  locked?: boolean;
-  // would like to avoid this, it is purely an internal implementation detail
-  marginLeft?: number;
-  minWidth?: number;
-  name: string;
-  resizeable?: boolean;
-  resizing?: boolean;
-  type?: any;
-  width: number;
-  // Group types, break these out
-  isGroup?: true;
-  columns?: Column[];
-}
 
-interface Heading {
-  key: string;
-  isHeading: true;
-  label: string;
-  width: number;
-}
 
-interface ColumnGroup {
-  columns: Column[];
-  contentWidth: number;
-  headings?: Heading[];
-  locked: boolean;
-  left?: number;
-  width: number;
-};
 
 type MetaDataKeys = {
   [key: string]: number;
 }
 
 type DataSource = any;
-type ColumnSizing = 'fill' | 'auto' | 'static'; 
 
-interface GridProps {
-  className?: string;
-  columns: ColumnDescriptor[];
-  columnSizing? : ColumnSizing;
-  dataSource: DataSource;
-  defaultColumnWidth?: number;
-  groupBy?: GroupBy;
-  headerHeight?: number;
-  height: number;
-  minColumnWidth?: number;
-  pivotBy?: GroupBy;
-  rowHeight?: number;
-  selectionModel?: SelectionModel;
-  width: number;
-}
-
-type GridComponent = React.FC<GridProps>;
 
 type GridContext = React.Context<{
   custom: any;
@@ -81,43 +30,8 @@ type GridContext = React.Context<{
   gridModel: GridModel;
 }>;
 
-type SortColumns = {
-  [key: string] : any;
-  // we can't use this in JavaScript. There are places where TS inference is not smart enough to 
-  // work out which variant is valid. In TS we could use type assertions, we have no such option
-  // in JS.
-  // [key: string] : SortDirection | number;
-}
 
-type GroupState = {
-  rowIdx?: number,
-  [key: string]: boolean | GroupState;
-}
 
-type GridModel = {
-  columnNames: string[];
-  columnSizing: ColumnSizing;
-  columnGroups: ColumnGroup[];
-  customFooterHeight: number;
-  customHeaderHeight: number;
-  customInlineHeaderHeight: number;
-  defaultColumnWidth?: number;
-  groupColumns: SortColumns;// rename - too confusing with columnGroups
-  groupState: GroupState;
-  headerHeight: number;
-  headingDepth: number;
-  height: number;
-  horizontalScrollbarHeight: number;
-  minColumnWidth?: number;
-  noColumnHeaders?: boolean;
-  pivotColumns: SortColumns;
-  renderBufferSize: number;
-  rowHeight: number;
-  sortColumns: SortColumns;
-  viewportHeight: number;
-  viewportRowCount: number;
-  width: number;
-};
 
 type GridAction = 
   | {type: 'scroll-start-horizontal', scrollLeft: number}
@@ -136,59 +50,10 @@ type GridActionHandlerMap = {[key in GridAction['type']]?: GridActionHandler<key
 type GridActionReducerFactory = (handlerMap: GridActionHandlerMap) => (state: {}, action: GridAction) => {};
 
 // Grid Model Reducer and Actions
-type GridModelResizeAction = { type: 'resize', height: number, width: number};
-type GridModelResizeColAction = { type: 'resize-col', phase: ResizePhase, column: Column, width?: number};
-type GridModelResizeHeadingAction = { type: 'resize-heading', phase: ResizePhase, column: Column, width?: number};
-type GridModelAddColumnAction = { type: 'add-col', targetColumnGroup?: ColumnGroup, column: Column, insertIdx: number};
-type GridModelInitializeAction = { type: 'initialize', props};
-type GridModelGroupAction = { type: 'group', column: Column, direction?: SortDirection, add?: boolean, remove?: true};
-type GridModelGroupAction = { type: 'pivot', column: Column, direction?: SortDirection, add?: boolean, remove?: true};
-type GridModelSortAction = { type: 'sort', column: Column, direction?: SortDirection, add?: True, remove?: True};
-type GridModelToggleAction = { type: 'toggle', row: any[]};
-type GridModelSetColumnsAction = { type: 'set-available-columns', columns: Column[]};
-type GridModelHideColumnAction = { type: 'column-hide', column: Column};
-type GridModelShowColumnAction = { type: 'column-show', column: Column};
-type GridModelPivotColumnsAction = { type: 'set-pivot-columns', columns: string[]};
 
-type GridModelAction =
-  | GridModelResizeAction
-  | GridModelResizeColAction
-  | GridModelResizeHeadingAction
-  | GridModelAddColumnAction
-  | GridModelInitializeAction
-  | GridModelSortAction
-  | GridModelGroupAction
-  | GridModelPivotAction
-  | GridModelToggleAction
-  | GridModelSetColumnsAction
-  | GridModelShowColumnAction
-  | GridModelHideColumnAction
-  | GridModelPivotColumnsAction;
-
-type GridModelReducerFn<A=GridModelAction> = (state: GridModel, action: A) => GridModel;  
-type GridModelReducerInitializer = (props: GridProps) => GridModel;
-type GridModelReducer<T extends GridModelAction['type']> = 
-  T extends 'resize' ? GridModelReducerFn<GridModelResizeAction> :
-  T extends 'resize-col' ? GridModelReducerFn<GridModelResizeColAction> :
-  T extends 'resize-heading' ? GridModelReducerFn<GridModelResizeHeadingAction> :
-  T extends 'add-col' ? GridModelReducerFn<GridModelAddColumnAction> :
-  T extends 'initialize' ? GridModelReducerFn<GridModelInitializeAction> :
-  T extends 'sort' ? GridModelReducerFn<GridModelSortAction> :
-  T extends 'group' ? GridModelReducerFn<GridModelGroupAction> :
-  T extends 'pivot' ? GridModelReducerFn<GridModelPivotAction> :
-  T extends 'toggle' ? GridModelReducerFn<GridModelToggleAction> :
-  T extends 'set-columns' ? GridModelReducerFn<GridModelSetColumnsAction> :
-  T extends 'column-show' ? GridModelReducerFn<GridModelShowColumnAction> :
-  T extends 'column-hide' ? GridModelReducerFn<GridModelHideColumnAction> :
-  T extends 'set-pivot-column' ? GridModelReducerFn<GridModelPivotColumnsAction> :
-  GridModelReducerFn<GridModelAction>;
-
-type GridModelReducerTable = {[key in GridModelAction['type']]: GridModelReducer<key>};  
 
 type Row = any;
 
-type DragPhase = 'drag-start' | 'drag' | 'drag-pause' | 'drag-end'
-type ResizePhase = 'begin' | 'resize' | 'end';
 
 type onHeaderCellDragHandler = (phase: 'drag-start', column: Column, columnPosition: number, mousePosition: number) => void;
 
@@ -240,15 +105,6 @@ type GridData = {
 type DataAction = any;
 type DataReducer = (state: GridData, action: DataAction) => GridData;
 
-interface ViewportProps {
-  columnDragData?: ColumnDragData;
-  gridModel: GridModel;
-  onColumnDrop?: onColumnDragHandler;
-  onColumnDragStart?: onColumnGroupHeaderDragHandler;
-  ref?: React.Ref<any>;
-}
-
-type ViewportComponent = React.FC<ViewportProps>;
 
 type CanvasAction =
   | {type: 'scroll-left', scrollLeft: number}
@@ -274,25 +130,6 @@ type CanvasRef = React.Ref<{
   scrollLeft: number;
 }>;
 
-type ToggleStrategy = {
-  expand_level_1?: false;
-};
-
-interface CanvasProps {
-  columnGroupIdx: number;
-  contentHeight: number;
-  firstVisibleRow: number;
-  gridModel: GridModel;
-  height: number;
-  horizontalScrollbarHeight: number;
-  onColumnDragStart?: onColumnDragStart;
-  ref?: CanvasRef;
-  rowHeight: number;
-  data: {rows: Row[], offset: number};
-  toggleStrategy: ToggleStrategy;
-}
-
-type CanvasType = React.ForwardRefExoticComponent<CanvasProps>;
 
 type CanvasHandle = Handle<CanvasType>;
 

@@ -2,7 +2,7 @@ import React from "react";
 import classnames from "classnames";
 import { Action } from "./layout-action";
 import ActionButton from "./ActionButton";
-import { Toolbar, useDensity } from "@heswell/toolkit-2.0";
+import { Toolbar, useDensity } from "@uitk/toolkit";
 import { useLayoutDispatch } from "./LayoutContext";
 
 import "./Header.css";

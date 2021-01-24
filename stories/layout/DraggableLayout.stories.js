@@ -3,23 +3,22 @@ import React from "react";
 import {
   registerComponent,
   useLayoutContext,
+  Close as CloseAction,
   Component,
   Flexbox,
   Stack,
   View,
   DraggableLayout,
-} from "@heswell/layout";
-import { Toolbar } from "@heswell/toolkit-2.0";
+} from "@uitk/layout";
+import { Toolbar } from "@uitk/toolkit";
 
-import { Close as CloseAction } from "@heswell/layout";
 import Builder from "../components/layout-builder/layout-builder";
 import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
 
 import "../story.css";
-import "@heswell/toolkit-2.0/dist/OpenSans.css";
-import "@heswell/toolkit-2.0/dist/ToolkitIcons.css";
-import "@heswell/toolkit-2.0/dist/theme.css";
+import "@uitk/theme-light/assets/OpenSans.css";
+import "@uitk/theme-light/assets/ToolkitIcons.css";
 import "./DraggableLayout.stories.css";
 
 export default {

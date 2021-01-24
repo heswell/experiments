@@ -8,6 +8,10 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
 
   const isRunning = useRef(false);
   const frame = useRef(null);
+  const callbackRef = useRef(callback);
+  if (callback !== callbackRef.current){
+    callbackRef.current = callback;
+  }
   
   const latestState = useRef(null);
   function getLatestState(){
@@ -80,13 +84,13 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
     dataSource.subscribe(subscriptionDetails,
       function datasourceMessageHandler({ type: messageType, ...msg }) {
         if (messageType === 'subscribed') {
-          return callback(messageType, msg.columns);
+          return callbackRef.current(messageType, msg.columns);
         }
         if (msg.size !== undefined) {
-          callback('size', msg.size);
+          callbackRef.current('size', msg.size);
         } else if (msg.type === 'pivot') {
           // Callback is for data oriented operations, should this be emitted ?
-          callback('pivot', msg.columns);
+          callbackRef.current('pivot', msg.columns);
         }
 
         if (msg.filter !== undefined) {

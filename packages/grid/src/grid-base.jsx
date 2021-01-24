@@ -1,18 +1,16 @@
-//@ts-nocheck
 import React, {
+  forwardRef,
   useCallback,
-  useEffect,
-  useReducer,
   useRef,
   useState,
 } from "react";
+import {useForkRef} from "@heswell/utils"
 import cx from "classnames";
-import { useEffectSkipFirst } from "@heswell/utils";
 import GridContext from "./grid-context";
 import { MenuProvider } from "./context-menu/menu-context";
+import RowHeightCanary from "./row-height-canary";
 import { ComponentProvider } from "./component-context";
-import modelReducer, { initModel } from "./grid-model-reducer";
-import useAdornments from "./use-adornments";
+import {useGridModel} from "./use-grid-model";
 import useDataSourceModelBindings from "./use-datasource-model-bindings";
 import Viewport from "./viewport";
 import { measureColumns } from "./grid-model-utils";
@@ -20,18 +18,17 @@ import components from "./standard-renderers";
 
 import "./grid-base.css";
 
-/** @type {GridComponent} */
-const GridBase = (props) => {
+/** @type {GridBase} */
+const GridBase = forwardRef(function GridBase(props, ref){
   // TODO height needs to default to auto
-  const gridEl = useRef(null);
-  const viewport = useRef(null);
+  const viewportRef = useRef(null);
   // const scrollableHeader = useRef(null);
-  const initialRender = useRef(true);
   /** @type {[ColumnDragData, React.Dispatch<ColumnDragData>]} */
   const [columnDragData, setColumnDragData] = useState(null);
   const draggingColumn = useRef(false);
 
-  const [dataSource, setDataSource] = useState(props.dataSource);
+  const [rootRef, gridModel, dataSource, dispatchGridModel, custom] = useGridModel(props);
+
 
   const handleSelectionChange = useCallback(
     ({ idx, row, rangeSelect, keepExistingSelection }) => {
@@ -53,16 +50,16 @@ const GridBase = (props) => {
 
   const handleHorizontalScrollStart = () => {
     if (!draggingColumn.current) {
-      viewport.current.beginHorizontalScroll();
-      gridEl.current.classList.add("scrolling-x");
-      gridEl.current.style.paddingTop = gridModel.customHeaderHeight + "px";
+      viewportRef.current.beginHorizontalScroll();
+      rootRef.current.classList.add("scrolling-x");
+      rootRef.current.style.paddingTop = gridModel.customHeaderHeight + "px";
     }
   };
 
   const handleHorizontalScrollEnd = () => {
     if (!draggingColumn.current) {
-      viewport.current.endHorizontalScroll();
-      gridEl.current.classList.remove("scrolling-x");
+      viewportRef.current.endHorizontalScroll();
+      rootRef.current.classList.remove("scrolling-x");
       const {
         headerHeight,
         headingDepth,
@@ -73,7 +70,7 @@ const GridBase = (props) => {
         headerHeight * headingDepth +
         customHeaderHeight +
         customInlineHeaderHeight;
-      gridEl.current.style.paddingTop = totalHeaderHeight + "px";
+      rootRef.current.style.paddingTop = totalHeaderHeight + "px";
     }
   };
 
@@ -99,46 +96,14 @@ const GridBase = (props) => {
       "scroll-start-horizontal": handleHorizontalScrollStart,
     }[action.type](action));
 
-  const custom = useAdornments(props);
 
-  const [gridModel, dispatchGridModel] = useReducer(
-    modelReducer,
-    [props, custom],
-    initModel
-  );
-
-  const datasourceHandler = useCallback((eventName, ...args) => {
-    switch (eventName) {
-      case "group":
-        return dispatchGridModel({ type: "group", columns: args[0] });
-      case "sort":
-        return dispatchGridModel({ type: "sort", columns: args[0] });
-      default:
-    }
-  }, []);
-
-  // New
-  useEffect(() => {
-    dataSource.on("*", datasourceHandler);
-    return () => {
-      dataSource.removeListener("*", datasourceHandler);
-    };
-  }, [dataSource]);
-
-  //TODO do we need to useCallback here - can we ever send stale props ?
-  useEffectSkipFirst(() => {
-    dispatchGridModel({ type: "initialize", props });
-    if (props.dataSource !== dataSource) {
-      setDataSource(props.dataSource);
-    }
-  }, [props.columns, props.columnSizing, props.dataSource, props.groupBy]);
 
   useDataSourceModelBindings(dataSource, gridModel);
 
   const handleColumnDragStart = useCallback(
     (phase, ...args) => {
       const [columnGroupIdx, column, columnPosition, mousePosition] = args;
-      const { left } = gridEl.current.getBoundingClientRect();
+      const { left } = rootRef.current.getBoundingClientRect();
       const columnGroup = gridModel.columnGroups[columnGroupIdx];
       handleHorizontalScrollStart();
       setColumnDragData({
@@ -167,17 +132,6 @@ const GridBase = (props) => {
     [gridModel]
   );
 
-  useEffect(() => {
-    if (initialRender.current) {
-      initialRender.current = false;
-    } else {
-      dispatchGridModel({
-        type: "resize",
-        height: props.height,
-        width: props.width,
-      });
-    }
-  }, [props.height, props.width]);
 
   const { height, width, headerHeight, headingDepth } = gridModel;
   const totalHeaderHeight =
@@ -199,9 +153,10 @@ const GridBase = (props) => {
         <ComponentProvider components={components}>
           <div
             className={cx("Grid", props.className)}
-            ref={gridEl}
+            ref={useForkRef(ref, rootRef)}
             style={{ width, height, paddingTop: totalHeaderHeight }}
           >
+            <RowHeightCanary/>
             {custom.header.component}
             <Viewport
               custom={custom}
@@ -210,7 +165,7 @@ const GridBase = (props) => {
               columnDragData={columnDragData}
               onColumnDragStart={handleColumnDragStart}
               onColumnDrop={handleColumnDrop}
-              ref={viewport}
+              ref={viewportRef}
             />
             {custom.footer.component}
           </div>
@@ -218,6 +173,6 @@ const GridBase = (props) => {
       </MenuProvider>
     </GridContext.Provider>
   );
-};
+});
 
 export default GridBase;

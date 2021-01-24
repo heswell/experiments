@@ -11,6 +11,8 @@ import {
   splitKeys
 } from './grid-model-utils';
 
+import * as Action from "./grid-model-actions";
+
 const DEFAULT_COLUMN_TYPE = {name: 'string'}
 const DEFAULT_COLUMN_WIDTH = 100;
 const MIN_COLUMN_WIDTH = 80;
@@ -44,7 +46,7 @@ function sortMap(sortBy){
   }, {}) 
 }
 
-/** @type {(s: GridModel, a: GridModelAction) => GridModel} */
+/** @type {GridModelReducer} */
 export default (state, action) => {
   // @ts-ignore
   return reducerActionHandlers[action.type](state, action);
@@ -59,12 +61,13 @@ const reducerActionHandlers = {
   'initialize': initialize,
   'sort': sortRows,
   'group': groupRows,
-  'pivot': pivotRows,
+  // 'pivot': pivotRows,
   'toggle': toggleRow,
   'set-available-columns': setAvailableColumns,
   'set-pivot-columns': setPivotColumns,
   'column-hide': hideColumn,
-  'column-show': showColumn
+  'column-show': showColumn,
+  [Action.ROW_HEIGHT]: setRowHeight
 };
 
 export const initModel = ([gridProps, custom]) => {
@@ -135,7 +138,7 @@ export const initModel = ([gridProps, custom]) => {
   return state;
 };
 
-/** @type {GridModelReducer<'initialize'>} */
+/** @type {GridModelReducer<GridModelInitializeAction>} */
 function initialize(state, {props}){
   const custom = {
     inlineHeader: {height: state.customInlineHeaderHeight},
@@ -145,7 +148,7 @@ function initialize(state, {props}){
   return initModel([props, custom]);
 }
 
-/** @type {GridModelReducer<'set-pivot-columns'>} */
+/** @type {GridModelReducer<GridModelPivotColumnsAction>} */
 function setPivotColumns(state, action){
 
   const groupBy = GridModel.groupBy(state);
@@ -164,7 +167,7 @@ function setPivotColumns(state, action){
     
 }
 
-/** @type {GridModelReducer<'set-columns'>} */
+/** @type {GridModelReducer<GridModelSetColumnsAction>} */
 function setAvailableColumns(state, action){
   if (!state.columnGroups){
     const {columnNames, columnGroups, headingDepth} = buildColumnGroups(state, action.columns);
@@ -186,7 +189,7 @@ function setAvailableColumns(state, action){
 }
 
 // Do we need this in the model ?
-/** @type {GridModelReducer<'toggle'>} */
+/** @type {GridModelReducer<GridModelToggleAction>} */
 function toggleRow(state, {row}){
   // TODO does groupState actually need to live in the grid model ?
   const groupState = GridModel.toggleGroupState(state, row);
@@ -196,7 +199,7 @@ function toggleRow(state, {row}){
   }
 }
 
-/** @type {GridModelReducer<'sort'>} */
+/** @type {GridModelReducer<GridModelSortAction>} */
 function sortRows(state, {columns}){
   const sortColumns = columns && sortByToMap(columns);
 
@@ -206,7 +209,7 @@ function sortRows(state, {columns}){
   };
 }
 
-/** @type {GridModelReducer<'group'>} */
+/** @type {GridModelReducer<GridModelGroupAction>} */
 function groupRows(state, {columns=null}){
   const groupColumns = columns && columns.reduce((map, [columnName, direction]) => (map[columnName] = direction, map),{});
   const {columnGroups} = buildColumnGroups(state, GridModel.columns(state), columns);
@@ -243,7 +246,7 @@ function pivotRows(state, {column, direction, add, remove}){
     };
 }
 
-/** @type {GridModelReducer<'resize-heading'>} */
+/** @type {GridModelReducer<GridModelResizeHeadingAction>} */
 function resizeHeading(state, {phase, column, width}){
   if (phase === 'begin'){
     const {columnGroups} = updateGroupHeadings(state.columnGroups, column, RESIZING, RESIZING, RESIZING);
@@ -273,13 +276,15 @@ function resizeColumnHeading(state, column, width, headingResizeState){
   for (let i=0;i<diffs.length;i++){
       if (typeof diffs[i] === 'number' && diffs[i] !== 0){
           const targetCol = state.columnGroups[groupIdx].columns[groupColIdx[i]];
-          newState = resizeColumn({...newState, headingResizeState}, {type: 'resize-col', phase: 'resize', column: targetCol, width: targetCol.width + diffs[i]});
+          newState = resizeColumn(
+            {...newState, headingResizeState}, 
+            {type: 'resize-col', phase: 'resize', column: targetCol, width: targetCol.width + diffs[i]});
       }
   }
   return newState;
 }
 
-/** @type {GridModelReducer<'column-hide'>} */
+/** @type {GridModelReducer<GridModelHideColumnAction>} */
 function hideColumn(state, {column}){
   const columns = GridModel.columns(state).filter(col => col.name !== column.name);
   const groupBy = GridModel.groupBy(state);
@@ -291,13 +296,13 @@ function hideColumn(state, {column}){
   };
 }
 
-/** @type {GridModelReducer<'column-show'>} */
+/** @type {GridModelReducer<GridModelShowColumnAction>} */
 function showColumn(state, {column}){
   console.log(`showColumn ${column.name}`);
   return state;
 }
 
-/** @type {GridModelReducer<'add-col'>} */
+/** @type {GridModelReducer<GridModelAddColumnAction>} */
 function addColumn(state, {insertIdx: absInsertIdx, targetColumnGroup, column}){
   if (absInsertIdx !== -1){
     targetColumnGroup = getColumnGroup(state, absInsertIdx);
@@ -355,6 +360,21 @@ function resizeColumn(state, {phase, column, width}){
   }
 }
 
+/** @type {GridModelReducer<GridModelRowHeightAction>} */
+function setRowHeight(state, {rowHeight}){
+  const {height, headerHeight, headingDepth, viewportHeight} = state;
+  const totalHeaderHeight = headerHeight * headingDepth;
+  return {
+    ...state,
+    rowHeight,
+    viewportRowCount: Math.ceil((height - totalHeaderHeight) / rowHeight) + 1
+  }
+
+  //TODO what abl=our scroll bar calculations
+
+}
+
+/** @type {GridModelReducer<GridModelResizeAction>} */
 function resizeGrid(state, {height, width}){
   const {columnSizing, headerHeight, headingDepth, rowHeight, viewportHeight} = state;
   const heightDiff = height - state.height;

@@ -2,19 +2,17 @@ import React from "react";
 // import { TerraceAlignment } from "../components/alignment-tools/terrace-with-alignment";
 
 import {
+  Close as CloseAction,
   Flexbox,
   Stack,
   View,
   Component,
   registerComponent,
-} from "@heswell/layout";
-import { Toolbar } from "@heswell/toolkit-2.0";
+} from "@uitk/layout";
+import { Toolbar } from "@uitk/toolkit";
 import { Brown, Red } from "./sample-components";
-import { Close as CloseAction } from "@heswell/layout";
-import "@heswell/toolkit-2.0/dist/OpenSans.css";
-import "@heswell/toolkit-2.0/dist/ToolkitIcons.css";
-import "@heswell/toolkit-2.0/dist/theme.css";
-import "@heswell/layout/dist/index.css";
+import "@uitk/theme-light/assets/OpenSans.css";
+import "@uitk/theme-light/assets/ToolkitIcons.css";
 import "../story.css";
 
 export default {

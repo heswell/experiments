@@ -26,6 +26,8 @@
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {
+    "@heswell/utils": "^2.0.0",
+    "@uitk/toolkit": "^1.0.0",
     "jest": "^24.9.0",
     "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
@@ -39,8 +41,8 @@
     "react-jss": "10.1"
   },
   "peerDependencies": {
-    "@heswell/toolkit-2.0": "^0.0.1",
     "@heswell/utils": "^2.0.0",
+    "@uitk/toolkit": "^1.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1"
   },

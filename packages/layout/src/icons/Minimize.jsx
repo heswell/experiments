@@ -1,6 +1,6 @@
 import React from "react";
 import classnames from "classnames";
-import { Button, Icon } from "@heswell/toolkit-2.0";
+import { Button, Icon } from "@uitk/toolkit";
 
 const Minimize = ({ className, ...props }) => (
   <Button

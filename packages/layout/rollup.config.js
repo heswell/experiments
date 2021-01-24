@@ -39,7 +39,7 @@ export default {
     visualizer(),
   ],
   external: [
-    "@heswell/toolkit-2.0",
+    "@uitk/toolkit",
     "@heswell/utils",
     "classnames",
     "react",

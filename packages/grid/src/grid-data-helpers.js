@@ -47,6 +47,7 @@ export function reassignKeys(state, { lo, hi }, direction, idxOffset=0) {
   // assign keys to the items moving into range
   const { buffer, bufferIdx, keys: { free: freeKeys, used: usedKeys } } = state;
   let maxKey = state.rows.length;
+  
 
   // rows that have moved out of range need to give back their key, unless we have already removed them,
   // in which case we will have already retrieved the key

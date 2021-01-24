@@ -1,6 +1,6 @@
 import React from "react";
 import { select } from "@storybook/addon-knobs";
-import { DensityProvider, ThemeProvider } from "@heswell/toolkit-2.0";
+import { DensityProvider, ThemeProvider } from "@uitk/toolkit";
 
 const densities = ["touch", "low", "medium", "high"];
 const DEFAULT_DENSITY = "medium";

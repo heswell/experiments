@@ -52,7 +52,7 @@ function setRange(state, { range }) {
     const [low, high] = rangeLowHigh(range, state.offset, state.rowCount, state.renderBufferSize);
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
 
-    if (low >= firstBufIdx && high <= lastBufIdx + 1) {
+    if (state.buffer.length > 0 && low >= firstBufIdx && high <= lastBufIdx + 1) {
 
       const direction = scrollDirection(state.range, range);
 
@@ -61,6 +61,7 @@ function setRange(state, { range }) {
         lo: low - firstBufIdx,
         hi: high - firstBufIdx
       };
+
 
       reassignKeys(state, bufferIdx, direction);
 

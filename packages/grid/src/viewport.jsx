@@ -33,13 +33,14 @@ const getToggleStrategy = (dataSource) => {
   }
 };
 
-/** @type {ViewportComponent} */
+/** @type {Viewport} */
 const Viewport = forwardRef(function Viewport(
   { columnDragData, gridModel, onColumnDragStart, onColumnDrop },
   ref
 ) {
   const viewportEl = useRef(null);
   const scrollingEl = useRef(null);
+  const rowCount = useRef(0);
   /** @type {React.MutableRefObject<any>} */
   const canvasRefs = useRef([]);
   const columnBearer = useRef(null);
@@ -78,6 +79,7 @@ const Viewport = forwardRef(function Viewport(
   const scrollableCanvasIdx = gridModel.columnGroups
     ? gridModel.columnGroups.findIndex((group) => !group.locked)
     : -1;
+
 
   useImperativeHandle(ref, () => ({
     beginHorizontalScroll: () => {
@@ -169,7 +171,8 @@ const Viewport = forwardRef(function Viewport(
         case "size":
           // How do we handle this withoput having this dependency on gridModel ?
           // THis is the important one, it comes with every rowSet
-          contentHeight.current = options * gridModel.rowHeight;
+          rowCount.current = options;
+          contentHeight.current = rowCount.current * gridModel.rowHeight;
           if (
             options >= gridModel.viewportRowCount &&
             verticalScrollbarWidth.current === 0
@@ -197,6 +200,7 @@ const Viewport = forwardRef(function Viewport(
   );
 
   useUpdate(() => {
+    console.log(`viewportRowCount = ${gridModel.viewportRowCount}`);
     setRange(
       firstVisibleRow.current,
       firstVisibleRow.current +
@@ -204,6 +208,11 @@ const Viewport = forwardRef(function Viewport(
         gridModel.renderBufferSize
     );
   }, [gridModel.renderBufferSize, gridModel.viewportRowCount]);
+
+  useUpdate(() => {
+    console.log(`row height = ${gridModel.rowHeight}`);
+    contentHeight.current = gridModel.rowHeight * rowCount.current;
+  },[gridModel.rowHeight, rowCount])
 
   useEffectSkipFirst(() => {
     viewportEl.current.scrollTop = 0;
@@ -277,7 +286,6 @@ const Viewport = forwardRef(function Viewport(
                   key={idx}
                   onColumnDragStart={onColumnDragStart}
                   ref={canvasRefs.current[idx]}
-                  rowHeight={gridModel.rowHeight}
                   data={data}
                   toggleStrategy={toggleStrategy} // brand new, not well thought out yet
                 />

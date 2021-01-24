@@ -1,5 +1,5 @@
 import React from "react";
-import { Tab, Tabstrip, Toolbar, Tooltray } from "@heswell/toolkit-2.0";
+import { Tab, Tabstrip, Toolbar, Tooltray } from "@uitk/toolkit";
 import { Close, Minimize, Maximize } from "./icons";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";

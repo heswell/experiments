@@ -44,8 +44,7 @@ const Row = memo(function Row({
       className={className}
       onClick={handleClick}
       style={{
-        transform: `translate3d(0px, ${idx * height}px, 0px)`,
-        height,
+        transform: `translate3d(0px, ${idx * height}px, 0px)`
       }}
     >
       {columns.map((column) =>

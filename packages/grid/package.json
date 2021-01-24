@@ -36,5 +36,8 @@
     "rollup-plugin-postcss": "^2.0.3",
     "rollup-plugin-terser": "^5.1.2"
   },
-  "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
+  "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8",
+  "dependencies": {
+    "@uitk/toolkit": "^1.0.0"
+  }
 }

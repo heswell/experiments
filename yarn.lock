@@ -1119,7 +1119,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@finos/perspective@^0.5.3", "@finos/perspective@^0.5.5":
+"@finos/perspective@^0.5.3":
   version "0.5.6"
   resolved "https://registry.yarnpkg.com/@finos/perspective/-/perspective-0.5.6.tgz#04bbd3454db7953d26492b1fb2c27774db3a8c6e"
   integrity sha512-BXzhWtyV8fCjQiqzaKhTwnnSGFkgMHg54ht4pAXhyiBP/bgeb9TXITh8ceBGhkvyqKjkgPoBX2VWmLdKFBQAOQ==
@@ -2399,6 +2399,41 @@
   integrity sha512-f+fD/fQAo3BCbCDlrUpznF1A5Zp9rB0noS5vnoormHSIPFKL0Z2DcUJ3Gxp5ytH4uLRNxy7AwYUC9exZzqGMAw==
   dependencies:
     "@types/yargs-parser" "*"
+
+"@uitk/layout@^1.0.0":
+  version "1.0.0"
+  resolved "http://localhost:4873/@uitk%2flayout/-/layout-1.0.0.tgz#cf787928dcfdc28988beccffcb51878ee1ee9903"
+  integrity sha512-mnfHQt57+KvcWTBtXwmNm21gBp9xKZ9i3l9MWVtksXoBJhI21K1hk75nu2opn3a57YmnVkfq8BY8CFTa86KRBQ==
+  dependencies:
+    "@uitk/toolkit" "1.0.0"
+    d3-selection "2.0.0"
+    d3-transition "2.0.0"
+    nanoid "^3.1.20"
+
+"@uitk/theme-dark@^1.0.0":
+  version "1.0.0"
+  resolved "http://localhost:4873/@uitk%2ftheme-dark/-/theme-dark-1.0.0.tgz#54caafb7f88b54753db115a8074dc1d7d14df44f"
+  integrity sha512-Kui5HTmIzqv6r1U6gKEsQbPXYpxVd00kgFjw0XSLoRMT7hsoxuGI9sJklIjTruiORI+VRxkqb/V+WrhxihFTuQ==
+  dependencies:
+    "@uitk/theme-light" "1.0.0"
+
+"@uitk/theme-light@1.0.0", "@uitk/theme-light@^1.0.0":
+  version "1.0.0"
+  resolved "http://localhost:4873/@uitk%2ftheme-light/-/theme-light-1.0.0.tgz#c525f75d5f3214d3d0cc67b96478b5aef5536137"
+  integrity sha512-KxwnCA2yS3ktzverzkNydk+Z+Uj9QH2siz4vfIsqNlmTZvj3RiY1T2mz1Nzu6PbcNDeqJ0sG6H/agSv/DKoM1Q==
+
+"@uitk/toolkit@1.0.0", "@uitk/toolkit@^1.0.0":
+  version "1.0.0"
+  resolved "http://localhost:4873/@uitk%2ftoolkit/-/toolkit-1.0.0.tgz#369400a425e5ee6de830d76a64c417a3132a56c7"
+  integrity sha512-Fk7/CCM8XaTwfrIPHjj/Hsv9AjGwQWWSW8DYTnc2XCzBrwsb5TMO5qysLKF/xQ+Slrt4sfdRD/RUOlLbGAb6Fw==
+  dependencies:
+    "@uitk/toolkit" "1.0.0"
+    compute-scroll-into-view "^1.0.16"
+    prop-types "^15.7.2"
+    react-popper "^2.2.4"
+    react-window "^1.8.6"
+    regular-table "^0.1.5"
+    warning "^4.0.3"
 
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
@@ -8175,7 +8210,7 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha1-hxDXrwqmJvj/+hzgAWhUUmMlV0g=
 
-memoize-one@^5.0.0:
+"memoize-one@>=3.1.1 <6", memoize-one@^5.0.0:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-5.1.1.tgz#047b6e3199b508eaec03504de71229b8eb1d75c0"
   integrity sha512-HKeeBpWvqiVJD57ZUAsJNm71eHTykffzcLZVYWiVfQeI1rJtuEaS7hQiEpWfVVk18donPwJEcFKIkCmPJNOhHA==
@@ -8442,6 +8477,11 @@ nanoid@^2.1.6:
   version "2.1.11"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-2.1.11.tgz#ec24b8a758d591561531b4176a01e3ab4f0f0280"
   integrity sha512-s/snB+WGm6uwi0WjsZdaVcuf3KJXlfGl2LcxgwkEwJF0D/BWzVWAZW/XY4bFaiR7s0Jk3FPvlnepg1H1b1UwlA==
+
+nanoid@^3.1.20:
+  version "3.1.20"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.20.tgz#badc263c6b1dcf14b71efaa85f6ab4c1d6cfc788"
+  integrity sha512-a1cQNyczgKbLX9jwbS/+d7W8fX/RfgYR7lVWwWOGIPNgK2m0MWvrGF6/m4kk6U3QcFMnZf3RIhL0v2Jgh/0Uxw==
 
 nanomatch@^1.2.9:
   version "1.2.13"
@@ -10100,6 +10140,14 @@ react-transition-group@^4.3.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
+react-window@^1.8.6:
+  version "1.8.6"
+  resolved "https://registry.yarnpkg.com/react-window/-/react-window-1.8.6.tgz#d011950ac643a994118632665aad0c6382e2a112"
+  integrity sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    memoize-one ">=3.1.1 <6"
+
 react@16.14.0:
   version "16.14.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
@@ -10271,6 +10319,11 @@ regjsparser@^0.6.4:
   integrity sha512-jjyuCp+IEMIm3N1H1LLTJW1EISEJV9+5oHdEyrt43Pg9cDSb6rrLZei2cVWpl0xTjmmlpec/lEQGYgM7xfpGCQ==
   dependencies:
     jsesc "~0.5.0"
+
+regular-table@^0.1.5:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/regular-table/-/regular-table-0.1.6.tgz#99f4ff3211dd4521e0f8ce9fa99a58146d3d0b79"
+  integrity sha512-6i2IMAxBE6kNycPpEEhAbNOrBMm/yFmLeAtz3rbg9+VrKq8uyLuuJlbplHOEnZkweeIn1o5bXmdke5UCtT+NhQ==
 
 relateurl@^0.2.7:
   version "0.2.7"

@@ -21,7 +21,6 @@
     "isolatedModules": true
   },
   "include": [
-    "types.d.ts",
     "src/**/*"
   ]
 }
