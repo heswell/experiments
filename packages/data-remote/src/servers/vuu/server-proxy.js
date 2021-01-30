@@ -1,20 +1,23 @@
 import * as Message from './messages';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import { createLogger, logColor, partition } from '@heswell/utils';
 
-const logger = createLogger('VuuServerProxy', logColor.blue);
+function partition(array, test, pass = [], fail = []) {
 
+    for (let i = 0, len = array.length; i < len; i++) {
+        (test(array[i], i) ? pass : fail).push(array[i]);
+    }
+  
+    return [pass, fail];
+  }
+  
 const SORT = { asc: 'D', dsc : 'A' };
+
+const byRowIndex = (row1, row2) => row1[0] - row2[0];
 
 let _requestId = 1;
 
 
-
-
-
-
-
-
+const logger = console;
 
 export class ServerProxy {
 
@@ -174,7 +177,7 @@ export class ServerProxy {
                 from : lo,
                 to : hi
             },
-            columns : columns.map(column => column.name),
+            columns,
             sort : {
                 sortDefs : [ ]
             },
@@ -239,9 +242,8 @@ export class ServerProxy {
                     rest.push(rowIndex-1, 0, depth, count, path, 0)
                     record.rows.push(rest);
                 } else {
-                    // TODO populate the key field correctly
-                    data.push(rowIndex, 0, 0, 0, data[0]);
-                    record.rows.push(data);
+                    // TODO populate the key field correctly, i.e. don't just assume first field
+                    record.rows.push([rowIndex, 0, 0, 0, data[0],0,,,,,].concat(data));
                 }
             } else if (updateType === Message.SIZE){
                 console.log(`size record ${JSON.stringify(rows[i],null,2)}`)
@@ -276,6 +278,7 @@ export class ServerProxy {
                 const rowsByViewport = this.batchByViewport(rows);
                 rowsByViewport.forEach(({viewPortId, size, rows}) => {
                     const {postMessageToClient} = this.viewportStatus[viewPortId];
+                    rows.sort(byRowIndex)
                     const output = {
                         size,
                         offset: 0,

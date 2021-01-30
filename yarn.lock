@@ -2410,18 +2410,6 @@
     d3-transition "2.0.0"
     nanoid "^3.1.20"
 
-"@uitk/theme-dark@^1.0.0":
-  version "1.0.0"
-  resolved "http://localhost:4873/@uitk%2ftheme-dark/-/theme-dark-1.0.0.tgz#54caafb7f88b54753db115a8074dc1d7d14df44f"
-  integrity sha512-Kui5HTmIzqv6r1U6gKEsQbPXYpxVd00kgFjw0XSLoRMT7hsoxuGI9sJklIjTruiORI+VRxkqb/V+WrhxihFTuQ==
-  dependencies:
-    "@uitk/theme-light" "1.0.0"
-
-"@uitk/theme-light@1.0.0", "@uitk/theme-light@^1.0.0":
-  version "1.0.0"
-  resolved "http://localhost:4873/@uitk%2ftheme-light/-/theme-light-1.0.0.tgz#c525f75d5f3214d3d0cc67b96478b5aef5536137"
-  integrity sha512-KxwnCA2yS3ktzverzkNydk+Z+Uj9QH2siz4vfIsqNlmTZvj3RiY1T2mz1Nzu6PbcNDeqJ0sG6H/agSv/DKoM1Q==
-
 "@uitk/toolkit@1.0.0", "@uitk/toolkit@^1.0.0":
   version "1.0.0"
   resolved "http://localhost:4873/@uitk%2ftoolkit/-/toolkit-1.0.0.tgz#369400a425e5ee6de830d76a64c417a3132a56c7"

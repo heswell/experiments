@@ -27,13 +27,14 @@ const defaultRange = { lo: 0, hi: 0 };
   ----------------------------------------------------------------*/
 export default class RemoteDataSource  extends EventEmitter {
 
-  constructor({tableName, serverName = AvailableProxies.Viewserver, serverUrl}) {
+  constructor({bufferSize=100, columns, tableName, serverName = AvailableProxies.Viewserver, serverUrl}) {
     super();
+    this.bufferSize = bufferSize;
     this.url = serverUrl;
     this.serverName = serverName;
     this.tableName = tableName;
     this.server = NullServer;  
-    this.columns = null;
+    this.columns = columns;
     this.subscription = null;
     this.viewport = null;
     this.filterDataCallback = null;
@@ -68,7 +69,7 @@ export default class RemoteDataSource  extends EventEmitter {
     this.server.subscribe({
         viewport,
         tablename: tableName,
-        columns: columns.map(column => column.name),
+        columns,
         range
       }, message => {
           if (message.dataType === DataTypes.FILTER_DATA) {
@@ -99,10 +100,13 @@ export default class RemoteDataSource  extends EventEmitter {
 
 
   setRange(lo, hi, dataType=ROW_DATA) {
+
+    const low = Math.max(0, lo - this.bufferSize);
+    const high = hi + this.bufferSize;
     this.server.handleMessageFromClient({
       viewport: this.viewport,
       type: Msg.setViewRange,
-      range: { lo, hi },
+      range: { lo:low, hi:high },
       dataType
     });
   }

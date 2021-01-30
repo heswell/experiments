@@ -31,10 +31,10 @@
       "request": "launch",
       "name": "Jest Tests",
       "args":[ 
-        "${workspaceRoot}/packages/layout/node_modules/.bin/jest",
-        "layout-reducer.spec"
+        "${workspaceRoot}/packages/grid/node_modules/.bin/jest",
+        "grid-data-reducer.spec"
       ],
-      "cwd": "${workspaceRoot}/packages/layout"
+      "cwd": "${workspaceRoot}/packages/grid"
   },
   ]
 }

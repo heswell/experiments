@@ -81,7 +81,7 @@ export const initModel = ([gridProps, custom]) => {
     minColumnWidth = MIN_COLUMN_WIDTH,
     noColumnHeaders=false,
     pivotBy: pivotByProp,
-    renderBufferSize=20,
+    renderBufferSize=0,
     rowHeight = 24,
     selectionModel, // default should be none
     width } = gridProps;

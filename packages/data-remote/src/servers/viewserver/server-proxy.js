@@ -1,8 +1,16 @@
 import * as Message from './messages.js';
 import { ServerApiMessageTypes as API } from '../../messages.js';
-import { createLogger, logColor, partition } from '@heswell/utils';
 
-const logger = createLogger('ViewServerProxy', logColor.blue);
+const logger = console;
+
+function partition(array, test, pass = [], fail = []) {
+
+    for (let i = 0, len = array.length; i < len; i++) {
+        (test(array[i], i) ? pass : fail).push(array[i]);
+    }
+  
+    return [pass, fail];
+  }
 
 const NOT_DATA = {};
 /*

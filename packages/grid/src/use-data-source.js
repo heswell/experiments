@@ -98,6 +98,7 @@ export default function useDataSource(dataSource, subscriptionDetails, renderBuf
         }
 
         if (msg.rows) {
+
           dispatchData({
             type: "data",
             rows: msg.rows,
