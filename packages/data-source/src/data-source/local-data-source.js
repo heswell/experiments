@@ -131,6 +131,7 @@ export default class LocalDataSource extends EventEmitter {
     if (this.dataStore === null){
       this.pendingRangeRequest = [lo,hi, dataType]
     } else {
+      console.log(`%cLocalDataSource setRange ${lo} ${hi}`,'color:blue;font-weight:bold');
       const low = Math.max(0, lo - this.bufferSize);
       const high = hi + this.bufferSize;
       const result = this.dataStore.setRange({lo: low, hi: high}, true, dataType);

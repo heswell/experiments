@@ -32,7 +32,7 @@ const schema = {
     { name: "Industry" },
   ],
 };
-const dataConfig = { dataUrl: "/data/instruments.js", schema };
+const dataConfig = { bufferSize: 10, dataUrl: "/data/instruments.js", schema };
 
 export const EmptyGrid = () => <Grid />;
 
@@ -67,7 +67,7 @@ export const BasicGrid = () => {
   }
 
   return <>
-    <Grid className="Steve" dataSource={dataSource} columns={schema.columns} height={600} ref={gridRef}/>
+    <Grid dataSource={dataSource} columns={schema.columns} height={600} ref={gridRef}/>
     <br/>
     <button onClick={incrementProp}>Increase row height prop</button>
     <button onClick={decrementProp}>Decrease row height prop</button>
@@ -156,7 +156,7 @@ export const VuuGrid = () => {
   }
 
   return <>
-    <Grid className="Steve" dataSource={dataSource} columns={instrumentColumns} height={600} ref={gridRef}/>
+    <Grid dataSource={dataSource} columns={instrumentColumns} height={600} ref={gridRef}/>
     <br/>
     <button onClick={incrementProp}>Increase row height prop</button>
     <button onClick={decrementProp}>Decrease row height prop</button>

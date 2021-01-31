@@ -5,6 +5,12 @@ import * as Action from "./grid-data-actions";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
+const uniqueKeys = rows => {
+  const keys = rows.map(row => row[1]);
+  const uniqueKeys = new Set(keys);
+  return uniqueKeys.size === keys.length;
+}
+
 /** @type {(any) =>  GridData} */
 export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => ({
   //TODO RingBuffer ?
@@ -28,9 +34,15 @@ export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => (
 /** @type {DataReducer} */
 export default (state = initData({}), action) => {
   if (action.type === "range") {
+      // console.log(`setRange ${JSON.stringify(action.range)}`)
     return setRange(state, action);
   } else if (action.type === "data") {
-    return setData(state, action);
+    const result = setData(state, action)
+    if (!uniqueKeys(result.rows)){
+      console.log(`KEY ERROR`)
+    }
+    return result;
+    // return setData(state, action);
   } else if (action.type === "update") {
     return applyUpdates(state, action);
   } else if (action.type === Action.ROWCOUNT) {
@@ -149,6 +161,8 @@ function applyUpdates(state, action) {
 function setData(state, action) {
   const { offset, rowCount } = action;
 
+  // console.log(JSON.stringify(action.rows))
+
   const [buffer, bufferIdx, keys, rowsChanged] = addToBuffer(
     state,
     action.rows,
@@ -191,18 +205,37 @@ function addToBuffer(
     incomingRows = incomingRows.filter(row => row[0] >= bufferMin && row[0] < bufferMax);
     ([firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows))
 
-  } else if (lastRowIdx < firstBufIdx && lastRowIdx < low){
-    // filling the leading buffer, no indexing required
-    const lo = low - firstRowIdx;
-    const hi = high - firstRowIdx;
-    return [
-      incomingRows.concat(buffer),
-      { lo, hi },
-      keys,
-      false
-    ];
+  } else if (lastRowIdx < firstBufIdx /* && lastRowIdx < low*/){
+
+    if (firstBufIdx - lastRowIdx > 1){
+      console.error(`addToBuffer ${firstBufIdx - lastRowIdx} row gap in data`);
+      // need to rerequest data
     }
 
+    // filling the leading buffer, may or may not include rows within range
+    const lo = low - firstRowIdx;
+    const hi = high - firstRowIdx;
+    const newBuffer = incomingRows.concat(buffer);
+    const rowsChanged = lastRowIdx >= low;
+
+    if (rowsChanged){
+      // we need to index the newly inserted rows that are in range
+      const end = lo + (lastRowIdx - low) + 1;
+      for (let i=lo; i<end; i++ ){
+        const row = newBuffer[i];
+        const key = freeKeys.shift(); // can't we just pop ?
+        usedKeys[key] = 1;
+        row[RENDER_IDX] = key;
+      }
+    }
+
+    return [
+      newBuffer,
+      { lo, hi },
+      keys,
+      rowsChanged
+    ];
+  }
   const scrollDirection = firstBufIdx !== -1 && firstBufIdx < bufferMin
     ? 'FWD'
     : lastBufIdx > bufferMax
