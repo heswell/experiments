@@ -1,6 +1,15 @@
 
 import { metadataKeys, update as updateRows } from "@heswell/utils";
-import { bufferMinMax, firstAndLastIdx, range as $range, rangeLowHigh, reassignKeys, scrollDirection } from './grid-data-helpers';
+import {
+  bufferMinMax,
+  firstAndLastIdx,
+  getFullBufferSize,
+  initKeys,
+  isDataOutOfRange,
+  rangeLowHigh,
+  reassignKeys,
+  scrollDirection
+} from './grid-data-helpers';
 import * as Action from "./grid-data-actions";
 
 const { IDX, RENDER_IDX } = metadataKeys;
@@ -11,7 +20,6 @@ const uniqueKeys = rows => {
   return uniqueKeys.size === keys.length;
 }
 
-/** @type {(any) =>  GridData} */
 export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => ({
   //TODO RingBuffer ?
   bufferIdx: { lo: 0, hi: 0 },
@@ -31,14 +39,13 @@ export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => (
 
 // This assumes model.meta never changes. If it does (columns etc)
 // we will need additional action types to update
-/** @type {DataReducer} */
 export default (state = initData({}), action) => {
   if (action.type === "range") {
-      // console.log(`setRange ${JSON.stringify(action.range)}`)
+    // console.log(`setRange ${JSON.stringify(action.range)}`)
     return setRange(state, action);
   } else if (action.type === "data") {
     const result = setData(state, action)
-    if (!uniqueKeys(result.rows)){
+    if (!uniqueKeys(result.rows)) {
       console.log(`KEY ERROR`)
     }
     return result;
@@ -57,63 +64,24 @@ export default (state = initData({}), action) => {
 function setSize(state, { rowCount }) {
   return { ...state, rowCount };
 }
-//TODO we HAVE to remove out=of-range rows and add empty placeholders
-/** @type {DataReducer} */
 function setRange(state, { range }) {
   if (state.range === undefined || range.lo !== state.range.lo || range.hi !== state.range.hi) {
     const [low, high] = rangeLowHigh(range, state.offset, state.rowCount, state.renderBufferSize);
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
-    const { buffer, bufferSize, keys, offset, rowCount } = state;
-    const [bufferMin, bufferMax] = bufferMinMax(range, rowCount, bufferSize, offset);
+    const { buffer } = state;
 
-    // first trim the buffer of any excess fat
-    const removeFromFrontOfBuffer = Math.max(0, Math.min(buffer.length, bufferMin - firstBufIdx));
-    const removedFromEndOfBuffer = Math.max(0, Math.min(buffer.length, lastBufIdx - bufferMax + 1));
-
-    if (removeFromFrontOfBuffer > 0) {
-      for (let index = 0; index < removeFromFrontOfBuffer; index++) {
-        // Some of the rows we are removing may just have been buffered rows, not 
-        // part of the range and therefore not keyed.
-        const rowIdx = buffer[index][IDX] - offset;
-        if (rowIdx >= state.range.lo && rowIdx < state.range.hi) {
-          const rowKey = buffer[index][RENDER_IDX];
-          keys.free.push(rowKey);
-          keys.used[rowKey] = undefined;
-        }
-      }
-      buffer.splice(0, removeFromFrontOfBuffer);
-      firstBufIdx = bufferMin;
-    }
-
-    if (removedFromEndOfBuffer > 0) {
-      for (let index = buffer.length - removedFromEndOfBuffer; index < buffer.length; index++) {
-        const rowIdx = buffer[index][IDX] - offset;
-        if (rowIdx >= state.range.lo && rowIdx < state.range.hi) {
-          const rowKey = buffer[index][RENDER_IDX];
-          keys.free.push(rowKey);
-          keys.used[rowKey] = undefined;
-        }
-      }
-      if (removedFromEndOfBuffer === buffer.length) {
-        buffer.length = 0;
-      } else {
-        buffer.splice(-removedFromEndOfBuffer, removedFromEndOfBuffer);
-      }
-      lastBufIdx = bufferMax;
-    }
-
-    const bufferIdx = buffer.length === 0
+    const bufferIdx = isDataOutOfRange(buffer, low, high, firstBufIdx, lastBufIdx)
       ? { lo: 0, hi: 0 }
       : {
         lo: low - firstBufIdx,
         hi: high - firstBufIdx
       };
 
-    const direction = scrollDirection(state.range, range)
+    const direction = scrollDirection(state.range, range);
 
     // Question, do we always need to reassign keys ?
     if (buffer.length > 0) {
-      reassignKeys(state, bufferIdx, direction, removeFromFrontOfBuffer);
+      reassignKeys(state, bufferIdx, direction);
     }
 
     if (state.buffer.length > 0 && low >= firstBufIdx && high <= lastBufIdx + 1) {
@@ -156,12 +124,10 @@ function applyUpdates(state, action) {
   };
 }
 
-// TODO we must not assume that the server will send buffer data
-/** @type {DataReducer} */
 function setData(state, action) {
   const { offset, rowCount } = action;
 
-  // console.log(JSON.stringify(action.rows))
+  // console.log(JSON.stringify(action.rows));
 
   const [buffer, bufferIdx, keys, rowsChanged] = addToBuffer(
     state,
@@ -169,6 +135,11 @@ function setData(state, action) {
     rowCount,
     offset,
   );
+
+  const fullBufferSize = getFullBufferSize(state.range, state.bufferSize);
+  if (buffer.length > fullBufferSize) {
+    console.log(`trim ${buffer.length - fullBufferSize} rows from buffer`)
+  }
 
   return {
     bufferIdx,
@@ -184,7 +155,6 @@ function setData(state, action) {
   };
 }
 
-/** @type {(...args: any[]) => [any[], {lo:number, hi:number}, RowKeys, boolean]} */
 function addToBuffer(
   state,
   incomingRows,
@@ -196,7 +166,7 @@ function addToBuffer(
   let [firstBufIdx, lastBufIdx] = firstAndLastIdx(buffer);
   let [firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows);
   const [bufferMin, bufferMax] = bufferMinMax(range, size, bufferSize, offset);
-  const { free: freeKeys, used: usedKeys } = keys;
+  let { free: freeKeys, used: usedKeys } = keys;
   const [low, high] = rangeLowHigh(range, offset, size, renderBufferSize);
 
 
@@ -205,12 +175,7 @@ function addToBuffer(
     incomingRows = incomingRows.filter(row => row[0] >= bufferMin && row[0] < bufferMax);
     ([firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows))
 
-  } else if (lastRowIdx < firstBufIdx /* && lastRowIdx < low*/){
-
-    if (firstBufIdx - lastRowIdx > 1){
-      console.error(`addToBuffer ${firstBufIdx - lastRowIdx} row gap in data`);
-      // need to rerequest data
-    }
+  } /* else if (lastRowIdx < low ) {
 
     // filling the leading buffer, may or may not include rows within range
     const lo = low - firstRowIdx;
@@ -218,10 +183,10 @@ function addToBuffer(
     const newBuffer = incomingRows.concat(buffer);
     const rowsChanged = lastRowIdx >= low;
 
-    if (rowsChanged){
+    if (rowsChanged) {
       // we need to index the newly inserted rows that are in range
       const end = lo + (lastRowIdx - low) + 1;
-      for (let i=lo; i<end; i++ ){
+      for (let i = lo; i < end; i++) {
         const row = newBuffer[i];
         const key = freeKeys.shift(); // can't we just pop ?
         usedKeys[key] = 1;
@@ -235,7 +200,8 @@ function addToBuffer(
       keys,
       rowsChanged
     ];
-  }
+  } */
+
   const scrollDirection = firstBufIdx !== -1 && firstBufIdx < bufferMin
     ? 'FWD'
     : lastBufIdx > bufferMax
@@ -250,30 +216,53 @@ function addToBuffer(
   if (scrollDirection === 'FWD') {
     // Forward scrolling
     removeFromFrontOfBuffer = Math.min(buffer.length, bufferMin - firstBufIdx);
-    // inefficient we only need to loop over inner ranfe
-    for (let index = 0; index < removeFromFrontOfBuffer; index++) {
-      const rowKey = buffer[index][RENDER_IDX];
-      freeKeys.push(rowKey);
-      usedKeys[rowKey] = undefined;
+
+    if (lastBufIdx < bufferMin) {
+      // we have jumped forward more than a full buffer, release all keys
+      freeKeys = initKeys(range);
+      usedKeys = {};
+
+    } else {
+      // inefficient we only need to loop over inner range
+      for (let index = 0; index < removeFromFrontOfBuffer; index++) {
+        const rowIdx = buffer[index][IDX];
+        if (rowIdx >= range.lo && rowIdx < range.hi) {
+          const rowKey = buffer[index][RENDER_IDX]
+          freeKeys.push(rowKey);
+          usedKeys[rowKey] = undefined;
+        }
+      }
     }
-    buffer.splice(0, removeFromFrontOfBuffer);
+    if (removeFromFrontOfBuffer === buffer.length) {
+      buffer.length = 0;
+    } else {
+      buffer.splice(0, removeFromFrontOfBuffer);
+    }
     firstBufIdx = bufferMin;
 
   } else if (scrollDirection === 'BWD') {
     // Backward scrolling
-    const doomedCount = Math.min(buffer.length, lastBufIdx - bufferMax + 1);
-    for (let index = bufferMax - firstBufIdx + 1, i = bufferMax + 1; i < lastBufIdx; i++, index++) {
+    const removeFromEndOfBuffer = Math.min(buffer.length, lastBufIdx - bufferMax + 1);
 
-      if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi) {
-        const rowKey = buffer[index][RENDER_IDX];
-        freeKeys.push(rowKey);
-        usedKeys[rowKey] = undefined;
+    if (firstBufIdx >= bufferMax) {
+      // we have jumped back more than a full buffer, release all keys
+      freeKeys = initKeys(range);
+      usedKeys = {};
+
+    } else {
+      for (let index = bufferMax - firstBufIdx + 1, i = bufferMax + 1; i < lastBufIdx; i++, index++) {
+        if (index >= state.bufferIdx.lo && index < state.bufferIdx.hi) {
+          const rowKey = buffer[index][RENDER_IDX];
+          freeKeys.push(rowKey);
+          usedKeys[rowKey] = undefined;
+        }
       }
     }
-    if (doomedCount === buffer.length) {
+
+    if (removeFromEndOfBuffer === buffer.length) {
       buffer.length = 0;
     } else {
-      buffer.splice(-doomedCount, doomedCount);
+      buffer.splice(-removeFromEndOfBuffer, removeFromEndOfBuffer);
     }
     lastBufIdx = bufferMax;
   }
@@ -285,6 +274,32 @@ function addToBuffer(
     lastBufIdx = lastRowIdx;
   }
 
+
+  if (firstBufIdx - lastRowIdx === 1){
+    const lo = low - firstRowIdx;
+    const hi = high - firstRowIdx;
+    const newBuffer = incomingRows.concat(buffer);
+    const rowsChanged = lastRowIdx >= low;
+
+    if (rowsChanged) {
+      // we need to index the newly inserted rows that are in range
+      const end = lo + (lastRowIdx - low) + 1;
+      for (let i = lo; i < end; i++) {
+        const row = newBuffer[i];
+        const key = freeKeys.shift(); // can't we just pop ?
+        usedKeys[key] = 1;
+        row[RENDER_IDX] = key;
+      }
+    }
+
+    return [
+      newBuffer,
+      { lo, hi },
+      keys,
+      rowsChanged
+    ];
+
+  }
 
   const writePosition = firstRowIdx - firstBufIdx;
   if (writePosition < 0) {

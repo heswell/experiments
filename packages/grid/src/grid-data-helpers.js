@@ -2,6 +2,14 @@ import { metadataKeys } from "@heswell/utils";
 
 const { RENDER_IDX } = metadataKeys;
 
+export const isDataOutOfRange = (buffer, low, high, firstBufIdx, lastBufIdx) => 
+ buffer.length == 0 || low > lastBufIdx || high < firstBufIdx;
+
+
+export const initKeys = ({hi, lo}) => {
+  return new Array(hi - lo).fill(0).map((_,i) => i)
+}
+
 export function firstAndLastIdx(rows) {
   const count = rows.length;
   if (count === 0) {
@@ -26,14 +34,7 @@ export function bufferMinMax(range, size, bufferSize, offset) {
     Math.min(size + offset + bufferSize, range.hi + offset + bufferSize)]
 }
 
-// debug pront
-export function range(rows) {
-  return rows.length === 0
-    ? '[]'
-    : rows.length === 1
-      ? `[${rows[0][0]}]`
-      : `[${rows[0][0]} ... ${rows[rows.length - 1][0]}]`
-}
+export const getFullBufferSize = (range, bufferSize) => range.hi - range.lo + 2 * bufferSize;
 
 // Given a new bufferIdx, compare with the existing bufferIdx,
 // see which rows are moving into/out of range and transfer keys
