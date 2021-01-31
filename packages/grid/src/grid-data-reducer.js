@@ -1,6 +1,7 @@
 
 import { metadataKeys, update as updateRows } from "@heswell/utils";
 import {
+  anyRowsInRange,
   bufferMinMax,
   firstAndLastIdx,
   getFullBufferSize,
@@ -20,7 +21,7 @@ const uniqueKeys = rows => {
   return uniqueKeys.size === keys.length;
 }
 
-export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => ({
+export const initData = ({ range, bufferSize = 100, offset=0, renderBufferSize = 0 }) => ({
   //TODO RingBuffer ?
   bufferIdx: { lo: 0, hi: 0 },
   buffer: [],
@@ -29,13 +30,27 @@ export const initData = ({ range, bufferSize = 100, renderBufferSize = 0 }) => (
   rows: [],
   rowCount: 0,
   range,
-  offset: 0,
+  offset,
   keys: {
     free: [],
     used: {}
   },
   dataRequired: true
 });
+
+const bruteForceResetKeys = (state) => {
+  state.keys = {
+    free: initKeys(state.range),
+    used: {}
+  }
+  state.rows.forEach(row => {
+    const key = state.keys.free.shift();
+    row[RENDER_IDX] = key;
+    state.keys.used[key] = 1;
+  })
+
+}
+
 
 // This assumes model.meta never changes. If it does (columns etc)
 // we will need additional action types to update
@@ -46,7 +61,9 @@ export default (state = initData({}), action) => {
   } else if (action.type === "data") {
     const result = setData(state, action)
     if (!uniqueKeys(result.rows)) {
-      console.log(`KEY ERROR`)
+      console.log(`KEY ERROR brute force key reset`);
+      // Brute force fix until we eliminate all sources of this error
+      bruteForceResetKeys(result)
     }
     return result;
     // return setData(state, action);
@@ -127,7 +144,11 @@ function applyUpdates(state, action) {
 function setData(state, action) {
   const { offset, rowCount } = action;
 
-  // console.log(JSON.stringify(action.rows));
+    // console.log(JSON.stringify(action.rows));
+
+  if (!anyRowsInRange(state, action.rows, offset, rowCount)){
+    return state;
+  }
 
   const [buffer, bufferIdx, keys, rowsChanged] = addToBuffer(
     state,
@@ -141,17 +162,19 @@ function setData(state, action) {
     console.log(`trim ${buffer.length - fullBufferSize} rows from buffer`)
   }
 
+  const newRows = rowsChanged ? buffer.slice(bufferIdx.lo, bufferIdx.hi) : state.rows;
+  const rangeCount = state.range.hi - state.range.lo;
   return {
     bufferIdx,
     buffer,
     bufferSize: state.bufferSize,
     renderBufferSize: state.renderBufferSize,
-    rows: rowsChanged ? buffer.slice(bufferIdx.lo, bufferIdx.hi) : state.rows,
+    rows: newRows,
     rowCount,
     offset,
     range: state.range,
     keys,
-    dataRequired: false
+    dataRequired: newRows.length < rangeCount
   };
 }
 

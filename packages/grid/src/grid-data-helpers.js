@@ -6,6 +6,13 @@ export const isDataOutOfRange = (buffer, low, high, firstBufIdx, lastBufIdx) =>
  buffer.length == 0 || low > lastBufIdx || high < firstBufIdx;
 
 
+export function anyRowsInRange(state, rows, offset, rowCount){
+  let [firstRowIdx, lastRowIdx] = firstAndLastIdx(rows);
+  const {range, bufferSize} = state;
+  const [bufferMin, bufferMax] = bufferMinMax(range, rowCount, bufferSize, offset);
+  return lastRowIdx >= bufferMin && firstRowIdx < bufferMax;
+}
+
 export const initKeys = ({hi, lo}) => {
   return new Array(hi - lo).fill(0).map((_,i) => i)
 }
