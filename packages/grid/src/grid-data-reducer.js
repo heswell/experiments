@@ -90,16 +90,13 @@ function setRange(state, { range }) {
     const bufferIdx = isDataOutOfRange(buffer, low, high, firstBufIdx, lastBufIdx)
       ? { lo: 0, hi: 0 }
       : {
-        lo: low - firstBufIdx,
-        hi: high - firstBufIdx
+        lo: Math.max(0, low - firstBufIdx),
+        hi: Math.min(buffer.length, high - firstBufIdx)
       };
 
     const direction = scrollDirection(state.range, range);
 
-    // Question, do we always need to reassign keys ?
-    if (buffer.length > 0) {
-      reassignKeys(state, bufferIdx, direction);
-    }
+    reassignKeys(state, bufferIdx, direction);
 
     if (state.buffer.length > 0 && low >= firstBufIdx && high <= lastBufIdx + 1) {
       const rows = state.buffer.slice(bufferIdx.lo, bufferIdx.hi);

@@ -17,6 +17,15 @@
     "build": "rollup -c --environment BUILD:production",
     "build:dev": "rollup -c --environment BUILD:development"
   },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(css)$": "<rootDir>/jest/empty-module.js"
+    },
+    "setupFiles": [
+      "./jest/globals.js"
+    ]
+  },
+
   "author": "heswell",
   "license": "MIT",
   "peerDependencies": {

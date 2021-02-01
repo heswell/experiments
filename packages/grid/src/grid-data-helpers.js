@@ -41,15 +41,12 @@ export function bufferMinMax(range, size, bufferSize, offset) {
     Math.min(size + offset + bufferSize, range.hi + offset + bufferSize)]
 }
 
-export const getFullBufferSize = (range, bufferSize) => range.hi - range.lo + 2 * bufferSize;
+export const getFullBufferSize = (range, rowCount, bufferSize, offset=0) => {
+  const leadCount = Math.min(bufferSize, range.lo-offset);
+  const trailCount = Math.min(bufferSize, rowCount - range.hi - offset);
+  return range.hi - range.lo + leadCount + trailCount;;
+}
 
-// Given a new bufferIdx, compare with the existing bufferIdx,
-// see which rows are moving into/out of range and transfer keys
-// accordingly
-// The idxOffset allows for leading buffer items which have been removed, 
-// requiring an adjustment to the original bufferIdx
-//
-// lo, hi - the lo, hi values of the new buffer Index
 export function reassignKeys(state, { lo, hi }, direction, idxOffset=0) {
   // What about scenario where range increases/shrinks ?
   // assign keys to the items moving into range

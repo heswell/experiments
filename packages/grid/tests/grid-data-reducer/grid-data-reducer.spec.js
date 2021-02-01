@@ -1,8 +1,9 @@
-const { GridDataReducer } = require('../dist/index.js');
-const { rows, getRows } = require('./test-data.js');
+import GridDataReducer from '../../src/grid-data-reducer';
+import { rows, getRows } from './test-data.js';
 
+const getRowKeys = rows => rows.map(row => row[1]).sort((a,b) => a-b);
 const uniqueKeys = rows => {
-  const keys = rows.map(row => row[1]);
+  const keys = getRowKeys(rows);
   const uniqueKeys = new Set(keys);
   return uniqueKeys.size === keys.length;
 }
@@ -67,6 +68,83 @@ describe('grid-data-reducer', () => {
       ]);
     })
   });
+
+  describe('setRange', () => {
+
+    test.only('FWD 1 row at a time until out of range', () => {
+      let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 10, range: { lo: 0, hi: 10 } });
+      state = GridDataReducer(state, { type: 'data', offset: 0, rowCount: 1000, rows: getRows(0,20,0) });
+
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:0,hi:10});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 1, hi: 11 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:1,hi:11});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 2, hi: 12 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:2,hi:12});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 3, hi: 13 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:3,hi:13});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 4, hi: 14 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:4,hi:14});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 5, hi: 15 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:5,hi:15});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 6, hi: 16 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:6,hi:16});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 7, hi: 17 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:7,hi:17});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 8, hi: 18 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:8,hi:18});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 9, hi: 19 } });
+      expect(getRowKeys(state.rows)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:9,hi:19});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 10, hi: 20 } });
+      const lastRowsInRange = state.rows
+      expect(getRowKeys(lastRowsInRange)).toEqual([0,1,2,3,4,5,6,7,8,9]);
+      expect(state.bufferIdx).toEqual({lo:10,hi:20});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 11, hi: 21 } });
+      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.keys.free.length).toEqual(1);
+      expect(state.bufferIdx).toEqual({lo:11,hi:20});  
+
+      state = GridDataReducer(state, { type: 'range', range: { lo: 15, hi: 25 } });
+      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.keys.free.length).toEqual(5);
+      expect(state.bufferIdx).toEqual({lo:15,hi:20});  
+debugger;
+      state = GridDataReducer(state, { type: 'range', range: { lo: 20, hi: 30 } });
+      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.keys.free.length).toEqual(10);
+      expect(state.bufferIdx).toEqual({lo:0,hi:0});  
+
+
+
+
+      console.table(state.buffer)
+
+    })
+
+
+
+  })
+
 
   describe('FWD scrolling', () => {
 
@@ -658,7 +736,7 @@ describe('grid-data-reducer', () => {
       state = GridDataReducer(state, { type: 'range', range: { lo: 12, hi: 31 } });
       expect(state.buffer.length).toEqual(19);
       expect(state.dataRequired).toEqual(true);
-      expect(state.bufferIdx).toEqual({ lo: 12, hi: 31 });
+      expect(state.bufferIdx).toEqual({ lo: 12, hi: 19 });
 
       state = GridDataReducer(state, { type: 'range', range: { lo: 29, hi: 48 } });
       expect(state.dataRequired).toEqual(true);
