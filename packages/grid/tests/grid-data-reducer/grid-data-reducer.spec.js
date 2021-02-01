@@ -22,7 +22,7 @@ describe('grid-data-reducer', () => {
         rowCount: 0,
         range: { lo: 0, hi: 20 },
         offset: 0,
-        keys: { free: [], used: {} },
+        keys: { free: [], used: {}, next: 0 },
         dataRequired: true
       })
     });
@@ -38,7 +38,7 @@ describe('grid-data-reducer', () => {
         rowCount: 0,
         range: { lo: 0, hi: 20 },
         offset: 0,
-        keys: { free: [], used: {} },
+        keys: { free: [], used: {}, next: 0 },
         dataRequired: true
       })
     });
@@ -71,7 +71,7 @@ describe('grid-data-reducer', () => {
 
   describe('setRange', () => {
 
-    test.only('FWD 1 row at a time until out of range', () => {
+    test('FWD 1 row at a time until out of range', () => {
       let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 10, range: { lo: 0, hi: 10 } });
       state = GridDataReducer(state, { type: 'data', offset: 0, rowCount: 1000, rows: getRows(0,20,0) });
 
@@ -120,29 +120,21 @@ describe('grid-data-reducer', () => {
       expect(state.bufferIdx).toEqual({lo:10,hi:20});  
 
       state = GridDataReducer(state, { type: 'range', range: { lo: 11, hi: 21 } });
-      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.rows === lastRowsInRange).toBe(true);
       expect(state.keys.free.length).toEqual(1);
       expect(state.bufferIdx).toEqual({lo:11,hi:20});  
 
       state = GridDataReducer(state, { type: 'range', range: { lo: 15, hi: 25 } });
-      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.rows === lastRowsInRange).toBe(true);
       expect(state.keys.free.length).toEqual(5);
       expect(state.bufferIdx).toEqual({lo:15,hi:20});  
-debugger;
+
       state = GridDataReducer(state, { type: 'range', range: { lo: 20, hi: 30 } });
-      expect(state.rows).toEqual(lastRowsInRange);
+      expect(state.rows === lastRowsInRange).toBe(true);
       expect(state.keys.free.length).toEqual(10);
       expect(state.bufferIdx).toEqual({lo:0,hi:0});  
 
-
-
-
-      console.table(state.buffer)
-
-    })
-
-
-
+    });
   })
 
 
@@ -268,7 +260,7 @@ debugger;
       // No buffer pruning yet
       expect(state.dataRequired).toEqual(true);
       expect(state.buffer.length).toEqual(30);
-      expect(state.bufferIdx).toEqual({ lo: 25, hi: 35 });
+      expect(state.bufferIdx).toEqual({ lo: 25, hi: 30 });
 
       // if we can't fill the full request from buffer we return existing rows, so will not render
       expect(state.rows === rowsOut1).toBe(true);
@@ -509,6 +501,7 @@ debugger;
     test('first few rows', () => {
       let state = GridDataReducer(undefined, { type: 'clear', bufferSize: 20, range: { lo: 0, hi: 10 } });
       state = GridDataReducer(state, { type: 'data', offset: 100, rowCount: 1000, rows });
+
       state = GridDataReducer(state, { type: 'range', range: { lo: 0, hi: 11 } });
 
       expect(state.rows).toEqual([
@@ -964,6 +957,7 @@ debugger;
         [23,0,0,0,"AAF.AS",0,null,null,null,null,"AAF.AS","AAF.AS B.V","EUR","XAMS/ENA-MAIN",410],
         [24,0,0,0,"AAG.L",0,null,null,null,null,"AAG.L","AAG.L London PLC","EUR","XLON/LSE-SETS",928]      
       ] });
+     
       state = GridDataReducer(state, { type: 'range', range: { lo:6, hi: 31 } });     // server request 0:41
       state = GridDataReducer(state, { type: 'range', range: { lo:13, hi: 38 } });    // server request 3:48
       state = GridDataReducer(state, { type: 'range', range: { lo: 18, hi: 43 } });   // server erquest 8:53
@@ -1003,6 +997,7 @@ debugger;
         [61,0,0,0,"AAP.N",0,null,null,null,null,"AAP.N","AAP.N Corporation","USD","XNGS/NAS-GSM",408],
         [62,0,0,0,"AAP.OQ",0,null,null,null,null,"AAP.OQ","AAP.OQ Co.","GBX","XNYS/NYS-MAIN",706]
       ]});
+
       state = GridDataReducer(state, { type: 'data', offset: 0, rowCount: 1000, rows: [
         [50,0,0,0,"AAM.OQ",0,null,null,null,null,"AAM.OQ","AAM.OQ Co.","CAD","XNYS/NYS-MAIN",201],
         [51,0,0,0,"AAM.AS",0,null,null,null,null,"AAM.AS","AAM.AS B.V","USD","XAMS/ENA-MAIN",432],
@@ -1039,7 +1034,6 @@ debugger;
       ]});
 
       expect(state.dataRequired).toEqual(true);
-
       state = GridDataReducer(state, { type: 'range', range: { lo: 80, hi: 105 } });    // server request 70:115
       state = GridDataReducer(state, { type: 'range', range: { lo: 87, hi: 112 } });    // server request 77:122
 

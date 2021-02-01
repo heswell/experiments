@@ -4,6 +4,7 @@ import {
   anyRowsInRange,
   bufferMinMax,
   firstAndLastIdx,
+  getBufferIdx,
   getFullBufferSize,
   initKeys,
   isDataOutOfRange,
@@ -33,6 +34,7 @@ export const initData = ({ range, bufferSize = 100, offset=0, renderBufferSize =
   offset,
   keys: {
     free: [],
+    next: 0,
     used: {}
   },
   dataRequired: true
@@ -87,19 +89,14 @@ function setRange(state, { range }) {
     let [firstBufIdx, lastBufIdx] = firstAndLastIdx(state.buffer);
     const { buffer } = state;
 
-    const bufferIdx = isDataOutOfRange(buffer, low, high, firstBufIdx, lastBufIdx)
-      ? { lo: 0, hi: 0 }
-      : {
-        lo: Math.max(0, low - firstBufIdx),
-        hi: Math.min(buffer.length, high - firstBufIdx)
-      };
+    const bufferIdx = getBufferIdx(buffer, low, high, firstBufIdx, lastBufIdx);
 
-    const direction = scrollDirection(state.range, range);
-
-    reassignKeys(state, bufferIdx, direction);
+    reassignKeys(state, bufferIdx);
 
     if (state.buffer.length > 0 && low >= firstBufIdx && high <= lastBufIdx + 1) {
       const rows = state.buffer.slice(bufferIdx.lo, bufferIdx.hi);
+
+      const direction = scrollDirection(state.range, range);
 
       return {
         ...state,
@@ -186,7 +183,7 @@ function addToBuffer(
   let [firstBufIdx, lastBufIdx] = firstAndLastIdx(buffer);
   let [firstRowIdx, lastRowIdx] = firstAndLastIdx(incomingRows);
   const [bufferMin, bufferMax] = bufferMinMax(range, size, bufferSize, offset);
-  let { free: freeKeys, used: usedKeys } = keys;
+  let { free: freeKeys, used: usedKeys, next: nextKey } = keys;
   const [low, high] = rangeLowHigh(range, offset, size, renderBufferSize);
 
 
@@ -228,7 +225,6 @@ function addToBuffer(
       ? 'BWD'
       : '';
 
-  let maxKey = rows.length;
   let row, rowIdx, rowKey;
   let rowsChanged = true;
   let removeFromFrontOfBuffer = 0
@@ -326,13 +322,13 @@ function addToBuffer(
     firstBufIdx += writePosition;
   }
 
-  const lo = low - firstBufIdx;
+  const lo = Math.max(0,low - firstBufIdx);
   const hi = high - firstBufIdx;
 
   if (firstRowIdx >= high || lastRowIdx < low) {
     rowsChanged = false;
   } else if (buffer.length && scrollDirection) {
-    reassignKeys(state, { lo, hi }, scrollDirection, removeFromFrontOfBuffer);
+    // reassignKeys(state, { lo, hi });
   }
 
   const count = incomingRows.length
@@ -350,7 +346,7 @@ function addToBuffer(
         rowKey = freeKeys.shift();
       }
       if (rowKey === undefined) {
-        rowKey = maxKey++;
+        rowKey = nextKey++;
       }
       usedKeys[rowKey] = 1;
       row[RENDER_IDX] = rowKey;
@@ -365,10 +361,11 @@ function addToBuffer(
 
   return [
     buffer,
-    { lo, hi },
+    { lo, hi: Math.min(buffer.length, hi) },
     {
       free: freeKeys,
-      used: usedKeys
+      used: usedKeys,
+      next: nextKey
     },
     rowsChanged
   ];
