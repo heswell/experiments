@@ -40,8 +40,6 @@
     "source-map-loader": "^0.2.4"
   },
   "dependencies": {
-    "@finos/perspective": "^0.5.3",
-    "@uitk/layout": "^1.0.0",
     "classnames": "^2.2.6",
     "global": "^4.4.0",
     "material-design-icons": "^3.0.1",
