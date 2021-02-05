@@ -9,8 +9,7 @@ import { commonJsConfig } from "../../rollup/config";
 
 const isProd = process.env.BUILD === "production";
 
-export default [
-  {
+export default  {
     input: "index.js",
     output: {
       dir: "dist",
@@ -49,13 +48,4 @@ export default [
       "react",
       "react-dom",
     ],
-  },
-  /* Just for Jest */ {
-    input: "index.jest.js",
-    output: {
-      file: "tests/dist/index.js",
-      format: "cjs",
-    },
-    plugins: [resolve(), commonjs(commonJsConfig)],
-  },
-];
+  }
