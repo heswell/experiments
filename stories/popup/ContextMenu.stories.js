@@ -23,8 +23,11 @@ export const SimpleContextMenu = () =>
         <MenuItem label="Item 3.1">
           <MenuItem label="Item 3.1.1" />
           <MenuItem label="Item 3.1.2" />
+          <MenuItem label="Item 3.1.3" />
+          <MenuItem label="Item 3.1.4" />
         </MenuItem>
         <MenuItem label="Item 3.2" />
+        <MenuItem label="Item 3.3" />
         <MenuItem label="Item 3.3" />
       </MenuItem>
     </ContextMenu>
