@@ -1,6 +1,6 @@
 {
   "name": "@heswell/grid",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Heswell data grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -25,7 +25,6 @@
       "./jest/globals.js"
     ]
   },
-
   "author": "heswell",
   "license": "MIT",
   "peerDependencies": {

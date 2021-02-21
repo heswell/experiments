@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "publishConfig": {
@@ -23,7 +23,7 @@
     "rollup-plugin-node-resolve": "^5.2.0"
   },
   "dependencies": {
-    "@heswell/utils": "^2.0.9",
+    "@heswell/utils": "^2.0.10",
     "bufferutil": "^4.0.1",
     "d3-array": "^2.2.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v17.6.0",
