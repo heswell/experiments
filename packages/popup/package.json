@@ -24,10 +24,6 @@
   },
   "peerDependencies": {
     "classnames": "^2.2.6",
-    "jss-plugin-cache": "^10.1.1",
-    "jss-plugin-camel-case": "^10.1.1",
-    "jss-plugin-default-unit": "^10.1.1",
-    "jss-plugin-nested": "^10.1.1",
     "react": "16.13.1",
     "react-dom": "16.13.1"
   },

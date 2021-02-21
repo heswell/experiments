@@ -1,0 +1,62 @@
+.MenuItem {
+  display: list-item;
+  text-align: -webkit-match-parent;
+  box-sizing: border-box;
+}
+
+.MenuItem[aria-haspopup] {
+  position: relative;
+}
+
+.MenuItem[aria-expanded="true"] {
+  background-color: #ccc;
+}
+
+.MenuItem > button {
+  background-color: inherit;
+  display: flex;
+  align-items: center;
+  padding: 3px 3px 3px 20px;
+  clear: both;
+  line-height: 1.5;
+  color: rgb(0, 0, 0);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.MenuItem > button:hover {
+  background-color: rgb(220, 220, 220);
+  outline: 0;
+}
+
+.MenuItem > button:active {
+  outline: 0;
+}
+
+.MenuItem > button > .material-icons {
+  width: 18px;
+  margin-left: auto;
+  line-height: 18px;
+  font-size: 24px;
+}
+
+.MenuItem-label {
+  flex: 1 1 auto;
+  line-height: 18px;
+  padding-right: 5px;
+}
+
+.MenuItem-divider {
+  display: list-item;
+  text-align: -webkit-match-parent;
+  box-sizing: border-box;
+  height: 1px;
+  margin: 6px 0;
+  overflow: hidden;
+  background-color: rgb(229, 229, 229);
+}
+

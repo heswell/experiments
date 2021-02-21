@@ -1,9 +1,8 @@
 import React, {createElement} from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames';
-import useStyles from './use-popup-style';
 
-// import './popup-service.css';
+import './popup-service.css';
 
 window.popupReact = React;
 

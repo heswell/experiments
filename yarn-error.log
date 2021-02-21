@@ -1,8 +1,8 @@
 Arguments: 
-  /usr/local/bin/node /Users/steve/.yarn/bin/yarn.js
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.4/libexec/bin/yarn.js install --mutex network:42424 --non-interactive
 
 PATH: 
-  /Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.sdkman/candidates/java/current/bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build
+  /Users/steve/git/heswell/heswell/node_modules/.bin:/Users/steve/git/heswell/node_modules/.bin:/Users/steve/git/node_modules/.bin:/Users/steve/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/usr/local/bin:/Users/steve/.cargo/bin:/Users/steve/.yarn/bin:/Users/steve/.config/yarn/global/node_modules/.bin:/Users/steve/.sdkman/candidates/java/current/bin:/Users/steve/.opam/system/bin:/Users/steve/.npm-packages/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/usr/local/java/apache-maven-3.5.0/bin:/Users/steve/git/webassembly/wabt/build
 
 Yarn version: 
   1.22.4

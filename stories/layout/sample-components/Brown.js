@@ -1,5 +1,5 @@
 import React from "react";
-import { Component, registerComponent } from "@heswell/layout";
+import { Component, registerComponent } from "@uitk/layout";
 
 const Brown = ({ style }) => {
   return <Component style={{ ...style, backgroundColor: "brown" }} />;
