@@ -94,7 +94,6 @@ const ContextMenu = ({
 
   const showSubmenu = () => {
     subMenuTimeout = null;
-    console.log(`${path ?? 'root'} set subMenuShowing = true`)
     setMenuState((state) => ({
       ...state,
       submenuShowing: true,
@@ -109,7 +108,6 @@ const ContextMenu = ({
   useLayoutEffect(() => {
     const { left, right } = rootEl.current.getBoundingClientRect();
     const { clientWidth } = document.body;
-    console.log(`path ${path} left=${left} right = ${right} width=${clientWidth}`)
     if (right > clientWidth) {
       flipPlacement(true);
     }
