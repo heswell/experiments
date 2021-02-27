@@ -7,18 +7,17 @@ import {
   Component,
   Flexbox,
   Stack,
+  Toolbar,
   View,
   DraggableLayout,
-} from "@uitk/layout";
-import { Toolbar } from "@uitk/toolkit";
+} from "@heswell/layout";
 
 import Builder from "../components/layout-builder/layout-builder";
 import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
 
+import "../assets/light-theme.css";
 import "../story.css";
-import "@uitk/theme-light/assets/OpenSans.css";
-import "@uitk/theme-light/assets/ToolkitIcons.css";
 import "./DraggableLayout.stories.css";
 
 export default {

@@ -1,6 +1,5 @@
 import React from "react";
 import classnames from "classnames";
-import { Button, Icon } from "@uitk/toolkit";
 
 const ActionButton = ({
   actionId,
@@ -14,15 +13,14 @@ const ActionButton = ({
     onClick(evt, actionId);
   };
   return (
-    <Button
+    <button
       {...props}
       className={classnames("ActionButton", className)}
       onClick={handleClick}
       title="Close View"
       variant="secondary"
     >
-      <Icon accessibleText={accessibleText} name={iconName} />
-    </Button>
+    </button>
   );
 };
 

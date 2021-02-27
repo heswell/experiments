@@ -1,5 +1,5 @@
 import React from 'react';
-import { Component, View } from '@uitk/layout';
+import { Component, View } from '@heswell/layout';
 
 import './material-design.css';
 

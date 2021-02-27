@@ -1,5 +1,6 @@
 import React from "react";
-import { Tab, Tabstrip, Toolbar, Tooltray } from "@uitk/toolkit";
+import { Tab, Tabstrip } from "./tabstrip";
+import { Toolbar, Tooltray } from "./toolbar";
 import { Close, Minimize, Maximize } from "./icons";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";
@@ -7,7 +8,6 @@ import { Action } from "./layout-action";
 import View from "./View";
 import { typeOf } from "./utils";
 import Component from "./Component";
-// import { TabPanel } from "./tabs";
 import { useViewActionDispatcher } from "./useViewActionDispatcher";
 import {
   isLayoutComponent,
@@ -52,6 +52,10 @@ const Stack = (inputProps) => {
     });
   };
 
+  const handleMouseDown = (e, index) => {
+    dispatchViewAction({ type: 'mousedown', index }, e);
+  };
+
   function activeChild() {
     const {
       active = 0,
@@ -88,11 +92,12 @@ const Stack = (inputProps) => {
               onChange={handleTabSelection}
               onAddTab={handleAddTab}
               onDeleteTab={handleDeleteTab}
+              onMouseDown={handleMouseDown}
               value={props.active || 0}
             >
               {renderTabs()}
             </Tabstrip>
-            <Tooltray align="right" className="layout-buttons">
+            <Tooltray data-align="right" className="layout-buttons">
               <Minimize />
               <Maximize />
               <Close />

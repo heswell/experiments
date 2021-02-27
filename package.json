@@ -40,10 +40,6 @@
     "source-map-loader": "^0.2.4"
   },
   "dependencies": {
-    "@uitk/layout": "latest",
-    "@uitk/toolkit": "latest",
-    "@uitk/theme-dark": "latest",
-    "@uitk/theme-light": "latest",
     "classnames": "^2.2.6",
     "global": "^4.4.0",
     "material-design-icons": "^3.0.1",

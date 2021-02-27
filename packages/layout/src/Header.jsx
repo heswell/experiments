@@ -2,14 +2,12 @@ import React from "react";
 import classnames from "classnames";
 import { Action } from "./layout-action";
 import ActionButton from "./ActionButton";
-import { Toolbar, useDensity } from "@uitk/toolkit";
 import { useLayoutDispatch } from "./LayoutContext";
 
 import "./Header.css";
 
 const Header = ({
   className: classNameProp,
-  density: densityProp,
   collapsed,
   expanded,
   closeable,
@@ -19,7 +17,6 @@ const Header = ({
   title,
 }) => {
   const layoutDispatch = useLayoutDispatch();
-  const density = useDensity(densityProp);
 
   const handleAction = (evt, actionId) => layoutDispatch({ type: actionId });
 
@@ -30,14 +27,13 @@ const Header = ({
 
   const className = classnames(
     "Header",
-    // `Header-${density}Density`,
     classNameProp
   );
 
   const orientation = collapsed || orientationProp;
 
   return (
-    <Toolbar
+    <div
       className={className}
       style={{
         justifyContent: orientation === "vertical" ? "flex-start" : "flex-end",
@@ -100,7 +96,7 @@ const Header = ({
           onMouseDown={handleMouseDown}
         />
       ) : null}
-    </Toolbar>
+    </div>
   );
 };
 

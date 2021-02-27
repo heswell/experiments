@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Component, Flexbox, Stack } from "@uitk/layout";
+import { Component, Flexbox, Stack } from "@heswell/layout";
 import "../story.css";
 
 export default {

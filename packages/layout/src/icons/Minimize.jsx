@@ -1,16 +1,14 @@
 import React from "react";
 import classnames from "classnames";
-import { Button, Icon } from "@uitk/toolkit";
 
 const Minimize = ({ className, ...props }) => (
-  <Button
+  <button
     {...props}
     className={classnames("MinimizeButton", className)}
     title="Minimize View"
     variant="secondary"
   >
-    <Icon accessibleText="Minimize View" name="minimize" />
-  </Button>
+  </button>
 );
 
 export default Minimize;

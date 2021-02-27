@@ -8,11 +8,8 @@ import {
   View,
   Component,
   registerComponent,
-} from "@uitk/layout";
-import { Toolbar } from "@uitk/toolkit";
+} from "@heswell/layout";
 import { Brown, Red } from "./sample-components";
-import "@uitk/theme-light/assets/OpenSans.css";
-import "@uitk/theme-light/assets/ToolkitIcons.css";
 import "../story.css";
 
 export default {
@@ -309,20 +306,6 @@ export const ComplexNestedLayout = () => (
       />
       <Flexbox resizeable column style={{ flex: 1 }}>
         <View header resizeable style={{ flex: 1 }} title="Brown Bear">
-          <Toolbar
-            id="palegoldenrod"
-            tools={[
-              "close",
-              "close",
-              "close",
-              ["PaddingTop", "PaddingRight", "PaddingBottom", "PaddingLeft"],
-              "close",
-              "close",
-              "close",
-              "close",
-              "close",
-            ]}
-          />
           <Brown style={{ height: "100%" }} />
         </View>
         <View header resizeable style={{ flex: 1 }} title="Red Panda">
@@ -341,13 +324,6 @@ export const ComplexNestedLayout = () => (
               <Component style={{ backgroundColor: "white", height: "100%" }} />
             </View>
             <View title="Transactions">
-              <Toolbar>
-                {/* <input type="text" className="tool-text" value="text 1" />
-                <input type="text" className="tool-text" value="text 2" />
-                <input type="text" className="tool-text" value="text 3" />
-                <input type="text" className="tool-text" value="text 4" /> */}
-                <CloseAction />
-              </Toolbar>
               <Component style={{ backgroundColor: "yellow", flex: 1 }} />
             </View>
             <View removable header resizeable title="Loans">

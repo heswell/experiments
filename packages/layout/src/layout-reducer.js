@@ -51,7 +51,9 @@ function switchTab(state, { path, nextIdx }) {
   var target = followPath(state, path);
   let replacement;
   if (React.isValidElement(target)) {
-    replacement = React.cloneElement(target, props);
+    replacement = React.cloneElement(target, {
+      active: nextIdx,
+    });
   } else {
     replacement = {
       ...target,

@@ -32,14 +32,13 @@ export default {
     postcss({
       plugins: [atImport()],
       minimize: false,
-      extract: true,
+      extract: false,
       sourceMap: true,
     }),
     filesize(),
     visualizer(),
   ],
   external: [
-    "@uitk/toolkit",
     "@heswell/utils",
     "classnames",
     "react",

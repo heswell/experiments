@@ -31,8 +31,8 @@
     "@heswell/data-source": "^1.0.0",
     "@heswell/utils": "^2.0.0",
     "classnames": "^2.2.6",
-    "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
     "jest": "^24.9.0",
