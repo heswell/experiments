@@ -204,7 +204,7 @@ const List = forwardRef(function List({
           isHighlighted={idx === hilited}
           isSelected={idx === selected}
           onMouseEnter={handleListItemMouseEnter}
-          onClick={handleListItemClick}  
+          onClick={handleListItemClick} 
           >
           <span>{value}</span>
           </ListItem>

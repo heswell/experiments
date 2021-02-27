@@ -15,7 +15,7 @@ const ListItem = ({
 
   return (
     <div
-    role="list-item"
+    role="listitem"
     data-idx={idx}
     className={cx("list-item", {
       selected: isSelected,
