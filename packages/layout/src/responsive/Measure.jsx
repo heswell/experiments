@@ -12,7 +12,7 @@ export const useMeasure = (props) => {
 };
 
 // TODO need to listen for resize events if size is auto in any direction
-const Measure = ({ height, width, onMeasure }) => {
+export const Measure = ({ height, width, onMeasure }) => {
   const el = useRef(null);
   const [{ h, w }, setSize] = useState({ h: height, w: width });
   useLayoutEffect(() => {
@@ -32,4 +32,3 @@ const Measure = ({ height, width, onMeasure }) => {
   );
 };
 
-export default Measure;
