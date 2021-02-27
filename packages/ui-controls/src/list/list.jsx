@@ -3,7 +3,7 @@ import cx from 'classnames';
 import * as StateEvt from '../state-machinery/state-events';
 import { getKeyboardEvent } from '../utils/key-code';
 import { searcher } from './searcher';
-import {useKeyboardNavigation} from './use-keyboard-navigation';
+import { useKeyboardNavigation } from './use-keyboard-navigation';
 
 import './list.css';
 
@@ -50,9 +50,9 @@ const List = forwardRef(function List(props, ref) {
 
 
   const {
-    hilitedIdx, 
-    hiliteItemAtIndex, 
-    keyBoardNavigation, 
+    hilitedIdx,
+    hiliteItemAtIndex,
+    keyBoardNavigation,
     handleBlur,
     handleFocus,
     handleKeyDown,
@@ -70,8 +70,8 @@ const List = forwardRef(function List(props, ref) {
 
   // TODO hook should manage controlled
   const hilited = controlledHiliting
-  ? hilitedIdxProp
-  : hilitedIdx;
+    ? hilitedIdxProp
+    : hilitedIdx;
 
   useEffect(() => {
     height.current = listElement.current.clientHeight;
@@ -110,9 +110,9 @@ const List = forwardRef(function List(props, ref) {
       ? scrollTop.current + (t + h) - viewportEnd
       : t;
 
-      scrolling.current = true;
+    scrolling.current = true;
     listElement.current.scrollTop = scrollTop.current;
-    setTimeout(() => {scrolling.current = false});
+    setTimeout(() => { scrolling.current = false });
     console.log(`scroll into view)`)
 
   }
@@ -148,7 +148,7 @@ const List = forwardRef(function List(props, ref) {
   }
 
   const handleListItemMouseEnter = (idx) => {
-    if (!scrolling.current){
+    if (!scrolling.current) {
       hiliteItemAtIndex(idx)
     }
   }
@@ -164,38 +164,36 @@ const List = forwardRef(function List(props, ref) {
     ? selectedIdxProp
     : selectedIdx;
 
-  const focusVisible =  (props.showFocusVisible || !controlledHiliting) 
+  const focusVisible = (props.showFocusVisible || !controlledHiliting)
     && keyBoardNavigation.current;
 
-  return values.length === 0 ? (
-    <div className="empty-list">Empty List</div>
-  ) : (
-      <div 
-        className={cx('list', { focusVisible})} 
-        ref={listElement} role="list"
-        onBlur={handleBlur}
-        onFocus={handleFocus}
-        onMouseEnter={handleListMouseEnter}
-        onMouseLeave={handleListMouseLeave}
-        onMouseDownCapture={handleListMouseDownCapture}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}>
-        {values.map((value, idx) => (
-          <div key={idx}
-            role="list-item"
-            data-idx={idx}
-            className={cx("list-item", {
-              selected: idx === selected,
-              hilited: idx === hilited
-            })}
-            onKeyDown={handleKeyDown}
-            onMouseEnter={() => handleListItemMouseEnter(idx)}
-            onClick={evt => handleItemClick(evt, idx)}>
-            <span>{value}</span>
-          </div>
-        ))}
-      </div>
-    )
+  return (
+    <div
+      className={cx('list', { focusVisible, "empty-list": values.length === 0 })}
+      ref={listElement} role="list"
+      onBlur={handleBlur}
+      onFocus={handleFocus}
+      onMouseEnter={handleListMouseEnter}
+      onMouseLeave={handleListMouseLeave}
+      onMouseDownCapture={handleListMouseDownCapture}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}>
+      {values.map((value, idx) => (
+        <div key={idx}
+          role="list-item"
+          data-idx={idx}
+          className={cx("list-item", {
+            selected: idx === selected,
+            hilited: idx === hilited
+          })}
+          onKeyDown={handleKeyDown}
+          onMouseEnter={() => handleListItemMouseEnter(idx)}
+          onClick={evt => handleItemClick(evt, idx)}>
+          <span>{value}</span>
+        </div>
+      ))}
+    </div>
+  )
 
 });
 
