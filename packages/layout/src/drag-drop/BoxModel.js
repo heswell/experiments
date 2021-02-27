@@ -164,13 +164,12 @@ export function pointPositionWithinRect(x, y, rect) {
 function measureRootComponent(rootComponent, measurements) {
   const {
     id,
-    layoutId = id,
     "data-path": dataPath,
     path = dataPath,
   } = getProps(rootComponent);
   const type = typeOf(rootComponent);
 
-  if (layoutId && path) {
+  if (id && path) {
     const [rect, el] = measureComponentDomElement(rootComponent);
     measureComponent(rootComponent, rect, el, measurements);
     if (type !== "Stack" && isContainer(type)) {
@@ -304,10 +303,10 @@ function collectChildMeasurements(
 }
 
 function measureComponentDomElement(component) {
-  const { id, layoutId = id } = getProps(component);
-  const el = document.getElementById(layoutId);
+  const { id } = getProps(component);
+  const el = document.getElementById(id);
   if (!el) {
-    throw Error(`No DOM for ${typeOf(component)} ${layoutId}`);
+    throw Error(`No DOM for ${typeOf(component)} ${id}`);
   }
   // Note: height and width are not required for dropTarget identification, but
   // are used in sizing calculations on drop

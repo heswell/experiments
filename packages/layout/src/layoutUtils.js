@@ -51,10 +51,9 @@ function getLayoutProps(
 ) {
   const {
     active: prevActive = 0,
-    layoutId,
     "data-path": dataPath,
     path: prevPath = dataPath,
-    id: prevId = layoutId,
+    id: prevId,
     style: prevStyle,
   } = getProps(previousLayout);
   // console.log(
@@ -71,7 +70,7 @@ function getLayoutProps(
   //TODO this might be wrong if client has updated style ?
   const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
   return isLayoutComponent(type)
-    ? { layoutId: id, key, path, style, type, active }
+    ? { id, key, path, style, type, active }
     : { id, key, style, "data-path": path };
 }
 

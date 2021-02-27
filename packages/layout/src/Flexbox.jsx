@@ -25,7 +25,7 @@ const useSizesRef = () => {
 
 const Flexbox = function Flexbox(inputProps) {
   const [props, ref, layoutDispatch, isRoot] = useLayout("Flexbox", inputProps);
-  const { children = [], className, layoutId: id, path, style } = props;
+  const { children = [], className, id, path, style } = props;
   const isColumn = style.flexDirection === "column";
   const [sizesRef, setSizes, clearSizes] = useSizesRef([]);
   const dimension = isColumn ? "height" : "width";

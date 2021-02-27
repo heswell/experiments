@@ -62,7 +62,7 @@ const DraggableLayout = (inputProps) => {
     [prepareToDrag]
   );
 
-  const { className: classNameProp, drag, layoutId, style } = props;
+  const { className: classNameProp, drag, id, style } = props;
 
   if (props?.dropTarget) {
     const {
@@ -158,7 +158,7 @@ const DraggableLayout = (inputProps) => {
 
   return (
     <LayoutContext.Provider value={{ dispatch: customDispatcher }}>
-      <div className={className} id={layoutId} ref={ref} style={style}>
+      <div className={className} id={id} ref={ref} style={style}>
         {props.children || props}
         {dragComponent}
       </div>

@@ -20,7 +20,7 @@ const Stack = (inputProps) => {
   const [props, ref, layoutDispatch] = useLayout("Stack", inputProps);
   const {
     enableAddTab,
-    layoutId: id,
+    id,
     keyBoardActivation = "automatic",
     onTabSelectionChanged,
     path,

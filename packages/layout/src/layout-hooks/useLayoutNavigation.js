@@ -30,24 +30,24 @@ function getPrevTarget(root, { type, path, focusVisible, index }) {
 
 function focusElement(root, path) {
   const {
-    props: { id, layoutId = id },
+    props: { id },
   } = followPath(root, path);
-  const el = document.getElementById(layoutId);
+  const el = document.getElementById(id);
   el.focus();
 }
 function addFocusVisible(root, path) {
   const {
-    props: { id, layoutId = id },
+    props: { id},
   } = followPath(root, path);
-  const el = document.getElementById(layoutId);
+  const el = document.getElementById(id);
   el.classList.add("focus-visible");
 }
 
 function removeFocusVisible(root, path) {
   const {
-    props: { id, layoutId = id },
+    props: { id },
   } = followPath(root, path);
-  const el = document.getElementById(layoutId);
+  const el = document.getElementById(id);
   el.classList.remove("focus-visible");
 }
 

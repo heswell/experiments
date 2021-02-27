@@ -542,7 +542,7 @@ function wrap(model, source, target, pos, targetRect) {
       {
         active,
         dispatch: target.props.dispatch,
-        layoutId: id,
+        id,
         key: id,
         path: getProp(target, "path"),
         // TODO we should be able to configure this in setDefaultLayoutProps

@@ -23,7 +23,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
     layoutModel: undefined,
     managedLayoutNode: null,
     selectedLayoutNode: null,
-    selectedLayoutId: null
+    selectedId: null
   })
 
   const onLayoutModel = layoutModel => {
@@ -51,9 +51,9 @@ export default function LayoutBuilder({width = 800, height = 1000}){
     console.log(`save ${serializedLayout}`)
   }
 
-  const selectLayout = layoutId => setState({
+  const selectLayout = id => setState({
     ...state,
-    selectedLayoutId: layoutId
+    selectedId: id
   })
 
 
@@ -62,7 +62,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
   : state.selectedLayoutNode.style;
 
 
-  const selectedIdx = availableValues.indexOf(state.selectedLayoutId)
+  const selectedIdx = availableValues.indexOf(state.selectedId)
 
   return (
     <DraggableLayout>
@@ -70,7 +70,7 @@ export default function LayoutBuilder({width = 800, height = 1000}){
         <Flexbox className="builder-top" style={{height: 60, backgroundColor: 'rgb(90,90,90)'}}>
           <Palette style={{flex: 1, backgroundColor: 'inherit'}}/>
           <div className="layout-edit-controls" style={{backgroundColor: 'red', width: 250}}>
-            <Control><Select onCommit={selectLayout} availableValues={availableValues} selectedIdx={selectedIdx} value={state.selectedLayoutId}/></Control>
+            <Control><Select onCommit={selectLayout} availableValues={availableValues} selectedIdx={selectedIdx} value={state.selectedId}/></Control>
             <button onClick={saveLayout}>Save</button>
           </div>
         </Flexbox>

@@ -17,7 +17,7 @@ const View = React.memo(function View(inputProps) {
     collapsed, // "vertical" | "horizontal" | false | undefined
     closeable,
     expanded,
-    layoutId: id,
+    id,
     header,
     orientation = "horizontal",
     path,
