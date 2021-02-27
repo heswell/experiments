@@ -31,8 +31,8 @@
     "rollup-plugin-terser": "^5.1.2"
   },
   "peerDepencencies": {
-    "react": "16.14.0",
-    "react-dom": "16.14.0"
+    "react": "latest",
+    "react-dom": "latest"
   },
   "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
 }

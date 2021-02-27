@@ -13,6 +13,7 @@ const isCharacter = stateEvt => stateEvt === StateEvt.TEXT;
 
 // we need a way to set highlightedIdx when selection changes
 export const useKeyboardNavigation = ({
+  count,
   highlightedIdx: highlightedIdxProp,
   onFocus,
   onHighlight,
@@ -79,7 +80,7 @@ export const useKeyboardNavigation = ({
   }
 
   const navigateSuggestions = keyCode => {
-    hiliteItemAtIndex(nextItemIdx(values, keyCode, hilitedIdx))
+    hiliteItemAtIndex(nextItemIdx(count, keyCode, hilitedIdx))
   }
   
   const hilited = controlledHiliting
@@ -99,7 +100,7 @@ export const useKeyboardNavigation = ({
 }
 
 // need to be able to accommodate disabled items
-function nextItemIdx(values, keyCode, idx) {
+function nextItemIdx(count, keyCode, idx) {
   if (keyCode === Key.UP) {
     if (idx > 0) {
       return idx - 1;
@@ -109,7 +110,7 @@ function nextItemIdx(values, keyCode, idx) {
   } else {
     if (idx === null) {
       return 0;
-    } else if (idx === values.length - 1) {
+    } else if (idx === count - 1) {
       return idx;
     } else {
       return idx + 1;

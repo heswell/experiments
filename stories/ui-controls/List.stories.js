@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { List } from '@heswell/ui-controls';
+import { List, ListItem } from '@heswell/ui-controls';
 import {usa_states} from './usa_states';
 
 const StyledControl = styled.div`
@@ -28,6 +28,28 @@ export const SimpleList = () => {
           values={usa_states}
           onChange={value => setSelectedValue(value)}
         />
+      </StyledControl>
+      <input type="text" />
+      <div>{usa_states[selectedValue]}</div>
+    </>
+  )
+}
+
+export const DeclarativeList = () => {
+  const [selectedValue, setSelectedValue] = useState('');
+  console.log(`render example`)
+  return (
+    <>
+      <input type="text" />
+      <StyledControl>
+        <List
+          onChange={value => setSelectedValue(value)}
+        >
+          <ListItem>Value 1</ListItem>
+          <ListItem>Value 2</ListItem>
+          <ListItem>Value 3</ListItem>
+          <ListItem>Value 4</ListItem>
+        </List>
       </StyledControl>
       <input type="text" />
       <div>{usa_states[selectedValue]}</div>

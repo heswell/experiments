@@ -1,7 +1,7 @@
 import React, {forwardRef, useEffect, useMemo, useImperativeHandle, useRef, useState } from 'react';
 import cx from 'classnames';
 import Dropdown from '../dropdown';
-import List from '../list';
+import {List} from '../list';
 import * as Key from '../utils/key-code';
 import {useKeyboardNavigation} from '../list/use-keyboard-navigation';
 

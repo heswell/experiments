@@ -34,8 +34,8 @@
     "jss-plugin-camel-case": "^10.1.1",
     "jss-plugin-default-unit": "^10.1.1",
     "jss-plugin-nested": "^10.1.1",
-    "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react": "latest",
+    "react-dom": "latest"
   },
   "gitHead": "4607a2bf8ad64e691e619304ad931b52cb513eb8"
 }

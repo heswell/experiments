@@ -1,14 +1,16 @@
-import React, { forwardRef, useEffect, useLayoutEffect, useState, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import cx from 'classnames';
 import * as StateEvt from '../state-machinery/state-events';
 import { getKeyboardEvent } from '../utils/key-code';
 import { searcher } from './searcher';
 import { useKeyboardNavigation } from './use-keyboard-navigation';
+import ListItem from "./list-item";
 
 import './list.css';
 
 const List = forwardRef(function List(props, ref) {
   const {
+    children,
     onCancel,
     onChange,
     onHighlight,
@@ -27,6 +29,8 @@ const List = forwardRef(function List(props, ref) {
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const controlledSelection = selectedIdxProp !== undefined;
   const controlledHiliting = hilitedIdxProp !== undefined;
+
+  const count = values?.length ?? React.Children.count(children);  
 
   //TODO should accept a prop that configures whether we support
   // typeahead navigation a la Select
@@ -59,6 +63,7 @@ const List = forwardRef(function List(props, ref) {
     setIgnoreFocus,
 
   } = useKeyboardNavigation({
+    count,
     hilitedIdx: hilitedIdxProp,
     onHighlight,
     onKeyDown: listHandleKeyDown,
@@ -125,10 +130,6 @@ const List = forwardRef(function List(props, ref) {
     }
   }
 
-  const handleItemClick = (evt, idx) => {
-    selectItemAtIndex(idx);
-  }
-
   const selectItemAtIndex = idx => {
     if (!controlledSelection) {
       setSelectedIdx(idx);
@@ -147,7 +148,11 @@ const List = forwardRef(function List(props, ref) {
     keyBoardNavigation.current = false;
   }
 
-  const handleListItemMouseEnter = (idx) => {
+  const handleListItemClick = (evt, idx) => {
+    selectItemAtIndex(idx);
+  }
+
+  const handleListItemMouseEnter = (evt, idx) => {
     if (!scrolling.current) {
       hiliteItemAtIndex(idx)
     }
@@ -169,7 +174,7 @@ const List = forwardRef(function List(props, ref) {
 
   return (
     <div
-      className={cx('list', { focusVisible, "empty-list": values.length === 0 })}
+      className={cx('list', { focusVisible, "empty-list": count === 0 })}
       ref={listElement} role="list"
       onBlur={handleBlur}
       onFocus={handleFocus}
@@ -178,20 +183,29 @@ const List = forwardRef(function List(props, ref) {
       onMouseDownCapture={handleListMouseDownCapture}
       onKeyDown={handleKeyDown}
       tabIndex={0}>
-      {values.map((value, idx) => (
-        <div key={idx}
-          role="list-item"
-          data-idx={idx}
-          className={cx("list-item", {
-            selected: idx === selected,
-            hilited: idx === hilited
-          })}
-          onKeyDown={handleKeyDown}
-          onMouseEnter={() => handleListItemMouseEnter(idx)}
-          onClick={evt => handleItemClick(evt, idx)}>
+
+      {React.Children.count(children) > 0 ? (
+        React.Children.map(children, (child,idx) => 
+          React.cloneElement(child, {
+            idx,
+            isHighlighted: idx === hilited,
+            isSelected: idx === selected,
+            onMouseEnter: handleListItemMouseEnter,
+            onClick: handleListItemClick  
+            })
+        )
+      ) : (values.map((value, idx) => (
+        <ListItem
+          idx={idx}
+          key={idx}
+          isHighlighted={idx === hilited}
+          isSelected={idx === selected}
+          onMouseEnter={handleListItemMouseEnter}
+          onClick={handleListItemClick}  
+          >
           <span>{value}</span>
-        </div>
-      ))}
+          </ListItem>
+      )))}
     </div>
   )
 

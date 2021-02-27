@@ -29,7 +29,7 @@
     "babel-loader": "^8.1.0",
     "prop-types": "^15.7.2",
     "react-docgen": "^5.3.0",
-    "react-is": "^16.13.1",
+    "react-is": "latest",
     "react-test-renderer": "16.14.0",
     "rollup": "1.29.0",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -43,8 +43,8 @@
     "classnames": "^2.2.6",
     "global": "^4.4.0",
     "material-design-icons": "^3.0.1",
-    "react": "16.14.0",
-    "react-dom": "16.14.0",
+    "react": "latest",
+    "react-dom": "latest",
     "styled-components": "5.2.1"
   },
   "babel": {
