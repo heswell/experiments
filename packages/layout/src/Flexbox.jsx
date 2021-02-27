@@ -73,6 +73,7 @@ const Flexbox = function Flexbox(inputProps) {
     />
   );
 
+  // TODO probably want to pass the layoutProps as a group so they camn be spread onto the view
   const injectSplitters = (list, child, i, arr) => {
     const { flexBasis, [dimension]: layoutSize } = child.props.style;
     const draggedSize = sizesRef.current[i];
@@ -89,6 +90,7 @@ const Flexbox = function Flexbox(inputProps) {
           flexBasis: draggedSize,
           [dimension]: "auto",
         },
+        resizing: true
       });
       list.push(dolly);
     } else {

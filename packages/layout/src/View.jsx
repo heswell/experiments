@@ -21,6 +21,7 @@ const View = React.memo(function View(inputProps) {
     header,
     orientation = "horizontal",
     path,
+    resizing,
     tearOut,
     style,
     title,
