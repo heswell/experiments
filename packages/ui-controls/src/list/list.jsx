@@ -7,7 +7,7 @@ import {useKeyboardNavigation} from './use-keyboard-navigation';
 
 import './list.css';
 
-export default forwardRef(function List(props, ref) {
+const List = forwardRef(function List(props, ref) {
   const {
     onCancel,
     onChange,
@@ -197,4 +197,7 @@ export default forwardRef(function List(props, ref) {
       </div>
     )
 
-})
+});
+
+export default List;
+List.displayName = "List"
