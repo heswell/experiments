@@ -103,14 +103,17 @@ export default function useLayoutNavigation(
         relatedTarget: e.relatedTarget,
       });
     }
+
+    const layoutElement = layoutRef.current;
+
     if (layoutType === "View") {
-      layoutRef.current.addEventListener("blur", onBlur, true);
-      layoutRef.current.addEventListener("focus", onFocus, true);
+      layoutElement.addEventListener("blur", onBlur, true);
+      layoutElement.addEventListener("focus", onFocus, true);
     }
     return () => {
-      if (layoutType === "View") {
-        layoutRef.current.removeEventListener("blur", onBlur, true);
-        layoutRef.current.removeEventListener("focus", onFocus, true);
+      if (layoutElement && layoutType === "View") {
+        layoutElement.removeEventListener("blur", onBlur, true);
+        layoutElement.removeEventListener("focus", onFocus, true);
       }
     };
   }, [layoutType, props]);
