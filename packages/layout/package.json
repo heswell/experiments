@@ -34,6 +34,7 @@
     "rollup-plugin-postcss": "^2.0.3"
   },
   "dependencies": {
+    "@heswell/layout": "3.0.10",
     "classnames": "2.2.6",
     "d3-selection": "2.0.0",
     "d3-transition": "2.0.0",

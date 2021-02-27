@@ -8,17 +8,18 @@ import ListItem from "./list-item";
 
 import './list.css';
 
-const List = forwardRef(function List(props, ref) {
-  const {
-    children,
-    onCancel,
-    onChange,
-    onHighlight,
-    hilitedIdx: hilitedIdxProp,
-    selectedIdx: selectedIdxProp,
-    typeaheadListNavigation,
-    values
-  } = props;
+const List = forwardRef(function List({
+  children,
+  onCancel,
+  onChange,
+  onHighlight,
+  hilitedIdx: hilitedIdxProp,
+  selectedIdx: selectedIdxProp,
+  showFocusVisible,
+  typeaheadListNavigation,
+  values,
+  ...props
+}, ref) {
 
   const listElement = useRef(null);
   const scrollTop = useRef(0);
@@ -169,20 +170,22 @@ const List = forwardRef(function List(props, ref) {
     ? selectedIdxProp
     : selectedIdx;
 
-  const focusVisible = (props.showFocusVisible || !controlledHiliting)
+  const focusVisible = (showFocusVisible || !controlledHiliting)
     && keyBoardNavigation.current;
 
   return (
-    <div
+    <div {...props}
       className={cx('list', { focusVisible, "empty-list": count === 0 })}
-      ref={listElement} role="list"
+      ref={listElement}
+      role="list"
       onBlur={handleBlur}
       onFocus={handleFocus}
       onMouseEnter={handleListMouseEnter}
       onMouseLeave={handleListMouseLeave}
       onMouseDownCapture={handleListMouseDownCapture}
       onKeyDown={handleKeyDown}
-      tabIndex={0}>
+      tabIndex={0}
+      >
 
       {React.Children.count(children) > 0 ? (
         React.Children.map(children, (child,idx) => 
