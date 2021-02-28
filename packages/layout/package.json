@@ -26,7 +26,7 @@
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {
-    "@heswell/utils": "^2.0.12",
+    "@heswell/utils": "latest",
     "jest": "^24.9.0",
     "rollup": "1.29.0",
     "rollup-plugin-babel": "^4.3.3",
@@ -34,14 +34,12 @@
     "rollup-plugin-postcss": "^2.0.3"
   },
   "dependencies": {
-    "@heswell/layout": "^3.0.22",
     "classnames": "2.2.6",
     "d3-selection": "2.0.0",
-    "d3-transition": "2.0.0",
-    "react-jss": "10.1"
+    "d3-transition": "2.0.0"
   },
   "peerDependencies": {
-    "@heswell/utils": "^2.0.0",
+    "@heswell/utils": "latest",
     "react": "latest",
     "react-dom": "latest"
   },

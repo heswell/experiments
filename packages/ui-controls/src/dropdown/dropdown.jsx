@@ -1,14 +1,13 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import cx from 'classnames'
-import styled from 'styled-components';
 // import env from '../utils/browser';
 // import { getUrlForComponent } from './standalone-urls';
 
-const StyledDropdpown = styled.div`
-  border: solid 1px #ccc;
-  font-family: Roboto;
-`;
+// const StyledDropdpown = styled.div`
+//   border: solid 1px #ccc;
+//   font-family: Roboto;
+// `;
 
 const Dropdown = forwardRef(function Dropdown(props, ref) {
 
@@ -123,7 +122,7 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
   //   return null
   // } else{
   return ReactDOM.createPortal(
-    <StyledDropdpown ref={rootEl}
+    <div ref={rootEl}
       className={cx("control-dropdown", className)}
       style={{ top: top + height, left, width, height: listHeight }}>
       {React.cloneElement(children, {
@@ -131,7 +130,7 @@ const Dropdown = forwardRef(function Dropdown(props, ref) {
         onCommit,
         onCancel
       })}
-    </StyledDropdpown>,
+    </div>,
     document.body)
   // }
 
