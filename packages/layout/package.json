@@ -39,6 +39,7 @@
     "d3-transition": "2.0.0"
   },
   "peerDependencies": {
+    "@heswell/popup": "latest",
     "@heswell/utils": "latest",
     "react": "latest",
     "react-dom": "latest"

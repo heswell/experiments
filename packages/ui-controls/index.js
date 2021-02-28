@@ -7,7 +7,6 @@ import Toggle from './src/form/controls/toggle';
 import ComboBox from './src/combo-box/combo-box';
 import Select from './src/select/select';
 
-export * from './src/services/index';
 export * from './src/form/form';
 export * from './src/form/form-reducer';
 export * from './src/form/field';
