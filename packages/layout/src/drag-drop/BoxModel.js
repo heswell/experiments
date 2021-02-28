@@ -172,7 +172,7 @@ function measureRootComponent(rootComponent, measurements) {
   if (id && path) {
     const [rect, el] = measureComponentDomElement(rootComponent);
     measureComponent(rootComponent, rect, el, measurements);
-    if (type !== "Stack" && isContainer(type)) {
+    if (/*type !== "Stack" && */isContainer(type)) {
       collectChildMeasurements(rootComponent, measurements);
     }
   }
@@ -283,7 +283,7 @@ function collectChildMeasurements(
       );
 
       const childType = typeOf(child);
-      if (childType !== "Stack" && isContainer(childType)) {
+      if (/*childType !== "Stack" &&*/ isContainer(childType)) {
         collectChildMeasurements(
           child,
           measurements,
