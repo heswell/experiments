@@ -121,24 +121,24 @@ export default function useLayoutNavigation(
   const dispatcher = isRoot
     ? (action) => {
         if (action.type === Action.FOCUS) {
-          if (withFocus.current?.path !== action.path) {
-            if (withFocus.current === null) {
-              window.addEventListener("keyup", navHandler);
-            } else if (withFocus.current.focusVisible) {
-              removeFocusVisible(stateRef.current, withFocus.current.path);
-            }
+          // if (withFocus.current?.path !== action.path) {
+          //   if (withFocus.current === null) {
+          //     window.addEventListener("keyup", navHandler);
+          //   } else if (withFocus.current.focusVisible) {
+          //     removeFocusVisible(stateRef.current, withFocus.current.path);
+          //   }
 
-            withFocus.current = {
-              type: "View",
-              path: action.path,
-            };
-          } else if (withFocus.current.focusVisible) {
-            removeFocusVisible(stateRef.current, withFocus.current.path);
-            withFocus.current.focusVisible = false;
-          } else if (withFocus.current.focusing) {
-            withFocus.current.focusVisible = true;
-            addFocusVisible(stateRef.current, withFocus.current.path);
-          }
+          //   withFocus.current = {
+          //     type: "View",
+          //     path: action.path,
+          //   };
+          // } else if (withFocus.current.focusVisible) {
+          //   removeFocusVisible(stateRef.current, withFocus.current.path);
+          //   withFocus.current.focusVisible = false;
+          // } else if (withFocus.current.focusing) {
+          //   withFocus.current.focusVisible = true;
+          //   addFocusVisible(stateRef.current, withFocus.current.path);
+          // }
           return true;
         } else if (
           action.type === Action.BLUR ||
