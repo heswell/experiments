@@ -185,5 +185,6 @@ export function resetPath(model, path) {
       children.push(resetPath(child, `${path}.${i}`));
     }
   });
-  return React.cloneElement(model, { path }, children);
+  const pathPropName = model.props['data-path'] ? 'data-path' : 'path';
+  return React.cloneElement(model, {[pathPropName]: path}, children);
 }
