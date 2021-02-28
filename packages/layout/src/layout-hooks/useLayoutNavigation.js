@@ -144,23 +144,23 @@ export default function useLayoutNavigation(
           action.type === Action.BLUR ||
           action.type === Action.BLUR_SPLITTER
         ) {
-          if (!layoutRef.current.contains(action.relatedTarget)) {
-            if (withFocus.current.focusVisible) {
-              removeFocusVisible(stateRef.current, withFocus.current.path);
-            }
-            withFocus.current = null;
-            window.removeEventListener("keyup", navHandler);
-          }
+          // if (!layoutRef.current.contains(action.relatedTarget)) {
+          //   if (withFocus.current.focusVisible) {
+          //     removeFocusVisible(stateRef.current, withFocus.current.path);
+          //   }
+          //   withFocus.current = null;
+          //   window.removeEventListener("keyup", navHandler);
+          // }
           return true;
         } else if (action.type === Action.FOCUS_SPLITTER) {
-          if (withFocus.current?.type === "View") {
-            removeFocusVisible(stateRef.current, withFocus.current.path);
-          }
-          withFocus.current = {
-            type: "Splitter",
-            path: action.path,
-            index: action.index,
-          };
+          // if (withFocus.current?.type === "View") {
+          //   removeFocusVisible(stateRef.current, withFocus.current.path);
+          // }
+          // withFocus.current = {
+          //   type: "Splitter",
+          //   path: action.path,
+          //   index: action.index,
+          // };
           return true;
         } else {
           // return customDispatcher && customDispatcher(action);
