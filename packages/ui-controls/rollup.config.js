@@ -3,6 +3,7 @@ import postcss from "rollup-plugin-postcss";
 import commonjs from "rollup-plugin-commonjs";
 import resolve from "rollup-plugin-node-resolve";
 import filesize from "rollup-plugin-filesize";
+import visualizer from "rollup-plugin-visualizer";
 import { terser } from "rollup-plugin-terser";
 import atImport from "postcss-import";
 import { commonJsConfig } from "../../rollup/config";
@@ -34,10 +35,11 @@ export default {
     postcss({
       plugins: [atImport()],
       minimize: false,
-      extract: true,
+      extract: false,
       sourceMap: true,
     }),
     filesize(),
+    visualizer(),
     ...(isProd ? [terser()] : []),
   ],
   external: ["classnames", "react", "react-dom"],
