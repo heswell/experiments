@@ -210,6 +210,7 @@ function replaceChild(model, child, replacement) {
     : {
         ...replacement,
         path,
+        resizeable,
         style: {
           ...style,
           ...replacement.style,
