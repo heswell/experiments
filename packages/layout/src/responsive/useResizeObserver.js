@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+export const WidthHeight = ['height', 'width']
+
 const observedMap = new Map();
 
 const isScrollAttribute = {

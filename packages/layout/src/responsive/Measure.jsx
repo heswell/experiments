@@ -6,8 +6,10 @@ const size = (value) =>
 
 export const useMeasure = (props) => {
   return useState({
-    height: size(props.style?.height ?? props.height),
-    width: size(props.style?.width ?? props.width)
+    assignedHeight: size(props.style?.height ?? props.height),
+    height: assignedHeight,
+    assignedWidth: size(props.style?.width ?? props.width),
+    width: assignedWidth
   });
 };
 

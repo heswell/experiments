@@ -197,10 +197,11 @@ function applySize(style, dim, newSize) {
 }
 
 function replaceChild(model, child, replacement) {
-  const { path, style } = getProps(child);
+  const { path, style, resizeable } = getProps(child);
   const newChild = React.isValidElement(replacement)
     ? React.cloneElement(replacement, {
         path,
+        resizeable,
         style: {
           ...style,
           ...replacement.props.style,
