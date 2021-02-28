@@ -1,6 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 
+import "./list-item.css";
+
 const ListItem = ({
   children,
   isHighlighted, 
@@ -17,7 +19,7 @@ const ListItem = ({
     <div
     role="listitem"
     data-idx={idx}
-    className={cx("list-item", {
+    className={cx("hwListItem", {
       selected: isSelected,
       hilited: isHighlighted
     })}

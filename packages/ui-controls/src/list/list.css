@@ -1,26 +1,18 @@
-.list {
+.hwList {
+  --hw-list-selected-bg: cornflowerblue;
+  --hw-list-hilited-bg: rgba(0,0,0,.1);
+
   list-style: none;
   margin:0;
   padding:0 1px;
-  font-size: .8125rem;
+  font-size: 14px;;
   max-height: 100%;
   overflow-y: auto;
   /* outline: none; */
 }
 
-.list .list-item {
-  line-height: 1.25rem;
-  padding: 1px 6px;
-  position: relative;
-  cursor: default;
-  margin: 0;
-}
 
-.list .list-item.hilited {
-  background-color: rgba(0,0,0,.1)
-} 
-
-.list.focusVisible .list-item.hilited:before {
+.hwList.focusVisible .hwListItem.hilited:before {
    content: "";
    position: absolute;
    top:0;
@@ -30,15 +22,7 @@
    border: dotted cornflowerblue 2px;
 } 
 
-.list.focusVisible .list-item.selected.hilited:before {
+.hwList.focusVisible .hwListItem.selected.hilited:before {
   border-color: white;
 } 
 
-.list .list-item.selected {
-  background-color: cornflowerblue;
-  color: white;
-}
-
-.list-item:focus {
-  background-color: rgba(0,0,0,.1)
-}

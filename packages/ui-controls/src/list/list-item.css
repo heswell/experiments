@@ -1,0 +1,20 @@
+.hwListItem {
+  line-height: 1.25rem;
+  padding: 1px 6px;
+  position: relative;
+  cursor: default;
+  margin: 0;
+}
+
+.hwListItem.hilited {
+  background-color: var(--hw-list-hilited-bg);
+} 
+
+.hwListItem.selected {
+  background-color: var(--hw-list-selected-bg);
+  color: white;
+}
+
+.hwListItem:focus {
+  background-color: rgba(0,0,0,.1)
+}

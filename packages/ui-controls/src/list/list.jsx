@@ -162,7 +162,6 @@ const List = forwardRef(function List({
   const handleListMouseLeave = evt => {
     keyBoardNavigation.current = true;
     setIgnoreFocus(false);
-    console.log(`handleListMouseLeave`)
     hiliteItemAtIndex(-1);
   }
 
@@ -175,7 +174,7 @@ const List = forwardRef(function List({
 
   return (
     <div {...props}
-      className={cx('list', { focusVisible, "empty-list": count === 0 })}
+      className={cx('hwList', { focusVisible, "empty-list": count === 0 })}
       ref={listElement}
       role="list"
       onBlur={handleBlur}
