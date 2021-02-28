@@ -71,7 +71,7 @@ const Stack = (inputProps) => {
         draggable
         key={idx}
         id={`${id}-${idx}`}
-        label={child.props.title}
+        label={child.props.title ?? `Page ${idx+1}`}
         deletable={child.props.removable}
       />
     ));

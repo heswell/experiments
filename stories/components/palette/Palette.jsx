@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import cx from "classnames";
 import { uuid } from "@heswell/utils";
 import {
   Action,
@@ -14,13 +15,14 @@ import "./Palette.css";
 // const header = true;
 // const resizeable = true;
 
+
 const getDefaultComponents = (dispatchViewAction) =>
   [
     {
-      label: "Blue Monday",
+      caption: "Blue Monday",
       component: (
         <View header resizeable title="Blue Monday">
-          <Component
+          <Component name="Blue"
             style={{
               backgroundColor: "rgba(0,0,255,0.2)",
               height: "100%",
@@ -33,7 +35,7 @@ const getDefaultComponents = (dispatchViewAction) =>
       caption: "Transmission",
       component: (
         <View header resizeable title="Transmission">
-          <Component
+          <Component name="Grey"
             style={{
               backgroundColor: "rgba(0,255,255,0.2)",
               height: "100%",
@@ -43,10 +45,10 @@ const getDefaultComponents = (dispatchViewAction) =>
       ),
     },
     {
-      caption: "Shot by both sides",
+      caption: "Shot by both",
       component: (
         <View header resizeable title="Shot by both sides">
-          <Component
+          <Component name="Green"
             style={{
               backgroundColor: "rgba(255,255,0,0.2)",
               height: "100%",
@@ -61,9 +63,6 @@ const getDefaultComponents = (dispatchViewAction) =>
   }));
 
 const ComponentIcon = ({
-  children,
-  color,
-  backgroundColor,
   idx,
   text,
   onMouseDown,
@@ -72,12 +71,11 @@ const ComponentIcon = ({
   return (
     <div className="ComponentIcon" onMouseDown={handleMouseDown}>
       <span>{text}</span>
-      {children}
     </div>
   );
 };
 
-const PaletteList = ({ items }) => {
+const PaletteList = ({ items, orientation="horizontal" }) => {
   const { dispatch } = useLayoutContext();
   const [paletteItems] = useState(items || getDefaultComponents(dispatch));
 
@@ -95,7 +93,7 @@ const PaletteList = ({ items }) => {
       instructions: {
         DoNotRemove: true,
         DoNotTransform: true,
-        dragThreshold: 0,
+        dragThreshold: 10,
       },
       dragRect: {
         left,
@@ -109,12 +107,12 @@ const PaletteList = ({ items }) => {
   }
 
   return (
-    <div className="PaletteList">
-      {paletteItems.map(({ component }, idx) => (
+    <div className={cx("PaletteList", `PaletteList-${orientation}`)}>
+      {paletteItems.map(({ caption, component }, idx) => (
         <ComponentIcon
           key={idx}
           idx={idx}
-          text={component.props.title}
+          text={caption}
           color={component.props.iconColor || "#000"}
           backgroundColor={component.props.iconBg || "#333"}
           component={component}
@@ -125,11 +123,9 @@ const PaletteList = ({ items }) => {
   );
 };
 
-export default function Palette({ components, ...props }) {
+export default function Palette({ components, orientation }) {
   return (
-    <View className="Palette" {...props}>
-      <PaletteList items={components} />
-    </View>
+      <PaletteList items={components} orientation={orientation}/>
   );
 }
 

@@ -71,7 +71,7 @@ const useLayout = (layoutType, props) => {
     children.current = props.children;
     // TODO should be a call to the reducer
     state.current = applyLayout(layoutType, props, state.current);
-    //console.log(state.current);
+    console.log(state.current);
   }
 
   const layoutProps = isRoot ? state.current : props;

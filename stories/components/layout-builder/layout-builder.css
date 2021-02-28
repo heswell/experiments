@@ -1,6 +1,16 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 .LayoutBuilder .PaletteList {
   display: flex;
 }
+
+.LayoutBuilder .PaletteList-vertical {
+  flex-direction: column;
+}
+
 .builder-top {
   margin-bottom: 12px;
 }

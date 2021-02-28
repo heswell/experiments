@@ -92,7 +92,7 @@ function getChildLayoutProps(type, props, path, parentType, previousLayout) {
 }
 
 function getLayoutChildren(type, children, path = "0", previousChildren) {
-  return isContainer(type) || isView(type)
+  return isContainer(type) /*|| isView(type)*/
     ? React.Children.map(children, (child, i) => {
         const [layoutProps, children] = getChildLayoutProps(
           typeOf(child),

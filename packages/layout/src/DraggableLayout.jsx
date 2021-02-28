@@ -69,9 +69,6 @@ const DraggableLayout = (inputProps) => {
       "data-path": dataPath,
       path: dragContainerPath = dataPath,
     } = props.children[0].props;
-    console.log(
-      `this container is a draggable root 2) ${props.path} register child path ${dragContainerPath}`
-    );
     DragContainer.register(dragContainerPath);
   }
 

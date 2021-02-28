@@ -210,21 +210,26 @@ function collectChildMeasurements(
   preY = 0,
   posY = 0
 ) {
-  const { children, "data-path": dataPath, path = dataPath, style } = getProps(
+  const { children, "data-path": dataPath, path = dataPath, style, active=0 } = getProps(
     component
   );
 
   const type = typeOf(component);
   const isFlexbox = type === "Flexbox";
+  const isStack = type === "Stack";
   const isTower = isFlexbox && style.flexDirection === "column";
   const isTerrace = isFlexbox && style.flexDirection === "row";
 
   console.log(`collect ChildMeasurements for ${type}`);
 
-  // Collect all the measurements in first pass ...
-  const childMeasurements = children.map((child) => {
-    const [rect, el] = measureComponentDomElement(child);
+  const childrenToMeasure = isStack
+    ? children.filter((child, idx) => idx === active )
+    : children;
 
+
+  // Collect all the measurements in first pass ...
+  const childMeasurements = childrenToMeasure.map((child) => {
+    const [rect, el] = measureComponentDomElement(child);
     return [
       {
         ...rect,
@@ -283,7 +288,7 @@ function collectChildMeasurements(
       );
 
       const childType = typeOf(child);
-      if (/*childType !== "Stack" &&*/ isContainer(childType)) {
+      if (isContainer(childType)) {
         collectChildMeasurements(
           child,
           measurements,
@@ -296,7 +301,6 @@ function collectChildMeasurements(
       return componentMeasurements;
     }
   );
-
   if (childMeasurements.length) {
     measurements[path].children = expandedMeasurements;
   }
