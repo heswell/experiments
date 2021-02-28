@@ -1,6 +1,6 @@
 {
   "name": "@heswell/layout",
-  "version": "3.0.19",
+  "version": "3.0.20",
   "description": "Heswell Layout Components",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -34,7 +34,7 @@
     "rollup-plugin-postcss": "^2.0.3"
   },
   "dependencies": {
-    "@heswell/layout": "^3.0.19",
+    "@heswell/layout": "^3.0.20",
     "classnames": "2.2.6",
     "d3-selection": "2.0.0",
     "d3-transition": "2.0.0",
