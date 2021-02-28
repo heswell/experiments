@@ -98,8 +98,7 @@ function popupClosed(name/*, group=null*/) {
 }
 
 const PopupComponent = ({children, position, style}) => {
-    const classes = useStyles();
-    const className = cx(classes.popup, 'popup-container', position);
+    const className = cx("hwPopup", 'popup-container', position);
     return createElement('div', {className, style }, children);
 }
 
