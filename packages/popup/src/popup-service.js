@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import cx from 'classnames';
 
 import './popup-service.css';
-
+console.log('heswell/popup version 2.1.13')
 window.popupReact = React;
 
 let _dialogOpen = false;
