@@ -1,5 +1,6 @@
 export { Action } from "./src/layout-action";
 export { default as DraggableLayout } from "./src/DraggableLayout";
+export { default as DragIcon } from "./src/drag-drop/drag-icon";
 export { default as Flexbox } from "./src/Flexbox";
 export { default as Stack } from "./src/Stack";
 export { default as View } from "./src/View";
