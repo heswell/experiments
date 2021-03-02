@@ -11,6 +11,7 @@ let _dragStartY;
 let _dragContainer;
 let _dragState;
 let _dropTarget = null;
+let _dragOptions;
 let _measurements;
 let _simpleDrag;
 let _dragThreshold;
@@ -66,6 +67,7 @@ function getDragContainer(rootContainer, dragContainerPath) {
 export const Draggable = {
   handleMousedown(e, dragStartCallback, dragOptions = {}) {
     _dragCallback = dragStartCallback;
+    _dragOptions = dragOptions;
 
     _dragStartX = e.clientX;
     _dragStartY = e.clientY;
@@ -153,7 +155,9 @@ function initDrag(rootContainer, dragContainerPath, dragRect, dragPos) {
 
   _dropTargetRenderer.prepare(dragZone);
 
-  return {
+  return _dragOptions.DoNotTransform ? {
+    transform: 'none'
+  } : {
     // scale factor should be applied in caller, not here
     transform: `scale(${SCALE_FACTOR},${SCALE_FACTOR})`,
     transformOrigin: pctX + "% " + pctY + "%",

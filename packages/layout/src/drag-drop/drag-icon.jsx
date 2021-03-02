@@ -3,12 +3,10 @@ import cx from "classnames";
 
 import "./drag-icon.css"
 
-const DragIcon = ({children, className,  ...props}) => {
-
+const DragIcon = ({component:_, className,  ...props}) => {
   return (
     <div {...props} className={cx("DragIcon", className)}></div>
   )
-
 }
 
 export default DragIcon;
