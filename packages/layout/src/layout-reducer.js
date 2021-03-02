@@ -151,6 +151,9 @@ function dragDrop(model, action) {
         drag: undefined,
       };
 
+  //TODO should we change this to dragComponent, just in case a component happens to have a 'component' ptrop ?    
+  const droppedComponent = source.props?.component ?? source;
+
   const newModel = replaceChild(model, dragContainer, dragContainerWithoutDrag);
 
   if (pos.position.Header) {
@@ -166,17 +169,17 @@ function dragDrop(model, action) {
           props: { path: before },
         } = target.props.children[tabIndex]);
       }
-      return insert(newModel, source, null, before, after);
+      return insert(newModel, droppedComponent, null, before, after);
     } else {
-      return wrap(newModel, source, target, pos);
+      return wrap(newModel, droppedComponent, target, pos);
     }
   } else if (pos.position.Centre) {
-    return replaceChild(newModel, target, source);
+    return replaceChild(newModel, target, droppedComponent);
   } else {
     return dropLayoutIntoContainer(
       newModel,
       pos,
-      source,
+      droppedComponent,
       target,
       targetPosition,
       targetRect
