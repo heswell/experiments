@@ -1,10 +1,12 @@
 import React from 'react';
+import cx from "classnames";
+
 import "./drag-icon.css"
 
-const DragIcon = ({children}) => {
+const DragIcon = ({children, className,  ...props}) => {
 
   return (
-    <div className="DragIcon"></div>
+    <div {...props} className={cx("DragIcon", className)}></div>
   )
 
 }
