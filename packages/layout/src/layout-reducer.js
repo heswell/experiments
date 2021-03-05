@@ -7,13 +7,13 @@ import {
   followPathToParent,
   getProp,
   getProps,
+  lastChildPath,
   nextStep,
   resetPath,
   typeOf,
 } from "./utils";
 import { getManagedDimension } from "./layoutUtils";
 import { ComponentRegistry, isContainer } from "./registry/ComponentRegistry";
-import { Minimize } from "./icons";
 
 const MISSING_TYPE = undefined;
 
@@ -35,6 +35,7 @@ const handlers = {
   [Action.DRAG_STARTED]: dragStart,
   [Action.DRAG_DROP]: dragDrop,
   [Action.SPLITTER_RESIZE]: splitterResize,
+  [Action.ADD]: addChild,
   [Action.REMOVE]: removeChild,
   [Action.MAXIMIZE]: setChildProps,
   [Action.MINIMIZE]: setChildProps,
@@ -135,7 +136,6 @@ function dragDrop(model, action) {
     dragContainerPath,
     dropTarget: { component: target, pos },
     targetRect,
-    targetPosition,
   } = action;
 
   const dragContainer = followPath(model, dragContainerPath);
@@ -181,7 +181,6 @@ function dragDrop(model, action) {
       pos,
       droppedComponent,
       target,
-      targetPosition,
       targetRect
     );
   }
@@ -347,6 +346,10 @@ function makeFlexible(children) {
   );
 }
 
+function addChild(model, { path, component }) {
+  return insert(model, component, null, null, lastChildPath(model, path));
+}
+
 function removeChild(rootProps, { path }) {
   var target = followPath(rootProps, path);
   return _removeChild(rootProps, target);
@@ -427,7 +430,6 @@ function dropLayoutIntoContainer(
   pos,
   source,
   target,
-  targetPosition,
   targetRect
 ) {
   const targetPath = getProp(target, "path");
@@ -601,7 +603,7 @@ function insert(component, source, into, before, after, size, targetRect) {
 
   if (finalStep && !oneMoreStepNeeded) {
     const isFlexBox = type === "Flexbox";
-    const [dim] = getManagedDimension(component.props.style);
+    const [dim] = getManagedDimension(getProps(component).style);
     //TODO how do we identify splitter width
     //TODO checj reiizeable to make sure a splitter will be present
     function assignSizes(rect, dim, size) {

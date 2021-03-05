@@ -8,8 +8,14 @@ export default {
   component: Stack,
 };
 
-export const FourTabs = () => (
-  <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>
+export const FourTabs = () => {
+
+  const createContent = (index) => 
+    <Component title={`Tab ${index}`} style={{ backgroundColor: "green", height: "100%" }} header />;
+  
+
+  return (
+  <Stack showTabs enableAddTab createNewChild={createContent} style={{ width: 800, height: 500 }} active={0} resizeable>
     <Component
       title="Rebecca"
       style={{ backgroundColor: "rebeccapurple" }}
@@ -23,7 +29,8 @@ export const FourTabs = () => (
       header
     />
   </Stack>
-);
+  )
+  };
 
 export const TabsWithinTabs = () => (
   <Stack showTabs style={{ width: 800, height: 500 }} active={0} resizeable>

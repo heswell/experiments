@@ -237,3 +237,40 @@ export const ComplexNestedLayout = () => (
 export const NestedDragContainerWithPalette = () => <Builder />;
 
 export const NestedMultiDragContainerWithPalette = () => <StackBuilder />;
+
+export const ScrollingLayout = () => (
+  <DraggableLayout >
+    <Flexbox style={{ width: "100vw", height: "100vh", flexDirection: "column" }}>
+      <View header title="Test 1" style={{ height: 100 }}>
+        <div style={{ backgroundColor: "yellow", height: "100%" }}>
+          <input defaultValue="just a test 1" />
+          <input defaultValue="just a test 2" />
+        </div>
+      </View>
+      <Flexbox style={{ flex: 1, flexDirection: "column", overflow: 'auto' }} resizeable>
+        <Flexbox
+          style={{ height: 1000, flexGrow: 0, flexShrink: 0, flexDirection: "row" }}
+          resizeable
+        >
+          <View header resizeable title="Test 2" style={{ flex: 1 }}>
+            <Component style={{ height: "100%", backgroundColor: "orange" }} />
+          </View>
+          <View header resizeable title="Test 4" style={{ flex: 1 }}>
+            <Component
+              style={{ height: "100%", backgroundColor: "rebeccapurple" }}
+            />
+          </View>
+        </Flexbox>
+        <View header resizeable title="Test 5" style={{ height: 500, flexShrink: 0, flexGrow: 0 }}>
+          <Component style={{ height: "100%", backgroundColor: "blue" }} />
+        </View>
+        <View header resizeable title="Test 6" style={{ flex: 1 }}>
+          <Component style={{ height: "100%", backgroundColor: "pink" }} />
+        </View>
+      </Flexbox>
+      <View style={{ height: 100 }}>
+        <Component style={{ height: "100%", backgroundColor: "blue" }} />
+      </View>
+    </Flexbox>
+  </DraggableLayout>
+);

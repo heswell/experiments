@@ -15,6 +15,16 @@ export function followPathToParent(source, path) {
   return followPath(source, path.replace(/.\d+$/, ""));
 }
 
+export function lastChildPath(source, target){
+  const container = followPath(source, target);
+  let isElement = React.isValidElement(container);
+  const children = isElement
+    ? React.Children.toArray(container.children)
+    : container.children;
+  const lastChild = children[children.length-1];  
+  return getProp(lastChild, "path");
+}
+
 export function containerOf(source, target) {
   if (target === source) {
     return null;

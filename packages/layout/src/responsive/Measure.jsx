@@ -6,15 +6,13 @@ const size = (value) =>
 
 export const useMeasure = (props) => {
   return useState({
-    assignedHeight: size(props.style?.height ?? props.height),
-    height: assignedHeight,
-    assignedWidth: size(props.style?.width ?? props.width),
-    width: assignedWidth
+    height: size(props.style.height),
+    width: size(props.style.width)
   });
 };
 
 // TODO need to listen for resize events if size is auto in any direction
-export const Measure = ({ height, width, onMeasure }) => {
+const Measure = ({ height, width, onMeasure }) => {
   const el = useRef(null);
   const [{ h, w }, setSize] = useState({ h: height, w: width });
   useLayoutEffect(() => {
@@ -34,3 +32,4 @@ export const Measure = ({ height, width, onMeasure }) => {
   );
 };
 
+export default Measure;

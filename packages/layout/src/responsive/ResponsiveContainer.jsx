@@ -1,6 +1,6 @@
 import React, { forwardRef, useRef } from 'react';
 import cx from 'classnames';
-import useBreakpoints from './useBreakPoints';
+import useBreakpoints from './useBreakpoints';
 import { useForkRef } from '../utils';
 
 const ResponsiveContainer = forwardRef(function ResponsiveContainer(

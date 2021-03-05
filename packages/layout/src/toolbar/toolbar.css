@@ -1,8 +1,176 @@
-.Toolbar {
+.hwToolbar {
+  --hw-space: 4px;
+  --hw-toolbar-color: black;
+  --hw-toolbar-depth: 36px;
+  --hw-toolbar-separator-color: #ccc;
+}
+
+.hwToolbar,
+.Tooltray {
+  --uitk-toolbar-spacing: var(--hw-space);
+
+  --three-qtr-spacing: calc(var(--uitk-toolbar-spacing) * 0.75);
+  --label-margin-right: var(--uitk-toolbar-spacing);
+  align-items: flex-start;
+  box-sizing: border-box;
+  color: var(--uitk-toolbar-color);
+  font-size: var(--uitk-font-size-regular);
+  justify-content: flex-start;
+  overflow: hidden;
+  position: relative;
+  font-family: var(--uitk-font-family);
+  min-width: 28px;
+}
+
+.hwToolbar-vertical {
+  --uitk-toolbarfield-height: auto;
+  --uitk-toolbarfield-spacing: calc(var(--uitk-toolbar-spacing) * 0.5) 0;
+  --uitk-toolbarfield-width: var(--uitk-toolbar-depth);
+  height: 100%;
+  width: var(--uitk-toolbar-depth);
+}
+
+.hwToolbar-horizontal {
+  --uitk-toolbarfield-height: var(--uitk-toolbar-depth);
+  --uitk-toolbarfield-spacing: 0 calc(var(--uitk-toolbar-spacing) * 0.5);
+  --uitk-toolbarfield-width: auto;
+  height: var(--uitk-toolbar-depth, 36px);
+  padding: 0 var(--uitk-toolbar-spacing);
+}
+
+.hwToolbar-vertical .Tooltray {
+  width: var(--hw-toolbar-depth);
+}
+
+.hwToolbar-horizontal .Tooltray {
+  height: var(--hw-toolbar-depth);
+}
+
+.hwToolbar-vertical {
+  padding: var(--uitk-toolbar-spacing) 0;
+}
+
+.hwToolbar.sm {
+  background-color: pink;
+}
+
+.hwToolbar.md {
+  background-color: yellow;
+}
+
+.hwToolbar .Responsive-inner {
+  align-items: flex-start;
+  flex: 1;
+  flex-wrap: wrap; /* switch to wrap when collapse exhausted */
+  justify-content: inherit;
+}
+
+.Responsive-inner {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.hwToolbar-horizontal .Responsive-inner {
   display: flex;
+  flex-direction: row;
+  min-height: var(--hw-toolbar-depth);
+}
+.hwToolbar-vertical .Responsive-inner {
+  display: inline-flex;
+  flex-direction: column;
+  max-height: 100%;
 }
 
-.Tooltray[data-align="right"] {
-  margin-left: auto;
+/* .hwToolbar .Tool {
+  border: solid 1px lightgrey;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 3px;
+} */
+
+.Responsive-inner > .Icon {
+  border: solid 1px lightgrey;
+  box-sizing: border-box;
+  height: 22px;
+  padding: 1px;
+  width: 22px;
 }
 
+.Responsive-inner > [data-pad-left] {
+  margin-left: auto !important;
+}
+.Responsive-inner > [data-pad-right] {
+  margin-right: auto !important;
+}
+
+.Responsive-inner > .Icon {
+  margin: 5px 3px;
+}
+
+[data-overflowed] > .Responsive-inner {
+  flex-wrap: wrap !important;
+}
+
+.hwToolbar > * {
+  display: inline-block;
+}
+
+.hwToolbar .Tooltray > .Icon {
+  margin: 5px 0;
+  padding: 1px 3px;
+  width: 26px;
+}
+
+.hwToolbar > .Responsive-inner[data-collapsing='true'] {
+  flex-wrap: nowrap !important;
+}
+
+[data-collapsible='dynamic'] {
+  flex-shrink: 0;
+  background-color: rgba(255, 0, 0, 0.15);
+}
+
+[data-collapsible='dynamic'][data-collapsing='true'] {
+  flex-shrink: 1;
+  min-width: calc(var(--uitk-size-regular) + var(--hw-space));
+  background-color: rgba(255, 255, 0.3);
+}
+
+[data-collapsible='dynamic'][data-collapsed='true'] {
+  flex-shrink: 0;
+  flex-grow: 0;
+  /* do we need to allow for standard spacing ? */
+  flex-basis: calc(var(--uitk-size-regular) + var(--hw-space));
+  background-color: rgba(255, 125, 0.1);
+}
+
+.hwToolbar .Tooltray .Icon:not(:first-child) {
+  border-left: none;
+}
+
+/* .Tooltray:not(:last-child) > :last-child {
+  margin-right: var(--uitk-toolbar-spacing);
+  padding-right: var(--uitk-toolbar-spacing);
+} */
+
+.OverflowContainer {
+  background-color: white;
+}
+
+.Popup .hwToolbar {
+  min-width: 80px;
+  height: auto;
+}
+
+.Popup .hwToolbar .Tooltray {
+  white-space: nowrap;
+}
+
+.hwToolbar .tool-text {
+  width: 80px;
+  border-radius: 0;
+  border: solid 1px darkgrey;
+  border: none;
+}

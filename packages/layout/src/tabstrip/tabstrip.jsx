@@ -1,172 +1,186 @@
-import React, { useState, useRef, useCallback } from 'react';
-import cx from 'classnames';
-import { PopupService, ContextMenu, MenuItem } from '@heswell/popup';
-import './tabstrip.css';
+import React, { useLayoutEffect, useRef } from 'react';
+import classnames from 'classnames';
+import useTabstrip from './useTabstrip';
+import {AddButton} from "../action-buttons";
+import { OverflowMenu, useOverflowObserver } from '../responsive';
+import ActivationIndicator from './ActivationIndicator';
 
-const OVERFLOW_WIDTH = 24;
-const noop = () => {}
+import './Tabstrip.css';
 
-export const Tab = ({allowClose=true, idx, label, isSelected, onClick, onClose, onMouseDown}) => {
+// const AddTabButton = ({ className, title, ...props }) => {
+//   return (
+//     <Button
+//       className={classnames('tab-add', className)}
+//       {...props}
+//       variant="secondary"
+//       tabIndex={0}
+//     >
+//       <Icon name="add" accessibleText={title} />
+//     </Button>
+//   );
+// };
 
-    // don't use useCallback
-    const handleClick = e => {
-        e.preventDefault();
-        onClick(e, idx);
-    };
+const Tabstrip = (props) => {
+  const root = useRef(null);
 
-    const handleMouseDown = e => {
-        onMouseDown(e, idx);
-    };
-    
-    const handleClose = e => {
-        e.stopPropagation();
-        onClose(idx);
-    };
-
-    return (
-        <li className={cx('Tab', {'active': isSelected})}
-            onClick={handleClick}
-            onMouseDown={handleMouseDown}>
-            <a href="#" className="tab-caption" data-idx={idx}>{label}</a>
-            {allowClose &&
-                <i className='material-icons close' onClick={handleClose}>close</i>}
-        </li>
-    );
-
-}
-
-const TabstripOverflow = ({onClick}) =>
-    <div className='TabstripOverflow' onClick={onClick} />;
-
-export default function Tabstrip({
+  const {
+    centered = false,
     children,
-    className,
-    onMouseDown,
-    onChange,
+    className: classNameProp,
+    defaultValue,
+    enableAddTab,
+    keyBoardActivation: _1,
+    onAddTab,
+    onDeleteTab: _2,
+    // doesn't feel like a great prop name ...
+    noBorder = false,
+    orientation = 'horizontal',
+    // don't like this prop name either ...
+    overflowMenu = true,
+    showActivationIndicator = true,
     style,
-    value=0
-}){
+    title,
+    value: valueProp,
+    ...rootProps
+  } = props;
 
-    const el = useRef(null);
-    const [overflowing, setOverflowing] = useState(false);
+  const childCount = useRef(React.Children.count(children));
+  const classRoot = 'hwTabstrip';
 
-    function showOverflow(){
+  const [
+    innerContainerRef,
+    overflowedItems,
+    ,
+    resetOverflow,
+  ] = useOverflowObserver(orientation, 'Tabstrip');
 
+  const { activateTab, tabProps, tabRefs, value } = useTabstrip(props, root);
+  const selectedIndex = useRef(value ?? 0);
+
+  const handleOverflowChange = (e, tab) => {
+    activateTab(e, tab.index);
+  };
+
+  const handleLabelEdited = (evt, index, label) => {
+    // TODO need to redraw activation indicatr
+    console.log(`Label Edited [${index}] = ${label}`);
+  };
+
+  const handleTabMouseDown = (e, index) => {
+    if (rootProps.onMouseDown) {
+      e.stopPropagation();
+      rootProps.onMouseDown(e, index);
     }
+  };
 
-    const tabs = children.map((child, idx) => {
-        const isSelected = value === idx;
-        return React.cloneElement(child, {
-                idx,
-                isSelected,
-                onClick: isSelected ? noop : onChange,
-                onMouseDown
-        });
+  // shouldn't we use ref for this ?
+  useLayoutEffect(() => {
+    // We don't care about changes to overflowedItems here, the overflowObserver
+    // always does the right thing. We only care about changes to selected tab
+    if (selectedIndex.current !== value && overflowMenu) {
+      // We might want to do this only if the selected tab is overflowed ?
+      resetOverflow();
+      selectedIndex.current = value;
+    }
+  }, [overflowMenu, resetOverflow, value]);
+
+  useLayoutEffect(() => {
+    if (React.Children.count(children) !== childCount.current) {
+      childCount.current = React.Children.count(children);
+      resetOverflow();
+    }
+  }, [children, resetOverflow]);
+
+  const renderContent = () => {
+    const tabs = [];
+
+    React.Children.toArray(children).forEach((child, index) => {
+      const selected = index === value;
+      const onLabelEdited = child.props.editable
+        ? handleLabelEdited
+        : undefined;
+      const overflowed =
+        overflowedItems.findIndex((item) => item.index === index) !== -1;
+      tabs.push(
+        React.cloneElement(child, {
+          index,
+          ...tabProps,
+          'data-index': index,
+          'data-priority': selected ? 1 : 3,
+          'data-overflowed': overflowed ? true : undefined,
+          onLabelEdited,
+          onMouseDown: handleTabMouseDown,
+          orientation,
+          ref: tabRefs[index],
+          selected,
+        }),
+      );
     });
 
-    return (
-        <div ref={el}
-            className={cx('Tabstrip', className, {overflowing})}
-            style={style}
-            onMouseDown={onMouseDown}>
-            <div className="tabstrip-inner-sleeve">
-                <ul className="tabstrip-inner">{tabs}</ul>
-            </div>
-            {overflowing && <TabstripOverflow onClick={showOverflow} />}
-        </div>
-    );
-}
-
-class XXXTabstrip extends React.Component {
-
-    componentDidMount() {
-        this.checkOverflowState();
+    if (overflowMenu) {
+      tabs.push(
+        <OverflowMenu
+          className={`${classRoot}-overflowMenu`}
+          data-priority={0}
+          data-index={tabs.length}
+          data-overflow-indicator
+          key="overflow"
+          onChange={handleOverflowChange}
+          source={overflowedItems}
+        />,
+      );
     }
 
-    componentDidUpdate() {
-        this.checkOverflowState();
-        // only necesary if selection has changed or tabstrip has resized
-        // make sure selected tab is in view 
-        this.ensureSelectedTabisVisible();
-
+    if (enableAddTab) {
+      tabs.push(
+        <AddButton
+          data-priority={2}
+          data-index={tabs.length}
+          key="Tabstrip-addButton"
+          onClick={onAddTab}
+          title={title}
+        />,
+      );
     }
 
-    checkOverflowState() {
-        const freeSpace = this.measureFreeSpace();
-        const {overflowing} = this.state;
-        if (freeSpace < 0 && overflowing === false) {
-            this.setState({ overflowing: true });
-        } else if (freeSpace >= 0 && overflowing === true) {
-            this.setState({ overflowing: false });
-        }
-    }
+    return tabs;
+  };
 
-    ensureSelectedTabisVisible() {
+  console.log(`Tabstrip render`);
 
-        const tabstripInner = this.el.querySelector('.tabstrip-inner');
-        const activeTab = tabstripInner.querySelector('.active.Tab');
-        if (!activeTab) {
-            // eg if dragging;
-            return;
-        }
+  const selectedTabOverflowed = overflowedItems.some(
+    (item) => item.index === value,
+  );
+  const className = classnames(classRoot, `${classRoot}-${orientation}`, {
+    [`${classRoot}-centered`]: centered,
+  });
+  return (
+    <div
+      {...rootProps}
+      className={className}
+      ref={root}
+      role="tablist"
+      style={style}
+    >
+      <div
+        className={`${classRoot}-inner`}
+        ref={innerContainerRef}
+        style={{ lineHeight: '36px' }}
+      >
+        {renderContent()}
+      </div>
+      {showActivationIndicator ? (
+        <ActivationIndicator
+          hideThumb={selectedTabOverflowed}
+          hideBackground={noBorder}
+          orientation={orientation}
+          tabRef={tabRefs[value ?? 0]}
+        />
+      ) : null}
+    </div>
+  );
+};
 
-        const tsBox = this.el.getBoundingClientRect();
-        const tbBox = activeTab.getBoundingClientRect();
-        const ulBox = tabstripInner.getBoundingClientRect();
+Tabstrip.displayName = 'Tabstrip';
 
-        const tbOffStageRight = Math.floor(tsBox.right - tbBox.right);
-        const ulOffStageLeft = Math.floor(ulBox.left - tsBox.left);
-        const overflowing = ulBox.right > tbBox.right;
-        let translateX;
-
-        if (ulOffStageLeft === 0 && tbOffStageRight < 0) {
-            translateX = ulOffStageLeft + tbOffStageRight - OVERFLOW_WIDTH;
-            tabstripInner.style.transform = `translate(${translateX}px,0px)`;
-        } else if (ulOffStageLeft < 0 && tbOffStageRight === OVERFLOW_WIDTH) {
-            // no action necessary
-        } else if (ulOffStageLeft < 0 && tbOffStageRight < OVERFLOW_WIDTH) {
-            translateX = ulOffStageLeft + tbOffStageRight - OVERFLOW_WIDTH;
-            tabstripInner.style.transform = `translate(${translateX}px,0px)`;
-        } else if (overflowing && tbOffStageRight < OVERFLOW_WIDTH) {
-            translateX = tbOffStageRight - OVERFLOW_WIDTH;
-            tabstripInner.style.transform = `translate(${translateX}px,0px)`;
-        } else if (ulOffStageLeft < 0) {
-            translateX = Math.min(0, ulOffStageLeft + tbOffStageRight - OVERFLOW_WIDTH);
-            tabstripInner.style.transform = `translate(${translateX}px,0px)`;
-        }
-    }
-
-    measureFreeSpace() {
-        const tabstripInner = this.el.querySelector('.tabstrip-inner');
-        return this.el.clientWidth - tabstripInner.clientWidth;
-    }
-
-    showOverflow(){
-        const overflow = this.el.querySelector('.TabstripOverflow')
-        const { right, bottom } = overflow.getBoundingClientRect();
-        const {children: tabs} = this.props;
-        const menuItems = tabs.map(({props: {text}}) =>
-            <MenuItem key={text} action='setActiveTab' label={text} data={text} />);
-
-        PopupService.showPopup({
-            left: right,
-            top: bottom,
-            position: 'top-bottom-right-right',
-            component: (
-                <ContextMenu component={this} doAction={(action, data) => this.handleContextMenuAction(action, data)}
-                    left='auto' bottom='auto' right={0} top={0}>
-                    {menuItems}
-                </ContextMenu>
-            )
-        });
-    }
-
-    handleContextMenuAction(action, data){
-        if (action === 'setActiveTab'){
-            const idx = this.props.children.findIndex(tab => tab.props.text === data);
-            if (idx !== -1) {
-                this.handleTabClick(idx);
-            }
-        }
-    }
-}
+export default Tabstrip;

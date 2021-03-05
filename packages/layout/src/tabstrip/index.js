@@ -1,2 +1,2 @@
-export {default as Tabstrip} from "./tabstrip";
-export {Tab} from "./tabstrip";
+export { default as Tabstrip } from "./Tabstrip";
+export { default as Tab } from "./Tab";

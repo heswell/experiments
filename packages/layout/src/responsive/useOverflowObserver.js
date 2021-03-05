@@ -411,14 +411,17 @@ export default function useOverflowObserver(
 
       const target = getElementForItem(ref, collapsingItem);
       const dimension = horizontalRef.current ? 'width' : 'height';
-      const { [dimension]: size } = target.getBoundingClientRect();
 
       if (containerHasGrown && collapsedItem) {
+        const size = measureNode(target, dimension);
         // We don't restore a collapsing item unless there is at least one collapsed item
         if (collapsedItem && size === collapsingItem.size) {
           restoreCollapsingItem(collapsingItem, target);
         }
       } else {
+        // Note we are going to compare width with minWidth. Margin is ignored here, so we
+        // use getBoundingClientRect rather than measureNode
+        const { [dimension]: size } = target.getBoundingClientRect();
         const style = getComputedStyle(target);
         const minSize = parseInt(style.getPropertyValue(`min-${dimension}`));
         if (size === minSize) {

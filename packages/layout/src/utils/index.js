@@ -5,4 +5,6 @@ export * from "./typeOf";
 export { default as componentFromLayout } from "./componentFromLayout";
 export { default as memoizeOne } from "./memoizeOne";
 export * from "./refUtils";
+export { default as useChildRefs } from './useChildRefs';
+export { default as useControlled } from './useControlled';
 export { default as useId } from "./useId";

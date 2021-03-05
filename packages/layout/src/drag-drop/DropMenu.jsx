@@ -1,6 +1,6 @@
 import React from "react";
 import cx from "classnames";
-import { Column2A, Column2B } from "../icons";
+// import { Column2A, Column2B } from "../icons";
 import "./DropMenu.css";
 
 export function computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
@@ -16,9 +16,9 @@ export function computeMenuPosition(dropTarget, offsetTop = 0, offsetLeft = 0) {
 
 const getIcon = (i) => {
   if (i === 0) {
-    return <Column2A />;
+    // return <Column2A />;
   } else {
-    return <Column2B />;
+    // return <Column2B />;
   }
 };
 

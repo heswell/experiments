@@ -1,0 +1,19 @@
+.ToolbarField {
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--uitk-toolbarfield-height);
+  display: flex;
+  justify-content: center;
+  margin: var(--uitk-toolbarfield-spacing);
+  width: var(--uitk-toolbarfield-width);
+}
+
+.ToolbarField + .Tooltray:before {
+  background: var(--uitk-toolbar-separator-color, var(--uitk-grey60));
+  height: 100%;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+}

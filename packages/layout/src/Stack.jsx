@@ -1,7 +1,7 @@
 import React from "react";
 import { Tab, Tabstrip } from "./tabstrip";
 import { Toolbar, Tooltray } from "./toolbar";
-import { Close, Minimize, Maximize } from "./icons";
+import { CloseButton, MinimizeButton, MaximizeButton } from "./action-buttons";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";
 import { Action } from "./layout-action";
@@ -16,9 +16,14 @@ import {
 
 import "./Stack.css";
 
+const defaultCreateNewChild = (index) => (
+  <Component title={`Tab ${index}`} style={{ backgroundColor: "pink" }} />
+)
+
 const Stack = (inputProps) => {
   const [props, ref, layoutDispatch] = useLayout("Stack", inputProps);
   const {
+    createNewChild=defaultCreateNewChild,
     enableAddTab,
     id,
     keyBoardActivation = "automatic",
@@ -45,10 +50,12 @@ const Stack = (inputProps) => {
     });
   };
 
-  const handleAddTab = (e, tabIndex) => {
+  const handleAddTab = (e, tabIndex=React.Children.count(props.children)) => {
+    const component = createNewChild(tabIndex);
     layoutDispatch({
       type: Action.ADD,
-      component: <Component style={{ backgroundColor: "pink" }} />,
+      path: props.path,
+      component,
     });
   };
 
@@ -73,6 +80,7 @@ const Stack = (inputProps) => {
         id={`${id}-${idx}`}
         label={child.props.title ?? `Page ${idx+1}`}
         deletable={child.props.removable}
+        editable={true} // renamable ?
       />
     ));
 
@@ -98,9 +106,9 @@ const Stack = (inputProps) => {
               {renderTabs()}
             </Tabstrip>
             <Tooltray data-align="right" className="layout-buttons">
-              <Minimize />
-              <Maximize />
-              <Close />
+              <MinimizeButton />
+              <MaximizeButton />
+              <CloseButton />
             </Tooltray>
           </Toolbar>
         ) : null}
