@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@heswell/data-store": "^2.0.4",
-    "@heswell/utils": "^2.0.12"
+    "@heswell/utils": "latest"
   },
   "devDependencies": {
     "rollup": "1.29.0",
