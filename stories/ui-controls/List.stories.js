@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 
 import { List, ListItem } from '@heswell/ui-controls';
 import {usa_states} from './usa_states';
 
-const StyledControl = styled.div`
-  font-family: Roboto;
-  width: 150px;
-  height: 400px;
-  border: solid 1px #ccc;
-  position: relative;
-`;
 
 export default {
   title: 'UI Controls/List',
@@ -23,12 +15,12 @@ export const SimpleList = () => {
   return (
     <>
       <input type="text" />
-      <StyledControl>
+      <div style={{fontFamily: "Roboto", width: 150, height: 400, position: 'relative', border: 'solid 1px #ccc'}}>
         <List
           values={usa_states}
           onChange={value => setSelectedValue(value)}
         />
-      </StyledControl>
+      </div>
       <input type="text" />
       <div>{usa_states[selectedValue]}</div>
     </>
@@ -41,7 +33,7 @@ export const DeclarativeList = () => {
   return (
     <>
       <input type="text" />
-      <StyledControl>
+      <div style={{fontFamily: "Roboto", width: 150, height: 400, position: 'relative', border: 'solid 1px #ccc'}}>
         <List
           onChange={value => setSelectedValue(value)}
         >
@@ -50,7 +42,7 @@ export const DeclarativeList = () => {
           <ListItem>Value 3</ListItem>
           <ListItem>Value 4</ListItem>
         </List>
-      </StyledControl>
+      </div>
       <input type="text" />
       <div>{usa_states[selectedValue]}</div>
     </>

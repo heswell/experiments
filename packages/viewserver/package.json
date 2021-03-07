@@ -19,7 +19,7 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data-store": "^2.0.4",
+    "@heswell/data-store": "latest",
     "@heswell/utils": "latest"
   },
   "devDependencies": {

@@ -1,15 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { DatePicker } from '@heswell/ui-controls';
-import {usa_states} from './usa_states';
 
-const StyledControl = styled.div`
-  width: 150px;
-  height: 24px;
-  border: solid 1px #ccc;
-  position: relative;
-`;
 
 export default {
   title: 'UI Controls/DatePicker',
@@ -19,9 +11,9 @@ export default {
 export const SimpleDatePicker = () =>
   <>
     <input type="text" defaultValue="start" />
-    <StyledControl>
+    <div style={{width: 150, height: 24, position: 'relative', border: 'solid 1px #ccc'}}>
       <DatePicker />
-    </StyledControl>
+    </div>
     <input type="text" defaultValue="end" />
   </>
 
