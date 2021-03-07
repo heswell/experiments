@@ -2,7 +2,6 @@ import React from "react";
 // import { TerraceAlignment } from "../components/alignment-tools/terrace-with-alignment";
 
 import {
-  Close as CloseAction,
   Flexbox,
   Stack,
   View,
@@ -19,7 +18,6 @@ export default {
 
 const StandardToolbar = () => (
   <Toolbar style={{ justifyContent: "flex-end" }} draggable showTitle>
-    <CloseAction action="close" />
   </Toolbar>
 );
 registerComponent("StandardToolbar", StandardToolbar);

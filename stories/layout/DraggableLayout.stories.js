@@ -3,7 +3,6 @@ import React from "react";
 import {
   registerComponent,
   useLayoutContext,
-  Close as CloseAction,
   Component,
   Flexbox,
   Stack,
@@ -28,7 +27,6 @@ export default {
 
 const StandardToolbar = () => (
   <Toolbar style={{ justifyContent: "flex-end" }} draggable showTitle>
-    <CloseAction action="close" />
   </Toolbar>
 );
 registerComponent("StandardToolbar", StandardToolbar);
@@ -202,7 +200,6 @@ export const ComplexNestedLayout = () => (
                   <input type="text" className="tool-text" value="text 2" />
                   <input type="text" className="tool-text" value="text 3" />
                   <input type="text" className="tool-text" value="text 4" /> */}
-                  <CloseAction />
                 </Toolbar>
                 <Component style={{ backgroundColor: "yellow", flex: 1 }} />
               </View>
