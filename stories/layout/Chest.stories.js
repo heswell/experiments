@@ -24,7 +24,16 @@ const InlineDrawer = ({ inline, position, peekaboo }) => {
         peekaboo={peekaboo}
         position={position}
         title="Rebecca"
-      />
+      >
+        <div style={{padding: 6}}>
+          <div>Item 1</div>
+          <div>Item 2</div>
+          <div>Item 3</div>
+          <div>Item 4</div>
+          <div>Item 5</div>
+          <div>Item 6</div>
+        </div>
+        </Drawer>
       <Component
         title="Cornflower"
         style={{ backgroundColor: "cornflowerblue", height: "100%", width: "100%" }}

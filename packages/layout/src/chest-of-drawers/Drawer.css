@@ -26,6 +26,10 @@
   background-color: var(--drawer-bg);
 }
 
+.hwDrawer:not(.hwDrawer-open) .hwDrawer-liner > * {
+  display: none;
+}
+
 .hwDrawer-left .hwDrawer-liner, .hwDrawer-right .hwDrawer-liner {
   height: 100%;
   transition: width;
