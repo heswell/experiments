@@ -6,6 +6,8 @@
   flex-basis: 0;
   flex-grow: 1;
   flex-shrink: 1;
+  min-width: 0;
+  min-height: 0;
 }
 
 .hwDrawer-peekaboo {
@@ -21,7 +23,7 @@
 }
 
 .hwDrawer-liner {
-  background-color: var(--hw-drawer-bg);
+  background-color: var(--drawer-bg);
 }
 
 .hwDrawer-left .hwDrawer-liner, .hwDrawer-right .hwDrawer-liner {

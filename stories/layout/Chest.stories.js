@@ -3,7 +3,7 @@ import { ActionButton } from "@adobe/react-spectrum";
 import ChevronDoubleLeft from "@spectrum-icons/workflow/ChevronDoubleLeft";
 import ChevronDoubleRight from "@spectrum-icons/workflow/ChevronDoubleRight";
 
-import { Component, Chest, Drawer, Flexbox, View } from "@heswell/layout";
+import { Component, Chest, Drawer, Flexbox, Stack, View } from "@heswell/layout";
 import "../story.css";
 
 export default {
@@ -84,6 +84,44 @@ export const BottomOverlayDrawer = () =>
   <InlineDrawer position="bottom" />;
 
 
+export const LeftInlineDrawerStack = () => {
+  const [open, setOpen] = useState(false);
+  const handleClick = () => setOpen(!open);
+  return (
+    <Flexbox style={{ width: 900, height: 700, flexDirection: 'column' }}>
+      <Chest style={{ flex: 1, "--hw-chest-bg": "inherit" }}>
+        <Drawer
+          inline
+          peekaboo
+          onClick={handleClick}
+          open={open}
+          position="left"
+          title="Rebecca"
+        >
+        </Drawer>
+        <Stack showTabs style={{ width: '100%', height: '100%' }}>
+          <Component
+            title="Cornflower"
+            resizeable
+            style={{ backgroundColor: "cornflowerblue", flex: 1 }}
+            header
+            onClick={handleClick}
+          />
+          <Component
+            title="Rebeccas"
+            resizeable
+            style={{ backgroundColor: "rebeccapurple", flex: 1 }}
+            header
+            onClick={handleClick}
+          />
+        </Stack>
+      </Chest>
+
+      <div style={{ height: 40, backgroundColor: '#ccc' }} />
+    </Flexbox>
+  )
+
+}
 export const LeftInlineDrawerFlexbox = () => {
   const [open, setOpen] = useState(false);
   const handleClick = () => setOpen(!open);

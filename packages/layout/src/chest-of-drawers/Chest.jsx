@@ -8,10 +8,12 @@ import { registerComponent } from "../registry/ComponentRegistry";
 import "./Chest.css";
 
 const isDrawer = component => component.type === Drawer; 
-const isVertical = component => component.props?.position.match(/top|bottom/); 
+const isVertical = ({props: {position='left'}}) => 
+  position.match(/top|bottom/); 
+
 
 const Chest = (inputProps) => {
-  const [props, ref, layoutDispatch, isRoot] = useLayout("Flexbox", inputProps);
+  const [props, ref, layoutDispatch, isRoot] = useLayout("Chest", inputProps);
   const {children, className: classNameProp, id, style} = props;
   const classBase = "hwChest"
   const [drawers,content] = partition(React.Children.toArray(children), isDrawer)

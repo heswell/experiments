@@ -1,5 +1,6 @@
 .hwChest {
-  --hw-drawer-bg: rgba(0, 255, 0, 0.2);
+  --chest-bg: var(--hw-chest-bg, rgba(255, 0, 0, 0.3)); 
+  --drawer-bg: var(--hw-drawer-bg, rgba(0, 255, 0, 0.2));
   --hw-drawer-size: 200px;
   --hw-drawer-peek-size: 32px;
   --hw-drawer-transition-duration: 0.4s;
@@ -17,7 +18,7 @@
 }
 
 .hwChest-content {
-  background-color: rgba(255, 0, 0, 0.3);
+  background-color: var(--chest-bg);
   flex-grow: 1;
   flex-shrink: 1;
   position: relative;
@@ -27,10 +28,10 @@
 }
 
 .hwChest-horizontal .hwChest-content {
-  flex-basis: 100vw;
+  flex-basis: 100%;
 }
 
 .hwChest-vertical .hwChest-content {
-  flex-basis: 100vh;
+  flex-basis: 100%;
 }
 
