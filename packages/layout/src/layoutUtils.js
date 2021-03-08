@@ -82,6 +82,7 @@ function getChildLayoutProps(type, props, path, parentType, previousLayout) {
     parentType,
     previousLayout
   );
+
   const children = getLayoutChildren(
     type,
     props.children,
@@ -92,18 +93,28 @@ function getChildLayoutProps(type, props, path, parentType, previousLayout) {
 }
 
 function getLayoutChildren(type, children, path = "0", previousChildren) {
+
   return isContainer(type) /*|| isView(type)*/
     ? React.Children.map(children, (child, i) => {
-        const [layoutProps, children] = getChildLayoutProps(
-          typeOf(child),
-          child.props,
-          `${path}.${i}`,
-          type,
-          previousChildren?.[i]
-        );
-        return React.cloneElement(child, layoutProps, children);
+        const childType = typeOf(child);
+        const previousType = typeOf(previousChildren?.[i]);
+        if (!previousType || childType === previousType){
+          const [layoutProps, children] = getChildLayoutProps(
+            childType,
+            child.props,
+            `${path}.${i}`,
+            type,
+            previousChildren?.[i]
+          );
+          return React.cloneElement(child, layoutProps, children);
+ 
+        } else {
+          //TODO is this always correct ?
+          return previousChildren[i];
+        }
       })
-    : children;
+      // TODO should we check the types of children ?
+    : previousChildren ?? children;
 }
 
 const getStyle = (type, props, parentType) => {

@@ -505,15 +505,15 @@ export default function useOverflowObserver(
       containerSizeRef.current = size;
 
       // if (label === 'Tabstrip') {
-      console.log(
-        `%cresizeHandler<${label}>\n%ccontainer grown\t${
-          containerHasGrown ? '✓' : '✗'
-        }\noverflowDetected\t${
-          overflowDetected ? '✓' : '✗'
-        }\ncontainerDepth=${depth} containerSize=${size}\n`,
-        'color:brown;font-weight: bold;',
-        'color:brown;',
-      );
+      // console.log(
+      //   `%cresizeHandler<${label}>\n%ccontainer grown\t${
+      //     containerHasGrown ? '✓' : '✗'
+      //   }\noverflowDetected\t${
+      //     overflowDetected ? '✓' : '✗'
+      //   }\ncontainerDepth=${depth} containerSize=${size}\n`,
+      //   'color:brown;font-weight: bold;',
+      //   'color:brown;',
+      // );
       // }
       if (containerHasGrown && size === minSizeRef.current) {
         // ignore

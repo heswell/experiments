@@ -13,6 +13,7 @@ import {
 
 import Builder from "../components/layout-builder/layout-builder";
 import StackBuilder from "../components/layout-builder/layout-stack-builder";
+import DrawerStackBuilder from "../components/layout-builder/drawer-stack-builder";
 import { Brown, Red } from "./sample-components";
 import Palette from "../components/palette/Palette";
 
@@ -234,6 +235,8 @@ export const ComplexNestedLayout = () => (
 export const NestedDragContainerWithPalette = () => <Builder />;
 
 export const NestedMultiDragContainerWithPalette = () => <StackBuilder />;
+
+export const NestedMultiDragContainerWithPaletteDrawer = () => <DrawerStackBuilder />;
 
 export const ScrollingLayout = () => (
   <DraggableLayout >

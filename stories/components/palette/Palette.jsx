@@ -24,7 +24,7 @@ const getDefaultComponents = (dispatchViewAction) =>
         <View header resizeable title="Blue Monday">
           <Component name="Blue"
             style={{
-              backgroundColor: "rgba(0,0,255,0.2)",
+              backgroundColor: "cornflowerblue",
               height: "100%",
             }}
           />
@@ -37,7 +37,7 @@ const getDefaultComponents = (dispatchViewAction) =>
         <View header resizeable title="Transmission">
           <Component name="Grey"
             style={{
-              backgroundColor: "rgba(0,255,255,0.2)",
+              backgroundColor: "brown",
               height: "100%",
             }}
           />
@@ -50,7 +50,7 @@ const getDefaultComponents = (dispatchViewAction) =>
         <View header resizeable title="Shot by both sides">
           <Component name="Green"
             style={{
-              backgroundColor: "rgba(255,255,0,0.2)",
+              backgroundColor: "green",
               height: "100%",
             }}
           />
