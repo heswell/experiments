@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from "classnames";
 
 import "./Drawer.css";
@@ -6,13 +6,16 @@ import "./Drawer.css";
 const Drawer = ({
   children,
   className: classNameProp,
-  open, 
-  position = "left", 
-  inline, 
+  clickToOpen,
+  open: openProp = false,
+  position = "left",
+  inline,
+  onClick,
   peekaboo = false,
   ...props
 }) => {
 
+  const [open, setOpen] = useState(openProp);
   const classBase = "hwDrawer";
 
   const className = cx(classBase, classNameProp, `${classBase}-${position}`, {
@@ -22,11 +25,21 @@ const Drawer = ({
     [`${classBase}-peekaboo`]: peekaboo
   });
 
+  const toggleDrawer = () => {
+    setOpen(!open);
+  }
+
+  const handleClick = clickToOpen
+    ? toggleDrawer
+    : onClick;
+
   return (
-    <div {...props} className={className}>
+    <div {...props} className={className} onClick={handleClick}>
       <div className={`${classBase}-liner`}>
-        {children}
+        <div className={`${classBase}-content`}>
+          {children}
         </div>
+      </div>
     </div>
   )
 }

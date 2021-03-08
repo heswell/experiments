@@ -26,9 +26,6 @@ export default function DrawerStackBuilder({ width = 800, height = 1000 }) {
     selectedId: null
   })
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const toggleDrawer = () => setDrawerOpen(!drawerOpen);
-
   const onLayoutModel = layoutModel => {
     console.log({ layoutModel })
     // setState(prevState => ({
@@ -73,8 +70,8 @@ export default function DrawerStackBuilder({ width = 800, height = 1000 }) {
       <Flexbox className="LayoutBuilder" style={{ flexDirection: "column", width: '100%', height: '100%' }}>
         <div style={{ height: 60, borderBottom: 'solid 1px #ccc' }} />
         <Chest style={{ flex: 1 }}>
-          <Drawer className="builder-top" peekaboo position="left" open={drawerOpen} inline onClick={toggleDrawer}>
-            <Palette orientation="vertical" style={{ backgroundColor: 'inherit' }} />
+          <Drawer clickToOpen peekaboo position="left" inline>
+            <Palette orientation="vertical" style={{ backgroundColor: 'inherit', padding: '0 6px' }} />
           </Drawer>
           <DraggableLayout style={{ width: '100%', height: '100%' }} dropTarget onLayoutModel={onLayoutModel}>
             <Stack showTabs style={{ width: '100%', height: '100%' }}>

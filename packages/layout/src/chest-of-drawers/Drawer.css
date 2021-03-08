@@ -24,11 +24,27 @@
 
 .hwDrawer-liner {
   background-color: var(--drawer-bg);
+  overflow: hidden;
+  position: relative;
 }
 
-.hwDrawer:not(.hwDrawer-open) .hwDrawer-liner > * {
-  display: none;
+.hwDrawer-content {
+  overflow: hidden;
+  position: absolute;
+  top:0;
+  right: var(--hw-drawer-peek-size);
+  transition: right;
+  transition-duration: var(--hw-drawer-transition-duration);
+  width: 100%;
 }
+
+.hwDrawer-open .hwDrawer-content {
+  right: 0;
+}
+
+/* .hwDrawer:not(.hwDrawer-open) .hwDrawer-liner > * {
+  display: none;
+} */
 
 .hwDrawer-left .hwDrawer-liner, .hwDrawer-right .hwDrawer-liner {
   height: 100%;

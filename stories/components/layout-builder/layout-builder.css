@@ -20,6 +20,8 @@ html, body {
   color: white;
   border: double cornflowerBlue 3px;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;;
 }
 
 .control {
