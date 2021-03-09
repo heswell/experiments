@@ -3,6 +3,7 @@ import classnames from "classnames";
 import { Action } from "./layout-action";
 import ActionButton from "./ActionButton";
 import { useLayoutDispatch } from "./LayoutContext";
+import {CloseButton} from "./action-buttons";
 
 import "./Header.css";
 
@@ -17,8 +18,9 @@ const Header = ({
   title,
 }) => {
   const layoutDispatch = useLayoutDispatch();
-
   const handleAction = (evt, actionId) => layoutDispatch({ type: actionId });
+  const handleClose = () => layoutDispatch({ type: Action.REMOVE });
+  const classBase = "hwHeader";
 
   const handleMouseDown = (evt) => {
     // do not allow drag to be initiated
@@ -26,8 +28,9 @@ const Header = ({
   };
 
   const className = classnames(
-    "Header",
-    classNameProp
+    classBase,
+    classNameProp,
+    `${classBase}-${orientation}`
   );
 
   const orientation = collapsed || orientationProp;
@@ -35,13 +38,14 @@ const Header = ({
   return (
     <div
       className={className}
-      style={{
-        justifyContent: orientation === "vertical" ? "flex-start" : "flex-end",
-      }}
+      style={style}
       orientation={orientation}
       draggable
-      showTitle
     >
+      {title ? (
+        <span className={`${classBase}-title`}>{title}</span>
+      ) : null
+      }  
       {collapsed === false ? (
         <ActionButton
           accessibleText="Minimize View"
@@ -88,11 +92,10 @@ const Header = ({
         />
       ) : null}
       {closeable ? (
-        <ActionButton
+        <CloseButton
+          UNSAFE_className={`${classBase}-button`}
           accessibleText="Close View"
-          actionId={Action.REMOVE}
-          iconName="close"
-          onClick={handleAction}
+          onPress={handleClose}
           onMouseDown={handleMouseDown}
         />
       ) : null}

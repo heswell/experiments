@@ -177,10 +177,10 @@ export const TowerWithinTerrace = () => (
 
 export const QuadTerraceWithinTower = () => (
   <Flexbox style={{ flexDirection: "column", width: 500, height: 500 }}>
-    <Component
-      title="W Component"
-      style={{ height: 100, backgroundColor: "rebeccapurple" }}
+    <View header closeable seable title="W Component" style={{height: 100}}> 
+    <Component style={{ height: '100%', backgroundColor: "rebeccapurple" }}
     />
+    </View>
     <Flexbox style={{ flex: 1, flexDirection: "row" }}>
       <Component
         title="W Component"

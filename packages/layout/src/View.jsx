@@ -53,6 +53,7 @@ const View = React.memo(function View(inputProps) {
             closeable={closeable}
             orientation={collapsed || orientation}
             tearOut={tearOut}
+            title={title}
           />
         ) : null}
         <div className="view-main">{children}</div>
