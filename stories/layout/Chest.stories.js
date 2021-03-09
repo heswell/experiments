@@ -279,3 +279,43 @@ export const InlineDrawerFlexboxVariants = () => {
   )
 
 }
+
+
+export const CustomSizeDrawer = () => {
+  return (
+    <Chest style={{ width: '100vw', height: '100vh' }}>
+      <Drawer
+        clickToOpen
+        inline
+        sizeClosed={24}
+        sizeOpen={100}
+        position="left"
+        peekaboo
+      >
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ height: 40, width: '100%', backgroundColor: "#ddd" }}>
+          </div>
+        </div>
+      </Drawer>
+      <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'column' }}>
+        <Flexbox style={{ flex: 1 }}>
+          <Component
+            title="Cornflower"
+            resizeable
+            style={{ backgroundColor: "cornflowerblue", flex: 1 }}
+            header
+          />
+          <Component
+            title="Rebeccas"
+            resizeable
+            style={{ backgroundColor: "rebeccapurple", flex: 1 }}
+            header
+          />
+        </Flexbox>
+        <div style={{ height: 40, backgroundColor: "#ccc" }}>
+        </div>
+      </Flexbox>
+    </Chest>
+  )
+
+}
