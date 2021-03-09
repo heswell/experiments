@@ -1,11 +1,4 @@
 .hwHeader {
-  --spectrum-alias-single-line-height: 20px;
-  --spectrum-global-dimension-size-400: 20px;
-  --spectrum-alias-border-radius-regular: 0;
-  --spectrum-alias-border-size-thin: 0;
-  --spectrum-global-dimension-size-85: 3px;
-  --spectrum-global-dimension-size-225: 16px;
-
   align-items: center;
   background-color: var(--hw-header-bg, inherit);
   border-bottom: solid 1px var(--hw-layout-border-color, #ccc);
@@ -20,6 +13,6 @@
   padding-left: var(--hw-layout-space, 6px);
 }
 
-.hwHeader-button {
-  width: var(--spectrum-alias-single-line-height);
+.hwHeader .hwActionButton {
+  min-width: 20px;
 }

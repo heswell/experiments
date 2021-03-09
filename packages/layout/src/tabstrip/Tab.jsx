@@ -7,22 +7,6 @@ import { EditableLabel } from '../editable-label';
 
 import './Tab.css';
 
-// const CloseTabButton = ({ small = false, tabIndex, title, ...rest }) => (
-//   <Button
-//     className="uitkTab-closeButton"
-//     elementType="div"
-//     tabIndex={tabIndex}
-//     title={title}
-//     variant="secondary"
-//     {...rest}
-//   >
-//     <Icon
-//       accessibleText="Close Tab (Delete or Backspace)"
-//       name={small ? 'close-small' : 'close'}
-//     />
-//   </Button>
-// );
-
 const Tab = forwardRef(function Tab(
   {
     ariaControls,
@@ -139,6 +123,7 @@ const Tab = forwardRef(function Tab(
       </span>
       {deletable ? (
         <CloseButton
+          elementType="div"
           onClick={handleCloseButtonClick}
           onMouseEnter={handleCloseButtonEnter}
           onMouseLeave={handleCloseButtonLeave}

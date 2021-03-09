@@ -632,16 +632,18 @@ function insert(component, source, into, before, after, size, targetRect) {
               left: _1,
               top: _2,
               flex: _3,
-              width,
-              height,
+              // width,
+              // height,
               transform: _4,
               transformOrigin: _5,
               ...style
             },
           } = source.props;
-          const dimensions = source.props.resizeable ? {} : { width, height };
+          // TODO why would we strip out width, height if resizeable
+          // we might need these if in a Stack, for example
+          // const dimensions = source.props.resizeable ? {} : { width, height };
           source = React.cloneElement(source, {
-            style: { ...style, ...dimensions },
+            style /*: { ...style, ...dimensions },*/
           });
         }
         if (before) {

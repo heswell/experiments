@@ -12,7 +12,7 @@ const Header = ({
   collapsed,
   expanded,
   closeable,
-  orientation: orientationProp,
+  orientation: orientationProp = 'horizontal',
   style,
   tearOut,
   title,
@@ -98,7 +98,6 @@ const Header = ({
       ) : null}
       {closeable ? (
         <CloseButton
-          UNSAFE_className={`${classBase}-button`}
           accessibleText="Close View"
           onPress={handleClose}
           onMouseDown={handleButtonMouseDown}

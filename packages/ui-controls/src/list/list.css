@@ -1,5 +1,5 @@
 .hwList {
-  --list-selected-bg: var(--hw-list-selected-bg,cornflowerblue);
+  --list-selected-bg: var(--hw-list-selected-bg,#1EA7FD);
   --list-hilited-bg: var(--hw-list-hilited-bg, rgba(0,0,0,.1));
   --list-item-height: var(--hw-list-item-height, 24px);
   --list-item-padding: var(--hw-list-item-padding, 0 6px);
@@ -21,7 +21,7 @@
    left:0;
    right:0;
    bottom:0;
-   border: dotted cornflowerblue 2px;
+   border: dotted #1EA7FD 2px;
 } 
 
 .hwList.focusVisible .hwListItem.selected.hilited:before {

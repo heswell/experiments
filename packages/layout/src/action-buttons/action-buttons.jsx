@@ -1,36 +1,36 @@
 import React from 'react';
-import {ActionButton} from "@adobe/react-spectrum";
+import {Button} from "@adobe/react-spectrum";
 import Add from "@spectrum-icons/workflow/Add";
 import Close from "@spectrum-icons/workflow/Close";
 import Minimize from "@spectrum-icons/workflow/Minimize";
 import Maximize from "@spectrum-icons/workflow/Maximize";
 import MoreSmallListVert from "@spectrum-icons/workflow/MoreSmallListVert";
 
-console.log({ActionButton, Close, Minimize, Maximize})
+import "./action-buttons.css";
 
 export const AddButton = ({onClick, ...rest}) => 
-  <ActionButton aria-label="Add" onPress={onClick} {...rest}>
+  <Button UNSAFE_className="hwActionButton" variant="secondary" aria-label="Add" onClick={onClick} {...rest}>
     <Add />
-  </ActionButton>
+  </Button>
 
 export const CloseButton = ({onClick, ...rest}) => 
-  <ActionButton aria-label="Close" onPress={onClick} {...rest}>
+  <Button UNSAFE_className="hwActionButton" variant="secondary" aria-label="Close" onClick={onClick} {...rest}>
     <Close />
-  </ActionButton>
+  </Button>
 
 
 export const MaximizeButton = () => 
-  <ActionButton aria-label="Maximize">
+  <Button UNSAFE_className="hwActionButton" variant="secondary" aria-label="Maximize">
     <Maximize />
-  </ActionButton>
+  </Button>
 
 
 export const MinimizeButton = () => 
-  <ActionButton aria-label="Minimize">
+  <Button UNSAFE_className="hwActionButton" variant="secondary" aria-label="Minimize">
     <Minimize />
-  </ActionButton>
+  </Button>
 
 export const MoreSmallListVertButton = ({onClick, ...rest}) => 
-  <ActionButton aria-label="Close" onPress={onClick} {...rest}>
+  <Button UNSAFE_className="hwActionButton" variant="secondary" aria-label="Close" onClick={onClick} {...rest}>
     <MoreSmallListVert />
-  </ActionButton>
+  </Button>

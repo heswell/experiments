@@ -17,7 +17,9 @@ import {
 import "./Stack.css";
 
 const defaultCreateNewChild = (index) => (
-  <Component title={`Tab ${index}`} style={{ backgroundColor: "pink" }} />
+  <View resizeable title={`Tab ${index}`} style={{width: '100%', height: '100%'}} header closeable>
+    <Component style={{ backgroundColor: "pink", width: '100%', height: '100%' }} />
+  </View>
 )
 
 const Stack = (inputProps) => {
