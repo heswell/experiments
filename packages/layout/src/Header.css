@@ -3,6 +3,8 @@
   --spectrum-global-dimension-size-400: 20px;
   --spectrum-alias-border-radius-regular: 0;
   --spectrum-alias-border-size-thin: 0;
+  --spectrum-global-dimension-size-85: 3px;
+  --spectrum-global-dimension-size-225: 16px;
 
   align-items: center;
   background-color: var(--hw-header-bg, inherit);
