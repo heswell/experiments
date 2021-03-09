@@ -1,17 +1,17 @@
 .hwListItem {
-  line-height: 1.25rem;
-  padding: 1px 6px;
+  line-height: var(--list-item-height);
+  padding: var(--list-item-padding);
   position: relative;
   cursor: default;
   margin: 0;
 }
 
 .hwListItem.hilited {
-  background-color: var(--hw-list-hilited-bg);
+  background-color: var(--list-hilited-bg);
 } 
 
 .hwListItem.selected {
-  background-color: var(--hw-list-selected-bg);
+  background-color: var(--list-selected-bg);
   color: white;
 }
 
