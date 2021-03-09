@@ -9,7 +9,7 @@ import { useLayoutDispatch } from "./LayoutContext";
 
 import "./View.css";
 
-const View = React.memo(function View(inputProps) {
+const View = function View(inputProps) {
   const [props, ref] = useLayout("View", inputProps);
   const {
     children,
@@ -60,9 +60,11 @@ const View = React.memo(function View(inputProps) {
       </LayoutContext.Provider>
     </div>
   );
-});
+};
 View.displayName = "View";
 
-export default View;
+const MemoView = React.memo(View)
 
-registerComponent("View", View, "view");
+export default MemoView;
+
+registerComponent("View", MemoView, "view");
