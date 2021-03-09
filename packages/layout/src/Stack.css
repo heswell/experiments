@@ -14,8 +14,12 @@
   background: var(--grey60);
 }
 
-.Tabs > .Header {
+.hwTabHeader {
   border-bottom: none;
+}
+
+.hwTabHeader + .View > .hwHeader {
+  height: 0;
 }
 
 /* .Splitter.column + .Flexbox > .Tabs:first-child {
@@ -25,3 +29,4 @@
 .Layout-svg-button {
   --spacing-medium: 5px;
 }
+

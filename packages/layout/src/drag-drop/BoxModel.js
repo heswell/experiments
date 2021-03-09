@@ -186,7 +186,7 @@ function measureComponent(component, rect, el, measurements) {
   measurements[path] = rect;
   const type = typeOf(component);
   if (header || type === "Stack") {
-    const headerEl = el.querySelector(".Header");
+    const headerEl = el.querySelector(".hwHeader");
     if (headerEl) {
       const { top, left, right, bottom } = headerEl.getBoundingClientRect();
       measurements[path].header = { top, left, right, bottom };

@@ -31,21 +31,22 @@ const Header = ({
     evt.stopPropagation();
   };
 
+  const orientation = collapsed || orientationProp;
+
   const className = classnames(
     classBase,
     classNameProp,
     `${classBase}-${orientation}`
   );
 
-  const orientation = collapsed || orientationProp;
 
   return (
     <div
       className={className}
       style={style}
-      orientation={orientation}
+      // orientation={orientation}
       onMouseDown={handleMouseDown}
-      draggable
+      // draggable
     >
       {title ? (
         <span className={`${classBase}-title`}>{title}</span>

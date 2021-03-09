@@ -81,7 +81,7 @@ const Stack = (inputProps) => {
         key={idx}
         id={`${id}-${idx}`}
         label={child.props.title ?? `Page ${idx+1}`}
-        deletable={child.props.removable}
+        deletable={child.props.closeable}
         editable={true} // renamable ?
       />
     ));
@@ -95,7 +95,7 @@ const Stack = (inputProps) => {
     <div className="Tabs" style={style} id={id} ref={ref}>
       <LayoutContext.Provider value={{ dispatch: dispatchViewAction }}>
         {showTabs ? (
-          <Toolbar className="Header" draggable maxRows={1}>
+          <Toolbar className="hwTabHeader Header" draggable maxRows={1}>
             <Tabstrip
               enableAddTab={enableAddTab}
               keyBoardActivation={keyBoardActivation}

@@ -206,17 +206,17 @@ export const ComplexNestedLayout = () => (
                 </Toolbar>
                 <Component style={{ backgroundColor: "yellow", flex: 1 }} />
               </View>
-              <View removable header resizeable title="Loans">
+              <View closeable header resizeable title="Loans">
                 <Component
                   style={{ backgroundColor: "cream", height: "100%" }}
                 />
               </View>
-              <View removable header resizeable title="Checks">
+              <View closeable header resizeable title="Checks">
                 <Component
                   style={{ backgroundColor: "ivory", height: "100%" }}
                 />
               </View>
-              <View removable header resizeable title="Liquidity">
+              <View closeable header resizeable title="Liquidity">
                 <Component
                   style={{ backgroundColor: "lightgrey", height: "100%" }}
                 />

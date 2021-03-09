@@ -628,6 +628,7 @@ function insert(component, source, into, before, after, size, targetRect) {
           child = assignFlexDimension(child, dim, childMeasurement);
         } else {
           const {
+            id=uuid(),
             style: {
               left: _1,
               top: _2,
@@ -643,6 +644,7 @@ function insert(component, source, into, before, after, size, targetRect) {
           // we might need these if in a Stack, for example
           // const dimensions = source.props.resizeable ? {} : { width, height };
           source = React.cloneElement(source, {
+            id,
             style /*: { ...style, ...dimensions },*/
           });
         }
