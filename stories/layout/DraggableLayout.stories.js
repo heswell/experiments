@@ -153,13 +153,15 @@ export const ComplexNestedLayout = () => (
   <DraggableLayout>
     <Flexbox column style={{ height: "90vh", width: "100vw" }}>
       <Flexbox style={{ flex: 1 }}>
+        <View style={{ minWidth: 50, width: 200 }}>
         <Palette
           closeable
           header
           resizeable
-          style={{ minWidth: 50, width: 200 }}
+          style={{ width: '100%', height: '100%' }}
           title="View Palette"
         />
+        </View>
         <Flexbox resizeable column style={{ flex: 1 }}>
           <View header resizeable style={{ flex: 1 }} title="Brown Bear">
             <Toolbar

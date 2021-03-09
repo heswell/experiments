@@ -22,7 +22,11 @@ const Header = ({
   const handleClose = () => layoutDispatch({ type: Action.REMOVE });
   const classBase = "hwHeader";
 
-  const handleMouseDown = (evt) => {
+  const handleMouseDown = (e) => {
+    layoutDispatch({ type: 'mousedown' }, e);
+  };
+
+  const handleButtonMouseDown = (evt) => {
     // do not allow drag to be initiated
     evt.stopPropagation();
   };
@@ -40,6 +44,7 @@ const Header = ({
       className={className}
       style={style}
       orientation={orientation}
+      onMouseDown={handleMouseDown}
       draggable
     >
       {title ? (
@@ -52,7 +57,7 @@ const Header = ({
           actionId={Action.MINIMIZE}
           iconName="minimize"
           onClick={handleAction}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
       {collapsed ? (
@@ -61,7 +66,7 @@ const Header = ({
           actionId={Action.RESTORE}
           iconName="double-chevron-right"
           onClick={handleAction}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
       {expanded === false ? (
@@ -70,7 +75,7 @@ const Header = ({
           actionId={Action.MAXIMIZE}
           iconName="maximize"
           onClick={handleAction}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
       {expanded ? (
@@ -79,7 +84,7 @@ const Header = ({
           actionId={Action.RESTORE}
           iconName="restore"
           onClick={handleAction}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
       {tearOut ? (
@@ -88,7 +93,7 @@ const Header = ({
           actionId={Action.TEAR_OUT}
           iconName="tear-out"
           onClick={handleAction}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
       {closeable ? (
@@ -96,7 +101,7 @@ const Header = ({
           UNSAFE_className={`${classBase}-button`}
           accessibleText="Close View"
           onPress={handleClose}
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleButtonMouseDown}
         />
       ) : null}
     </div>
