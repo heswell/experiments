@@ -1,11 +1,10 @@
 .hwChest {
-  --chest-bg: var(--hw-chest-bg, rgba(255, 0, 0, 0.3)); 
-  --drawer-bg: var(--hw-drawer-bg, rgba(0, 255, 0, 0.2));
-  --hw-drawer-size: 200px;
-  --hw-drawer-peek-size: 32px;
-  --hw-drawer-transition-duration: 0.4s;
-  --hw-drawer-size-neg: calc(var(--hw-drawer-size) * -1);
-  background-color: #ccc;
+  --chest-bg: var(--hw-chest-bg, inherit); 
+  --drawer-bg: var(--hw-drawer-bg, inherit);
+  --drawer-size: var(--hw-drawer-size, 200px);
+  --drawer-peek-size: var(--hw-drawer-peek-size, 32px);
+  --drawer-transition-duration: var(--hw-drawer-transition-duration, 0.4s);
+  background-color: var(--chest-bg);
   display: flex;
 }
 

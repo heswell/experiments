@@ -1,6 +1,6 @@
 .hwDrawer {
   transition: flex-basis;
-  transition-duration: var(--hw-drawer-transition-duration);
+  transition-duration: var(--drawer-transition-duration);
   position: relative;
   z-index: 1;
   flex-basis: 0;
@@ -11,13 +11,13 @@
 }
 
 .hwDrawer-peekaboo {
-  flex-basis: var(--hw-drawer-peek-size);
+  flex-basis: var(--drawer-peek-size);
   flex-grow: 0;
   flex-shrink: 0;
 }
 
 .hwDrawer-inline.hwDrawer-open {
-  flex-basis: var(--hw-drawer-size);
+  flex-basis: var(--drawer-size);
   flex-grow: 0;
   flex-shrink: 0;
 }
@@ -32,9 +32,9 @@
   overflow: hidden;
   position: absolute;
   top:0;
-  right: var(--hw-drawer-peek-size);
+  right: var(--drawer-peek-size);
   transition: right;
-  transition-duration: var(--hw-drawer-transition-duration);
+  transition-duration: var(--drawer-transition-duration);
   width: 100%;
 }
 
@@ -92,22 +92,22 @@
 
 .hwDrawer-left.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
 .hwDrawer-right.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
-  width: var(--hw-drawer-peek-size);
+  width: var(--drawer-peek-size);
 }
 
 .hwDrawer-top.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner,
 .hwDrawer-bottom.hwDrawer-over.hwDrawer-peekaboo .hwDrawer-liner {
-  height: var(--hw-drawer-peek-size);
+  height: var(--drawer-peek-size);
 }
 
 .hwDrawer-left.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
 .hwDrawer-right.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
-  width: var(--hw-drawer-size);
+  width: var(--drawer-size);
 }
 
 .hwDrawer-top.hwDrawer-over.hwDrawer-open .hwDrawer-liner,
 .hwDrawer-bottom.hwDrawer-over.hwDrawer-open .hwDrawer-liner {
-  height: var(--hw-drawer-size);
+  height: var(--drawer-size);
 }
 
 .hwDrawer-top,
