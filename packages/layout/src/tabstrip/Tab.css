@@ -1,7 +1,7 @@
 .hwTab {
-  --tab-color: var(--uitk-grey400);
-  --tab-selected-color: var(--uitk-grey900);
-  --tab-hover-background: var(--uitk-grey20);
+  --tab-color: #6e6e6e;
+  --tab-selected-color: #6e6e6e;
+  --tab-hover-background: inherit;
 }
 
 .hwTab {
@@ -81,7 +81,7 @@ button.hwTab + button.hwTab {
 
 .hwTab:focus-visible {
   outline: none;
-  background-color: var(--uitk-grey20);
+  background-color: inherit;
 }
 
 .hwTab-editing:before,
@@ -105,10 +105,6 @@ button.hwTab + button.hwTab {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.hwTab .hwTab-closeButton:hover {
-  background-color: var(--uitk-grey40);
 }
 
 .hwTab .hwTab-text {

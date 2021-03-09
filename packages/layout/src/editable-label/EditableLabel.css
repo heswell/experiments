@@ -6,7 +6,7 @@
 
 .EditableLabel-editing {
   bottom: 0;
-  font-weight: var(--uitk-font-weight-regular);
+  font-weight: var(--hw-font-weight-regular);
   left: var(--tab-spacing, 0);
   padding: 0;
   position: absolute;

@@ -1,15 +1,15 @@
 .hwActivationIndicator {
-  --uitk-activation-indicator-bg: var(--uitk-grey60);
-  --uitk-activation-indicator-thumb-bg: blue;
+  --hw-activation-indicator-bg: #eaeaea;
+  --hw-activation-indicator-thumb-bg: blue;
 }
 
 
 .hwActivationIndicator-no-background {
-  --uitk-activation-indicator-bg: transparent !important;
+  --hw-activation-indicator-bg: transparent !important;
 }
 
 .hwActivationIndicator {
-  background-color: var(--uitk-activation-indicator-bg);
+  background-color: var(--hw-activation-indicator-bg);
   bottom: 0;
   box-sizing: border-box;
   position: absolute;
@@ -20,7 +20,7 @@
 .hwActivationIndicator-thumb {
   position: absolute;
   height: 2px;
-  background-color: var(--uitk-activation-indicator-thumb-bg);
+  background-color: var(--hw-activation-indicator-thumb-bg);
   transition: left 0.2s ease;
   bottom: 0;
 }

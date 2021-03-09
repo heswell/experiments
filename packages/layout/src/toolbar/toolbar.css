@@ -7,35 +7,35 @@
 
 .hwToolbar,
 .Tooltray {
-  --uitk-toolbar-spacing: var(--hw-space);
+  --hw-toolbar-spacing: var(--hw-space);
 
-  --three-qtr-spacing: calc(var(--uitk-toolbar-spacing) * 0.75);
-  --label-margin-right: var(--uitk-toolbar-spacing);
+  --three-qtr-spacing: calc(var(--hw-toolbar-spacing) * 0.75);
+  --label-margin-right: var(--hw-toolbar-spacing);
   align-items: flex-start;
   box-sizing: border-box;
-  color: var(--uitk-toolbar-color);
-  font-size: var(--uitk-font-size-regular);
+  color: var(--hw-toolbar-color);
+  font-size: var(--hw-font-size-regular);
   justify-content: flex-start;
   overflow: hidden;
   position: relative;
-  font-family: var(--uitk-font-family);
+  font-family: var(--hw-font-family);
   min-width: 28px;
 }
 
 .hwToolbar-vertical {
-  --uitk-toolbarfield-height: auto;
-  --uitk-toolbarfield-spacing: calc(var(--uitk-toolbar-spacing) * 0.5) 0;
-  --uitk-toolbarfield-width: var(--uitk-toolbar-depth);
+  --hw-toolbarfield-height: auto;
+  --hw-toolbarfield-spacing: calc(var(--hw-toolbar-spacing) * 0.5) 0;
+  --hw-toolbarfield-width: var(--hw-toolbar-depth);
   height: 100%;
-  width: var(--uitk-toolbar-depth);
+  width: var(--hw-toolbar-depth);
 }
 
 .hwToolbar-horizontal {
-  --uitk-toolbarfield-height: var(--uitk-toolbar-depth);
-  --uitk-toolbarfield-spacing: 0 calc(var(--uitk-toolbar-spacing) * 0.5);
-  --uitk-toolbarfield-width: auto;
-  height: var(--uitk-toolbar-depth, 36px);
-  padding: 0 var(--uitk-toolbar-spacing);
+  --hw-toolbarfield-height: var(--hw-toolbar-depth);
+  --hw-toolbarfield-spacing: 0 calc(var(--hw-toolbar-spacing) * 0.5);
+  --hw-toolbarfield-width: auto;
+  height: var(--hw-toolbar-depth, 36px);
+  padding: 0 var(--hw-toolbar-spacing);
 }
 
 .hwToolbar-vertical .Tooltray {
@@ -47,15 +47,7 @@
 }
 
 .hwToolbar-vertical {
-  padding: var(--uitk-toolbar-spacing) 0;
-}
-
-.hwToolbar.sm {
-  background-color: pink;
-}
-
-.hwToolbar.md {
-  background-color: yellow;
+  padding: var(--hw-toolbar-spacing) 0;
 }
 
 .hwToolbar .Responsive-inner {
@@ -134,7 +126,7 @@
 
 [data-collapsible='dynamic'][data-collapsing='true'] {
   flex-shrink: 1;
-  min-width: calc(var(--uitk-size-regular) + var(--hw-space));
+  min-width: calc(var(--hw-size-regular) + var(--hw-space));
   background-color: rgba(255, 255, 0.3);
 }
 
@@ -142,7 +134,7 @@
   flex-shrink: 0;
   flex-grow: 0;
   /* do we need to allow for standard spacing ? */
-  flex-basis: calc(var(--uitk-size-regular) + var(--hw-space));
+  flex-basis: calc(var(--hw-size-regular) + var(--hw-space));
   background-color: rgba(255, 125, 0.1);
 }
 
@@ -151,8 +143,8 @@
 }
 
 /* .Tooltray:not(:last-child) > :last-child {
-  margin-right: var(--uitk-toolbar-spacing);
-  padding-right: var(--uitk-toolbar-spacing);
+  margin-right: var(--hw-toolbar-spacing);
+  padding-right: var(--hw-toolbar-spacing);
 } */
 
 .OverflowContainer {
