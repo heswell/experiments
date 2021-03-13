@@ -1,4 +1,4 @@
-.View {
+.hwView {
   display: flex;
   flex-direction: column;
   outline: none;
@@ -6,7 +6,7 @@
   position: relative;
 }
 
-.View.focus-visible:after {
+.hwView.focus-visible:after {
   content: "";
   position: absolute;
   top: 0;
@@ -16,28 +16,30 @@
   border: dotted cornflowerblue 2px;
 }
 
-.View.dragging {
+.hwView.dragging {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
 }
 
-.view-main {
+.hwView-main {
+  /* height: var(--view-content-height);
+  width: var(--view-content-width); */
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.View-collapsed .view-main {
+.hwView-collapsed .hwView-main {
   display: none;
 }
 
-.View-collapsed + .Splitter {
+.hwView-collapsed + .Splitter {
   display: none;
 }
 
-.View-collapsed .Toolbar-vertical {
+.hwView-collapsed .Toolbar-vertical {
   border-right: solid 1px var(--grey40);
 }
 
-.View-collapsed .Toolbar-vertical .toolbar-title {
+.hwView-collapsed .Toolbar-vertical .toolbar-title {
   display: none;
 }

@@ -89,8 +89,7 @@ const Flexbox = function Flexbox(inputProps) {
           ...child.props.style,
           flexBasis: draggedSize,
           [dimension]: "auto",
-        },
-        resizing: true
+        }
       });
       list.push(dolly);
     } else {

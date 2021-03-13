@@ -5,6 +5,7 @@ import ChevronDoubleRight from "@spectrum-icons/workflow/ChevronDoubleRight";
 
 import { Component, Chest, Drawer, Flexbox, Stack, View } from "@heswell/layout";
 import "../story.css";
+import "./chest.stories.css";
 
 export default {
   title: "Layout/Chest",
@@ -25,7 +26,7 @@ const InlineDrawer = ({ inline, position, peekaboo }) => {
         position={position}
         title="Rebecca"
       >
-        <div style={{padding: 6}}>
+        <div style={{ padding: 6 }}>
           <div>Item 1</div>
           <div>Item 2</div>
           <div>Item 3</div>
@@ -33,7 +34,7 @@ const InlineDrawer = ({ inline, position, peekaboo }) => {
           <div>Item 5</div>
           <div>Item 6</div>
         </div>
-        </Drawer>
+      </Drawer>
       <Component
         title="Cornflower"
         style={{ backgroundColor: "cornflowerblue", height: "100%", width: "100%" }}
@@ -155,20 +156,12 @@ export const LeftInlineDrawerFlexbox = () => {
       </Drawer>
       <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'column' }}>
         <Flexbox style={{ flex: 1 }}>
-          <Component
-            title="Cornflower"
-            resizeable
-            style={{ backgroundColor: "cornflowerblue", flex: 1 }}
-            header
-            onClick={handleClick}
-          />
-          <Component
-            title="Rebeccas"
-            resizeable
-            style={{ backgroundColor: "rebeccapurple", flex: 1 }}
-            header
-            onClick={handleClick}
-          />
+          <View className="viewCornflower" title="Cornflower" header resizeable style={{flex: 1 }}>
+            <Component  onClick={handleClick} style={{height: '100%'}}/>
+          </View>
+          <View className="viewRebecca" title="Rebecca" header style={{ flex: 1 }} resizeable resize="defer">
+            <Component onClick={handleClick} />
+          </View>
         </Flexbox>
         <div style={{ height: 40, backgroundColor: "#ccc" }}>
           {open ? null : (

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+export const WidthHeight = ['height', 'width']
+
 const observedMap = new Map();
 
 const isScrollAttribute = {
@@ -34,7 +36,7 @@ const resizeObserver = new ResizeObserver((entries) => {
 
 // TODO use an optional lag (default to false) to ask to fire onResize
 // with initial size
-export default function useResizeObserver(ref, dimensions, onResize) {
+export default function useResizeObserver(ref, dimensions, onResize, reportInitialSize) {
   const dimensionsRef = useRef(dimensions);
 
   const measure = useCallback((target) => {
@@ -59,7 +61,7 @@ export default function useResizeObserver(ref, dimensions, onResize) {
   // initiate new observation when ref changes.
   useEffect(() => {
     const target = ref.current;
-
+    console.log(`resizeObserver useEffect ref=`, ref.current)
     async function registerObserver() {
       // Create the map entry immediately. useEffect may fire below
       // before fonts are ready and attempt to update entry
@@ -68,6 +70,10 @@ export default function useResizeObserver(ref, dimensions, onResize) {
       const measurements = measure(target);
       observedMap.get(target).measurements = measurements;
       resizeObserver.observe(target);
+
+      if (reportInitialSize){
+        onResize(measurements);
+      }
     }
 
     if (target) {
@@ -102,6 +108,4 @@ export default function useResizeObserver(ref, dimensions, onResize) {
     }
   }, [dimensions, measure, ref, onResize]);
 
-  // TODO might be a good idea to ref and return the current measurememnts. That way, derived hooks
-  // e.g useBreakpoints don't have to measure and client cn make onResize callback simpler
 }
