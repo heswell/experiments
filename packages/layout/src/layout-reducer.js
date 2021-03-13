@@ -356,7 +356,7 @@ function removeChild(rootProps, { path }) {
 }
 
 function _removeChild(model, child) {
-  let { active, children: componentChildren, path } = getProps(model);
+  let { active, children: componentChildren, path, preserve } = getProps(model);
   const { idx, finalStep } = nextStep(path, getProp(child, "path"));
   const type = typeOf(model);
   let children = componentChildren.slice();
@@ -366,7 +366,7 @@ function _removeChild(model, child) {
       active = Math.max(0, active - 1);
     }
 
-    if (children.length === 1 && type.match(/Flexbox|Stack/)) {
+    if (children.length === 1 && !preserve && type.match(/Flexbox|Stack/)) {
       return unwrap(model, children[0]);
     }
 

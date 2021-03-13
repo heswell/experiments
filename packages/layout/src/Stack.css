@@ -20,6 +20,7 @@
 
 .hwTabHeader + .View > .hwHeader {
   height: 0;
+  overflow: hidden;
 }
 
 /* .Splitter.column + .Flexbox > .Tabs:first-child {
