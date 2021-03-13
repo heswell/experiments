@@ -20,6 +20,7 @@
   background-color: var(--chest-bg);
   flex-grow: 1;
   flex-shrink: 1;
+  overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
