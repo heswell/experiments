@@ -1,7 +1,8 @@
-import React, {useCallback} from 'react';
+import React, { useCallback } from 'react';
 import cx from "classnames";
+import {ChevronDoubleLeftButton, ChevronDoubleRightButton} from "../action-buttons";
 
-import {useControlled} from "../utils";
+import { useControlled } from "../utils";
 
 import "./Drawer.css";
 
@@ -14,11 +15,11 @@ const getStyle = (styleProp, sizeOpen, sizeClosed) => {
   const hasSizeOpen = sizeOpen !== undefined;
   const hasSizeClosed = sizeClosed !== undefined;
 
-  if (!styleProp && !hasSizeClosed && !hasSizeOpen){
+  if (!styleProp && !hasSizeClosed && !hasSizeOpen) {
     return undefined;
   }
 
-  if (!hasSizeClosed && !hasSizeOpen){
+  if (!hasSizeClosed && !hasSizeOpen) {
     return styleProp;
   }
 
@@ -43,6 +44,7 @@ const Drawer = ({
   inline,
   onClick,
   peekaboo = false,
+  toggleButton,
   ...props
 }) => {
 
@@ -64,7 +66,7 @@ const Drawer = ({
 
   const toggleDrawer = useCallback(() => {
     setOpen(!open);
-  },[open]);
+  }, [open]);
 
   const style = getStyle(styleProp, sizeOpen, sizeClosed);
 
@@ -72,13 +74,26 @@ const Drawer = ({
     ? toggleDrawer
     : onClick;
 
+
+  const renderToggleButton = () =>
+    <div className={cx("hwToggleButton-container")}>
+        {open ? (
+         <ChevronDoubleLeftButton onClick={toggleDrawer}/>
+        ) : (
+          <ChevronDoubleRightButton onClick={toggleDrawer}/>
+        )}
+    </div>
+
+
   return (
     <div {...props} className={className} onClick={handleClick} style={style}>
+      {toggleButton == "start" ? renderToggleButton() : null}
       <div className={`${classBase}-liner`}>
         <div className={`${classBase}-content`}>
           {children}
         </div>
       </div>
+      {toggleButton == "end" ? renderToggleButton() : null}
     </div>
   )
 }

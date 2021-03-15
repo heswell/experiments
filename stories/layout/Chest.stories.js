@@ -312,3 +312,33 @@ export const CustomSizeDrawer = () => {
   )
 
 }
+
+export const WithToggleButton = () => {
+  return (
+    <Chest style={{ width: '100vw', height: '100vh' }}>
+      <Drawer
+        inline
+        position="left"
+        peekaboo
+        toggleButton="end"
+      />
+      <Flexbox style={{ width: '100%', height: '100%', flexDirection: 'column' }}>
+        <Flexbox style={{ flex: 1 }}>
+          <Component
+            title="Cornflower"
+            resizeable
+            style={{ backgroundColor: "cornflowerblue", flex: 1 }}
+            header
+          />
+          <Component
+            title="Rebeccas"
+            resizeable
+            style={{ backgroundColor: "rebeccapurple", flex: 1 }}
+            header
+          />
+        </Flexbox>
+      </Flexbox>
+    </Chest>
+  )
+
+}

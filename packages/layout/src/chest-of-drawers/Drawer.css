@@ -8,6 +8,7 @@
   flex-shrink: 1;
   min-width: 0;
   min-height: 0;
+  display: flex;
 }
 
 .hwDrawer-peekaboo {
@@ -37,6 +38,7 @@
   transition: right;
   transition-duration: var(--drawer-transition-duration);
   width: 100%;
+  flex: 1 1 100%;
 }
 
 .hwDrawer-open .hwDrawer-content {
@@ -121,3 +123,12 @@
   order: 99;
 }
 
+
+.hwDrawer-left ,
+.hwDrawer-right {
+  flex-direction: column;
+}
+
+.hwToggleButton-container {
+  flex: 0 0 28px;
+}
