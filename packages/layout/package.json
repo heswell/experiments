@@ -1,6 +1,6 @@
 {
   "name": "@heswell/layout",
-  "version": "3.0.49",
+  "version": "3.0.50",
   "description": "Heswell Layout Components",
   "main": "dist/index.js",
   "module": "dist/index.js",
