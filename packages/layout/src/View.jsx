@@ -7,6 +7,7 @@ import useResizeObserver, { WidthHeight } from "./responsive/useResizeObserver";
 import useLayout from "./useLayout";
 import LayoutContext from "./LayoutContext";
 import { useLayoutDispatch } from "./LayoutContext";
+import usePersistentState from "./use-persistent-state";
 
 import "./View.css";
 
@@ -34,6 +35,7 @@ const View = function View(inputProps) {
   const dispatchViewAction = useViewActionDispatcher(ref, path, layoutDispatch);
   const deferResize = resize === "defer";
   const classBase = "hwView";
+  const [load, save] = usePersistentState();
 
   const mainRef = useRef(null);
   const mainSize = useRef({});
@@ -56,6 +58,9 @@ const View = function View(inputProps) {
 
   useResizeObserver(ref, deferResize ? WidthHeight : NO_MEASUREMENT, onResize, deferResize)
 
+  const loadState = useCallback(() => load(id),[load])
+  const saveState = useCallback((state) => save(id, state),[save]);
+
   const headerProps = typeof header === "object" ? header : {};
   return (
     <div
@@ -70,7 +75,7 @@ const View = function View(inputProps) {
       tabIndex={-1}
     >
       <LayoutContext.Provider
-        value={{ dispatch: dispatchViewAction, path, title }}
+        value={{ dispatch: dispatchViewAction, path, title, loadState, saveState }}
       >
         {header ? (
           <Header
