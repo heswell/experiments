@@ -13,3 +13,4 @@ export { applyLayoutProps } from "./src/layoutUtils";
 export * from "./src/responsive";
 export * from "./src/tabstrip-legacy";
 export * from "./src/toolbar";
+export * from "./src/use-persistent-state"

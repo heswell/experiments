@@ -58,8 +58,8 @@ const View = function View(inputProps) {
 
   useResizeObserver(ref, deferResize ? WidthHeight : NO_MEASUREMENT, onResize, deferResize)
 
-  const loadState = useCallback((key) => load(id, key),[load])
-  const saveState = useCallback((key, state) => save(id, key, state),[save]);
+  const loadState = useCallback((key, stateType) => load(id, key, stateType),[load])
+  const saveState = useCallback((state, key, stateType) => save(id, state, key, stateType),[save]);
 
   const headerProps = typeof header === "object" ? header : {};
   return (

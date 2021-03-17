@@ -97,7 +97,7 @@ const StatefulComponent = ({ initialState = "", style, stateKey }) => {
     setValue(state.current = e.target.value);
   }
 
-  useEffect(() => () => saveState(stateKey, state.current), [saveState])
+  useEffect(() => () => saveState(state.current, stateKey), [saveState])
 
 
   return (
