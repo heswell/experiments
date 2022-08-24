@@ -7,9 +7,15 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "index.js",
+    "index.js.map",
+    "/src",
+    "/types"
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "node ../../scripts/build.mjs",
+    "type-defs": "tsc --project ../../tsconfig-emit-types.json"
+  },
   "author": "heswell",
   "license": "MIT",
   "dependencies": {

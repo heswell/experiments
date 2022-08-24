@@ -7,14 +7,20 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "index.js",
+    "index.js.map",
+    "/src",
+    "/types"
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "node ../../scripts/build.mjs",
+    "type-defs": "tsc --project ../../tsconfig-emit-types.json"
+  },
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-    "@heswell/data": "^1.1.0",
+    "@heswell/data": "3.0.0",
     "bufferutil": "^4.0.1",
     "d3-array": "^2.2.0",
     "pure-uuid": "^1.5.7",

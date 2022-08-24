@@ -4,12 +4,18 @@
   "description": "Vuu data stores and views",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "index.js",
+    "index.js.map",
+    "/src",
+    "/types"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "node ../../scripts/build.mjs",
+    "type-defs": "tsc --project ../../tsconfig-emit-types.json"
+  },
   "author": "heswell",
   "license": "MIT",
   "dependencies": {

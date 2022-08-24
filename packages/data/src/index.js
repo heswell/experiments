@@ -4,10 +4,10 @@ import {
   toKeyedColumn,
   buildColumnMap,
   metaData,
-  setFilterColumnMeta,
-} from "./src/store/columnUtils";
+  setFilterColumnMeta
+} from './store/columnUtils';
 
-import { sortByToMap } from "./src/store/sort";
+import { sortByToMap } from './store/sort';
 import {
   AND,
   OR,
@@ -28,36 +28,28 @@ import {
   removeFilterForColumn,
   SET_FILTER_DATA_COLUMNS,
   BIN_FILTER_DATA_COLUMNS,
-  shouldShowFilter,
-} from "./src/store/filter";
+  shouldShowFilter
+} from './store/filter';
 
-import {
-  getFullRange,
-  resetRange,
-  NULL_RANGE as NULL,
-} from "./src/store/rangeUtils";
+import { getFullRange, resetRange, NULL_RANGE as NULL } from './store/rangeUtils';
 
-import {
-  updateGroupBy,
-  indexOfCol,
-  groupbyExtendsExistingGroupby,
-} from "./src/store/groupUtils";
+import { updateGroupBy, indexOfCol, groupbyExtendsExistingGroupby } from './store/groupUtils';
 
-import { isEmptyRow, update } from "./src/store/rowUtils";
+import { isEmptyRow, update } from './store/rowUtils';
 
-import * as types from "./src/store/types";
+import * as types from './store/types';
 
 export const groupHelpers = {
   updateGroupBy,
   indexOfCol,
-  groupbyExtendsExistingGroupby,
+  groupbyExtendsExistingGroupby
 };
 
-export { default as Table } from "./src/store/table";
-export { default as DataView } from "./src/store/data-view";
+export { default as Table } from './store/table';
+export { default as DataView } from './store/data-view';
 
 export const sortUtils = {
-  sortByToMap,
+  sortByToMap
 };
 
 export const columnUtils = {
@@ -66,12 +58,12 @@ export const columnUtils = {
   toColumn,
   toKeyedColumn,
   metaData,
-  setFilterColumnMeta,
+  setFilterColumnMeta
 };
 
 export const rowUtils = {
   isEmptyRow,
-  update,
+  update
 };
 
 export const filter = {
@@ -93,16 +85,16 @@ export const filter = {
   getFilterColumn,
   includesColumn,
   SET_FILTER_DATA_COLUMNS,
-  BIN_FILTER_DATA_COLUMNS,
+  BIN_FILTER_DATA_COLUMNS
 };
 
 export const rangeUtils = {
   getFullRange,
-  resetRange,
+  resetRange
 };
 
 export const arrayUtils = {
-  partition,
+  partition
 };
 
 export const DataTypes = types.DataTypes;
