@@ -1,6 +1,6 @@
 {
   "name": "@heswell/viewserver",
-  "version": "1.1.0",
+  "version": "3.0.0",
   "description": "Heswell Viewserver",
   "main": "dist/index.js",
   "publishConfig": {
@@ -9,23 +9,11 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "clean": "rm -rf dist/*",
-    "build": "rollup -c --environment BUILD:production",
-    "build:dev": "rollup -c --environment BUILD:development",
-    "publish:local": "npm run build && npm version patch && npm publish",
-    "publish:npm": "npm publish --registry=https://registry.npmjs.org"
-  },
+  "scripts": {},
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data": "^1.1.0",
-    "@heswell/utils": "^1.1.0"
+    "@heswell/data": "3.0.0"
   },
-  "devDependencies": {
-    "rollup": "1.29.0",
-    "rollup-plugin-copy": "^3.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0"
-  },
-  "gitHead": "68107564a42c56e92a0d560d0ae6c089a4f18091"
+  "devDependencies": {}
 }

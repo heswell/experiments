@@ -1,13 +1,13 @@
-
 import {
   getFilterType,
   toColumn,
   toKeyedColumn,
   buildColumnMap,
   metaData,
-  setFilterColumnMeta } from './src/store/columnUtils';
+  setFilterColumnMeta,
+} from "./src/store/columnUtils";
 
-import { sortByToMap } from './src/store/sort'
+import { sortByToMap } from "./src/store/sort";
 import {
   AND,
   OR,
@@ -28,40 +28,37 @@ import {
   removeFilterForColumn,
   SET_FILTER_DATA_COLUMNS,
   BIN_FILTER_DATA_COLUMNS,
-  shouldShowFilter } from './src/store/filter';
+  shouldShowFilter,
+} from "./src/store/filter";
 
-  import {
+import {
   getFullRange,
   resetRange,
-  NULL_RANGE as NULL } from './src/store/rangeUtils';
+  NULL_RANGE as NULL,
+} from "./src/store/rangeUtils";
 
 import {
   updateGroupBy,
   indexOfCol,
-  groupbyExtendsExistingGroupby } from './src/store/groupUtils'
+  groupbyExtendsExistingGroupby,
+} from "./src/store/groupUtils";
 
-import {
-  isEmptyRow,
-  update
-} from './src/store/rowUtils'
+import { isEmptyRow, update } from "./src/store/rowUtils";
 
-import * as types from './src/store/types';
+import * as types from "./src/store/types";
 
 export const groupHelpers = {
   updateGroupBy,
   indexOfCol,
-  groupbyExtendsExistingGroupby
-}
+  groupbyExtendsExistingGroupby,
+};
 
-export {default as Table} from './src/store/table';
-export {default as DataView} from './src/store/data-view';
-export {default as LocalDataSource} from './src/data-source/local-data-source';
-export {default as BinnedDataSource} from './src/data-source/binned-data-source';
-export {default as FilterDataSource} from './src/data-source/filter-data-source';
+export { default as Table } from "./src/store/table";
+export { default as DataView } from "./src/store/data-view";
 
 export const sortUtils = {
-  sortByToMap
-}
+  sortByToMap,
+};
 
 export const columnUtils = {
   buildColumnMap,
@@ -69,12 +66,13 @@ export const columnUtils = {
   toColumn,
   toKeyedColumn,
   metaData,
-  setFilterColumnMeta
-}
+  setFilterColumnMeta,
+};
 
 export const rowUtils = {
-  isEmptyRow, update
-}
+  isEmptyRow,
+  update,
+};
 
 export const filter = {
   AND,
@@ -95,17 +93,17 @@ export const filter = {
   getFilterColumn,
   includesColumn,
   SET_FILTER_DATA_COLUMNS,
-  BIN_FILTER_DATA_COLUMNS
-}
+  BIN_FILTER_DATA_COLUMNS,
+};
 
 export const rangeUtils = {
   getFullRange,
-  resetRange
-}
+  resetRange,
+};
 
 export const arrayUtils = {
-  partition
-}
+  partition,
+};
 
 export const DataTypes = types.DataTypes;
 

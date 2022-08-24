@@ -2,44 +2,12 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "clean": "lerna run --parallel clean",
     "viewserver": "node --experimental-modules scripts/run-viewserver.mjs",
     "viewserver:debug": "node --experimental-modules scripts/run-viewserver-debug.mjs"
   },
   "workspaces": [
     "packages/*"
   ],
-  "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/plugin-transform-modules-commonjs": "^7.6.0",
-    "@babel/preset-env": "^7.6.3",
-    "@babel/preset-react": "^7.6.3",
-    "@rollup/plugin-wasm": "^3.0.0",
-    "babel-plugin-dynamic-import-node": "^2.3.0",
-    "postcss-import": "^12.0.1",
-    "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-filesize": "^6.2.1",
-    "rollup-plugin-postcss": "^2.0.5",
-    "rollup-plugin-visualizer": "^3.3.1",
-    "snowpack": "^1.0.3",
-    "source-map-loader": "^0.2.4"
-  },
-  "dependencies": {
-    "classnames": "^2.2.6",
-    "dygraphs": "^2.1.0",
-    "global": "^4.4.0",
-    "material-design-icons": "^3.0.1",
-    "react-motion": "^0.5.2"
-  },
-  "babel": {
-    "presets": [
-      "@babel/env"
-    ],
-    "plugins": [
-      "dynamic-import-node"
-    ],
-    "sourceMaps": true,
-    "retainLines": true
-  }
+  "devDependencies": {},
+  "dependencies": {}
 }

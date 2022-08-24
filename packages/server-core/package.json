@@ -1,6 +1,6 @@
 {
   "name": "@heswell/server-core",
-  "version": "1.1.0",
+  "version": "3.0.0",
   "description": "Heswell websocket server",
   "main": "dist/index.js",
   "publishConfig": {
@@ -9,26 +9,16 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "clean": "rm -rf dist/*",
-    "build": "rollup -c --environment BUILD:production",
-    "build:dev": "rollup -c --environment BUILD:development",
-    "prepublishOnly": "npm run build && npm version patch"
-  },
+  "scripts": {},
   "author": "heswell",
   "license": "MIT",
-  "devDependencies": {
-    "rollup": "1.29.0",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0"
-  },
+  "devDependencies": {},
   "dependencies": {
     "@heswell/data": "^1.1.0",
-    "@heswell/utils": "^1.1.0",
     "bufferutil": "^4.0.1",
     "d3-array": "^2.2.0",
+    "pure-uuid": "^1.5.7",
     "utf-8-validate": "^5.0.2",
     "ws": "6.2.1"
-  },
-  "gitHead": "5e9d97181fde5877bc223014a9fa244ac0bb43c5"
+  }
 }
