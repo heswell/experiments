@@ -1,5 +1,5 @@
 import UUID from 'pure-uuid';
 
-export default function uuid(){
+export function uuid() {
   return new UUID(1).format();
 }

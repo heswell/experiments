@@ -16,6 +16,7 @@
     "build": "node ../../scripts/build.mjs",
     "type-defs": "tsc --project ../../tsconfig-emit-types.json"
   },
+  "type": "module",
   "author": "heswell",
   "license": "MIT",
   "dependencies": {

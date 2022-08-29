@@ -1,13 +1,11 @@
-import { Instruments, InstrumentPrices, OrderBlotter/*, OrderBook, Simpsons,, TestTable */} from '../dataTables';
-import {ServiceDefinition as DataTableService} from './services/dataTableServiceDefinition.js';
+import {
+  Instruments,
+  InstrumentPrices,
+  OrderBlotter /*, OrderBook, Simpsons,, TestTable */
+} from '../dataTables/index.mjs';
+import { ServiceDefinition as DataTableService } from './services/DataTableServiceDefinition.js';
 
 export const config = {
-    services: [
-        DataTableService
-    ],
-    DataTables: [
-        Instruments,
-        OrderBlotter,
-        InstrumentPrices
-    ]
+  services: [DataTableService],
+  DataTables: [Instruments, OrderBlotter, InstrumentPrices]
 };

@@ -1,13 +1,13 @@
-import { uuid } from "./uuid";
+import { uuid } from './uuid.mjs';
 
-import MessageQueue from "./message-queue";
-import { findHandler as handlerFor } from "./requestHandlers";
+import MessageQueue from './message-queue.mjs';
+import { findHandler as handlerFor } from './requestHandlers.mjs';
 
 var updateInterval = null;
 
 var Frequency;
 
-const CONTENT_TYPE_JSON = { "Content-type": "application/json" };
+const CONTENT_TYPE_JSON = { 'Content-type': 'application/json' };
 
 const _client_xhr_connections = {};
 
@@ -15,7 +15,7 @@ function getClientConnection(clientId) {
   var connection = _client_xhr_connections[clientId];
   if (connection === undefined) {
     connection = _client_xhr_connections[clientId] = {
-      queue: new MessageQueue(),
+      queue: new MessageQueue()
     };
   }
 
@@ -26,30 +26,30 @@ export function configure({
   PRIORITY_UPDATE_FREQUENCY: PRIORITY = 100,
   CLIENT_UPDATE_FREQUENCY: UPDATE = 250,
   HEARTBEAT_FREQUENCY: HEARTBEAT = 5000,
-  TIMEOUT_PERIOD: TIMEOUT = 10000,
+  TIMEOUT_PERIOD: TIMEOUT = 10000
 }) {
   Frequency = {
     PRIORITY,
     UPDATE,
     HEARTBEAT,
-    TIMEOUT,
+    TIMEOUT
   };
 }
 
 export function handleRequest(request, response) {
-  var content = "";
-  request.on("data", (data) => (content += data));
-  request.on("end", () => {
+  var content = '';
+  request.on('data', (data) => (content += data));
+  request.on('end', () => {
     let { clientId, message } = JSON.parse(content);
     //onsole.log(' 1) ' + JSON.stringify(message));
     var handler;
 
-    if (message.type === "connect") {
+    if (message.type === 'connect') {
       let clientId = uuid();
       // save this, so we know whos's conencted
       response.writeHead(200, CONTENT_TYPE_JSON);
-      response.end(JSON.stringify({ type: "Welcome", clientId }));
-    } else if (message.type === "HB") {
+      response.end(JSON.stringify({ type: 'Welcome', clientId }));
+    } else if (message.type === 'HB') {
       //onsole.log('>>> HeartBeat');
       let connection = getClientConnection(clientId);
       connection.response = response;
@@ -79,7 +79,7 @@ export function handleRequest(request, response) {
         // also set a timer to timeout the response ?
       }
     } else {
-      console.log("server: dont know how to handle " + JSON.stringify(message));
+      console.log('server: dont know how to handle ' + JSON.stringify(message));
     }
   });
 }
@@ -122,7 +122,7 @@ function processXhrUpdates() {
 
       if (response) {
         response.writeHead(200, CONTENT_TYPE_JSON);
-        response.end(JSON.stringify({ type: "HB", timestamp: currentTime }));
+        response.end(JSON.stringify({ type: 'HB', timestamp: currentTime }));
         _client_xhr_connections[clientId].timestamp = currentTime;
       } else if (currentTime - timestamp > Frequency.TIMEOUT) {
         console.log(

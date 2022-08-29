@@ -1,4 +1,4 @@
-import {createRow} from './create-row';
+import {createRow} from '@heswell/viewserver/dataTables/testTable/create-row';
 
 export const data = [];
 const rowCount = 10;

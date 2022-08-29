@@ -40,6 +40,7 @@ async function main() {
       },
       metafile: true,
       minify: development !== true,
+      platform: 'node',
       outfile,
       target: 'esnext',
       sourcemap: true,
@@ -56,12 +57,18 @@ async function main() {
   async function typeDefs() {
     if ('type-defs' in scripts && !skipTypedefs) {
       const start = process.hrtime();
-      return exec('yarn --silent type-defs').then(() => {
-        const [seconds, nanoSeconds] = process.hrtime(start);
-        console.log(
-          `[${packageName}] tsc typedefs took ${seconds}s ${Math.round(nanoSeconds / 1_000_000)}ms`
-        );
-      });
+      return exec('yarn --silent type-defs')
+        .then(() => {
+          const [seconds, nanoSeconds] = process.hrtime(start);
+          console.log(
+            `[${packageName}] tsc typedefs took ${seconds}s ${Math.round(
+              nanoSeconds / 1_000_000
+            )}ms`
+          );
+        })
+        .catch((err) => {
+          console.warn(`No typedefs created`);
+        });
     }
   }
 
