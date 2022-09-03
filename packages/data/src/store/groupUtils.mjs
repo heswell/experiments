@@ -1,7 +1,7 @@
 
-import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort';
-import { ASC } from './types';
-import { metaData } from './columnUtils';
+import { sortBy, sortPosition, GROUP_ROW_TEST } from './sort.mjs';
+import { ASC } from './types.mjs';
+import { metaData } from './columnUtils.mjs';
 
 const LEAF_DEPTH = 0;
 const DEFAULT_OPTIONS = {

@@ -2,7 +2,7 @@
   See UpdateQueue
 */
 //TODO does this belong in view ?
-import { EventEmitter } from "./event-emitter";
+import { EventEmitter } from "./event-emitter.mjs";
 import { DataTypes } from "./types";
 
 export default class UpdateQueue extends EventEmitter {

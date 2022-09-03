@@ -45,13 +45,18 @@ export default function start(config) {
   configureXhr(msgConfig);
 
   var serve = serveStatic(
-    '/Users/R674775/git/venuu-io/vuu/vuu-ui/packages/app-vuu-example/public',
+    '/Users/steve/git/venuu-io/vuu/vuu-ui/packages/app-vuu-example/public',
     { index: ['index.html'] }
   );
 
   const httpServer = http.createServer(function (request, response) {
+    console.log(`req ${request.url}`)
     if (request.url.match(/login|index|chunk|worker|favicon/)) {
-      serve(request, response);
+      serve(request, response, (req, res) => {
+        console.log(`what do we do now`, {
+          req
+        })
+      });
     } else if (request.url === '/xhr') {
       handleXhrRequest(request, response);
     } else if (request.url === '/api/authn') {

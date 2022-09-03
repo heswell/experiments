@@ -12,11 +12,10 @@ export const ServiceDefinition = {
   name: 'DataTableService',
   module: `${data_path}/DataTableService.mjs`,
   API: [
-    'AddSubscription',
-    'LOGIN',
     'HB_RESP',
     'GET_TABLE_LIST',
-    'GetTableMeta',
+    'GET_TABLE_META',
+    'CREATE_VP',
     'TerminateSubscription',
     'setViewRange',
     'GetFilterData',

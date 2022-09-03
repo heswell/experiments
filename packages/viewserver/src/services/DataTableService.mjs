@@ -1,5 +1,6 @@
 import Table from './Table.mjs';
 import Subscription from './Subscription.mjs';
+import { uuid } from '@heswell/server-core';
 
 const _tables = {};
 var _subscriptions = {};
@@ -42,44 +43,62 @@ async function createTable({ dataPath, ...config }) {
   return table;
 }
 
-export function AddSubscription(clientId, request, queue) {
-  const { tablename } = request;
-  const table = _tables[tablename];
-  if (table.status === 'ready') {
-    _subscriptions[request.viewport] = Subscription(table, request, queue);
-    let clientSubscriptions =
-      _client_subscriptions[clientId] || (_client_subscriptions[clientId] = []);
-    clientSubscriptions.push(request.viewport);
-  } else {
-    const qs = _queued_subscriptions;
-    const q = qs[tablename] || (qs[tablename] = []);
-    q.push({ clientId, request, queue });
-    console.log(`queued subscriptions for ${tablename} = ${q.length}`);
-  }
-}
+export function GET_TABLE_LIST(sessionId, requestId, request, queue) {
+  const tables = getTableNames();
+  console.log(`received GET_TABLE_LIST request, requestId ${requestId} tables are ${tables}`);
 
-export function LOGIN(clientId, request, queue) {
   queue.push({
-    requestId: '',
-    sessionId: 'blah',
+    requestId,
+    sessionId,
     token: 'poo',
     user: 'user',
     priority: 1,
     body: {
-      type: 'LOGIN_SUCCESS',
-      token: 'tttt'
+      requestId,
+      type: 'TABLE_LIST_RESP',
+      tables: tables.map(table => ({table, module: 'SIMUL'}))
     }
   });
+
 }
 
-export function HB_RESP(clientId, request, queue) {
-  console.log('heartbeat received');
+export function GET_TABLE_META(sessionId, requestId, request, queue) {
+
+  const table =  getTable(request.table.table);
+
+  queue.push({
+    requestId,
+    sessionId,
+    token: 'poo',
+    user: 'user',
+    priority: 1,
+    body: {
+      requestId,
+      type: 'TABLE_META_RESP',
+      columns: table.columns.map(col => col.name),
+      dataTypes: table.columns.map(col => col.type?.name ?? col.type ?? "string"),
+      table: request.table
+    }
+  });
+
 }
 
-export function GET_TABLE_LIST(clientId, request, queue) {
-  const { requestId } = request;
-  const tables = getTableNames();
-  console.log(`received table list request, tbvales are ${tables}`);
+export function CREATE_VP(sessionId, requestId, request, queue) {
+  const { table: {table: tableName} } = request;
+  const table = _tables[tableName];
+  if (table.status === 'ready') {
+    const viewportId = uuid();
+    console.log(`subscribe to ${tableName}, table is ready ${JSON.stringify(request)}, viewport id will be ${viewportId}`)
+    _subscriptions[viewportId] = Subscription(table, viewportId, request, queue);
+    let clientSubscriptions =
+      _client_subscriptions[sessionId] || (_client_subscriptions[sessionId] = []);
+    clientSubscriptions.push(request.viewport);
+  } else {
+    const qs = _queued_subscriptions;
+    const q = qs[tablename] || (qs[tablename] = []);
+    q.push({ sessionId, request, queue });
+    console.log(`queued subscriptions for ${tablename} = ${q.length}`);
+  }
 }
 
 export function unsubscribeAll(clientId, queue) {

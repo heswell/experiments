@@ -2,7 +2,7 @@
   "name": "@heswell/data",
   "version": "3.0.0",
   "description": "Vuu data stores and views",
-  "main": "dist/index.js",
+  "main": "src/index.mjs",
   "files": [
     "index.js",
     "index.js.map",

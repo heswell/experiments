@@ -1,4 +1,5 @@
 import { uuid } from '../uuid.mjs';
+import {TokenStore} from "../tokenStore.mjs"
 
 /**
  * @param {Object} options
@@ -49,9 +50,12 @@ export function handleAuthenticationRequest(request, response) {
         body = Buffer.concat(body).toString();
         console.log(`got an auth request ${body}`);
         const { username, password } = JSON.parse(body);
+        // DO wheverer we need to do here
 
         const vuuAuthProp = 'vuu-auth-token';
         const authToken = uuid();
+
+        TokenStore.setToken(authToken, {name: username});
 
         const headers = {
           'Access-Control-Allow-Credentials': true,

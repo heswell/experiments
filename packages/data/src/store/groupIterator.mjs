@@ -1,5 +1,5 @@
-import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './rangeUtils';
-import {getCount} from './groupUtils';
+import { NULL_RANGE, compareRanges, RangeFlags, getFullRange, getDeltaRange } from './rangeUtils.mjs';
+import {getCount} from './groupUtils.mjs';
 
 
 const RANGE_POS_TUPLE_SIZE = 4;

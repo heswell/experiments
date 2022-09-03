@@ -2,7 +2,7 @@
   "name": "@heswell/viewserver",
   "version": "3.0.0",
   "description": "Heswell Viewserver",
-  "main": "dist/index.js",
+  "main": "src/index.mjs",
   "publishConfig": {
     "access": "public"
   },
@@ -20,7 +20,8 @@
   "author": "heswell",
   "license": "MIT",
   "dependencies": {
-    "@heswell/data": "3.0.0"
+    "@heswell/data": "3.0.0",
+    "@heswell/server-core": "3.0.0"
   },
   "devDependencies": {}
 }

@@ -1,20 +1,16 @@
 import MessageQueue from '../message-queue.mjs';
 import { findHandler as handlerFor, killSubscriptions } from '../requestHandlers.mjs';
 import { updateLoop } from '../updateLoop.mjs';
-
-// we can have a separate clientId for XHR requests
-let _clientId = 0;
+import { uuid } from '../uuid.mjs';
+import {TokenStore} from "../tokenStore.mjs"
 
 export const requestHandler = (options, logger) => (localWebsocketConnection) => {
   const { HEARTBEAT_FREQUENCY, PRIORITY_UPDATE_FREQUENCY, CLIENT_UPDATE_FREQUENCY } = options;
-
-  let server_clientId = ++_clientId;
+  const sessionId = uuid();
 
   console.log(
-    `Server.websocketRequestHandler: connection request from new client #${server_clientId}`
+    `Server.websocketRequestHandler: connection request from new client session=#${sessionId}`
   );
-
-  // localWebsocketConnection.send(JSON.stringify({ type: 'Welcome', clientId: ++_clientId }));
 
   const _update_queue = new MessageQueue();
 
@@ -25,7 +21,7 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
     localWebsocketConnection,
     HEARTBEAT_FREQUENCY,
     () =>
-      `{"requestId":"NA","sessionId":"","user":"","token":"","body":{"type":"HB", "ts": 12356} }`
+      `{"requestId":"NA","sessionId":"${sessionId}","user":"","token":"","body":{"type":"HB", "ts": 12356} }`
   );
   const stopPriorityUpdates = updateLoop(
     'Priority Updates',
@@ -50,16 +46,21 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
       module,
       body: { type, ...message }
     } = json;
-    console.log(`${token} >>> ${type}  ${JSON.stringify(message)}`);
 
-    // some handlers are stateful (eg tableHandler). They must be notified
-    // when connection closes (maybe with delay to allow for temp disconenction)
-    const handler = handlerFor(type);
-
-    if (handler) {
-      handler(server_clientId, message, _update_queue);
+    if (type === 'HB_RESP') {
+      checkHeartBeat(sessionId, requestId, message);
+    } else if (type === 'LOGIN') {
+      login(sessionId, requestId, message, _update_queue);
     } else {
-      console.log(`server: dont know how to handle ${type} message`);
+      // some handlers are stateful (eg tableHandler). They must be notified
+      // when connection closes (maybe with delay to allow for temp disconenction)
+      const handler = handlerFor(type);
+
+      if (handler) {
+        handler(sessionId, requestId, message, _update_queue);
+      } else {
+        console.log(`server: dont know how to handle ${type} message`);
+      }
     }
   });
 
@@ -73,7 +74,7 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
     stopPriorityUpdates();
     stopUpdates();
 
-    killSubscriptions(server_clientId, _update_queue);
+    killSubscriptions(sessionId, _update_queue);
     // kill the update queue
   });
 
@@ -84,13 +85,6 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
   function priorityQueueReader() {
     const queue = _update_queue.extract(PRIORITY1);
     if (queue.length > 0) {
-      // queue.forEach((msg) => {
-      //   if (msg.data && msg.data.range) {
-      //     console.log(`[${Date.now()}]<<<<<<<<< ${msg.type} ${JSON.stringify(msg.data.range)}`);
-      //   }
-      // });
-      console.log({ queue });
-      // const msg = JSON.stringify(queue);
       return queue;
     } else {
       return null;
@@ -98,12 +92,36 @@ export const requestHandler = (options, logger) => (localWebsocketConnection) =>
   }
 
   function queueReader() {
-    if (_update_queue.length > 0) {
-      const msg = JSON.stringify(_update_queue.queue);
-      //onsole.log(`\n[${new Date().toISOString().slice(11,23)}] <<<<<   ${msg}`);
-      return msg;
+    const queue = _update_queue.extractAll();
+    if (queue.length > 0) {
+      return queue;
     } else {
       return null;
     }
   }
 };
+
+function login(sessionId, requestId, request, queue) {
+  const { token } = request;
+  if (TokenStore.hasToken(token)) {
+    TokenStore.setSession(token, sessionId);
+    queue.push({
+      requestId,
+      sessionId,
+      token,
+      user: 'user',
+      priority: 1,
+      body: {
+        type: 'LOGIN_SUCCESS',
+        token
+      }
+    });
+  } else {
+    console.error(`login attempt with unrecognised token`);
+  }
+}
+
+ function checkHeartBeat(sessionId, requestId, request, queue) {
+  console.log('heartbeat received');
+}
+

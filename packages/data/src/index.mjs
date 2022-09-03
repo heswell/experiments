@@ -5,9 +5,9 @@ import {
   buildColumnMap,
   metaData,
   setFilterColumnMeta
-} from './store/columnUtils';
+} from './store/columnUtils.mjs';
 
-import { sortByToMap } from './store/sort';
+import { sortByToMap } from './store/sort.mjs';
 import {
   AND,
   OR,
@@ -29,15 +29,15 @@ import {
   SET_FILTER_DATA_COLUMNS,
   BIN_FILTER_DATA_COLUMNS,
   shouldShowFilter
-} from './store/filter';
+} from './store/filter.mjs';
 
-import { getFullRange, resetRange, NULL_RANGE as NULL } from './store/rangeUtils';
+import { getFullRange, resetRange, NULL_RANGE as NULL } from './store/rangeUtils.mjs';
 
-import { updateGroupBy, indexOfCol, groupbyExtendsExistingGroupby } from './store/groupUtils';
+import { updateGroupBy, indexOfCol, groupbyExtendsExistingGroupby } from './store/groupUtils.mjs';
 
-import { isEmptyRow, update } from './store/rowUtils';
+import { isEmptyRow, update } from './store/rowUtils.mjs';
 
-import * as types from './store/types';
+import * as types from './store/types.mjs';
 
 export const groupHelpers = {
   updateGroupBy,
@@ -45,8 +45,8 @@ export const groupHelpers = {
   groupbyExtendsExistingGroupby
 };
 
-export { default as Table } from './store/table';
-export { default as DataView } from './store/data-view';
+export { default as Table } from './store/table.mjs';
+export { default as DataView } from './store/data-view.mjs';
 
 export const sortUtils = {
   sortByToMap

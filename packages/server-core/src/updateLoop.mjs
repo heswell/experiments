@@ -4,7 +4,7 @@ export function updateLoop(name, connection, interval, readQueue) {
   let _keepGoing = true;
   let _timeoutHandle = null;
 
-  function beat() {
+  function tick() {
     const queuedMessages = readQueue();
 
     if (Array.isArray(queuedMessages)) {
@@ -16,11 +16,11 @@ export function updateLoop(name, connection, interval, readQueue) {
     }
 
     if (_keepGoing) {
-      _timeoutHandle = setTimeout(beat, interval);
+      _timeoutHandle = setTimeout(tick, interval);
     }
   }
 
-  beat();
+  tick();
 
   function stopper() {
     console.log(`stopping updateLoop ${name}`);

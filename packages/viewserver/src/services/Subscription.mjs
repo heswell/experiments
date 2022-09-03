@@ -1,15 +1,15 @@
 import {DataView as View, columnUtils, DataTypes} from '@heswell/data';
 
 //TODO implement as class
-export default function Subscription (table, {viewport, requestId, ...options}, queue){
+export default function Subscription (table, viewportId, {requestId, ...options}, queue){
 
-    const {range, columns: requestedColumns, sortCriteria, groupBy} = options;
+    const {columns: requestedColumns, filterSpec, groupBy, range, sort} = options;
     const {name: tablename, columns: availableColumns} = table;
     const columns = requestedColumns.length > 0
         ? requestedColumns
         : availableColumns;
 
-    let view = new View(table, {columns, sortCriteria, groupBy});
+    let view = new View(table, {columns, filterSpec, groupBy, sort});
     let timeoutHandle;
 
     const tableMeta = columnUtils.metaData(columns);
@@ -18,13 +18,18 @@ export default function Subscription (table, {viewport, requestId, ...options}, 
 
     queue.push({
         requestId,
-        viewport,
-        type: 'Subscribed',
+        sessionId: '',
+        token: '',
+        user: '',
+        body: {
+        table: tablename,
+        type: 'CREATE_VP_SUCCESS',
         tablename,
         columns,
-        availableColumns,
         size: view.size,
-        offset: view.offset
+        offset: view.offset,
+        viewportId,
+        }
     });
 
     if (view.status === 'ready'){

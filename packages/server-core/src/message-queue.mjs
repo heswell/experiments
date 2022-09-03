@@ -63,6 +63,12 @@ export default class MessageQueue {
             return extractMessages(this._queue, test);
         }
     }
+
+    extractAll(){
+        const messages = this._queue.slice();
+        this._queue.length = 0;
+        return messages;
+    }
 }
 
 

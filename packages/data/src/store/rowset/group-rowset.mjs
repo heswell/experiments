@@ -1,4 +1,4 @@
-import BaseRowSet from './rowSet';
+import BaseRowSet from './rowSet.mjs';
 import {
   groupRows,
   findSortedCol,
@@ -21,13 +21,13 @@ import {
   adjustGroupIndices,
   adjustLeafIdxPointers,
   allGroupsExpanded
-} from '../groupUtils';
-import { sortBy, sortPosition } from '../sort';
-import { extendsFilter, functor as filterPredicate } from '../filter';
-import { mapSortCriteria } from '../columnUtils';
-import GroupIterator from '../groupIterator';
-import { ASC } from '../types';
-import { NULL_RANGE } from '../rangeUtils';
+} from '../groupUtils.mjs';
+import { sortBy, sortPosition } from '../sort.mjs';
+import { extendsFilter, functor as filterPredicate } from '../filter.mjs';
+import { mapSortCriteria } from '../columnUtils.mjs';
+import GroupIterator from '../groupIterator.mjs';
+import { ASC } from '../types.mjs';
+import { NULL_RANGE } from '../rangeUtils.mjs';
 
 const EMPTY_ARRAY = [];
 

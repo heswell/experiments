@@ -2,7 +2,7 @@
   "name": "@heswell/server-core",
   "version": "3.0.0",
   "description": "Heswell websocket server",
-  "main": "dist/index.js",
+  "main": "src/index.mjs",
   "publishConfig": {
     "access": "public"
   },

@@ -1,20 +1,20 @@
-import { resetRange, withinRange } from './rangeUtils';
-import { RowSet, GroupRowSet } from './rowset/index';
-import { buildColumnMap, toColumn, getFilterType } from './columnUtils';
-import UpdateQueue from './update-queue';
-import { DataTypes } from './types';
-import { addFilter, IN, NOT_IN } from './filter';
+import { resetRange, withinRange } from './rangeUtils.mjs';
+import { RowSet, GroupRowSet } from './rowset/index.mjs';
+import { buildColumnMap, toColumn, getFilterType } from './columnUtils.mjs';
+import UpdateQueue from './update-queue.mjs';
+import { DataTypes } from './types.mjs';
+import { addFilter, IN, NOT_IN } from './filter.mjs';
 
 const DEFAULT_INDEX_OFFSET = 100;
 const WITH_STATS = true;
 export default class DataView {
 
-    constructor(table, { columns = [], sortCriteria = null, groupBy = null, filter = null }, updateQueue = new UpdateQueue()) {
+    constructor(table, { columns = [], sort = null, groupBy = null, filterSpec = null }, updateQueue = new UpdateQueue()) {
         this._table = table;
         this._index_offset = DEFAULT_INDEX_OFFSET;
-        this._filter = filter;
+        this._filter = filterSpec;
         this._groupState = null;
-        this._sortCriteria = sortCriteria;
+        this._sortCriteria = sort;
 
         this._columns = null;
         this._columnMap = null;

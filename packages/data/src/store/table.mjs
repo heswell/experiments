@@ -1,6 +1,6 @@
 /*global fetch */
-import { EventEmitter } from "./event-emitter";
-import { buildColumnMap } from "./columnUtils";
+import { EventEmitter } from "./event-emitter.mjs";
+import { buildColumnMap } from "./columnUtils.mjs";
 
 const defaultUpdateConfig = {
   applyUpdates: false,

@@ -1,5 +1,5 @@
-import {ASC} from './types';
-import {mapSortCriteria} from './columnUtils';
+import {ASC} from './types.mjs';
+import {mapSortCriteria} from './columnUtils.mjs';
 
 const EMPTY_MAP = {};
 

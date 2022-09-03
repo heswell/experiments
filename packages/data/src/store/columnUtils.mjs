@@ -2,7 +2,7 @@ import {
     functor, 
     overrideColName, 
     SET_FILTER_DATA_COLUMNS, 
-    BIN_FILTER_DATA_COLUMNS} from './filter';
+    BIN_FILTER_DATA_COLUMNS} from './filter.mjs';
 
 const SORT_ASC = 'asc';
 

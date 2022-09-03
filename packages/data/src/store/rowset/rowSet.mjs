@@ -2,9 +2,9 @@
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
 import * as d3 from 'd3-array';
-import Table from '../table';
-import SelectionModel, {SelectionModelType} from '../selection-model';
-import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort';
+import Table from '../table.mjs';
+import SelectionModel, {SelectionModelType} from '../selection-model.mjs';
+import { sort, sortExtend, sortReversed, sortBy, sortPosition, sortableFilterSet } from '../sort.mjs';
 import { 
     BIN_FILTER_DATA_COLUMNS,
     SET_FILTER_DATA_COLUMNS,
@@ -13,12 +13,12 @@ import {
     functor as filterPredicate,
     splitFilterOnColumn,
     overrideColName
-} from '../filter';
-import { addRowsToIndex, arrayOfIndices } from '../rowUtils';
-import { groupbyExtendsExistingGroupby } from '../groupUtils';
-import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils';
-import { DataTypes } from '../types';
-import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils';
+} from '../filter.mjs';
+import { addRowsToIndex, arrayOfIndices } from '../rowUtils.mjs';
+import { groupbyExtendsExistingGroupby } from '../groupUtils.mjs';
+import { projectColumns, projectColumnsFilter, mapSortCriteria, metaData } from '../columnUtils.mjs';
+import { DataTypes } from '../types.mjs';
+import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils.mjs';
 
 const SINGLE_COLUMN = 1;
 

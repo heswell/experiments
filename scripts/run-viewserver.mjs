@@ -1,5 +1,5 @@
-import startServer from '../packages/server-core/src/index.js';
-import { config } from '../packages/viewserver/src/index.js';
+import startServer from '@heswell/server-core';
+import { config } from '@heswell/viewserver';
 
 console.log('run-viewserver.js about to START SERVER');
 
