@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/config.ts"],
+  "sourcesContent": ["import {\n  Instruments,\n  InstrumentPrices,\n  OrderBlotter /*, OrderBook, Simpsons,, TestTable */\n} from '../dataTables/index.js';\nimport { ServiceDefinition as DataTableService } from './services/DataTableServiceDefinition.js';\n\nexport const config = {\n  services: [DataTableService],\n  DataTables: [Instruments, OrderBlotter, InstrumentPrices]\n};\n"],
+  "mappings": "AAAA;AAAA,EACE;AAAA,EACA;AAAA,EACA;AAAA,OACK;AACP,SAAS,qBAAqB,wBAAwB;AAE/C,MAAM,SAAS;AAAA,EACpB,UAAU,CAAC,gBAAgB;AAAA,EAC3B,YAAY,CAAC,aAAa,cAAc,gBAAgB;AAC1D;",
+  "names": []
+}

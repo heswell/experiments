@@ -2,19 +2,12 @@
   "name": "@heswell/server-core",
   "version": "3.0.0",
   "description": "Heswell websocket server",
-  "main": "src/index.mjs",
+  "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "index.js",
-    "index.js.map",
-    "/src",
-    "/types"
-  ],
   "scripts": {
-    "build": "node ../../scripts/build.mjs",
-    "type-defs": "tsc --project ../../tsconfig-emit-types.json"
+    "build": "etsc"
   },
   "type": "module",
   "author": "heswell",

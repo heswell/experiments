@@ -2,8 +2,8 @@
   See UpdateQueue
 */
 //TODO does this belong in view ?
-import { EventEmitter } from "./event-emitter.mjs";
-import { DataTypes } from "./types";
+import { EventEmitter } from "./event-emitter.js";
+import { DataTypes } from "./types.js";
 
 export default class UpdateQueue extends EventEmitter {
   // just until we get typings sorted ...

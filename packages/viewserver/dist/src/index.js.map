@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/index.ts"],
+  "sourcesContent": ["export { config } from './config.js';\n"],
+  "mappings": "AAAA,SAAS,cAAc;",
+  "names": []
+}

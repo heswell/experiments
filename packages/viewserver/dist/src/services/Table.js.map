@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/services/Table.ts"],
+  "sourcesContent": ["import { Table as BaseTable } from '@heswell/data';\n\nexport default class Table extends BaseTable {\n  async loadData(dataPath) {\n    console.log(`import data from ${dataPath}`);\n    try {\n      const { default: data } = await import(`${dataPath}`);\n      if (data) {\n        this.parseData(data);\n      }\n    } catch (e) {\n      console.error(`failed to load data from path '${dataPath}'`, e);\n    }\n  }\n\n  async installDataGenerators({ createPath, updatePath }) {\n    if (createPath) {\n      const { default: createGenerator } = await import(`${createPath}`);\n      this.createRow = createGenerator;\n    }\n    if (updatePath) {\n      const { default: updateGenerator } = await import(`${updatePath}`);\n      this.updateRow = updateGenerator;\n    }\n  }\n}\n"],
+  "mappings": "AAAA,SAAS,SAAS,iBAAiB;AAEnC,MAAO,cAA4B,UAAU;AAAA,EAC3C,MAAM,SAAS,UAAU;AACvB,YAAQ,IAAI,oBAAoB,UAAU;AAC1C,QAAI;AACF,YAAM,EAAE,SAAS,KAAK,IAAI,MAAM,OAAO,GAAG;AAC1C,UAAI,MAAM;AACR,aAAK,UAAU,IAAI;AAAA,MACrB;AAAA,IACF,SAAS,GAAP;AACA,cAAQ,MAAM,kCAAkC,aAAa,CAAC;AAAA,IAChE;AAAA,EACF;AAAA,EAEA,MAAM,sBAAsB,EAAE,YAAY,WAAW,GAAG;AACtD,QAAI,YAAY;AACd,YAAM,EAAE,SAAS,gBAAgB,IAAI,MAAM,OAAO,GAAG;AACrD,WAAK,YAAY;AAAA,IACnB;AACA,QAAI,YAAY;AACd,YAAM,EAAE,SAAS,gBAAgB,IAAI,MAAM,OAAO,GAAG;AACrD,WAAK,YAAY;AAAA,IACnB;AAAA,EACF;AACF;",
+  "names": []
+}

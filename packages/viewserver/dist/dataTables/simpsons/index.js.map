@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../dataTables/simpsons/index.ts"],
+  "sourcesContent": ["import path from 'path';\nimport fs from 'fs';\n\nconst project_path = path.resolve(fs.realpathSync('.'), 'packages/viewserver/dataTables/simpsons');\n\nconst config = {\n    name: 'Simpsons',\n    dataPath: `${project_path}/data-generator`,\n    type: 'vs',\n    primaryKey: 'seq',\n    columns: [\n        {name: 'seq'},\n        {name: 'name'},\n        {name: 'client'},\n        {name: 'chg'},\n        {name: 'bid'},\n        {name: 'ask'},\n        {name: 'vol'},\n        {name: 'lastUpdate'}\n    ],\n    updates: {\n        applyInserts: false,\n        applyUpdates: false\n    }\n};\n\nexport default config;\n"],
+  "mappings": "AAAA,OAAO,UAAU;AACjB,OAAO,QAAQ;AAEf,MAAM,eAAe,KAAK,QAAQ,GAAG,aAAa,GAAG,GAAG,yCAAyC;AAEjG,MAAM,SAAS;AAAA,EACX,MAAM;AAAA,EACN,UAAU,GAAG;AAAA,EACb,MAAM;AAAA,EACN,YAAY;AAAA,EACZ,SAAS;AAAA,IACL,EAAC,MAAM,MAAK;AAAA,IACZ,EAAC,MAAM,OAAM;AAAA,IACb,EAAC,MAAM,SAAQ;AAAA,IACf,EAAC,MAAM,MAAK;AAAA,IACZ,EAAC,MAAM,MAAK;AAAA,IACZ,EAAC,MAAM,MAAK;AAAA,IACZ,EAAC,MAAM,MAAK;AAAA,IACZ,EAAC,MAAM,aAAY;AAAA,EACvB;AAAA,EACA,SAAS;AAAA,IACL,cAAc;AAAA,IACd,cAAc;AAAA,EAClB;AACJ;AAEA,IAAO,mBAAQ;",
+  "names": []
+}

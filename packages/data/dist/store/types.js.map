@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/store/types.ts"],
+  "sourcesContent": ["export const DataTypes = {\n    ROW_DATA: 'rowData',\n    FILTER_DATA: 'filterData',\n    FILTER_BINS: 'filterBins'\n};\n\nexport const ASC = 'asc';\nexport const DSC = 'dsc';\n"],
+  "mappings": "AAAO,MAAM,YAAY;AAAA,EACrB,UAAU;AAAA,EACV,aAAa;AAAA,EACb,aAAa;AACjB;AAEO,MAAM,MAAM;AACZ,MAAM,MAAM;",
+  "names": []
+}

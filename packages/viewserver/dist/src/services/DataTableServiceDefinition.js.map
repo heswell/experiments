@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/services/DataTableServiceDefinition.ts"],
+  "sourcesContent": ["import path from 'path';\nimport url from 'url';\n\n// TODO unify these with server-api/messages\nconst ServerApiMessageTypes = {\n  addSubscription: 'AddSubscription'\n};\n\nconst data_path = path.dirname(new url.URL(import.meta.url).pathname);\n\nexport const ServiceDefinition = {\n  name: 'DataTableService',\n  module: `${data_path}/DataTableService.js`,\n  API: [\n    'HB_RESP',\n    'GET_TABLE_LIST',\n    'GET_TABLE_META',\n    'CREATE_VP',\n    'TerminateSubscription',\n    'setViewRange',\n    'GetFilterData',\n    'GetSearchData',\n    'ModifySubscription',\n    'InsertTableRow',\n    'groupBy',\n    'sort',\n    'filter',\n    'select',\n    'selectAll',\n    'selectNone',\n    'setGroupState',\n    'ExpandGroup',\n    'CollapseGroup',\n    'unsubscribeAll'\n  ]\n};\n"],
+  "mappings": "AAAA,OAAO,UAAU;AACjB,OAAO,SAAS;AAGhB,MAAM,wBAAwB;AAAA,EAC5B,iBAAiB;AACnB;AAEA,MAAM,YAAY,KAAK,QAAQ,IAAI,IAAI,IAAI,YAAY,GAAG,EAAE,QAAQ;AAE7D,MAAM,oBAAoB;AAAA,EAC/B,MAAM;AAAA,EACN,QAAQ,GAAG;AAAA,EACX,KAAK;AAAA,IACH;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,IACA;AAAA,EACF;AACF;",
+  "names": []
+}

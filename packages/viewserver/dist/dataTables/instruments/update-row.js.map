@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../dataTables/instruments/update-row.ts"],
+  "sourcesContent": ["export default function updateRow(idx, row, columnMap) {\n    const colIdx = columnMap['Price']\n    const direction = Math.random() > 0.5 ? 1 : -1;\n    return [colIdx, row[colIdx] * (1 + direction * Math.random() / 10)];\n}\n"],
+  "mappings": "AAAe,SAAR,UAA2B,KAAK,KAAK,WAAW;AACnD,QAAM,SAAS,UAAU;AACzB,QAAM,YAAY,KAAK,OAAO,IAAI,MAAM,IAAI;AAC5C,SAAO,CAAC,QAAQ,IAAI,WAAW,IAAI,YAAY,KAAK,OAAO,IAAI,GAAG;AACtE;",
+  "names": []
+}

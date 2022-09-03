@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../dataTables/order-blotter/create-row.ts"],
+  "sourcesContent": ["\nfunction choose(choices) {\n  return choices[Math.floor(Math.random() * choices.length)];\n}\n\nfunction random(min, max) {\n  min = Math.ceil(min);\n  max = Math.floor(max);\n  return Math.floor(Math.random() * (max - min + 1)) + min;\n}\n\nconst STATUS = ['pending', 'in-progress', 'done', 'cancelled']\nconst DIRECTION = ['buy', 'sell'];\nconst CCY = ['GBP', 'USD', 'EUR']\n\nexport default function createRow(idx, columns) {\n  \n  \n  return {\n    \"OrderId\": `ORD1230${idx+1}`,\n    \"Status\": choose(STATUS),\n    \"Direction\": choose(DIRECTION) ,\n    \"ISIN\": \"GB00BH4HKS39\",\n    \"Quantity\": random(1000, 100000),\n    \"Price\": random(150, 25000) / 100,\n    \"Currency\": choose(CCY),\n    \"timestamp\": +(new Date())\n    }\n}\n"],
+  "mappings": "AACA,SAAS,OAAO,SAAS;AACvB,SAAO,QAAQ,KAAK,MAAM,KAAK,OAAO,IAAI,QAAQ,MAAM;AAC1D;AAEA,SAAS,OAAO,KAAK,KAAK;AACxB,QAAM,KAAK,KAAK,GAAG;AACnB,QAAM,KAAK,MAAM,GAAG;AACpB,SAAO,KAAK,MAAM,KAAK,OAAO,KAAK,MAAM,MAAM,EAAE,IAAI;AACvD;AAEA,MAAM,SAAS,CAAC,WAAW,eAAe,QAAQ,WAAW;AAC7D,MAAM,YAAY,CAAC,OAAO,MAAM;AAChC,MAAM,MAAM,CAAC,OAAO,OAAO,KAAK;AAEjB,SAAR,UAA2B,KAAK,SAAS;AAG9C,SAAO;AAAA,IACL,WAAW,UAAU,MAAI;AAAA,IACzB,UAAU,OAAO,MAAM;AAAA,IACvB,aAAa,OAAO,SAAS;AAAA,IAC7B,QAAQ;AAAA,IACR,YAAY,OAAO,KAAM,GAAM;AAAA,IAC/B,SAAS,OAAO,KAAK,IAAK,IAAI;AAAA,IAC9B,YAAY,OAAO,GAAG;AAAA,IACtB,aAAa,CAAE,IAAI,KAAK;AAAA,EACxB;AACJ;",
+  "names": []
+}
