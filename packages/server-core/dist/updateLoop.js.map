@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/updateLoop.ts"],
-  "sourcesContent": ["export function updateLoop(name, connection, interval, readQueue) {\n  console.log(`starting update loop ${name} @  ${interval}`);\n\n  let _keepGoing = true;\n  let _timeoutHandle = null;\n\n  function tick() {\n    const queuedMessages = readQueue();\n\n    if (Array.isArray(queuedMessages)) {\n      for (const message of queuedMessages) {\n        connection.send(JSON.stringify(message));\n      }\n    } else if (typeof queuedMessages === 'string') {\n      connection.send(queuedMessages);\n    }\n\n    if (_keepGoing) {\n      _timeoutHandle = setTimeout(tick, interval);\n    }\n  }\n\n  tick();\n\n  function stopper() {\n    console.log(`stopping updateLoop ${name}`);\n    if (_timeoutHandle) {\n      clearTimeout(_timeoutHandle);\n    }\n    _keepGoing = false;\n  }\n\n  return stopper;\n}\n"],
-  "mappings": "AAAO,SAAS,WAAW,MAAM,YAAY,UAAU,WAAW;AAChE,UAAQ,IAAI,wBAAwB,WAAW,UAAU;AAEzD,MAAI,aAAa;AACjB,MAAI,iBAAiB;AAErB,WAAS,OAAO;AACd,UAAM,iBAAiB,UAAU;AAEjC,QAAI,MAAM,QAAQ,cAAc,GAAG;AACjC,iBAAW,WAAW,gBAAgB;AACpC,mBAAW,KAAK,KAAK,UAAU,OAAO,CAAC;AAAA,MACzC;AAAA,IACF,WAAW,OAAO,mBAAmB,UAAU;AAC7C,iBAAW,KAAK,cAAc;AAAA,IAChC;AAEA,QAAI,YAAY;AACd,uBAAiB,WAAW,MAAM,QAAQ;AAAA,IAC5C;AAAA,EACF;AAEA,OAAK;AAEL,WAAS,UAAU;AACjB,YAAQ,IAAI,uBAAuB,MAAM;AACzC,QAAI,gBAAgB;AAClB,mBAAa,cAAc;AAAA,IAC7B;AACA,iBAAa;AAAA,EACf;AAEA,SAAO;AACT;",
-  "names": []
-}

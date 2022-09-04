@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/uuid.ts"],
-  "sourcesContent": ["import UUID from 'pure-uuid';\n\nexport function uuid() {\n  return new UUID(1).format();\n}\n"],
-  "mappings": "AAAA,OAAO,UAAU;AAEV,SAAS,OAAO;AACrB,SAAO,IAAI,KAAK,CAAC,EAAE,OAAO;AAC5B;",
-  "names": []
-}

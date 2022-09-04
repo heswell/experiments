@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/testTable/data-generator.ts"],
-  "sourcesContent": ["import { createRow } from '@heswell/viewserver/dist/dataTables/testTable/create-row';\n\nexport const data = [];\nconst rowCount = 10;\n\nfor (let i = 0; i < rowCount; i++) {\n  data.push(createRow(i));\n}\n"],
-  "mappings": "AAAA,SAAS,iBAAiB;AAEnB,MAAM,OAAO,CAAC;AACrB,MAAM,WAAW;AAEjB,SAAS,IAAI,GAAG,IAAI,UAAU,KAAK;AACjC,OAAK,KAAK,UAAU,CAAC,CAAC;AACxB;",
-  "names": []
-}

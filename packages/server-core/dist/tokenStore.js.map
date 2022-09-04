@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/tokenStore.ts"],
-  "sourcesContent": ["const sessions = new Map();\n\nconst hasToken = (token) => sessions.has(token);\n\nconst setToken = (token, user) => {\n  console.log(`store token ${token} for user ${user}`);\n  sessions.set(token,  user);\n}\n\nconst setSession = (token, sessionId) => {\n  const session = sessions.get(token);\n  if (session){\n    session.sessionId = sessionId;\n  } else {\n    throw Error(`TokenStore cannot associate session ${sessionId} with token ${token}`);\n  }\n}\n\nexport const TokenStore = {\n  hasToken,\n  setToken,\n  setSession\n}"],
-  "mappings": "AAAA,MAAM,WAAW,oBAAI,IAAI;AAEzB,MAAM,WAAW,CAAC,UAAU,SAAS,IAAI,KAAK;AAE9C,MAAM,WAAW,CAAC,OAAO,SAAS;AAChC,UAAQ,IAAI,eAAe,kBAAkB,MAAM;AACnD,WAAS,IAAI,OAAQ,IAAI;AAC3B;AAEA,MAAM,aAAa,CAAC,OAAO,cAAc;AACvC,QAAM,UAAU,SAAS,IAAI,KAAK;AAClC,MAAI,SAAQ;AACV,YAAQ,YAAY;AAAA,EACtB,OAAO;AACL,UAAM,MAAM,uCAAuC,wBAAwB,OAAO;AAAA,EACpF;AACF;AAEO,MAAM,aAAa;AAAA,EACxB;AAAA,EACA;AAAA,EACA;AACF;",
-  "names": []
-}

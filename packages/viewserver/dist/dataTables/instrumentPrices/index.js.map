@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/instrumentPrices/index.ts"],
-  "sourcesContent": ["import path from 'path';\nimport fs from 'fs';\n\nconst path_root = 'node_modules/@heswell/viewserver/dist/dataTables';\n\nconst project_path = path.resolve(fs.realpathSync('.'), `${path_root}/instrumentPrices`);\n\nconst config = {\n  name: 'InstrumentPrices',\n  dataPath: `${project_path}/data-generator.js`,\n  type: 'vs',\n  primaryKey: 'ric',\n  columns: [\n    { name: 'ric' },\n    { name: 'description' },\n    { name: 'currency' },\n    { name: 'exchange' },\n    { name: 'lotsize' }\n  ],\n  updates: {\n    applyInserts: false,\n    applyUpdates: false\n  }\n};\n\nexport default config;\n"],
-  "mappings": "AAAA,OAAO,UAAU;AACjB,OAAO,QAAQ;AAEf,MAAM,YAAY;AAElB,MAAM,eAAe,KAAK,QAAQ,GAAG,aAAa,GAAG,GAAG,GAAG,4BAA4B;AAEvF,MAAM,SAAS;AAAA,EACb,MAAM;AAAA,EACN,UAAU,GAAG;AAAA,EACb,MAAM;AAAA,EACN,YAAY;AAAA,EACZ,SAAS;AAAA,IACP,EAAE,MAAM,MAAM;AAAA,IACd,EAAE,MAAM,cAAc;AAAA,IACtB,EAAE,MAAM,WAAW;AAAA,IACnB,EAAE,MAAM,WAAW;AAAA,IACnB,EAAE,MAAM,UAAU;AAAA,EACpB;AAAA,EACA,SAAS;AAAA,IACP,cAAc;AAAA,IACd,cAAc;AAAA,EAChB;AACF;AAEA,IAAO,2BAAQ;",
-  "names": []
-}

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/testTable/columns.ts"],
-  "sourcesContent": ["export const columns = [\n    { name: 'Column-1', type: 'string' },\n    { name: 'Column-2', type: 'string' },\n    { name: 'Column-3', type: 'number' },\n    { name: 'Column-4', type: 'number' },\n    { name: 'Column-5', type: 'number' },\n    { name: 'Column-6', type: 'string' },\n    { name: 'Column-7', type: 'string', value: 'group1' },\n    { name: 'Column-8', type: 'number' },\n    { name: 'Column-9', type: 'number' },\n    { name: 'Column-10', type: 'number' },\n    { name: 'Column-11', type: 'number' },\n    { name: 'Timestamp', type: 'datetime' },\n    { name: 'AutoInc', type: 'increment' }\n];\n"],
-  "mappings": "AAAO,MAAM,UAAU;AAAA,EACnB,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,UAAU,OAAO,SAAS;AAAA,EACpD,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,YAAY,MAAM,SAAS;AAAA,EACnC,EAAE,MAAM,aAAa,MAAM,SAAS;AAAA,EACpC,EAAE,MAAM,aAAa,MAAM,SAAS;AAAA,EACpC,EAAE,MAAM,aAAa,MAAM,WAAW;AAAA,EACtC,EAAE,MAAM,WAAW,MAAM,YAAY;AACzC;",
-  "names": []
-}

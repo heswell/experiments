@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/order-book/index.ts"],
-  "sourcesContent": ["import fs from 'fs';\n\nconst data_path = fs.realpathSync(process.cwd());\nconst project_path = 'src/@heswell/viewserver/dist/dataTables/order-book';\n\nconst config = {\n  name: 'order-book',\n  dataPath: `${data_path}/${project_path}/dataset.js`,\n  // createPath: `${data_path}/${project_path}/create-row`,\n  // updatePath: `${data_path}/${project_path}/update-row`,\n  type: 'vs',\n  primaryKey: 'Id',\n  columns: [\n    { name: 'Id' },\n    { name: 'ISIN' },\n    { name: 'Level' },\n    { name: 'Bid' },\n    { name: 'Bid Volume' },\n    { name: 'Bid Party' },\n    { name: 'Ask' },\n    { name: 'Ask Volume' },\n    { name: 'Ask Party' },\n    { name: 'timestamp' }\n  ]\n  // updates: {\n  //     interval: 100,\n  //     fields: ['Price'],\n  //     applyInserts: false,\n  //     applyUpdates: false\n  // }\n};\n\nexport default config;\n"],
-  "mappings": "AAAA,OAAO,QAAQ;AAEf,MAAM,YAAY,GAAG,aAAa,QAAQ,IAAI,CAAC;AAC/C,MAAM,eAAe;AAErB,MAAM,SAAS;AAAA,EACb,MAAM;AAAA,EACN,UAAU,GAAG,aAAa;AAAA,EAG1B,MAAM;AAAA,EACN,YAAY;AAAA,EACZ,SAAS;AAAA,IACP,EAAE,MAAM,KAAK;AAAA,IACb,EAAE,MAAM,OAAO;AAAA,IACf,EAAE,MAAM,QAAQ;AAAA,IAChB,EAAE,MAAM,MAAM;AAAA,IACd,EAAE,MAAM,aAAa;AAAA,IACrB,EAAE,MAAM,YAAY;AAAA,IACpB,EAAE,MAAM,MAAM;AAAA,IACd,EAAE,MAAM,aAAa;AAAA,IACrB,EAAE,MAAM,YAAY;AAAA,IACpB,EAAE,MAAM,YAAY;AAAA,EACtB;AAOF;AAEA,IAAO,qBAAQ;",
-  "names": []
-}

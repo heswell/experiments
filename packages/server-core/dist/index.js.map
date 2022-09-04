@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/index.ts"],
-  "sourcesContent": ["export * from './server.js';\nexport * from './uuid.js';\n"],
-  "mappings": "AAAA,cAAc;AACd,cAAc;",
-  "names": []
-}

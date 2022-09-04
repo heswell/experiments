@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/instruments/create-row.ts"],
-  "sourcesContent": ["export default function createRow(idx, columns) {\n}\n"],
-  "mappings": "AAAe,SAAR,UAA2B,KAAK,SAAS;AAChD;",
-  "names": []
-}

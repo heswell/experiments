@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../dataTables/testTable/update-row.ts"],
-  "sourcesContent": ["import { columns } from './columns';\n\nexport function updateRow(idx, row, columnMap) {\n    const FIELD_UPDATE_FREQ = 0.3;\n    let updates = [];\n    for (let ii = 0; ii < columns.length; ii++) {\n        if (columns[ii].type === 'number' && Math.random() > 1 - FIELD_UPDATE_FREQ) {\n            let direction = Math.random() > 0.5 ? 1 : -1;\n            updates.push(ii, row[ii] * (1 + direction * Math.random() / 10));\n        }\n    }\n    if (updates.length) {\n        return updates;\n    }\n}\n"],
-  "mappings": "AAAA,SAAS,eAAe;AAEjB,SAAS,UAAU,KAAK,KAAK,WAAW;AAC3C,QAAM,oBAAoB;AAC1B,MAAI,UAAU,CAAC;AACf,WAAS,KAAK,GAAG,KAAK,QAAQ,QAAQ,MAAM;AACxC,QAAI,QAAQ,IAAI,SAAS,YAAY,KAAK,OAAO,IAAI,IAAI,mBAAmB;AACxE,UAAI,YAAY,KAAK,OAAO,IAAI,MAAM,IAAI;AAC1C,cAAQ,KAAK,IAAI,IAAI,OAAO,IAAI,YAAY,KAAK,OAAO,IAAI,GAAG;AAAA,IACnE;AAAA,EACJ;AACA,MAAI,QAAQ,QAAQ;AAChB,WAAO;AAAA,EACX;AACJ;",
-  "names": []
-}

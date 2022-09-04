@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/store/rowset/index.ts"],
-  "sourcesContent": ["// Note, these must be exported in this order and must be consumed from this file.\n// to avoid circular dependency issues.\nexport { RowSet, SetFilterRowSet, BinFilterRowSet } from './rowSet.js';\nexport { GroupRowSet } from './group-rowset.js';\n"],
-  "mappings": "AAEA,SAAS,QAAQ,iBAAiB,uBAAuB;AACzD,SAAS,mBAAmB;",
-  "names": []
-}
