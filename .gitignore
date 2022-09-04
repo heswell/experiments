@@ -1,4 +1,5 @@
-**/node_modules
+dist
+node_modules
 packages/*/index.js
 packages/*/types
 packages/*/index.js.map
