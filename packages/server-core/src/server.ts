@@ -1,4 +1,4 @@
-import { configure as configureRequestHandlers } from './requestHandlers.js';
+import { configure as configureRequestHandlers, ServerConfig } from './requestHandlers.js';
 import { configure as configureXhr } from './xhrHandler.js';
 import { requestHandler as viewserverRequestHandler } from './handlers/viewserverRequestHandler.js';
 import { handleAuthenticationRequest } from './handlers/authenticationHandler.js';
@@ -8,16 +8,6 @@ import http from 'http';
 import WebSocket from 'ws';
 
 const logger = console;
-
-class SubscriptionCounter {
-  constructor() {
-    this._count = 0;
-  }
-  next() {
-    this._count += 1;
-    return this._count;
-  }
-}
 
 //const mapArgs = (map, arg) => {let [n,v]=arg.split('=');map[n.toLowerCase()]=v;return map;};
 // const args = process.argv.slice(2).reduce(mapArgs,{});
@@ -30,10 +20,9 @@ const PRIORITY_UPDATE_FREQUENCY = 20;
 const CLIENT_UPDATE_FREQUENCY = 50;
 const HEARTBEAT_FREQUENCY = 5000;
 
-export function start(config) {
+export function start(config: ServerConfig) {
   configureRequestHandlers({
-    ...config,
-    subscriptionCounter: new SubscriptionCounter()
+    ...config
   });
 
   const msgConfig = {

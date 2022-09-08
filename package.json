@@ -6,6 +6,7 @@
     "build:data": "cd packages/data && yarn build",
     "build:viewserver": "cd packages/viewserver && yarn build",
     "build:server": "cd packages/server-core && yarn build",
+    "typecheck": "tsc --noEmit",
     "viewserver": "node scripts/run-viewserver.mjs"
   },
   "type": "module",

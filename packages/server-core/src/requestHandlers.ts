@@ -1,18 +1,24 @@
 /* global require:false */
+import { ServerConfig } from './serverTypes';
 
 const services = {};
 const serviceAPI = {};
 
-export function configure(config) {
+interface ServiceAPI {
+  configure: (config: ServerConfig) => void;
+}
+
+export function configure(config: ServerConfig) {
   console.log(`requestHandler.configure ${JSON.stringify(config, null, 2)}`);
 
   config.services.forEach(async ({ name, module, API }) => {
-    console.log(`about to import ${module}`);
+    console.log(`about to import service ${name}, module=${module}`);
     // TODO roll these up into async functions we can invoke in parallel
-    const service = await import(module);
+    const service: ServiceAPI = await import(module);
     services[name] = service;
     API.forEach((messageType) => (serviceAPI[messageType] = name));
     console.log(`configure service ${name} `);
+    // do we have to wait ?
     await service.configure(config);
   });
 }

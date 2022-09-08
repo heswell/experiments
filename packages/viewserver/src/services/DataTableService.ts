@@ -1,6 +1,7 @@
 import Table from './Table.js';
 import Subscription from './Subscription.js';
 import { uuid } from '@heswell/server-core';
+import { ServerConfig, TableProps } from '../serverTypes';
 
 const _tables = {};
 var _subscriptions = {};
@@ -19,8 +20,10 @@ const DataType = {
 
 // need an API call to expose tables so extension services can manipulate data
 
-export const configure = ({ DataTables }) =>
-  Promise.all(DataTables.map(async (config) => await createTable(config)));
+export const configure = (props: ServerConfig): Promise<Table[]> => {
+  const { DataTables } = props;
+  return Promise.all(DataTables.map(async (config) => await createTable(config)));
+};
 
 async function createTable({ dataPath, ...config }) {
   const { name: tablename } = config;

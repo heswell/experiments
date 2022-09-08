@@ -41,7 +41,8 @@ async function main() {
       metafile: true,
       minify: development !== true,
       platform: 'node',
-      outfile,
+      outdir: 'dist',
+      // outfile,
       target: 'esnext',
       sourcemap: true,
       watch
@@ -77,14 +78,15 @@ async function main() {
     process.exit(1);
   });
 
-  const {
-    outputs: { [outfile]: jsOutput, 'index.css': cssOutput }
-  } = metafile;
 
-  console.log(`\n[${packageName}@${version}] \t${outfile}:  ${formatBytes(jsOutput.bytes)}`);
-  if (cssOutput) {
-    console.log(`[${packageName}@${version}] \tindex.css: ${formatBytes(cssOutput.bytes)}`);
-  }
+  const mainFilePattern = /(index.js|index.css)$/;
+  const mainFiles = Object.keys(metafile.outputs).filter(fileName => fileName.match(mainFilePattern))
+
+  mainFiles.forEach(fileName => {
+    const {bytes} = metafile.outputs[fileName];
+    console.log(`\n[${packageName}@${version}] \t${outfile}:  ${formatBytes(bytes)}`);
+  })
+
 }
 
 main();
