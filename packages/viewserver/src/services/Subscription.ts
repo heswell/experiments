@@ -1,157 +1,140 @@
-import {DataView as View, columnUtils, DataTypes} from '@heswell/data';
+import { DataView as View, DataTypes, metaData, ColumnMetaData } from '@heswell/data';
+import { MessageQueue } from '@heswell/server-core';
+import { ClientToServerMessage, ClientToServerCreateViewPort } from '@vuu-ui/data-types';
+import { Table } from './Table.js';
 
 //TODO implement as class
-export default function Subscription (table, viewportId, {requestId, ...options}, queue){
+export class Subscription {
+  public view: View;
+  public metaData: ColumnMetaData;
 
-    const {columns: requestedColumns, filterSpec, groupBy, range, sort} = options;
-    const {name: tablename, columns: availableColumns} = table;
-    const columns = requestedColumns.length > 0
-        ? requestedColumns
-        : availableColumns;
+  private queue: MessageQueue;
 
-    let view = new View(table, {columns, filterSpec, groupBy, sort});
-    let timeoutHandle;
+  constructor(
+    table: Table,
+    viewPortId: string,
+    message: ClientToServerMessage<ClientToServerCreateViewPort>,
+    queue: MessageQueue
+  ) {
+    const { columns: requestedColumns, filterSpec, groupBy, range, sort } = message.body;
+    const { name: tablename, columns: availableColumns } = table;
+    const columns = requestedColumns.length > 0 ? requestedColumns : availableColumns;
 
-    const tableMeta = columnUtils.metaData(columns);
+    this.view = new View(table, { columns, filterSpec, groupBy, sort });
+    this.queue = queue;
 
-    console.log(`Subscription ${tablename} ${JSON.stringify(options,null,2)} table.status ${table.status} view.status ${view.status}`)
+    this.metaData = metaData(requestedColumns);
+
+    let timeoutHandle: NodeJS.Timeout;
+  }
+
+  // function collectUpdates() {
+  //   let { updates, range } = view.updates;
+  //   // TODO will we ever get updates for FilterData ? If se we will need correct mats
+  //   // depending on the batch type there will be one of
+  //   // updates, rows or size. The others will be
+  //   // undefined and therefore not survive json serialization.
+  //   updates.forEach((batch) => {
+  //     const { type, updates, rows, size, offset } = batch;
+  //     if (type === 'rowset') {
+  //       queue.push(
+  //         {
+  //           priority: 2,
+  //           viewport: viewport,
+  //           type,
+  //           tablename,
+  //           data: {
+  //             rows,
+  //             size,
+  //             offset,
+  //             range
+  //           }
+  //         },
+  //         tableMeta
+  //       );
+  //     } else {
+  //       queue.push(
+  //         {
+  //           priority: 2,
+  //           viewport: viewport,
+  //           type,
+  //           tablename,
+  //           updates,
+  //           rows,
+  //           size,
+  //           offset,
+  //           range
+  //         },
+  //         tableMeta
+  //       );
+  //     }
+  //   });
+
+  //   timeoutHandle = setTimeout(collectUpdates, 100);
+  // }
+
+  // timeoutHandle = setTimeout(collectUpdates, 1000);
+  // }
+
+  invoke(method: string, queue: MessageQueue, ...params) {
+    let data, filterData;
+
+    if (method === 'filter') {
+      [data, ...filterData] = this.view[method](...params);
+    } else {
+      data = this.view[method](...params);
+    }
+    const meta = tableMeta;
+
+    if (data) {
+      queue.push(
+        {
+          priority: 1,
+          viewport,
+          type,
+          data
+        },
+        meta
+      );
+    }
+
+    filterData &&
+      filterData.forEach((data) => {
+        queue.push(
+          {
+            priority: 1,
+            viewport,
+            type: DataTypes.FILTER_DATA,
+            data
+          },
+          columnUtils.setFilterColumnMeta
+        );
+      });
+  }
+
+  // A client update request is handled with a synchronous call to view.rows
+  update(options, queue) {
+    const { range, ...dataOptions } = options;
 
     queue.push({
-        requestId,
-        sessionId: '',
-        token: '',
-        user: '',
-        body: {
-        table: tablename,
-        type: 'CREATE_VP_SUCCESS',
-        tablename,
-        columns,
+      priority: 1,
+      viewport: viewport,
+      type: 'rowset',
+      tablename,
+      data: {
+        rows: view.rows(range, options),
         size: view.size,
-        offset: view.offset,
-        viewportId,
-        }
+        offset: view.offset
+      }
     });
+  }
 
-    if (view.status === 'ready'){
-        const data = view.setRange(range);
-        if (data.rows.length){
-            console.log(`initial set of data returned immediately on Subscription ${JSON.stringify(range)} (${data.rows.length} rows)`);
-            queue.push({
-                viewport: viewport,
-                type: 'snapshot',
-                data
-            });
-        }
+  cancel() {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+      timeoutHandle = null;
     }
-
-    function collectUpdates(){
-        let {updates, range} = view.updates;
-        // TODO will we ever get updates for FilterData ? If se we will need correct mats
-        // depending on the batch type there will be one of 
-        // updates, rows or size. The others will be 
-        // undefined and therefore not survive json serialization.
-        updates.forEach(batch => {
-            const {type, updates, rows, size, offset} = batch;
-            if (type === 'rowset'){
-                queue.push({
-                    priority: 2,
-                    viewport: viewport,
-                    type,
-                    tablename,
-                    data: {
-                        rows,
-                        size,
-                        offset,
-                        range
-                    }
-                }, tableMeta);
-    
-            } else {
-                queue.push({
-                    priority: 2,
-                    viewport: viewport,
-                    type,
-                    tablename,
-                    updates,
-                    rows,
-                    size,
-                    offset,
-                    range
-                }, tableMeta);
-            }
-        });
-
-
-        timeoutHandle = setTimeout(collectUpdates, 100);
-    }
-
-    timeoutHandle = setTimeout(collectUpdates, 1000);
-
-    return Object.create(null,{
-
-        invoke: {
-            value: (method, queue, type, ...params) => {
-                let data, filterData;
-
-                if (method === 'filter'){
-                    [data, ...filterData] = view[method](...params);
-                } else {
-                    data = view[method](...params);
-                }
-                const meta = type === DataTypes.FILTER_DATA
-                    ? columnUtils.setFilterColumnMeta
-                    : tableMeta 
-
-                if (data){
-                    queue.push({
-                        priority: 1,
-                        viewport,
-                        type,
-                        data
-                    }, meta);
-                }
-
-                filterData && filterData.forEach(data => {
-                    queue.push({
-                        priority: 1,
-                        viewport,
-                        type: DataTypes.FILTER_DATA,
-                        data
-                    }, columnUtils.setFilterColumnMeta);
-
-                });
-            }
-        },
-
-        // A client update request is handled with a synchronous call to view.rows
-        update: {value: (options, queue) => {
-
-            const {range, ...dataOptions} = options;
-            
-            queue.push({
-                priority: 1,
-                viewport: viewport, 
-                type: 'rowset',
-                tablename,
-                data: {
-                    rows: view.rows(range, options),
-                    size: view.size,
-                    offset: view.offset
-                }
-            });
-
-        }},
-
-        cancel: {value : () => {
-
-            if (timeoutHandle){
-                clearTimeout(timeoutHandle);
-                timeoutHandle = null;
-            }
-            view.destroy();
-            view = null;
-        }}
-
-    });
-
+    view.destroy();
+    view = null;
+  }
 }

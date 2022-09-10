@@ -1,7 +1,7 @@
 /**
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
-import * as d3 from 'd3-array';
+import { VuuSortCol } from '@vuu-ui/data-types';
 import { mapSortCriteria, metaData, projectColumns } from '../columnUtils.js';
 import {
   BIN_FILTER_DATA_COLUMNS,
@@ -13,7 +13,7 @@ import {
   splitFilterOnColumn
 } from '../filter.js';
 import { groupbyExtendsExistingGroupby } from '../groupUtils.js';
-import { getDeltaRange, getFullRange, NULL_RANGE } from '../rangeUtils.js';
+import { getDeltaRange, getFullRange, NULL_RANGE, Range } from '../rangeUtils.js';
 import { addRowsToIndex, arrayOfIndices } from '../rowUtils.js';
 import SelectionModel, { SelectionModelType } from '../selection-model.js';
 import {
@@ -24,7 +24,7 @@ import {
   sortPosition,
   sortReversed
 } from '../sort.js';
-import Table from '../table.js';
+import { Table } from '../table.js';
 import { DataTypes } from '../types.js';
 
 const SINGLE_COLUMN = 1;
@@ -33,12 +33,19 @@ const NO_OPTIONS = {
   filter: null
 };
 
-export default class BaseRowSet {
-  constructor(table, columns, offset = 0) {
+export class BaseRowSet {
+  public range: Range = NULL_RANGE;
+
+  protected sortCols: VuuSortCol[] | undefined;
+  protected sortReverse: boolean = false;
+  protected sortRequired: boolean = false;
+
+  private table: Table;
+
+  constructor(table: Table, columns, offset = 0) {
     this.table = table;
     this.offset = offset;
     this.baseOffset = offset;
-    this.range = NULL_RANGE;
     this.columns = columns;
     this.currentFilter = null;
     this.filterSet = null;
@@ -94,8 +101,8 @@ export default class BaseRowSet {
   }
 
   setRange(range = this.range, useDelta = true, includeStats = false) {
-    const { lo, hi } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
-    const resultset = this.slice(lo, hi);
+    const { from, to } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
+    const resultset = this.slice(from, to);
     this.range = range;
     return {
       dataType: this.type,
@@ -240,21 +247,6 @@ export default class BaseRowSet {
       : [this.sortSet, IDX_POINTER, COUNT];
   }
 
-  //TODO cnahge to return a rowSet, same as getDistinctValuesForColumn
-  getBinnedValuesForColumn(column) {
-    const key = this.columnMap[column.name];
-    const { data: rows, filteredData } = this;
-    const numbers = filteredData.map((rowIdx) => rows[rowIdx][key]);
-    const data = d3
-      .histogram()
-      .thresholds(20)(numbers)
-      .map((arr, i) => [i + 1, arr.length, arr.x0, arr.x1]);
-
-    const table = new Table({ data, primaryKey: 'bin', columns: BIN_FILTER_DATA_COLUMNS });
-    const filterRowset = new BinFilterRowSet(table, BIN_FILTER_DATA_COLUMNS, column.name);
-    return filterRowset;
-  }
-
   getDistinctValuesForColumn(column) {
     const { data: rows, columnMap, currentFilter } = this;
     const colIdx = columnMap[column.name];
@@ -319,15 +311,12 @@ export class RowSet extends BaseRowSet {
     });
   }
   //TODO consolidate API of rowSet, groupRowset
-  constructor(table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
+  constructor(table: Table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
     super(table, columns, offset);
     this.type = DataTypes.ROW_DATA;
     this.project = projectColumns(table.columnMap, columns, this.meta);
-    this.sortCols = null;
-    this.sortReverse = false;
     this.sortSet = this.buildSortSet();
     this.filterSet = null;
-    this.sortRequired = false;
     if (filter) {
       this.currentFilter = filter;
       this.filter(filter);
@@ -392,7 +381,7 @@ export class RowSet extends BaseRowSet {
     this.data = this.data.concat(rows);
   }
 
-  sort(sortCols) {
+  sort(sortCols: VuuSortCol[]) {
     const sortSet =
       this.currentFilter === null
         ? this.sortSet
@@ -402,9 +391,9 @@ export class RowSet extends BaseRowSet {
 
     if (sortReversed(this.sortCols, sortCols, SINGLE_COLUMN)) {
       this.sortReverse = !this.sortReverse;
-    } else if (this.sortCols !== null && groupbyExtendsExistingGroupby(sortCols, this.sortCols)) {
+    } else if (this.sortCols && groupbyExtendsExistingGroupby(sortCols, this.sortCols)) {
       this.sortReverse = false;
-      sortExtend(sortSet, this.data, this.sortCols, sortCols, this.columnMap);
+      sortExtend(sortSet, this.data, sortCols, this.columnMap);
     } else {
       this.sortReverse = false;
       sort(sortSet, this.data, sortCols, this.columnMap);

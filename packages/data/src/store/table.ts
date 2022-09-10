@@ -1,4 +1,5 @@
 /*global fetch */
+import { TableConfig, TableColumn, TableWithGenerators } from '@heswell/server-core';
 import { EventEmitter } from './event-emitter.js';
 import { buildColumnMap } from './columnUtils.js';
 
@@ -8,11 +9,18 @@ const defaultUpdateConfig = {
   interval: 500
 };
 
-export default class Table extends EventEmitter {
-  constructor(config) {
+export class Table extends EventEmitter {
+  private primaryKey: string;
+
+  public columns: TableColumn[];
+  public name: string;
+  public rows: any[];
+  public status: 'ready' | null = null;
+
+  constructor(config: TableConfig) {
     super();
 
-    const { name, columns = null, primaryKey, dataPath, data, updates = {} } = config;
+    const { name, columns, primaryKey, dataPath, data, updates = {} } = config;
 
     this.name = name;
     this.primaryKey = primaryKey;
@@ -26,7 +34,6 @@ export default class Table extends EventEmitter {
     };
     this.columnMap = buildColumnMap(columns);
     this.columnCount = 0;
-    this.status = null;
 
     // console.log(`Table
     //     columns = ${JSON.stringify(columns,null,2)}
@@ -42,7 +49,7 @@ export default class Table extends EventEmitter {
     this.installDataGenerators(config);
   }
 
-  update(rowIdx, ...updates) {
+  update(rowIdx: number, ...updates) {
     const results = [];
     let row = this.rows[rowIdx];
     for (let i = 0; i < updates.length; i += 2) {
@@ -209,7 +216,7 @@ export default class Table extends EventEmitter {
     return null;
   }
 
-  async installDataGenerators(/*config*/) {
+  async installDataGenerators(_config: TableWithGenerators) {
     //console.warn(`installDataGenerators must be implemented by a more specific subclass`);
   }
 }

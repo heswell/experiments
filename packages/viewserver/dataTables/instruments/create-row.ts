@@ -1,2 +1,1 @@
-export default function createRow(idx, columns) {
-}
+export default function createRow(idx: number, columns: string[]) {}

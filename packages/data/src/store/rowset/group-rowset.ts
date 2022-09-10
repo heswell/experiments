@@ -27,7 +27,7 @@ import {
 import { NULL_RANGE } from '../rangeUtils.js';
 import { sortBy, sortPosition } from '../sort.js';
 import { ASC } from '../types.js';
-import BaseRowSet from './rowSet.js';
+import {BaseRowSet} from './rowSet.js';
 
 const EMPTY_ARRAY = [];
 

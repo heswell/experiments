@@ -1,41 +1,59 @@
+import {
+  ClientToServerChangeViewPort,
+  VuuFilter,
+  VuuGroupBy,
+  VuuSort,
+  VuuSortCol
+} from '@vuu-ui/data-types';
+import { TableColumn } from 'packages/server-core/src/serverTypes.js';
 import { buildColumnMap, getFilterType, toColumn } from './columnUtils.js';
 import { addFilter, IN, NOT_IN } from './filter.js';
-import { resetRange } from './rangeUtils.js';
+import { Range, resetRange } from './rangeUtils.js';
 import { GroupRowSet, RowSet } from './rowset/index.js';
+import { Table } from './table.js';
 import { DataTypes } from './types.js';
 import UpdateQueue from './update-queue.js';
 
-const DEFAULT_INDEX_OFFSET = 100;
+export interface DataViewProps {
+  columns: (string | TableColumn)[];
+  sort: VuuSort;
+  groupBy: VuuGroupBy;
+  filterSpec: VuuFilter;
+}
+
 const WITH_STATS = true;
 export default class DataView {
-  constructor(
-    table,
-    { columns = [], sort = null, groupBy = null, filterSpec = null },
-    updateQueue = new UpdateQueue()
-  ) {
-    this._table = table;
-    this._index_offset = DEFAULT_INDEX_OFFSET;
-    this._filter = filterSpec;
-    this._groupState = null;
-    this._sortCriteria = sort;
+  private _columns: TableColumn[];
+  private _filter: VuuFilter;
+  private _groupBy: VuuGroupBy;
+  private _table: Table | undefined;
+  private rowSet: RowSet | GroupRowSet;
+  private _sortCriteria: VuuSortCol[];
+  private _updateQueue: UpdateQueue | undefined;
 
-    this._columns = null;
-    this._columnMap = null;
+  constructor(table: Table, props: DataViewProps, updateQueue = new UpdateQueue()) {
+    const { columns, sort, groupBy, filterSpec } = props;
+    this._table = table;
+    this._filter = filterSpec;
+    this._groupBy = groupBy;
+    this._sortCriteria = sort.sortDefs;
+    this._updateQueue = updateQueue;
+
+    this._columns = columns.map(toColumn);
+    this._columnMap = buildColumnMap(this._columns);
     // column defs come from client, this is where we assign column keys
     this.columns = columns;
 
-    this._groupby = groupBy;
-    this._update_queue = updateQueue;
     // TODO we should pass columns into the rowset as it will be needed for computed columns
-    this.rowSet = new RowSet(table, this._columns, this._index_offset);
+    this.rowSet = new RowSet(table, this._columns);
     // Is one filterRowset enough, or should we manage one for each column ?
     this.filterRowSet = null;
 
     // What if data is BOTH grouped and sorted ...
-    if (groupBy !== null) {
+    if (groupBy.length > 0) {
       // more efficient to compute this directly from the table projection
       this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupby, this._groupState);
-    } else if (this._sortCriteria !== null) {
+    } else if (this._sortCriteria.length > 0) {
       this.rowSet.sort(this._sortCriteria);
     }
 
@@ -55,59 +73,77 @@ export default class DataView {
   destroy() {
     this._table.removeListener('rowUpdated', this.rowUpdated);
     this._table.removeListener('rowInserted', this.rowInserted);
-    this._table = null;
+    this._table = undefined;
     this.rowSet = null;
     this.filterRowSet = null;
-    this._update_queue = null;
+    this._updateQueue = undefined;
   }
 
   get status() {
     return this._table.status;
   }
 
+  get updates() {
+    const {
+      _updateQueue,
+      rowSet: { range }
+    } = this;
+    let results = {
+      updates: _updateQueue?.popAll(),
+      range: {
+        lo: range.lo,
+        hi: range.hi
+      }
+    };
+    return results;
+  }
+
   rowInserted(event, idx, row) {
-    const { _update_queue, rowSet } = this;
+    const { _updateQueue, rowSet } = this;
     const { size = null, replace, updates } = rowSet.insert(idx, row);
     if (size !== null) {
-      _update_queue.resize(size);
+      _updateQueue?.resize(size);
     }
     if (replace) {
       const { rows, size, offset } = rowSet.currentRange();
-      _update_queue.replace({ rows, size, offset });
+      _updateQueue?.replace({ rows, size, offset });
     } else if (updates) {
       updates.forEach((update) => {
-        _update_queue.update(update);
+        _updateQueue?.update(update);
       });
     }
     // what about offset change only ?
   }
 
   rowUpdated(event, idx, updates) {
-    const { rowSet, _update_queue } = this;
+    const { rowSet, _updateQueue } = this;
     const result = rowSet.update(idx, updates);
 
     if (result) {
       if (rowSet instanceof RowSet) {
-        _update_queue.update(result);
+        _updateQueue?.update(result);
       } else {
         result.forEach((rowUpdate) => {
-          _update_queue.update(rowUpdate);
+          _updateQueue?.update(rowUpdate);
         });
       }
     }
   }
 
-  getData(dataType) {
-    return dataType === DataTypes.ROW_DATA
-      ? this.rowSet
-      : dataType === DataTypes.FILTER_DATA
-      ? this.filterRowSet
-      : null;
+  getData() {
+    return this.rowSet;
+  }
+
+  changeViewport(options: ClientToServerChangeViewPort) {
+    console.log(`change viewport`, {
+      options
+    });
   }
 
   //TODO we seem to get a setRange when we reverse sort order, is that correct ?
-  setRange(range, useDelta = true, dataType = DataTypes.ROW_DATA) {
-    return this.getData(dataType).setRange(range, useDelta);
+  setRange(range: Range, useDelta = true) {
+    console.log(`DATAVIEW.setRange ${JSON.stringify(range)}`);
+    return this.rowSet.setRange(range, useDelta);
   }
 
   select(idx, rangeSelect, keepExistingSelection, dataType = DataTypes.ROW_DATA) {
@@ -193,7 +229,7 @@ export default class DataView {
     }
   }
 
-  sort(sortCriteria) {
+  sort(sortCriteria: VuuSortCol[]) {
     this._sortCriteria = sortCriteria;
     this.rowSet.sort(sortCriteria);
     // assuming the only time we would not useDelta is when we want to reset ?
@@ -228,11 +264,6 @@ export default class DataView {
         if (filter) {
           if (filterRowSet.type === DataTypes.FILTER_DATA) {
             filterResultset = filterRowSet.setSelectedFromFilter(filter);
-          } else if (filterRowSet.type === DataTypes.FILTER_BINS) {
-            this.filterRowSet = rowSet.getBinnedValuesForColumn({
-              name: this.filterRowSet.columnName
-            });
-            filterResultset = this.filterRowSet.setRange();
           }
         } else {
           // TODO examine this. Must be a more efficient way to reset counts in filterRowSet
@@ -269,23 +300,23 @@ export default class DataView {
 
   applyFilterSetChangeToFilter(partialFilter) {
     const [result] = this.filter(partialFilter, DataTypes.ROW_DATA, true, true);
-    this._update_queue.replace(result);
+    this._updateQueue.replace(result);
   }
 
   applyFilter() {}
 
-  groupBy(groupby) {
-    const { rowSet, _columns, _groupState, _sortCriteria, _groupby } = this;
+  groupBy(groupby: VuuGroupBy) {
+    const { rowSet, _columns, _groupState, _sortCriteria, _groupBy } = this;
     const { range: _range } = rowSet;
-    this._groupby = groupby;
+    this._groupBy = groupby;
 
     if (groupby === null) {
       this.rowSet = RowSet.fromGroupRowSet(this.rowSet);
     } else {
-      if (_groupby === null) {
+      if (_groupBy.length === 0) {
         this.rowSet = new GroupRowSet(rowSet, _columns, groupby, _groupState, _sortCriteria);
       } else {
-        rowSet.groupBy(groupby);
+        (rowSet as GroupRowSet).groupBy(groupby);
       }
     }
     return this.rowSet.setRange(_range, false);
@@ -300,21 +331,6 @@ export default class DataView {
     return rowSet.setRange(rowSet.range, false);
   }
 
-  get updates() {
-    const {
-      _update_queue,
-      rowSet: { range }
-    } = this;
-    let results = {
-      updates: _update_queue.popAll(),
-      range: {
-        lo: range.lo,
-        hi: range.hi
-      }
-    };
-    return results;
-  }
-
   getFilterData(column, range) {
     console.log(`dataView.getFilterData for column ${column.name} range ${JSON.stringify(range)}`);
     const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
@@ -325,11 +341,7 @@ export default class DataView {
     // No this should be decided beforehand (on client)
     const type = getFilterType(colDef);
 
-    if (type === 'number') {
-      // // we need a notification from server to tell us when this is closed.
-      // we should assign to filterRowset
-      this.filterRowSet = rowSet.getBinnedValuesForColumn(column);
-    } else if (!filterRowSet || filterRowSet.columnName !== column.name) {
+    if (!filterRowSet || filterRowSet.columnName !== column.name) {
       console.log(`create the filterRowset`);
       this.filterRowSet = rowSet.getDistinctValuesForColumn(column);
     } else if (filterRowSet && filterRowSet.columnName === column.name) {

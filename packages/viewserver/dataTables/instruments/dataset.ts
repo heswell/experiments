@@ -1,4 +1,4 @@
-export default [
+export const data = [
   {
     Symbol: 'TFSC',
     Name: '1347 Capital Corp.',

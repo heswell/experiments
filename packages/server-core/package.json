@@ -7,12 +7,16 @@
     "access": "public"
   },
   "scripts": {
-    "build": "etsc"
+    "build": "etsc",
+    "build:vuu": "node ../../scripts/build.mjs"
   },
-  "type": "module",
+  "types": "src/index.ts",
   "author": "heswell",
   "license": "MIT",
   "devDependencies": {
+    "@types/serve-static": "^1.15.0",
+    "@types/ws": "^8.5.3",
+    "@vuu-ui/data-types": "1.0.0",
     "serve-static": "1.15.0"
   },
   "dependencies": {

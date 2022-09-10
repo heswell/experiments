@@ -1,3 +1,4 @@
+import { VuuSort, VuuSortCol } from '@vuu-ui/data-types';
 import { mapSortCriteria } from './columnUtils.js';
 import { ASC } from './types.js';
 
@@ -13,18 +14,18 @@ export function sortableFilterSet(filterSet) {
   }
 }
 
-export function sortExtend(sortSet, rows, sortCols, newSortCols, columnMap) {
+export function sortExtend(sortSet, rows, newSortCols: VuuSortCol[], columnMap) {
   sort2ColsAdd1(sortSet, rows, newSortCols, columnMap);
 }
 
-export function sort(sortSet, rows, sortCols, columnMap) {
+export function sort(sortSet, rows, sortCols: VuuSortCol[], columnMap) {
   const sortCriteria = mapSortCriteria(sortCols, columnMap);
   const count = sortCriteria.length;
   const sortFn = count === 1 ? sort1 : count === 2 ? sort2 : count === 3 ? sort3 : sortAll;
   sortFn(sortSet, rows, sortCriteria);
 }
 
-function sort2ColsAdd1(sortSet, rows, sortCols, columnMap) {
+function sort2ColsAdd1(sortSet, rows, sortCols: VuuSortCol[], columnMap) {
   const len = sortSet.length;
   const sortCriteria = mapSortCriteria(sortCols, columnMap);
   const [colIdx2] = sortCriteria[1];
@@ -168,11 +169,15 @@ export function sortByToMap(sortCriteria = null) {
       }, {});
 }
 
-export function sortReversed(cols1, cols2, colCount = cols1.length) {
+export function sortReversed(
+  cols1?: VuuSortCol[],
+  cols2?: VuuSortCol[],
+  colCount = cols1?.length ?? 0
+) {
   if (cols1 && cols2 && cols1.length > 0 && cols2.length === colCount) {
     for (let i = 0; i < cols1.length; i++) {
-      let [col1, direction1 = ASC] = cols1[i];
-      let [col2, direction2 = ASC] = cols2[i];
+      let { column: col1, sortType: direction1 } = cols1[i];
+      let { column: col2, sortType: direction2 } = cols2[i];
       if (col1 !== col2 || direction1 === direction2) {
         return false;
       }

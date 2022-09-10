@@ -6,6 +6,10 @@
     "build:data": "cd packages/data && yarn build",
     "build:viewserver": "cd packages/viewserver && yarn build",
     "build:server": "cd packages/server-core && yarn build",
+    "type-defs": "yarn type-defs:data && yarn type-defs:viewserver && yarn type-defs:server",
+    "type-defs:data": "cd packages/data && yarn type-defs",
+    "type-defs:viewserver": "cd packages/viewserver && yarn type-defs",
+    "type-defs:core": "cd packages/server-core && yarn type-defs",
     "typecheck": "tsc --noEmit",
     "viewserver": "node scripts/run-viewserver.mjs"
   },

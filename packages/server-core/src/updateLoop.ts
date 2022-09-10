@@ -1,8 +1,10 @@
-export function updateLoop(name, connection, interval, readQueue) {
+import { WebSocket } from "ws";
+
+export function updateLoop(name: string, connection: WebSocket, interval: number, readQueue: () => any) {
   console.log(`starting update loop ${name} @  ${interval}`);
 
   let _keepGoing = true;
-  let _timeoutHandle = null;
+  let _timeoutHandle: NodeJS.Timeout | null = null;
 
   function tick() {
     const queuedMessages = readQueue();

@@ -1,20 +1,20 @@
 import { uuid } from '../uuid.js';
 import { TokenStore } from '../tokenStore.js';
 
-/**
- * @param {Object} options
- * @param {string} [options.name='']
- * @param {string} [options.value='']
- * @param {Date} [options.expires]
- * @param {number} [options.maxAge]
- * @param {string} [options.domain]
- * @param {string} [options.path]
- * @param {boolean} [options.secure]
- * @param {boolean} [options.httpOnly]
- * @param {'Strict'|'Lax'|'None'} [options.sameSite]
- * @return {string}
- */
-function createCookie(options) {
+import { IncomingMessage, OutgoingHttpHeaders, ServerResponse } from 'http';
+
+export interface CookieOptions {
+  domain?: string;
+  expires?: Date;
+  httpOnly?: boolean;
+  maxAge?: number;
+  name: string;
+  path?: string;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+  secure?: boolean;
+  value?: string;
+}
+function createCookie(options: CookieOptions): string {
   return (
     `${options.name || ''}=${options.value || ''}` +
     (options.expires != null ? `; Expires=${options.expires.toUTCString()}` : '') +
@@ -27,12 +27,12 @@ function createCookie(options) {
   );
 }
 
-export function handleAuthenticationRequest(request, response) {
+export function handleAuthenticationRequest(request: IncomingMessage, response: ServerResponse) {
   const { origin, 'access-control-request-headers': requestHeaders } = request.headers;
   console.log(`origin = ${origin}`);
   if (request.method === 'OPTIONS') {
-    const headers = {
-      'Access-Control-Allow-Credentials': true,
+    const headers: OutgoingHttpHeaders = {
+      'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Headers': requestHeaders,
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
@@ -41,15 +41,13 @@ export function handleAuthenticationRequest(request, response) {
     response.writeHead(204, headers);
     response.end();
   } else {
-    let body = [];
+    let body: string[] = [];
     request
       .on('data', (chunk) => {
-        body.push(chunk);
+        body.push(chunk.toString());
       })
       .on('end', () => {
-        body = Buffer.concat(body).toString();
-        console.log(`got an auth request ${body}`);
-        const { username, password } = JSON.parse(body);
+        const { username, password } = JSON.parse(body.join());
         // DO wheverer we need to do here
 
         const vuuAuthProp = 'vuu-auth-token';
@@ -57,8 +55,8 @@ export function handleAuthenticationRequest(request, response) {
 
         TokenStore.setToken(authToken, { name: username });
 
-        const headers = {
-          'Access-Control-Allow-Credentials': true,
+        const headers: OutgoingHttpHeaders = {
+          'Access-Control-Allow-Credentials': 'true',
           // 'Access-Control-Allow-Origin': 'http://localhost:5000'
           'Access-Control-Allow-Origin': origin
         };

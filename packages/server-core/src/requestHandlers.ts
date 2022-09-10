@@ -1,40 +1,46 @@
-/* global require:false */
-import { ServerConfig } from './serverTypes';
+import { MessageQueue } from './messageQueue';
+import { ServerConfig, VuuRequestHandler } from './serverTypes';
 
-const services = {};
-const serviceAPI = {};
-
-interface ServiceAPI {
+interface ConfiguredService {
   configure: (config: ServerConfig) => void;
+  unsubscribeAll?: (sessionId: string, queue: MessageQueue) => void;
 }
 
-export function configure(config: ServerConfig) {
-  console.log(`requestHandler.configure ${JSON.stringify(config, null, 2)}`);
+type ServiceHandlers = {
+  [messageType: string]: VuuRequestHandler;
+};
 
-  config.services.forEach(async ({ name, module, API }) => {
-    console.log(`about to import service ${name}, module=${module}`);
+type ServiceAPI = ConfiguredService & ServiceHandlers;
+
+const _services: { [serviceName: string]: ServiceAPI } = {};
+
+// Map message types to the name of the service that should handle these messages
+const _messageTypeToServiceNameMap: { [messageType: string]: string } = {};
+
+export function configure(config: ServerConfig) {
+  config.services.forEach(async ({ name: serviceName, module, API }) => {
     // TODO roll these up into async functions we can invoke in parallel
     const service: ServiceAPI = await import(module);
-    services[name] = service;
-    API.forEach((messageType) => (serviceAPI[messageType] = name));
-    console.log(`configure service ${name} `);
+    _services[serviceName] = service;
+    API.forEach((messageType) => (_messageTypeToServiceNameMap[messageType] = serviceName));
+    console.log(`configure service ${serviceName} `);
     // do we have to wait ?
     await service.configure(config);
   });
 }
 
-export function findHandler(type) {
-  const serviceName = serviceAPI[type];
+export function findHandler(messageType: string) {
+  const serviceName = _messageTypeToServiceNameMap[messageType];
   if (serviceName) {
-    return services[serviceName][type];
+    return _services[serviceName][messageType];
   }
 }
 
-export function killSubscriptions(clientId, queue) {
-  Object.keys(services).forEach((name) => {
-    const killSubscription = services[name]['unsubscribeAll'];
-    if (killSubscription) {
-      killSubscription(clientId, queue);
+export function killSubscriptions(sessionId: string, queue: MessageQueue) {
+  Object.keys(_services).forEach((serviceName) => {
+    const service = _services[serviceName] as ConfiguredService;
+    if (service) {
+      service.unsubscribeAll?.(sessionId, queue);
     }
   });
 }

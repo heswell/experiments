@@ -3,20 +3,19 @@
   "version": "3.0.0",
   "description": "Vuu data stores and views",
   "main": "dist/index.js",
+  "types": "src/index.ts",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "etsc",
-    "build:vuu": "node ../../scripts/build.mjs",
-    "type-defs": "tsc --project ./tsconfig-emit-types.json"
+    "build:vuu": "node ../../scripts/build.mjs"
   },
-  "type": "module",
   "author": "heswell",
   "license": "MIT",
-  "dependencies": {
-    "d3-array": "^2.2.0"
-  },
+  "dependencies": {},
   "peerDependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "@vuu-ui/data-types": "1.0.0"
+  }
 }

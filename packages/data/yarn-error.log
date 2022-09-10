@@ -1,0 +1,53 @@
+Arguments: 
+  /Users/steve/.nvm/versions/node/v16.17.0/bin/node /Users/steve/.node/corepack/yarn/1.22.19/bin/yarn.js build
+
+PATH: 
+  /var/folders/q0/jp6zzcw55kgdkg9ckbpnxj7w0000gn/T/yarn--1662847684393-0.5920448507339968:/Users/steve/github/heswell/viewserver.js/node_modules/.bin:/Users/steve/.config/yarn/link/node_modules/.bin:/Users/steve/github/heswell/viewserver.js/node_modules/.bin:/Users/steve/.nvm/versions/node/v16.17.0/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/steve/.nvm/versions/node/v16.17.0/lib/node_modules/npm/bin/node-gyp-bin:/Users/steve/.nvm/versions/node/v16.17.0/bin/node_modules/npm/bin/node-gyp-bin:/var/folders/q0/jp6zzcw55kgdkg9ckbpnxj7w0000gn/T/yarn--1662847684036-0.011989947778538346:/Users/steve/github/heswell/viewserver.js/node_modules/.bin:/Users/steve/.config/yarn/link/node_modules/.bin:/Users/steve/github/heswell/viewserver.js/node_modules/.bin:/Users/steve/.yarn/bin:/Users/steve/.nvm/versions/node/v16.17.0/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/steve/.nvm/versions/node/v16.17.0/lib/node_modules/npm/bin/node-gyp-bin:/Users/steve/.nvm/versions/node/v16.17.0/bin/node_modules/npm/bin/node-gyp-bin:/Users/steve/.sdkman/candidates/java/current/bin:/Users/steve/.nvm/versions/node/v16.17.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.17.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  SyntaxError: /Users/steve/github/heswell/viewserver.js/packages/data/package.json: Unexpected token } in JSON at position 287
+      at JSON.parse (<anonymous>)
+      at /Users/steve/.node/corepack/yarn/1.22.19/lib/cli.js:1629:59
+      at Generator.next (<anonymous>)
+      at step (/Users/steve/.node/corepack/yarn/1.22.19/lib/cli.js:310:30)
+      at /Users/steve/.node/corepack/yarn/1.22.19/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "@heswell/data",
+    "version": "3.0.0",
+    "description": "Vuu data stores and views",
+    "main": "dist/index.js",
+    "types": "src/index.ts",
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "build": "etsc",
+      "build:vuu": "node ../../scripts/build.mjs",
+    },
+    "author": "heswell",
+    "license": "MIT",
+    "dependencies": {
+      "d3-array": "^2.2.0"
+    },
+    "peerDependencies": {},
+    "devDependencies": {
+      "@vuu-ui/data-types": "1.0.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

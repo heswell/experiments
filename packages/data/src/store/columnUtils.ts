@@ -1,3 +1,5 @@
+import { VuuSortCol } from '@vuu-ui/data-types';
+import { TableColumn } from 'packages/server-core/src/serverTypes.js';
 import {
   functor,
   overrideColName,
@@ -10,7 +12,7 @@ const SORT_ASC = 'asc';
 export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
-export function mapSortCriteria(sortCriteria, columnMap) {
+export function mapSortCriteria(sortCriteria: VuuSortCol[], columnMap) {
   return sortCriteria.map((s) => {
     if (typeof s === 'string') {
       return [columnMap[s], 'asc'];
@@ -30,7 +32,8 @@ export const toKeyedColumn = (column, key) =>
     ? column
     : { ...column, key };
 
-export const toColumn = (column) => (typeof column === 'string' ? { name: column } : column);
+export const toColumn = (column: string | TableColumn): TableColumn =>
+  typeof column === 'string' ? { name: column } : column;
 
 export function buildColumnMap(columns) {
   if (columns) {
@@ -49,7 +52,7 @@ export function buildColumnMap(columns) {
   }
 }
 
-export function projectColumns(map, columns, meta) {
+export function projectColumns(map, columns, meta: ColumnMetaData) {
   const length = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED } = meta;
   return (startIdx, offset, selectedRows = []) =>
@@ -76,7 +79,7 @@ export function projectColumns(map, columns, meta) {
     };
 }
 
-export function projectColumnsFilter(map, columns, meta, filter) {
+export function projectColumnsFilter(map, columns, meta: ColumnMetaData, filter) {
   const length = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED } = meta;
 
@@ -123,8 +126,22 @@ export function getDataType({ type = null }) {
   }
 }
 
+export type ColumnMetaData = {
+  IDX: number;
+  RENDER_IDX: number;
+  DEPTH: number;
+  COUNT: number;
+  KEY: number;
+  SELECTED: number;
+  PARENT_IDX: number;
+  IDX_POINTER: number;
+  FILTER_COUNT: number;
+  NEXT_FILTER_IDX: number;
+  count: number;
+};
+
 //TODO cache result by length
-export function metaData(columns) {
+export function metaData(columns: any[]): ColumnMetaData {
   const start =
     columns.length === 0
       ? -1

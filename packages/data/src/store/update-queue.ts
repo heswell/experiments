@@ -1,3 +1,19 @@
+export type UpdateType = 'rowset' | 'insert' | 'update' | 'size';
+
+export interface SizeBatch {
+    type: 'size';
+}
+export interface RowBatch {
+    type: 'rowset' | 'insert';
+    rows: any[];
+}
+export interface UpdateBatch {
+    type: 'update';
+    updates: any[];
+}
+
+export type Batch = SizeBatch | RowBatch | UpdateBatch;
+
 /*
     Inserts (and size records) and updates must be batched separately. Because updates are 
     keyed by index position and index positions may be affected by an insert operation, the
@@ -5,11 +21,13 @@
     the update batch must be closed, to be followed by the insert(s). Similarly, multiple
     inserts, with no interleaved updates, can be batched (with a single size record). The batch
     will be closed as soon as the next update is received. So we alternate between update and
-    insert processing, with each transition athe preceeding batch is closed off.
+    insert processing, with each transition the preceeding batch is closed off.
     An append is a simple insert that has no re-indexing implications.  
 
 */
 export default class UpdateQueue {
+
+    private _queue: any[];
 
     constructor(){
         this._queue = [];
@@ -17,7 +35,7 @@ export default class UpdateQueue {
 
       get length() { return this._queue.length; }
 
-      update(update) {
+      update(update: any[]) {
           //TODO we could also coalesce updates into an insert or rowset, if present
           const batch = this.getCurrentBatch('update');
 
@@ -43,12 +61,12 @@ export default class UpdateQueue {
           updates.push(update);
       }
 
-      resize(size) {
+      resize(size: number) {
           const batch = this.getCurrentBatch('size');
           batch.size = size;
       }
 
-      append(row, offset) {
+      append(row: any[], offset: number) {
           const batch = this.getCurrentBatch('insert');
           //onsole.log(`UpdateQueue append ${row[0]}`);
           batch.rows.push(row);
@@ -71,7 +89,7 @@ export default class UpdateQueue {
           return results;
       }
 
-      getCurrentBatch(type) {
+      getCurrentBatch(type: UpdateType) {
 
           const q = this._queue;
           const len = q.length;
@@ -97,7 +115,7 @@ export default class UpdateQueue {
       }
   }
 
-function createBatch(type) {
+function createBatch(type: UpdateType): Batch{
     switch (type) {
     case 'rowset': return { type, rows: [] };
     case 'update': return { type, updates: [] };

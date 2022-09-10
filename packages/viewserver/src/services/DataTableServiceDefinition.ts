@@ -6,7 +6,8 @@ const ServerApiMessageTypes = {
   addSubscription: 'AddSubscription'
 };
 
-const data_path = path.dirname(new url.URL(import.meta.url).pathname);
+// const data_path = path.dirname(new url.URL(import.meta.url).pathname);
+const data_path = url.pathToFileURL(__dirname).toString();
 
 export const ServiceDefinition = {
   name: 'DataTableService',
@@ -16,14 +17,14 @@ export const ServiceDefinition = {
     'GET_TABLE_LIST',
     'GET_TABLE_META',
     'CREATE_VP',
+    'CHANGE_VP',
+    'CHANGE_VP_RANGE',
     'TerminateSubscription',
-    'setViewRange',
     'GetFilterData',
     'GetSearchData',
     'ModifySubscription',
     'InsertTableRow',
     'groupBy',
-    'sort',
     'filter',
     'select',
     'selectAll',

@@ -1,10 +1,10 @@
 import { Table as BaseTable } from '@heswell/data';
+import { TableWithGenerators } from '@heswell/server-core';
 
-export default class Table extends BaseTable {
-  async loadData(dataPath) {
-    console.log(`import data from ${dataPath}`);
+export class Table extends BaseTable {
+  async loadData(dataPath: string) {
     try {
-      const { default: data } = await import(`${dataPath}`);
+      const { data } = await import(`${dataPath}`);
       if (data) {
         this.parseData(data);
       }
@@ -13,14 +13,14 @@ export default class Table extends BaseTable {
     }
   }
 
-  async installDataGenerators({ createPath, updatePath }) {
+  async installDataGenerators({ createPath, updatePath }: TableWithGenerators) {
     if (createPath) {
       const { default: createGenerator } = await import(`${createPath}`);
-      this.createRow = createGenerator;
+      this.createRow = createGenerator.default;
     }
     if (updatePath) {
       const { default: updateGenerator } = await import(`${updatePath}`);
-      this.updateRow = updateGenerator;
+      this.updateRow = updateGenerator.default;
     }
   }
 }

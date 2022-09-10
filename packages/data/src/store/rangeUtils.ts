@@ -1,4 +1,11 @@
-export const NULL_RANGE = {lo: 0,hi: 0};
+export const NULL_RANGE: Range = {from: 0, to: 0};
+
+export type Range = {
+    bufferSize?: number;
+    from: number;
+    reset?: true;
+    to: number;
+}
 
 // If the requested range overlaps the last sent range, we only need send the
 // newly exposed section of the range. The client will manage dropping off
@@ -12,44 +19,44 @@ export const NULL_RANGE = {lo: 0,hi: 0};
 //  |------------------------------------| _range
 //  |----------------------------------|+  prevRange
 //TODO do we still need these calls to getFullRange ?
-export function getDeltaRange(oldRange, newRange){
-    const {lo: oldLo, hi: oldHi} = oldRange /*getFullRange(oldRange)*/;
-    const {lo: newLo, hi: newHi} = newRange /*getFullRange(newRange)*/;
+export function getDeltaRange(oldRange: Range, newRange: Range): Range{
+    const {from: oldLo, to: oldHi} = oldRange /*getFullRange(oldRange)*/;
+    const {from: newLo, to: newHi} = newRange /*getFullRange(newRange)*/;
 
     if (newLo >= oldLo && newHi <= oldHi){
         // reduced range, no delta
-        return {lo: newHi, hi: newHi};
+        return {from: newHi, to: newHi};
 
     } else if (newLo >= oldHi || newHi < oldLo){
-        return {lo: newLo, hi: newHi};
+        return {from: newLo, to: newHi};
     } else if (newLo === oldLo && newHi === oldHi){
-        return {lo: oldHi,hi: oldHi};
+        return {from: oldHi, to: oldHi};
     } else {
         return {
-            lo: newLo < oldLo ? newLo: oldHi,
-            hi: newHi > oldHi ? newHi: oldLo
+            from: newLo < oldLo ? newLo: oldHi,
+            to: newHi > oldHi ? newHi: oldLo
         };
     }
 }
 
-export function resetRange({lo,hi,bufferSize=0}){
+export function resetRange({from,to,bufferSize=0}: Range): Range{
     return {
-        lo: 0,
-        hi: hi-lo,
+        from: 0,
+        to: to-from,
         bufferSize,
         reset: true
     };
 }
 
-export function getFullRange({lo,hi,bufferSize=0}){
+export function getFullRange({from,to,bufferSize=0}: Range): Range{
     return {
-        lo: Math.max(0, lo - bufferSize),
-        hi: hi + bufferSize
+        from: Math.max(0, from - bufferSize),
+        to: to + bufferSize
     };
 }
 
-export function withinRange(range, index, offset=0) {
-    return index-offset >= range.lo && index-offset < range.hi;
+export function withinRange(range: Range, index: number, offset=0) {
+    return index-offset >= range.from && index-offset < range.to;
 }
 
 const SAME = 0;
@@ -69,37 +76,37 @@ export const RangeFlags = {
     OVERLAP,
     REDUCE,
     EXPAND,
-    NULL
+    NULL,
+    GAP: ~(CONTIGUOUS | OVERLAP | REDUCE)
 }
 
-RangeFlags.GAP = ~(CONTIGUOUS | OVERLAP | REDUCE)
 
-export function compareRanges(range1, range2){
-    if (range2.lo === 0 && range2.hi === 0){
+export function compareRanges(range1: Range, range2: Range){
+    if (range2.from === 0 && range2.to === 0){
         return NULL;
-    } else if (range1.lo === range2.lo && range1.hi === range2.hi){
+    } else if (range1.from === range2.from && range1.to === range2.to){
         return SAME;
-    } else if (range2.hi > range1.hi){
-        if (range2.lo > range1.hi){
+    } else if (range2.to > range1.to){
+        if (range2.from > range1.to){
             return FWD;
-        } else if (range2.lo === range1.hi){
+        } else if (range2.from === range1.to){
             return FWD + CONTIGUOUS;
-        } else if (range2.lo >= range1.lo){
+        } else if (range2.from >= range1.from){
             return FWD + OVERLAP;
         } else {
             return EXPAND;
         }
-    } else if (range2.lo < range1.lo){
-        if (range2.hi < range1.lo){
+    } else if (range2.from < range1.from){
+        if (range2.to < range1.from){
             return BWD;
-        } else if (range2.hi === range1.lo){
+        } else if (range2.to === range1.from){
             return BWD + CONTIGUOUS;
-        } else if (range2.hi > range1.lo){
+        } else if (range2.to > range1.from){
             return BWD + OVERLAP;
         } else {
             return EXPAND;
         }
-    } else if (range2.lo > range1.lo) {
+    } else if (range2.from > range1.from) {
         return REDUCE + FWD;
     } else {
         return REDUCE + BWD
