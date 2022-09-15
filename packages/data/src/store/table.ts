@@ -1,7 +1,7 @@
 /*global fetch */
 import { TableConfig, TableColumn, TableWithGenerators } from '@heswell/server-core';
 import { EventEmitter } from './event-emitter.js';
-import { buildColumnMap } from './columnUtils.js';
+import { buildColumnMap, ColumnMap } from './columnUtils.js';
 
 const defaultUpdateConfig = {
   applyUpdates: false,
@@ -12,6 +12,7 @@ const defaultUpdateConfig = {
 export class Table extends EventEmitter {
   private primaryKey: string;
 
+  public columnMap: ColumnMap;
   public columns: TableColumn[];
   public name: string;
   public rows: any[];

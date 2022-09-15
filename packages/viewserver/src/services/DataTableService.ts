@@ -160,11 +160,9 @@ export const CHANGE_VP: VuuRequestHandler<ClientToServerChangeViewPort> = (messa
   });
 
   const { viewPortId } = message.body;
-  const now = new Date().getTime();
-  console.log(`[${now}] DataTableService: changeViewport`);
   const subscription = _subscriptions[viewPortId];
   const { rows, size } = subscription.view.changeViewport(message.body);
-  // addDataMessagesToQueue(message, rows, size, queue, viewPortId, subscription.metaData);
+  addDataMessagesToQueue(message, rows, size, queue, viewPortId, subscription.metaData);
 };
 
 export const CHANGE_VP_RANGE: VuuRequestHandler<ClientToServerViewPortRange> = (message, queue) => {
@@ -229,10 +227,6 @@ export function ExpandGroup(clientId, request, queue) {
 
 export function CollapseGroup(clientId, request, queue) {
   _subscriptions[request.viewport].update(request, queue);
-}
-
-export function sort(clientId, { viewport, sortCriteria }, queue) {
-  _subscriptions[viewport].invoke('sort', queue, DataType.Snapshot, sortCriteria);
 }
 
 export function filter(clientId, { viewport, filter, incremental, dataType }, queue) {

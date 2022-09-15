@@ -6,26 +6,17 @@ import {
   SET_FILTER_DATA_COLUMNS,
   BIN_FILTER_DATA_COLUMNS
 } from './filter.js';
+import { Row } from './storeTypes.js';
 
 const SORT_ASC = 'asc';
+
+type ColumnDescriptor = string | { name: string; key?: number };
+export type ColumnMap = { [columnName: string]: number };
 
 export const setFilterColumnMeta = metaData(SET_FILTER_DATA_COLUMNS);
 export const binFilterColumnMeta = metaData(BIN_FILTER_DATA_COLUMNS);
 
-export function mapSortCriteria(sortCriteria: VuuSortCol[], columnMap) {
-  return sortCriteria.map((s) => {
-    if (typeof s === 'string') {
-      return [columnMap[s], 'asc'];
-    } else if (Array.isArray(s)) {
-      const [columnName, sortDir] = s;
-      return [columnMap[columnName], sortDir || SORT_ASC];
-    } else {
-      throw Error('columnUtils.mapSortCriteria invalid input');
-    }
-  });
-}
-
-export const toKeyedColumn = (column, key) =>
+export const toKeyedColumn = (column: ColumnDescriptor, key: number) =>
   typeof column === 'string'
     ? { key, name: column }
     : typeof column.key === 'number'
@@ -35,32 +26,39 @@ export const toKeyedColumn = (column, key) =>
 export const toColumn = (column: string | TableColumn): TableColumn =>
   typeof column === 'string' ? { name: column } : column;
 
-export function buildColumnMap(columns) {
-  if (columns) {
-    return columns.reduce((map, column, i) => {
-      if (typeof column === 'string') {
-        map[column] = i;
-      } else if (typeof column.key === 'number') {
-        map[column.name] = column.key;
-      } else {
-        map[column.name] = i;
-      }
-      return map;
-    }, {});
-  } else {
-    return null;
-  }
+export function buildColumnMap(columns: ColumnDescriptor[]) {
+  return columns.reduce<ColumnMap>((map, column, i) => {
+    if (typeof column === 'string') {
+      map[column] = i;
+    } else if (typeof column.key === 'number') {
+      map[column.name] = column.key;
+    } else {
+      map[column.name] = i;
+    }
+    return map;
+  }, {});
 }
 
-export function projectColumns(map, columns, meta: ColumnMetaData) {
+export type RowProjector = (row: Row, index: number) => Row;
+export type RowProjectorFactory = (
+  startIdx: number,
+  offset: number,
+  selectedRows: number[]
+) => RowProjector;
+
+export const projectColumns = (
+  map: ColumnMap,
+  columns: TableColumn[],
+  meta: ColumnMetaData
+): RowProjectorFactory => {
   const length = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED } = meta;
-  return (startIdx, offset, selectedRows = []) =>
-    (row, i) => {
+  return (startIdx: number, offset: number, selectedRows: number[] = []) =>
+    (row: Row, i: number) => {
       // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
       // row is the original row from this set, with original index in IDX pos, which might
       // be overwritten with a different value below if rows are sorted/filtered
-      const baseRowIdx = row[IDX];
+      const baseRowIdx = row[IDX] as number;
 
       const out = [];
       for (let i = 0; i < length; i++) {
@@ -77,15 +75,20 @@ export function projectColumns(map, columns, meta: ColumnMetaData) {
       out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
       return out;
     };
-}
+};
 
-export function projectColumnsFilter(map, columns, meta: ColumnMetaData, filter) {
+export function projectColumnsFilter(
+  map: ColumnMap,
+  columns: TableColumn[],
+  meta: ColumnMetaData,
+  filter: any
+) {
   const length = columns.length;
   const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED } = meta;
 
   // this is filterset specific where first col is always value
-  const fn = filter ? functor(map, overrideColName(filter, 'name'), true) : () => true;
-  return (startIdx) => (row, i) => {
+  const fn = filter ? functor(map, overrideColName(filter, 'name')) : () => true;
+  return (startIdx: number) => (row: any[], i: number) => {
     const out = [];
     for (let i = 0; i < length; i++) {
       const colIdx = map[columns[i].name];
@@ -104,15 +107,15 @@ export function projectColumnsFilter(map, columns, meta: ColumnMetaData, filter)
   };
 }
 
-export function getFilterType(column) {
+export function getFilterType(column: TableColumn) {
   return column.filter || getDataType(column);
 }
 
 // {name: 'Price', 'type': {name: 'price'}, 'aggregate': 'avg'},
 // {name: 'MarketCap', 'type': {name: 'number','format': 'currency'}, 'aggregate': 'sum'},
 
-export function getDataType({ type = null }) {
-  if (type === null) {
+export function getDataType({ type }: TableColumn) {
+  if (type === undefined) {
     return 'set';
   } else if (typeof type === 'string') {
     return type;

@@ -1,5 +1,5 @@
 import { metaData } from './columnUtils.js';
-import { GROUP_ROW_TEST, sortBy, sortPosition } from './sort.js';
+import { GROUP_ROW_TEST, sortBy, sortPosition } from './sortUtils.js';
 import { ASC } from './types.js';
 
 const LEAF_DEPTH = 0;

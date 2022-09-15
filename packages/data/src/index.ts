@@ -19,7 +19,6 @@ import {
   shouldShowFilter,
   STARTS_WITH
 } from './store/filter.js';
-import { sortByToMap } from './store/sort.js';
 
 import { groupbyExtendsExistingGroupby, indexOfCol, updateGroupBy } from './store/groupUtils.js';
 
@@ -35,10 +34,7 @@ export const groupHelpers = {
 
 export { default as DataView } from './store/data-view.js';
 export * from './store/table.js';
-
-export const sortUtils = {
-  sortByToMap
-};
+export * from './store/storeTypes.js';
 
 export const rowUtils = {
   isEmptyRow,
@@ -69,6 +65,7 @@ export const filter = {
 
 export * from './store/columnUtils';
 export * from './store/rangeUtils';
+export * from './store/sortUtils';
 
 export const DataTypes = types.DataTypes;
 

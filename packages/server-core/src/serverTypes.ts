@@ -18,6 +18,8 @@ export type TableColumnType = {
 };
 
 export type TableColumn = {
+  filter?: any;
+  key?: number;
   name: string;
   type?: TableColumnType | string;
 };

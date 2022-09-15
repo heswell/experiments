@@ -6,13 +6,14 @@ import {
   VuuSortCol
 } from '@vuu-ui/data-types';
 import { TableColumn } from 'packages/server-core/src/serverTypes.js';
-import { buildColumnMap, getFilterType, toColumn } from './columnUtils.js';
+import { buildColumnMap, ColumnMap, getFilterType, toColumn } from './columnUtils.js';
 import { addFilter, IN, NOT_IN } from './filter.js';
 import { Range, resetRange } from './rangeUtils.js';
 import { GroupRowSet, RowSet } from './rowset/index.js';
 import { Table } from './table.js';
 import { DataTypes } from './types.js';
 import UpdateQueue from './update-queue.js';
+import { sortHasChanged } from './sortUtils.js';
 
 export interface DataViewProps {
   columns: (string | TableColumn)[];
@@ -23,26 +24,28 @@ export interface DataViewProps {
 
 const WITH_STATS = true;
 export default class DataView {
+  private _columnMap: ColumnMap;
   private _columns: TableColumn[];
   private _filter: VuuFilter;
   private _groupBy: VuuGroupBy;
   private _table: Table | undefined;
-  private rowSet: RowSet | GroupRowSet;
-  private _sortCriteria: VuuSortCol[];
+  private rowSet: RowSet | GroupRowSet | undefined;
+  private _sortDefs: VuuSortCol[];
   private _updateQueue: UpdateQueue | undefined;
+
+  private filterRowSet: any;
 
   constructor(table: Table, props: DataViewProps, updateQueue = new UpdateQueue()) {
     const { columns, sort, groupBy, filterSpec } = props;
     this._table = table;
     this._filter = filterSpec;
     this._groupBy = groupBy;
-    this._sortCriteria = sort.sortDefs;
+    this._sortDefs = sort.sortDefs;
     this._updateQueue = updateQueue;
 
     this._columns = columns.map(toColumn);
     this._columnMap = buildColumnMap(this._columns);
     // column defs come from client, this is where we assign column keys
-    this.columns = columns;
 
     // TODO we should pass columns into the rowset as it will be needed for computed columns
     this.rowSet = new RowSet(table, this._columns);
@@ -52,9 +55,9 @@ export default class DataView {
     // What if data is BOTH grouped and sorted ...
     if (groupBy.length > 0) {
       // more efficient to compute this directly from the table projection
-      this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupby, this._groupState);
-    } else if (this._sortCriteria.length > 0) {
-      this.rowSet.sort(this._sortCriteria);
+      this.rowSet = new GroupRowSet(this.rowSet, this._columns, this._groupBy);
+    } else if (this._sortDefs.length > 0) {
+      this.rowSet.sort(this._sortDefs);
     }
 
     this.rowUpdated = this.rowUpdated.bind(this);
@@ -65,22 +68,22 @@ export default class DataView {
   }
 
   // Set the columns from client
-  set columns(columns) {
+  set columns(columns: string[]) {
     this._columns = columns.map(toColumn);
     this._columnMap = buildColumnMap(this._columns);
   }
 
   destroy() {
-    this._table.removeListener('rowUpdated', this.rowUpdated);
-    this._table.removeListener('rowInserted', this.rowInserted);
+    this._table?.removeListener('rowUpdated', this.rowUpdated);
+    this._table?.removeListener('rowInserted', this.rowInserted);
     this._table = undefined;
-    this.rowSet = null;
+    this.rowSet = undefined;
     this.filterRowSet = null;
     this._updateQueue = undefined;
   }
 
   get status() {
-    return this._table.status;
+    return this._table?.status;
   }
 
   get updates() {
@@ -134,10 +137,29 @@ export default class DataView {
     return this.rowSet;
   }
 
+  private identifyViewportChanges(params: ClientToServerChangeViewPort) {
+    const { aggregations, filterSpec, groupBy, sort } = params;
+    const sortChanged = sortHasChanged(this._sortDefs, sort.sortDefs);
+    console.log(`sort changes ? ${sortChanged}`);
+
+    return {
+      sortChanged
+    };
+  }
+
   changeViewport(options: ClientToServerChangeViewPort) {
     console.log(`change viewport`, {
-      options
+      options: JSON.stringify(options, null, 2)
     });
+    const { sort } = options;
+
+    const { sortChanged } = this.identifyViewportChanges(options);
+
+    if (sortChanged) {
+      return this.sort(options.sort.sortDefs);
+    } else {
+      return { rows: [], size: -1 };
+    }
   }
 
   //TODO we seem to get a setRange when we reverse sort order, is that correct ?
@@ -229,9 +251,9 @@ export default class DataView {
     }
   }
 
-  sort(sortCriteria: VuuSortCol[]) {
-    this._sortCriteria = sortCriteria;
-    this.rowSet.sort(sortCriteria);
+  sort(sortDefs: VuuSortCol[]) {
+    this._sortDefs = sortDefs;
+    this.rowSet?.sort(sortDefs);
     // assuming the only time we would not useDelta is when we want to reset ?
     return this.setRange(resetRange(this.rowSet.range), false);
   }
@@ -253,9 +275,9 @@ export default class DataView {
       let filterResultset;
 
       if (filter === null && _filter) {
-        rowSet.clearFilter();
+        rowSet?.clearFilter();
       } else if (filter) {
-        this.rowSet.filter(filter);
+        this.rowSet?.filter(filter);
       } else {
         throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
       }
@@ -306,7 +328,7 @@ export default class DataView {
   applyFilter() {}
 
   groupBy(groupby: VuuGroupBy) {
-    const { rowSet, _columns, _groupState, _sortCriteria, _groupBy } = this;
+    const { rowSet, _columns, _groupState, _sortDefs: _sortCriteria, _groupBy } = this;
     const { range: _range } = rowSet;
     this._groupBy = groupby;
 

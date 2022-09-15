@@ -1,10 +1,11 @@
 /**
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
-import { VuuSortCol } from '@vuu-ui/data-types';
-import { mapSortCriteria, metaData, projectColumns } from '../columnUtils.js';
+import { VuuRange, VuuRow, VuuSortCol } from '@vuu-ui/data-types';
+import { TableColumn } from 'packages/server-core/src/serverTypes.js';
+import { ColumnMap, ColumnMetaData, metaData, projectColumns } from '../columnUtils.js';
+import { Row } from '../storeTypes.js';
 import {
-  BIN_FILTER_DATA_COLUMNS,
   extendsFilter,
   extractFilterForColumn,
   functor as filterPredicate,
@@ -12,18 +13,20 @@ import {
   SET_FILTER_DATA_COLUMNS,
   splitFilterOnColumn
 } from '../filter.js';
-import { groupbyExtendsExistingGroupby } from '../groupUtils.js';
 import { getDeltaRange, getFullRange, NULL_RANGE, Range } from '../rangeUtils.js';
 import { addRowsToIndex, arrayOfIndices } from '../rowUtils.js';
 import SelectionModel, { SelectionModelType } from '../selection-model.js';
 import {
+  mapSortDefsToSortCriteria,
   sort,
   sortableFilterSet,
   sortBy,
   sortExtend,
+  sortExtendsExistingSort,
   sortPosition,
-  sortReversed
-} from '../sort.js';
+  sortReversed,
+  SortSet
+} from '../sortUtils.js';
 import { Table } from '../table.js';
 import { DataTypes } from '../types.js';
 
@@ -33,22 +36,36 @@ const NO_OPTIONS = {
   filter: null
 };
 
-export class BaseRowSet {
+const NULL_SORTSET: SortSet = [[-1, -1, -1]];
+
+export abstract class BaseRowSet {
   public range: Range = NULL_RANGE;
 
+  protected columnMap: ColumnMap;
+  protected meta: ColumnMetaData;
   protected sortCols: VuuSortCol[] | undefined;
   protected sortReverse: boolean = false;
   protected sortRequired: boolean = false;
+  protected currentFilter: any = null;
+  protected filterSet: any = null;
+  protected sortSet: SortSet = NULL_SORTSET;
 
+  private columns: TableColumn[];
+  private offset = 0;
+  private selected: {
+    rows: any[];
+    focusedIdx: number;
+    lastTouchIdx: number;
+  } = { rows: [], focusedIdx: -1, lastTouchIdx: -1 };
+  private selectedRowsIDX: number[] = [];
+  private selectionModel: SelectionModel;
   private table: Table;
 
-  constructor(table: Table, columns, offset = 0) {
+  protected data: Row[];
+
+  constructor(table: Table, columns: TableColumn[]) {
     this.table = table;
-    this.offset = offset;
-    this.baseOffset = offset;
     this.columns = columns;
-    this.currentFilter = null;
-    this.filterSet = null;
     this.columnMap = table.columnMap;
     this.meta = metaData(columns);
     this.data = table.rows;
@@ -56,7 +73,6 @@ export class BaseRowSet {
     /**
      * data IDX of selected rows
      */
-    this.selectedRowsIDX = [];
     this.selectionModel = this.createSelectionModel();
   }
 
@@ -70,7 +86,7 @@ export class BaseRowSet {
       return this.filterSet;
     } else {
       const { IDX } = this.meta;
-      return this.data.map((row) => row[IDX]);
+      return this.data.map((row: Row) => row[IDX]);
     }
   }
 
@@ -99,6 +115,9 @@ export class BaseRowSet {
   get selectedRowCount() {
     return this.selected.rows.length;
   }
+
+  // Must be implemented by sub class
+  slice(from: number, to: number): any;
 
   setRange(range = this.range, useDelta = true, includeStats = false) {
     const { from, to } = useDelta ? getDeltaRange(this.range, range) : getFullRange(range);
@@ -304,15 +323,18 @@ export class BaseRowSet {
 
 //TODO should range be baked into the concept of RowSet ?
 export class RowSet extends BaseRowSet {
+  /** deprecated */
+  private type: string;
+
   // TODO stream as above
-  static fromGroupRowSet({ table, columns, offset, currentFilter: filter }) {
-    return new RowSet(table, columns, offset, {
+  static fromGroupRowSet({ table, columns, currentFilter: filter }) {
+    return new RowSet(table, columns, {
       filter
     });
   }
   //TODO consolidate API of rowSet, groupRowset
-  constructor(table: Table, columns, offset = 0, { filter = null } = NO_OPTIONS) {
-    super(table, columns, offset);
+  constructor(table: Table, columns: TableColumn[], offset = 0, { filter = null } = NO_OPTIONS) {
+    super(table, columns);
     this.type = DataTypes.ROW_DATA;
     this.project = projectColumns(table.columnMap, columns, this.meta);
     this.sortSet = this.buildSortSet();
@@ -325,11 +347,11 @@ export class RowSet extends BaseRowSet {
 
   buildSortSet() {
     const len = this.data.length;
-    const arr = Array(len);
+    const arr: SortSet = [];
     for (let i = 0; i < len; i++) {
-      arr[i] = [i, null, null];
+      arr[i] = [i, 0, 0];
     }
-    return arr;
+    return arr as SortSet;
   }
 
   slice(lo, hi) {
@@ -381,7 +403,7 @@ export class RowSet extends BaseRowSet {
     this.data = this.data.concat(rows);
   }
 
-  sort(sortCols: VuuSortCol[]) {
+  sort(sortDefs: VuuSortCol[]) {
     const sortSet =
       this.currentFilter === null
         ? this.sortSet
@@ -389,17 +411,17 @@ export class RowSet extends BaseRowSet {
 
     this.sortRequired = this.currentFilter !== null;
 
-    if (sortReversed(this.sortCols, sortCols, SINGLE_COLUMN)) {
+    if (sortReversed(this.sortCols, sortDefs, SINGLE_COLUMN)) {
       this.sortReverse = !this.sortReverse;
-    } else if (this.sortCols && groupbyExtendsExistingGroupby(sortCols, this.sortCols)) {
+    } else if (this.sortCols && sortExtendsExistingSort(this.sortCols, sortDefs)) {
       this.sortReverse = false;
-      sortExtend(sortSet, this.data, sortCols, this.columnMap);
+      sortExtend(sortSet, this.data, sortDefs, this.columnMap);
     } else {
       this.sortReverse = false;
-      sort(sortSet, this.data, sortCols, this.columnMap);
+      sort(sortSet, this.data, sortDefs, this.columnMap);
     }
 
-    this.sortCols = sortCols;
+    this.sortCols = sortDefs;
   }
 
   clearFilter() {
@@ -491,7 +513,7 @@ export class RowSet extends BaseRowSet {
       }
     } else if (this.currentFilter === null) {
       // sort only - currently only support single column sorting
-      const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
+      const sortCols = mapSortDefsToSortCriteria(this.sortCols, this.columnMap);
       const [[colIdx]] = sortCols;
       const sortRow = [idx, row[colIdx]];
       const sorter = sortBy([[1, 'asc']]); // the sortSet is always ascending
@@ -548,7 +570,7 @@ export class RowSet extends BaseRowSet {
       if (fn(row)) {
         // TODO what about totalCOunt
 
-        const sortCols = mapSortCriteria(this.sortCols, this.columnMap);
+        const sortCols = mapSortDefsToSortCriteria(this.sortCols, this.columnMap);
         const [[colIdx, direction]] = sortCols; // TODO multi-colun sort
         const sortRow = [idx, row[colIdx]];
         const sorter = sortBy([[1, direction]]); // TODO DSC
@@ -595,7 +617,7 @@ export class SetFilterRowSet extends RowSet {
       filterRowSelected: this.data.length,
       filterRowHidden: 0
     };
-    this.sort([['name', 'asc']]);
+    this.sort([{ column: 'name', sortType: 'A' }]);
   }
 
   createSelectionModel() {
@@ -660,29 +682,5 @@ export class SetFilterRowSet extends RowSet {
     }
 
     return this.currentRange();
-  }
-}
-
-export class BinFilterRowSet extends RowSet {
-  constructor(table, columns, columnName) {
-    super(table, columns);
-    this.type = DataTypes.FILTER_BINS;
-    this.columnName = columnName;
-  }
-
-  setSelectedFromFilter(filter) {
-    console.log(`need to apply filter to selected BinRowset`, filter);
-  }
-  // we don't currently have a concept of range here, but it will
-  // be used in the future
-  // Note: currently no projection here, we don't currently need metadata
-  setRange() {
-    return {
-      type: this.type,
-      rows: this.data,
-      range: null,
-      size: this.size,
-      offset: 0
-    };
   }
 }

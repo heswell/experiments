@@ -1,4 +1,4 @@
-import { mapSortCriteria } from '../columnUtils.js';
+import { mapSortDefsToSortCriteria } from '../sortUtils.js';
 import { extendsFilter, functor as filterPredicate } from '../filter.js';
 import GroupIterator from '../groupIterator.js';
 import {
@@ -25,21 +25,14 @@ import {
   splitGroupsAroundDoomedGroup
 } from '../groupUtils.js';
 import { NULL_RANGE } from '../rangeUtils.js';
-import { sortBy, sortPosition } from '../sort.js';
+import { sortBy, sortPosition } from '../sortUtils.js';
 import { ASC } from '../types.js';
-import {BaseRowSet} from './rowSet.js';
+import { BaseRowSet } from './rowSet.js';
 
 const EMPTY_ARRAY = [];
 
 export class GroupRowSet extends BaseRowSet {
-  constructor(
-    rowSet,
-    columns,
-    groupby,
-    groupState,
-    sortCriteria = null,
-    filter = rowSet.currentFilter
-  ) {
+  constructor(rowSet, columns, groupby, sortCriteria = null, filter = rowSet.currentFilter) {
     super(rowSet.table, columns, rowSet.baseOffset);
     this.groupby = groupby;
     this.groupState = groupState;
@@ -123,7 +116,7 @@ export class GroupRowSet extends BaseRowSet {
   applyGroupby(groupby, rows = this.data) {
     const { columns } = this;
     this.groupRows.length = 0;
-    const groupCols = mapSortCriteria(groupby, this.columnMap);
+    const groupCols = mapSortDefsToSortCriteria(groupby, this.columnMap);
     this.groupRows = groupRows(rows, this.sortSet, columns, this.columnMap, groupCols, {
       groups: this.groupRows,
       rowParents: this.rowParents
@@ -238,7 +231,7 @@ export class GroupRowSet extends BaseRowSet {
     const { IDX, DEPTH, COUNT, IDX_POINTER } = this.meta;
     this.sortCriteria = Array.isArray(sortCriteria) && sortCriteria.length ? sortCriteria : null;
 
-    const sortCols = mapSortCriteria(sortCriteria, this.columnMap);
+    const sortCols = mapSortDefsToSortCriteria(sortCriteria, this.columnMap);
     //TODO only need to handle visible rows
     for (let i = 0; i < groups.length; i++) {
       const groupRow = groups[i];
@@ -458,7 +451,7 @@ export class GroupRowSet extends BaseRowSet {
   insert(newRowIdx, row) {
     // TODO look at append and idx manipulation for insertion at head.
     const { groupRows: groups, groupby, data: rows, sortSet, columns, meta, iter: iterator } = this;
-    let groupCols = mapSortCriteria(groupby, this.columnMap);
+    let groupCols = mapSortDefsToSortCriteria(groupby, this.columnMap);
     const groupPositions = findGroupPositions(groups, groupCols, row);
     const { IDX, COUNT, KEY, IDX_POINTER } = meta;
     const GROUP_KEY_SORT = [[KEY, 'asc']];
@@ -610,7 +603,7 @@ export class GroupRowSet extends BaseRowSet {
   sortGroupby(groupby) {
     const { IDX, KEY, DEPTH, IDX_POINTER, PARENT_IDX } = this.meta;
     const { groupRows: groups } = this;
-    const groupCols = mapSortCriteria(groupby, this.columnMap);
+    const groupCols = mapSortDefsToSortCriteria(groupby, this.columnMap);
     const [colIdx, depth] = findSortedCol(groupby, this.groupby);
     let count = 0;
     let i = 0;
@@ -670,7 +663,7 @@ export class GroupRowSet extends BaseRowSet {
   // Need to think about a new col inserted at start or in between existing cols
   //TODO we might want to do this on expanded nodes only and repat in a lazy fashion as more nodes are revealed
   extendGroupby(groupby) {
-    const groupCols = mapSortCriteria(groupby, this.columnMap);
+    const groupCols = mapSortDefsToSortCriteria(groupby, this.columnMap);
     const baseGroupCols = groupCols.slice(0, this.groupby.length);
     const newGroupbyClause = groupCols.slice(this.groupby.length);
     const {
@@ -748,7 +741,7 @@ export class GroupRowSet extends BaseRowSet {
   reduceGroupby(groupby) {
     const { groupRows: groups, filterSet } = this;
     const [doomed] = findDoomedColumnDepths(groupby, this.groupby);
-    const groupCols = mapSortCriteria(this.groupby, this.columnMap);
+    const groupCols = mapSortDefsToSortCriteria(this.groupby, this.columnMap);
     const [lastGroupIsDoomed, baseGroupby, addGroupby] = splitGroupsAroundDoomedGroup(
       groupCols,
       doomed
