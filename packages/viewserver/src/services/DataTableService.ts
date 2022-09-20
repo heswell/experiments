@@ -116,6 +116,15 @@ export const CREATE_VP: VuuRequestHandler<ClientToServerCreateViewPort> = (messa
     table: { table: tableName }
   } = message.body;
   const table = _tables[tableName];
+  if (table === undefined) {
+    throw Error(
+      `[DataTableService] request for unknown table '${tableName}', available tables are:\n${Object.keys(
+        _tables
+      )
+        .map((tableName) => `\t* ${tableName}`)
+        .join('\n')}`
+    );
+  }
   if (table.status === 'ready') {
     const viewPortId = uuid();
     const subscription = new Subscription(table, viewPortId, message, queue);

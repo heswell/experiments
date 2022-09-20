@@ -29,12 +29,9 @@ export function start(config: ServerConfig) {
     PRIORITY_UPDATE_FREQUENCY
   };
 
-  var serve = serveStatic(
-    `/Users/steve/github/venuu-io/vuu/vuu-ui/packages/app-vuu-example/public`,
-    {
-      index: ['index.html']
-    }
-  );
+  var serve = serveStatic(`/Users/steve/github/venuu-io/vuu/vuu-ui/deployed_apps/app-vuu-example`, {
+    index: ['index.html']
+  });
 
   const httpServer = http.createServer(function (request, response) {
     console.log(`req ${request.url}`);

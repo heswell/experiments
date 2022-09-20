@@ -38,6 +38,7 @@ export function handleAuthenticationRequest(request: IncomingMessage, response: 
       'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
       'Access-Control-Max-Age': 14400 // 4 hours
     };
+
     response.writeHead(204, headers);
     response.end();
   } else {
@@ -57,7 +58,7 @@ export function handleAuthenticationRequest(request: IncomingMessage, response: 
 
         const headers: OutgoingHttpHeaders = {
           'Access-Control-Allow-Credentials': 'true',
-          // 'Access-Control-Allow-Origin': 'http://localhost:5000'
+          'Access-Control-Expose-Headers': 'vuu-auth-token',
           'Access-Control-Allow-Origin': origin
         };
 
@@ -76,7 +77,9 @@ export function handleAuthenticationRequest(request: IncomingMessage, response: 
         });
         // should we push this here ?
         headers['set-cookie'] = cookie;
-        console.log({ headers });
+        console.log(`actual request 
+        ${JSON.stringify(requestHeaders, null, 2)} 
+        ${JSON.stringify(headers, null, 2)}`);
         response.writeHead(201, headers);
         response.end();
       });
