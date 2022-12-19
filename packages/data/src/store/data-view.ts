@@ -7,7 +7,7 @@ import {
 } from '@vuu-ui/data-types';
 import { TableColumn } from 'packages/server-core/src/serverTypes.js';
 import { buildColumnMap, ColumnMap, getFilterType, toColumn } from './columnUtils.js';
-import { addFilter, IN, NOT_IN } from './filter.js';
+import { addFilter, filterHasChanged, IN, NOT_IN, parseFilterQuery } from './filter.js';
 import { Range, resetRange } from './rangeUtils.js';
 import { GroupRowSet, RowSet } from './rowset/index.js';
 import { Table } from './table.js';
@@ -26,7 +26,8 @@ const WITH_STATS = true;
 export default class DataView {
   private _columnMap: ColumnMap;
   private _columns: TableColumn[];
-  private _filter: VuuFilter;
+  private _filterQuery: string | undefined;
+  private _filter: Filter | undefined;
   private _groupBy: VuuGroupBy;
   private _table: Table | undefined;
   private rowSet: RowSet | GroupRowSet | undefined;
@@ -38,7 +39,7 @@ export default class DataView {
   constructor(table: Table, props: DataViewProps, updateQueue = new UpdateQueue()) {
     const { columns, sort, groupBy, filterSpec } = props;
     this._table = table;
-    this._filter = filterSpec;
+    this._filterQuery = filterSpec.filter;
     this._groupBy = groupBy;
     this._sortDefs = sort.sortDefs;
     this._updateQueue = updateQueue;
@@ -140,9 +141,11 @@ export default class DataView {
   private identifyViewportChanges(params: ClientToServerChangeViewPort) {
     const { aggregations, filterSpec, groupBy, sort } = params;
     const sortChanged = sortHasChanged(this._sortDefs, sort.sortDefs);
+    const filterChanged = filterHasChanged(this._filterSpec, filterSpec);
     console.log(`sort changes ? ${sortChanged}`);
 
     return {
+      filterChanged,
       sortChanged
     };
   }
@@ -153,10 +156,12 @@ export default class DataView {
     });
     const { sort } = options;
 
-    const { sortChanged } = this.identifyViewportChanges(options);
+    const { sortChanged, filterChanged } = this.identifyViewportChanges(options);
 
     if (sortChanged) {
       return this.sort(options.sort.sortDefs);
+    } else if (filterChanged) {
+      return this.filter(options.filterSpec.filter);
     } else {
       return { rows: [], size: -1 };
     }
@@ -262,63 +267,57 @@ export default class DataView {
   // appropriate, to any active filterSet(s). However, if the filterset has been changed, e.g. selection
   // within a set, then filter applied here in consequence must not attempt to reset the same filterSet
   // that originates the change.
-  filter(filter, dataType = DataTypes.ROW_DATA, incremental = false, ignoreFilterRowset = false) {
-    if (dataType === DataTypes.FILTER_DATA) {
-      return [undefined, this.filterFilterData(filter)];
-    } else {
-      if (incremental) {
-        filter = addFilter(this._filter, filter);
-      }
-      const { rowSet, _filter, filterRowSet } = this;
-      const { range } = rowSet;
-      this._filter = filter;
-      let filterResultset;
+  filter(filterQuery: string) {
+    console.log(`filter ${filterQuery}`);
+    const filter = parseFilterQuery(filterQuery);
 
-      if (filter === null && _filter) {
-        rowSet?.clearFilter();
-      } else if (filter) {
-        this.rowSet?.filter(filter);
-      } else {
-        throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
-      }
+    //   if (incremental) {
+    //     filter = addFilter(this._filterSpec, filter);
+    //   }
+    const { rowSet } = this;
+    const { range } = rowSet as RowSet;
+    this._filterQuery = filterQuery;
+    this._filter = filter;
+    //   let filterResultset;
 
-      if (filterRowSet && dataType === DataTypes.ROW_DATA && !ignoreFilterRowset) {
-        if (filter) {
-          if (filterRowSet.type === DataTypes.FILTER_DATA) {
-            filterResultset = filterRowSet.setSelectedFromFilter(filter);
-          }
-        } else {
-          // TODO examine this. Must be a more efficient way to reset counts in filterRowSet
-          const { columnName, range } = filterRowSet;
-          this.filterRowSet = rowSet.getDistinctValuesForColumn({ name: columnName });
-          filterResultset = this.filterRowSet.setRange(range, false);
-        }
-      }
+    //   if (filter === null && _filter) {
+    //     rowSet?.clearFilter();
+    //   } else if (filter) {
+    this.rowSet?.filter(filter);
+    //   } else {
+    //     throw Error(`InMemoryView.filter setting null filter when we had no filter anyway`);
+    //   }
 
-      const resultSet = {
-        ...this.rowSet.setRange(resetRange(range), false),
-        filter
-      };
+    //   if (filterRowSet && !ignoreFilterRowset) {
+    //     if (filter) {
+    //       if (filterRowSet.type === DataTypes.FILTER_DATA) {
+    //         filterResultset = filterRowSet.setSelectedFromFilter(filter);
+    //       }
+    //     }
 
-      return filterResultset ? [resultSet, filterResultset] : [resultSet];
-    }
+    const resultSet = {
+      ...this.rowSet?.setRange(resetRange(range), false),
+      filter
+    };
+
+    return [resultSet];
   }
 
-  //TODO merge with method above
-  filterFilterData(filter) {
-    const { filterRowSet } = this;
-    if (filterRowSet) {
-      if (filter === null) {
-        filterRowSet.clearFilter();
-      } else if (filter) {
-        filterRowSet.filter(filter);
-      }
+  // //TODO merge with method above
+  // filterFilterData(filter) {
+  //   const { filterRowSet } = this;
+  //   if (filterRowSet) {
+  //     if (filter === null) {
+  //       filterRowSet.clearFilter();
+  //     } else if (filter) {
+  //       filterRowSet.filter(filter);
+  //     }
 
-      return filterRowSet.setRange(resetRange(filterRowSet.range), false, WITH_STATS);
-    } else {
-      console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`);
-    }
-  }
+  //     return filterRowSet.setRange(resetRange(filterRowSet.range), false, WITH_STATS);
+  //   } else {
+  //     console.error(`[InMemoryView] filterfilterRowSet no filterRowSet`);
+  //   }
+  // }
 
   applyFilterSetChangeToFilter(partialFilter) {
     const [result] = this.filter(partialFilter, DataTypes.ROW_DATA, true, true);
@@ -355,7 +354,7 @@ export default class DataView {
 
   getFilterData(column, range) {
     console.log(`dataView.getFilterData for column ${column.name} range ${JSON.stringify(range)}`);
-    const { rowSet, filterRowSet, _filter: filter, _columnMap } = this;
+    const { rowSet, filterRowSet, _filterSpec: filter, _columnMap } = this;
     // If our own dataset has been filtered by the column we want values for, we cannot use it, we have
     // to go back to the source, using a filter which excludes the one in place on the target column.
     const columnName = column.name;

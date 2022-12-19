@@ -1,3 +1,7 @@
+import { VuuFilter } from '@vuu-ui/data-types';
+import { extractFilter, parseFilter } from '@vuu-ui/datagrid-parsers';
+import { Filter } from '@vuu-ui/utils';
+
 import { ColumnMap } from './columnUtils';
 
 export const EQUALS = 'EQ';
@@ -27,6 +31,15 @@ export const BIN_FILTER_DATA_COLUMNS = [
 export default function filterRows(rows, columnMap, filter) {
   return applyFilter(rows, functor(columnMap, filter));
 }
+
+export const parseFilterQuery = (filterQuery: string): Filter => {
+  const [text, result] = parseFilter(filterQuery);
+  const { filter } = extractFilter(result);
+  return filter;
+};
+
+export const filterHasChanged = (oldFilter: VuuFilter, newFilter: VuuFilter) =>
+  oldFilter !== newFilter;
 
 export function getFilterColumn(column) {
   return column.isGroup ? column.columns[0] : column;

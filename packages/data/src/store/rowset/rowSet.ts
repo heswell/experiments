@@ -1,7 +1,8 @@
 /**
  * Keep all except for groupRowset in this file to avoid circular reference warnings
  */
-import { VuuRange, VuuRow, VuuSortCol } from '@vuu-ui/data-types';
+import { VuuSortCol } from '@vuu-ui/data-types';
+import { Filter } from '@vuu-ui/utils';
 import { TableColumn } from 'packages/server-core/src/serverTypes.js';
 import { ColumnMap, ColumnMetaData, metaData, projectColumns } from '../columnUtils.js';
 import { Row } from '../storeTypes.js';
@@ -46,7 +47,7 @@ export abstract class BaseRowSet {
   protected sortCols: VuuSortCol[] | undefined;
   protected sortReverse: boolean = false;
   protected sortRequired: boolean = false;
-  protected currentFilter: any = null;
+  protected currentFilter: Filter | null = null;
   protected filterSet: any = null;
   protected sortSet: SortSet = NULL_SORTSET;
 
@@ -325,6 +326,7 @@ export abstract class BaseRowSet {
 export class RowSet extends BaseRowSet {
   /** deprecated */
   private type: string;
+  private currentFilter: any;
 
   // TODO stream as above
   static fromGroupRowSet({ table, columns, currentFilter: filter }) {
@@ -405,7 +407,7 @@ export class RowSet extends BaseRowSet {
 
   sort(sortDefs: VuuSortCol[]) {
     const sortSet =
-      this.currentFilter === null
+      this.currentFilter == null
         ? this.sortSet
         : (this.filterSet = sortableFilterSet(this.filterSet));
 
@@ -432,7 +434,7 @@ export class RowSet extends BaseRowSet {
     }
   }
 
-  filter(filter) {
+  filter(filter: Filter) {
     const extendsCurrentFilter = extendsFilter(this.currentFilter, filter);
     const fn = filter && filterPredicate(this.columnMap, filter);
     const { data: rows } = this;

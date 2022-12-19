@@ -115,6 +115,7 @@ export class Table extends EventEmitter {
   }
 
   parseData(data) {
+    console.log(`parseData ${data.length} rows`);
     let columnnameList = this.columns ? this.columns.map((c) => c.name) : null;
     const rows = [];
     for (let i = 0; i < data.length; i++) {
