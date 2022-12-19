@@ -58,7 +58,7 @@ export const websocketConnectionHandler =
         login(sessionId, requestId, message, _messageQueue);
       } else {
         // some handlers are stateful (eg tableHandler). They must be notified
-        // when connection closes (maybe with delay to allow for temp disconenction)
+        // when connection closes (maybe with delay to allow for temp disconnection)
         const handler: VuuRequestHandler | undefined = handlerFor(type);
         if (handler) {
           handler(clientToServerMessage, _messageQueue);

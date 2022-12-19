@@ -6,27 +6,19 @@ const path_root = 'node_modules/@heswell/viewserver/dist/dataTables';
 const project_path = path.resolve(fs.realpathSync('.'), `${path_root}/instruments`);
 
 const config = {
-  name: 'Instruments',
-  dataPath: `${project_path}/dataset.js`,
-  createPath: `${project_path}/create-row.js`,
-  updatePath: `${project_path}/update-row.js`,
+  name: 'instruments',
+  dataPath: `${project_path}/data-generator.js`,
   type: 'vs',
-  primaryKey: 'Symbol',
+  primaryKey: 'ric',
   columns: [
-    { name: 'Symbol' },
-    { name: 'Name' },
-    { name: 'Price', type: { name: 'price' }, aggregate: 'avg' },
-    { name: 'MarketCap', type: { name: 'number', format: 'currency' }, aggregate: 'sum' },
-    { name: 'IPO', type: 'year' },
-    { name: 'Sector' },
-    { name: 'Industry' }
-  ],
-  updates: {
-    interval: 1000,
-    fields: ['Price'],
-    applyInserts: false,
-    applyUpdates: false
-  }
+    { name: 'bbg' },
+    { name: 'currency' },
+    { name: 'description' },
+    { name: 'exchange' },
+    { name: 'ric' },
+    { name: 'isin' },
+    { name: 'lotSize', type: 'int' }
+  ]
 };
 
 export default config;

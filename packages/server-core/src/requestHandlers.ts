@@ -18,14 +18,22 @@ const _services: { [serviceName: string]: ServiceAPI } = {};
 const _messageTypeToServiceNameMap: { [messageType: string]: string } = {};
 
 export function configure(config: ServerConfig) {
-  config.services.forEach(async ({ name: serviceName, module, API }) => {
+  config.services.forEach(async ({ name: serviceName, module }) => {
     // TODO roll these up into async functions we can invoke in parallel
     const service: ServiceAPI = await import(module);
     _services[serviceName] = service;
-    API.forEach((messageType) => (_messageTypeToServiceNameMap[messageType] = serviceName));
+    console.log(service);
+    Object.keys(service)
+      .filter((name) => name !== 'default')
+      .forEach((name) => {
+        console.log(`exported method ${name}`);
+        _messageTypeToServiceNameMap[name] = serviceName;
+      });
     console.log(`configure service ${serviceName} `);
     // do we have to wait ?
     await service.configure(config);
+
+    console.log(`supported message types `);
   });
 }
 

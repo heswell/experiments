@@ -1,4 +1,4 @@
-export { default as Instruments } from './instruments/index.js';
+export { default as instruments } from './instruments/index.js';
 export { default as InstrumentPrices } from './instrumentPrices/index.js';
 export { default as TestTable } from './testTable/index.js';
 export { default as Sets } from './sets/index.js';

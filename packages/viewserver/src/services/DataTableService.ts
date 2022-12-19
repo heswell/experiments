@@ -11,6 +11,7 @@ import {
   ClientToServerChangeViewPort,
   ClientToServerCreateViewPort,
   ClientToServerMessage,
+  ClientToServerRpcCall,
   ClientToServerTableList,
   ClientToServerTableMeta,
   ClientToServerViewPortRange,
@@ -115,6 +116,7 @@ export const CREATE_VP: VuuRequestHandler<ClientToServerCreateViewPort> = (messa
   const {
     table: { table: tableName }
   } = message.body;
+
   const table = _tables[tableName];
   if (table === undefined) {
     throw Error(
@@ -125,6 +127,7 @@ export const CREATE_VP: VuuRequestHandler<ClientToServerCreateViewPort> = (messa
         .join('\n')}`
     );
   }
+
   if (table.status === 'ready') {
     const viewPortId = uuid();
     const subscription = new Subscription(table, viewPortId, message, queue);
@@ -197,100 +200,112 @@ export const CHANGE_VP_RANGE: VuuRequestHandler<ClientToServerViewPortRange> = (
   addDataMessagesToQueue(message, rows, size, queue, viewPortId, subscription.metaData);
 };
 
-export function unsubscribeAll(sessionId: string, queue: MessageQueue) {
-  // const subscriptions = _clientSubscriptions[clientId];
-  // if (subscriptions && subscriptions.length) {
-  //   subscriptions.forEach((viewport) => {
-  //     const subscription = _subscriptions[viewport];
-  //     subscription.cancel();
-  //     delete _subscriptions[viewport];
-  //     queue.purgeViewport(viewport);
-  //   });
-  //   delete _clientSubscriptions[clientId];
-  // }
-}
+export const RPC_CALL: VuuRequestHandler<ClientToServerRpcCall> = (message, queue) => {
+  console.log('what do we do with an RPC call');
+  switch (message.body.service) {
+    case 'TypeAheadRpcHandler':
+      console.log(`call to Typeahead service ${message.body.method}`);
+      break;
 
-export function TerminateSubscription(clientId, request, queue) {
-  const { viewport } = request;
-  _subscriptions[viewport].cancel();
-  delete _subscriptions[viewport];
-  // purge any messages for this viewport from the messageQueue
-  _clientSubscriptions[clientId] = _clientSubscriptions[clientId].filter((vp) => vp !== viewport);
-  if (_clientSubscriptions[clientId].length === 0) {
-    delete _clientSubscriptions[clientId];
+    default:
+      console.log(`unsupported RPC service ${message.body.service}`);
   }
-  queue.purgeViewport(viewport);
-}
+};
 
-// SuspendSubscription
-// ResumeSUbscription
-// TerminateAllSubscriptionsForClient
+// export function unsubscribeAll(sessionId: string, queue: MessageQueue) {
+//   // const subscriptions = _clientSubscriptions[clientId];
+//   // if (subscriptions && subscriptions.length) {
+//   //   subscriptions.forEach((viewport) => {
+//   //     const subscription = _subscriptions[viewport];
+//   //     subscription.cancel();
+//   //     delete _subscriptions[viewport];
+//   //     queue.purgeViewport(viewport);
+//   //   });
+//   //   delete _clientSubscriptions[clientId];
+//   // }
+// }
 
-export function ModifySubscription(clientId, request, queue) {
-  _subscriptions[request.viewport].update(request, queue);
-}
+// export function TerminateSubscription(clientId, request, queue) {
+//   const { viewport } = request;
+//   _subscriptions[viewport].cancel();
+//   delete _subscriptions[viewport];
+//   // purge any messages for this viewport from the messageQueue
+//   _clientSubscriptions[clientId] = _clientSubscriptions[clientId].filter((vp) => vp !== viewport);
+//   if (_clientSubscriptions[clientId].length === 0) {
+//     delete _clientSubscriptions[clientId];
+//   }
+//   queue.purgeViewport(viewport);
+// }
 
-export function ExpandGroup(clientId, request, queue) {
-  _subscriptions[request.viewport].update(request, queue);
-}
+// // SuspendSubscription
+// // ResumeSUbscription
+// // TerminateAllSubscriptionsForClient
 
-export function CollapseGroup(clientId, request, queue) {
-  _subscriptions[request.viewport].update(request, queue);
-}
+// export function ModifySubscription(clientId, request, queue) {
+//   _subscriptions[request.viewport].update(request, queue);
+// }
 
-export function filter(clientId, { viewport, filter, incremental, dataType }, queue) {
-  _subscriptions[viewport].invoke('filter', queue, dataType, filter, dataType, incremental);
-}
+// export function ExpandGroup(clientId, request, queue) {
+//   _subscriptions[request.viewport].update(request, queue);
+// }
 
-export function select(
-  clientId,
-  { viewport, idx, rangeSelect, keepExistingSelection, dataType },
-  queue
-) {
-  _subscriptions[viewport].invoke(
-    'select',
-    queue,
-    DataType.Selected,
-    idx,
-    rangeSelect,
-    keepExistingSelection,
-    dataType
-  );
-}
+// export function CollapseGroup(clientId, request, queue) {
+//   _subscriptions[request.viewport].update(request, queue);
+// }
 
-export function selectAll(clientId, { viewport, dataType }, queue) {
-  _subscriptions[viewport].invoke('selectAll', queue, DataType.Selected, dataType);
-}
+// export function filter(clientId, { viewport, filter, incremental, dataType }, queue) {
+//   _subscriptions[viewport].invoke('filter', queue, dataType, filter, dataType, incremental);
+// }
 
-export function selectNone(clientId, { viewport, dataType }, queue) {
-  _subscriptions[viewport].invoke('selectNone', queue, DataType.Selected, dataType);
-}
+// export function select(
+//   clientId,
+//   { viewport, idx, rangeSelect, keepExistingSelection, dataType },
+//   queue
+// ) {
+//   _subscriptions[viewport].invoke(
+//     'select',
+//     queue,
+//     DataType.Selected,
+//     idx,
+//     rangeSelect,
+//     keepExistingSelection,
+//     dataType
+//   );
+// }
 
-export function groupBy(clientId, { viewport, groupBy }, queue) {
-  _subscriptions[viewport].invoke('groupBy', queue, DataType.Snapshot, groupBy);
-}
+// export function selectAll(clientId, { viewport, dataType }, queue) {
+//   _subscriptions[viewport].invoke('selectAll', queue, DataType.Selected, dataType);
+// }
 
-export function setGroupState(clientId, { viewport, groupState }, queue) {
-  _subscriptions[viewport].invoke('setGroupState', queue, DataType.Rowset, groupState);
-}
+// export function selectNone(clientId, { viewport, dataType }, queue) {
+//   _subscriptions[viewport].invoke('selectNone', queue, DataType.Selected, dataType);
+// }
 
-export function GetFilterData(clientId, { viewport, column, searchText, range }, queue) {
-  // TODO what about range ?
-  _subscriptions[viewport].invoke(
-    'getFilterData',
-    queue,
-    DataType.FilterData,
-    column,
-    searchText,
-    range
-  );
-}
+// export function groupBy(clientId, { viewport, groupBy }, queue) {
+//   _subscriptions[viewport].invoke('groupBy', queue, DataType.Snapshot, groupBy);
+// }
 
-export function InsertTableRow(clientId, request, queue) {
-  const tableHelper = getTable(request.tablename);
-  tableHelper.table.insert(request.row);
-  console.warn(`InsertTableRow TODO send confirmation ${queue.length}`);
-}
+// export function setGroupState(clientId, { viewport, groupState }, queue) {
+//   _subscriptions[viewport].invoke('setGroupState', queue, DataType.Rowset, groupState);
+// }
+
+// export function GetFilterData(clientId, { viewport, column, searchText, range }, queue) {
+//   // TODO what about range ?
+//   _subscriptions[viewport].invoke(
+//     'getFilterData',
+//     queue,
+//     DataType.FilterData,
+//     column,
+//     searchText,
+//     range
+//   );
+// }
+
+// export function InsertTableRow(clientId, request, queue) {
+//   const tableHelper = getTable(request.tablename);
+//   tableHelper.table.insert(request.row);
+//   console.warn(`InsertTableRow TODO send confirmation ${queue.length}`);
+// }
 
 function getTable(name: string): Table {
   if (_tables[name]) {

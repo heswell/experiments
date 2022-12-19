@@ -9,11 +9,14 @@
   },
   "scripts": {
     "build": "etsc",
-    "build:vuu": "node ../../scripts/build.mjs"
+    "build:vuu": "node ../../scripts/run-build.mjs"
   },
   "author": "heswell",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@vuu-ui/datagrid-parsers": "0.0.26",
+    "@vuu-ui/utils": "0.0.26"
+  },
   "peerDependencies": {},
   "devDependencies": {
     "@vuu-ui/data-types": "1.0.0"
