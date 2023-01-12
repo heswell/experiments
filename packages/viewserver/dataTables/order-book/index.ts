@@ -1,13 +1,14 @@
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 const data_path = fs.realpathSync(process.cwd());
 const project_path = 'src/@heswell/viewserver/dist/dataTables/order-book';
 
 const config = {
   name: 'order-book',
-  dataPath: `${data_path}/${project_path}/dataset.js`,
-  // createPath: `${data_path}/${project_path}/create-row`,
-  // updatePath: `${data_path}/${project_path}/update-row`,
+  dataPath: pathToFileURL(`${data_path}/${project_path}/dataset.js`),
+  // createPath: pathToFileURL(`${data_path}/${project_path}/create-row`,
+  // updatePath: pathToFileURL(`${data_path}/${project_path}/update-row`,
   type: 'vs',
   primaryKey: 'Id',
   columns: [

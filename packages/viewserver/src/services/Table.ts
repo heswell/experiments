@@ -2,7 +2,7 @@ import { Table as BaseTable } from '@heswell/data';
 import { TableWithGenerators } from '@heswell/server-core';
 
 export class Table extends BaseTable {
-  async loadData(dataPath: string) {
+  async loadData(dataPath: URL) {
     try {
       const { data } = await import(`${dataPath}`);
       if (data) {

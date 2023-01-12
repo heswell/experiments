@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 const path_root = 'node_modules/@heswell/viewserver/dist/dataTables';
 
@@ -7,7 +8,7 @@ const project_path = path.resolve(fs.realpathSync('.'), `${path_root}/instrument
 
 const config = {
   name: 'instruments',
-  dataPath: `${project_path}/data-generator.js`,
+  dataPath: pathToFileURL(`${project_path}/data-generator.js`),
   type: 'vs',
   primaryKey: 'ric',
   columns: [

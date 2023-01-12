@@ -1,11 +1,12 @@
 import path from 'path';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 const project_path = path.resolve(fs.realpathSync('.'), 'packages/viewserver/dataTables/simpsons');
 
 const config = {
     name: 'Simpsons',
-    dataPath: `${project_path}/data-generator`,
+    dataPath: pathToFileURL(`file:///${project_path}/data-generator`),
     type: 'vs',
     primaryKey: 'seq',
     columns: [
