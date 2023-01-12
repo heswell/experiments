@@ -1,13 +1,14 @@
 import path from 'path';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 const path_root = 'node_modules/@heswell/viewserver/dist/dataTables';
 const project_path = path.resolve(fs.realpathSync('.'), `${path_root}/order-blotter`);
 
 const config = {
   name: 'OrderBlotter',
-  dataPath: `${project_path}/dataset.js`,
-  createPath: `${project_path}/create-row.js`,
+  dataPath: pathToFileURL(`${project_path}/dataset.js`),
+  createPath: pathToFileURL(`${project_path}/create-row.js`),
   // updatePath: `${project_path}/update-row`,
   type: 'vs',
   primaryKey: 'OrderId',

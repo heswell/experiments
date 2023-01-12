@@ -2,15 +2,16 @@
 // import path from 'path';
 // import url from 'url';
 import fs from 'fs';
+import { pathToFileURL } from 'url';
 
 // const __dirname = path.dirname(new url.URL(import.meta.url).pathname);
 const path = fs.realpathSync(process.cwd());
 
 const config = {
   name: 'TestTable',
-  dataPath: `${path}/data-generator.js`,
-  createPath: `${path}/create-row.js`,
-  updatePath: `${path}/update-row.js`,
+  dataPath: pathToFileURL(`${path}/data-generator.js`),
+  createPath: pathToFileURL(`${path}/create-row.js`),
+  updatePath: pathToFileURL(`${path}/update-row.js`),
   type: 'vs',
   primaryKey: 'Column-1',
   columns: [

@@ -33,12 +33,12 @@ export interface TableProps {
 }
 
 export interface TableWithGenerators {
-  createPath?: string;
-  updatePath?: string;
+  createPath?: URL;
+  updatePath?: URL;
 }
 
 export interface TableConfig extends TableProps, TableWithGenerators {
-  dataPath: string;
+  dataPath: URL;
 }
 
 export interface ServerConfig {
